@@ -1,0 +1,6 @@
+.idea/
+vendor/
+.php-cs-fixer.cache
+.DS_Store
+Thumbs.db
+.phpunit.cache/

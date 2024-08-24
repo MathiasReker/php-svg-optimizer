@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - develop
+
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  run:
+    runs-on: ${{ matrix.operating-system }}
+    strategy:
+      matrix:
+        operating-system: [ 'ubuntu-latest', 'macos-latest' ]
+        php-versions: [ '8.2', '8.3', '8.4-beta' ]
+    name: PHP ${{ matrix.php-versions }} Test on ${{ matrix.operating-system }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Up PHP Environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring
+          coverage: xdebug
+
+      - name: Display PHP Version
+        run: php -v
+
+      - name: Update Composer to Latest Version
+        run: composer self-update
+
+      - name: Install Composer Dependencies
+        run: |
+          if [[ "${{ matrix.php-versions }}" == "8.4-beta" ]]; then
+            composer install --optimize-autoloader --ignore-platform-reqs
+          else
+            composer install --optimize-autoloader
+          fi
+
+      - name: Validate Composer Configuration
+        run: |
+          if [[ "${{ matrix.php-versions }}" != "8.4-beta" ]]; then
+            composer check
+          fi
+
+      - name: Lint PHP Files
+        run: |
+          find src tests -name '*.php' -exec php -l {} \;
+
+      - name: Run Tests and Generate Coverage Report
+        run: |
+          composer test -- --coverage-clover=coverage.xml
+          cat coverage.xml
+
+      - name: Check Code Style with PHP CS Fixer
+        run: |
+          if [[ "${{ matrix.php-versions }}" != "8.4-beta" ]]; then
+            composer cs-check
+          fi
+
+      - name: Analyze Code with PHPStan
+        run: vendor/bin/phpstan analyse --level=max --error-format=table --memory-limit=1G
+
+      - name: Perform Composer Security Audit
+        run: composer audit --format=table
+
+      - name: Normalize Composer Configuration
+        run: composer normalize --dry-run --no-check-lock
+
+      - name: Detect Magic Numbers in Code
+        run: composer magic-number-detector

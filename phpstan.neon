@@ -1,0 +1,27 @@
+parameters:
+  level: 9
+  paths:
+    - src
+    - tests
+  excludePaths:
+    - vendor
+  parallel:
+    maximumNumberOfProcesses: 4
+    processTimeout: 900.0
+  customRulesetUsed: true
+  fileExtensions:
+    - php
+  strictRules:
+    disallowedLooseComparison: true
+    booleansInConditions: true
+    uselessCast: true
+    requireParentConstructorCall: true
+    disallowedConstructs: true
+    overwriteVariablesWithLoop: true
+    closureUsesThis: true
+    matchingInheritedMethodNames: true
+    numericOperandsInArithmeticOperators: true
+    strictCalls: true
+    switchConditionsMatchingType: true
+    noVariableVariables: true
+    strictArrayFilter: true

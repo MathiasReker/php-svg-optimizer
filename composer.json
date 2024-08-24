@@ -1,0 +1,71 @@
+{
+  "name": "mathiasreker/php-svg-optimizer",
+  "description": "php-svg-optimizer is a PHP library designed to optimize SVG files by applying various transformations and cleanup operations.",
+  "license": "MIT",
+  "type": "library",
+  "version": "1.0.0",
+  "keywords": [
+    "optimize",
+    "svg",
+    "minify"
+  ],
+  "authors": [
+    {
+      "name": "Mathias Reker",
+      "role": "Developer"
+    }
+  ],
+  "homepage": "https://github.com/mathiasreker/php-svg-optimizer",
+  "require": {
+    "php": ">=8.2",
+    "ext-dom": "*"
+  },
+  "require-dev": {
+    "ergebnis/composer-normalize": "^2.43",
+    "friendsofphp/php-cs-fixer": "^3.62",
+    "phpstan/extension-installer": "^1.4",
+    "phpstan/phpstan": "^1.11",
+    "phpstan/phpstan-strict-rules": "^1.6",
+    "phpunit/phpunit": "^11.3",
+    "povils/phpmnd": "^3.5",
+    "rector/rector": "^1.2",
+    "squizlabs/php_codesniffer": "^3.10"
+  },
+  "autoload": {
+    "psr-4": {
+      "MathiasReker\\PhpSvgOptimizer\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "MathiasReker\\PhpSvgOptimizer\\Tests\\": "tests/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "ergebnis/composer-normalize": true,
+      "phpstan/extension-installer": true,
+      "phpunit/phpunit": true
+    },
+    "preferred-install": "dist",
+    "sort-packages": true
+  },
+  "extra": {
+    "phpstan": {
+      "includes": [
+        "extension.neon"
+      ]
+    }
+  },
+  "scripts": {
+    "cs-check": "php vendor/bin/php-cs-fixer --config=.php-cs-fixer.dist.php fix . --dry-run --diff",
+    "cs-fix": "php vendor/bin/php-cs-fixer --config=.php-cs-fixer.dist.php fix .",
+    "format": "composer normalize && composer phpcbf-fix & composer rector-fix && composer cs-fix",
+    "magic-number-detector": "php vendor/bin/phpmnd .",
+    "phpcbf-fix": "vendor/bin/phpcbf -d memory_limit=512M src tests",
+    "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon",
+    "rector-check": "vendor/bin/rector process --dry-run",
+    "rector-fix": "vendor/bin/rector process",
+    "test": "vendor/bin/phpunit --bootstrap vendor/autoload.php --colors=always tests/"
+  }
+}
