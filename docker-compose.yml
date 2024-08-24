@@ -1,0 +1,7 @@
+services:
+  app:
+    build: .
+    image: php-svg-optimizer:1.0.0
+    container_name: "php-svg-optimizer"
+    volumes:
+      - ./:/app
