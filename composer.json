@@ -24,7 +24,7 @@
     "ergebnis/composer-normalize": "^2.43",
     "friendsofphp/php-cs-fixer": "^3.63",
     "phpstan/extension-installer": "^1.4",
-    "phpstan/phpstan": "^1.11",
+    "phpstan/phpstan": "^1.12",
     "phpstan/phpstan-strict-rules": "^1.6",
     "phpunit/phpunit": "^11.3",
     "povils/phpmnd": "^3.5",
