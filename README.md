@@ -60,10 +60,10 @@ echo json_encode($result, \JSON_PRETTY_PRINT);
 
 ### Documentation
 
-The constructor initializes the optimizer with the source SVG file and the output file:
+The constructor initializes the SVG optimizer with a file provider that specifies the source and output file paths.
 
 ```php
-$result = new SvgOptimizer('path/to/source.svg', 'path/to/output.svg');
+$result = new SvgOptimizer(new FileProvider('path/to/source.svg', 'path/to/output.svg'));
 ```
 
 `removeTitleAndDesc` Removes `<title>` and `<desc>` tags from the SVG.
