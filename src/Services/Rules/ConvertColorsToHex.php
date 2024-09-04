@@ -38,10 +38,6 @@ class ConvertColorsToHex implements SvgOptimizerRuleInterface
                 $value = $node->nodeValue;
 
                 if (\is_string($value) && (bool) preg_match('/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/', $value, $matches)) {
-                    if (!isset($matches[1], $matches[2], $matches[3])) {
-                        continue;
-                    }
-
                     $r = (int) $matches[1];
                     $g = (int) $matches[2];
                     $b = (int) $matches[3];
