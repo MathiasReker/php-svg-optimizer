@@ -49,6 +49,7 @@ $result = $svgOptimizer
     ->removeComments()
     ->removeUnnecessaryWhitespace()
     ->removeDefaultAttributes()
+    ->removeMetadata()
     ->flattenGroups()
     ->convertColorsToHex()
     ->minifySvgCoordinates()
@@ -88,6 +89,12 @@ $svgOptimizer->removeUnnecessaryWhitespace();
 
 ```php
 $svgOptimizer->removeDefaultAttributes();
+```
+
+`removeMetadata` Removes `<metadata>` tags from the SVG.
+
+```php
+$svgOptimizer->removeMetadata();
 ```
 
 `flattenGroups` Flattens nested `<g>` elements, moving their child elements up to the parent node.

@@ -18,6 +18,7 @@ use MathiasReker\PhpSvgOptimizer\Services\Rules\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\MinifyTransformations;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDefaultAttributes;
+use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnnecessaryWhitespace;
 
@@ -36,6 +37,16 @@ class SvgOptimizerBuilder
     public function removeTitleAndDesc(): self
     {
         $this->svgOptimizer->addRule(new RemoveTitleAndDesc());
+
+        return $this;
+    }
+
+    /**
+     * Remove the metadata from the SVG document.
+     */
+    public function removeMetadata(): self
+    {
+        $this->svgOptimizer->addRule(new RemoveMetadata());
 
         return $this;
     }
