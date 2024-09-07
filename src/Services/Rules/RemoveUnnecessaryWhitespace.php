@@ -10,7 +10,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Exceptions\RegexProcessingException;
 use MathiasReker\PhpSvgOptimizer\Exceptions\XmlProcessingException;
 
@@ -32,13 +31,19 @@ class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
             throw new XmlProcessingException('Failed to save SVG XML content.');
         }
 
-        $svgContent = preg_replace('/\s+/', ' ', $svgContent);
+        // Remove unnecessary whitespace inside attribute values
+        $svgContent = (string) preg_replace_callback(
+            '/(\S+)=\s*"([^"]*)"/',
+            static fn ($matches): string => \sprintf('%s="%s"', $matches[1], preg_replace('/\s+/', ' ', trim($matches[2]))),
+            $svgContent
+        );
 
-        if (null === $svgContent) {
-            throw new RegexProcessingException('An error occurred during the preg_replace operation.');
-        }
-
-        $svgContent = str_replace('> <', '><', $svgContent);
+        // Remove all whitespace inside style attribute values
+        $svgContent = (string) preg_replace_callback(
+            '/style\s*=\s*"([^"]*)"/',
+            static fn ($matches): string => \sprintf('style="%s"', str_replace(' ', '', $matches[1])),
+            $svgContent
+        );
 
         if (false === $domDocument->loadXML($svgContent)) {
             throw new XmlProcessingException('Failed to load optimized XML content.');

@@ -94,6 +94,82 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="20" fill="red"/></svg>
                 XML
         ];
+
+        yield 'Remove whitespace around attributes' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox=" 0 0  150 100 " width="100" height="100">
+                    <circle cx="50" cy="50" r="20" fill="red"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100" width="100" height="100"><circle cx="50" cy="50" r="20" fill="red"/></svg>
+                XML
+        ];
+
+        // Test with tabs, spaces, and newlines
+        yield 'Handles Tabs, Spaces, and Newlines' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <circle cx=" 50 " cy="50" r="20" fill="red" />
+                    <rect x="10" y="10" width="30" height="30" fill="blue"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="20" fill="red"/><rect x="10" y="10" width="30" height="30" fill="blue"/></svg>
+                XML
+        ];
+
+        // Test SVG with inline style attributes and unnecessary spaces
+        yield 'Inline Style Attributes with Unnecessary Spaces' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <circle cx="50" cy="50" r="20" style=" fill : red ; stroke : black ; stroke-width : 2 ; "/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="20" style="fill:red;stroke:black;stroke-width:2;"/></svg>
+                XML
+        ];
+
+        // Test with mixed content, including text nodes and elements with whitespace
+        yield 'Mixed Content with Text Nodes' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <text x="10" y="10">   Some   Text   Here   </text>
+                    <circle cx="50" cy="50" r="20" fill="red"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="10" y="10">   Some   Text   Here   </text><circle cx="50" cy="50" r="20" fill="red"/></svg>
+                XML
+        ];
+
+        // Test with self-closing tags and spaces between attributes
+        yield 'Self-Closing Tags with Spaces' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <path d="M10 10 h 80 v 80 h -80 Z" fill="none" stroke="black" />
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><path d="M10 10 h 80 v 80 h -80 Z" fill="none" stroke="black"/></svg>
+                XML
+        ];
+
+        // Test with nested elements and varying whitespace
+        yield 'Nested Elements with Varying Whitespace' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="translate(10 10)">
+                        <circle cx="40" cy="40" r="20" fill="green"/>
+                        <rect x="20" y="20" width="40" height="40" fill="yellow"/>
+                    </g>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(10 10)"><circle cx="40" cy="40" r="20" fill="green"/><rect x="20" y="20" width="40" height="40" fill="yellow"/></g></svg>
+                XML
+        ];
     }
 
     #[DataProvider('svgWhitespaceProvider')]

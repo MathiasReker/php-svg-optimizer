@@ -19,10 +19,14 @@ class SvgValidator
      *
      * @return bool true if the content is valid SVG, false otherwise
      */
-    public function isValid(string $svgContent): bool
+    public function isValid(?string $svgContent): bool
     {
+        if (null === $svgContent) {
+            return false;
+        }
+
         // Remove XML declaration
-        $svgContent = preg_replace('/^\s*<\?xml[^>]*\?>\s*/i', '', $svgContent);
+        $svgContent = (string) preg_replace('/^\s*<\?xml[^>]*\?>\s*/i', '', $svgContent);
 
         // Remove DOCTYPE
         $svgContent = preg_replace('/<!DOCTYPE[^>]*>/i', '', $svgContent);
