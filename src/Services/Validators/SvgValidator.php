@@ -21,12 +21,13 @@ class SvgValidator
      */
     public function isValid(string $svgContent): bool
     {
-        // Remove any XML declaration
-        $cleanedContent = preg_replace('/^\s*<\?xml[^>]*\?>\s*/i', '', $svgContent);
+        // Remove XML declaration
+        $svgContent = preg_replace('/^\s*<\?xml[^>]*\?>\s*/i', '', $svgContent);
+
+        // Remove DOCTYPE
+        $svgContent = preg_replace('/<!DOCTYPE[^>]*>/i', '', $svgContent);
 
         // Check if the cleaned content starts with a valid <svg> tag
-        $match = preg_match('/^\s*<svg\b[^>]*>/i', (string) $cleanedContent);
-
-        return 1 === $match;
+        return 1 === preg_match('/^\s*<svg\b[^>]*>/i', (string) $svgContent);
     }
 }
