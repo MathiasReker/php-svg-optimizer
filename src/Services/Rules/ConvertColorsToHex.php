@@ -15,6 +15,20 @@ use DOMDocument;
 class ConvertColorsToHex implements SvgOptimizerRuleInterface
 {
     /**
+     * The minimum RGB value.
+     *
+     * @var int
+     */
+    private const MIN_RGB_VALUE = 0;
+
+    /**
+     * The maximum RGB value.
+     *
+     * @var int
+     */
+    private const MAX_RGB_VALUE = 255;
+
+    /**
      * Convert RGB colors to shorthand HEX colors in the SVG document, if possible,
      * and convert the result to lowercase. Invalid RGB values are ignored.
      *
@@ -74,7 +88,7 @@ class ConvertColorsToHex implements SvgOptimizerRuleInterface
      */
     private function isValidRgbValue(int $value): bool
     {
-        return $value >= 0 && $value <= 255;
+        return $value >= self::MIN_RGB_VALUE && $value <= self::MAX_RGB_VALUE;
     }
 
     /**
