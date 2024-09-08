@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Services;
 
 use MathiasReker\PhpSvgOptimizer\Models\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
+use MathiasReker\PhpSvgOptimizer\Services\Providers\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\ConvertColorsToHex;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\FlattenGroups;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\MinifySvgCoordinates;
@@ -26,9 +26,9 @@ class SvgOptimizerBuilder
 {
     private readonly SvgOptimizer $svgOptimizer;
 
-    public function __construct(FileProvider $fileProvider)
+    public function __construct(SvgProviderInterface $svgProvider)
     {
-        $this->svgOptimizer = new SvgOptimizer($fileProvider);
+        $this->svgOptimizer = new SvgOptimizer($svgProvider);
     }
 
     /**
@@ -123,11 +123,26 @@ class SvgOptimizerBuilder
 
     /**
      * Optimize the SVG file.
+     */
+    public function optimize(): self
+    {
+        $this->svgOptimizer->optimize();
+
+        return $this;
+    }
+
+    public function getContent(): string
+    {
+        return $this->svgOptimizer->getContent();
+    }
+
+    /**
+     * Get the metadata of the SVG file.
      *
      * @return array{ originalSize: int, optimizedSize: int, savedBytes: int, savedPercentage: float}
      */
-    public function build(): array
+    public function getMetaData(): array
     {
-        return $this->svgOptimizer->optimize()->getMetaData();
+        return $this->svgOptimizer->getMetaData();
     }
 }

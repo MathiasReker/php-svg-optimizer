@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
+use DOMDocument;
+
 class RemoveMetadata implements SvgOptimizerRuleInterface
 {
     /**

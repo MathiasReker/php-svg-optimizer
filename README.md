@@ -16,7 +16,7 @@ operations.
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^1.0    | ^8.2 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^2.0    | ^8.2 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
@@ -30,7 +30,7 @@ To install the library, run:
 composer require mathiasreker/php-svg-optimizer
 ```
 
-### Example
+### Example parsing from a file
 
 ```php
 <?php
@@ -42,9 +42,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizer;
 
-$svgOptimizer = new SvgOptimizer(new FileProvider('path/to/source.svg', 'path/to/output.svg'));
-
-$result = $svgOptimizer
+$svgOptimizer = (new SvgOptimizer(new FileProvider('path/to/source.svg', 'path/to/output.svg')))
     ->removeTitleAndDesc()
     ->removeComments()
     ->removeUnnecessaryWhitespace()
@@ -54,17 +52,52 @@ $result = $svgOptimizer
     ->convertColorsToHex()
     ->minifySvgCoordinates()
     ->minifyTransformations()
-    ->build();
+    ->optimize();
 
-echo json_encode($result, \JSON_PRETTY_PRINT);
+echo json_encode($svgOptimizer->getMetaData(), JSON_PRETTY_PRINT);
+```
+
+### Example parsing from a string
+
+```php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
+use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizer;
+
+$svgOptimizer = (new SvgOptimizer(new StringProvider('<svg>...</svg>')))
+    ->removeTitleAndDesc()
+    ->removeComments()
+    ->removeUnnecessaryWhitespace()
+    ->removeDefaultAttributes()
+    ->removeMetadata()
+    ->flattenGroups()
+    ->convertColorsToHex()
+    ->minifySvgCoordinates()
+    ->minifyTransformations()
+    ->optimize();
+
+echo $svgOptimizer->getContent();
+
+echo json_encode($svgOptimizer->getMetaData(), JSON_PRETTY_PRINT);
 ```
 
 ### Documentation
 
-The constructor initializes the SVG optimizer with a file provider that specifies the source and output file paths.
+The constructor initializes the SVG optimizer with an SVG provider.
 
 ```php
 $svgOptimizer = new SvgOptimizer(new FileProvider('path/to/source.svg', 'path/to/output.svg'));
+```
+
+or
+
+```php
+$svgOptimizer = new SvgOptimizer(new StringProvider('<svg>...</svg>'));
 ```
 
 `removeTitleAndDesc` Removes `<title>` and `<desc>` tags from the SVG.
@@ -124,7 +157,28 @@ $svgOptimizer->minifyTransformations();
 `optimize` Finalizes the optimization process and generates the optimized SVG file.
 
 ```php
-$svgOptimizer->build();
+$svgOptimizer->optimize();
+```
+
+`getContent` Returns the optimized SVG content.
+
+```php
+$svgOptimizer->getContent();
+```
+
+`getMetaData` Returns the metadata of the SVG file. E.g.
+
+```json
+{
+  "originalSize": 537,
+  "optimizedSize": 470,
+  "savedBytes": 67,
+  "savedPercentage": 12.48
+}
+```
+
+```php
+$svgOptimizer->getMetaData();
 ```
 
 ### Roadmap

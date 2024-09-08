@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use DOMDocument;
+use DOMNodeList;
 
 class ConvertColorsToHex implements SvgOptimizerRuleInterface
 {

@@ -15,7 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Services\MetaData;
 
 class StringProvider implements SvgProviderInterface
 {
-    private string $content;
+    private string $output;
 
     /**
      * @throws \RuntimeException
@@ -41,14 +41,14 @@ class StringProvider implements SvgProviderInterface
             throw new XmlProcessingException('Failed to process XML content.');
         }
 
-        $this->content = trim($xmlContent);
+        $this->output = trim($xmlContent);
 
         return $this;
     }
 
     public function getOutputContent(): string
     {
-        return $this->content;
+        return $this->output;
     }
 
     public function load(): \DOMDocument
@@ -66,7 +66,7 @@ class StringProvider implements SvgProviderInterface
      */
     public function getMetaData(): array
     {
-        $metaData = new MetaData(mb_strlen($this->input), mb_strlen($this->content));
+        $metaData = new MetaData(mb_strlen($this->input, '8bit'), mb_strlen($this->output, '8bit'));
 
         return $metaData->toArray();
     }
