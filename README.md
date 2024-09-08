@@ -166,7 +166,7 @@ $svgOptimizer->optimize();
 $svgOptimizer->getContent();
 ```
 
-`getMetaData` Returns the metadata of the SVG file. E.g.
+`getMetaData` Returns the metadata of the operation. E.g.
 
 ```json
 {
