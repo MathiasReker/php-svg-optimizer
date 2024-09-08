@@ -106,7 +106,6 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 XML
         ];
 
-        // Test with tabs, spaces, and newlines
         yield 'Handles Tabs, Spaces, and Newlines' => [
             <<<XML
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -119,7 +118,6 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 XML
         ];
 
-        // Test SVG with inline style attributes and unnecessary spaces
         yield 'Inline Style Attributes with Unnecessary Spaces' => [
             <<<XML
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -131,7 +129,6 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 XML
         ];
 
-        // Test with mixed content, including text nodes and elements with whitespace
         yield 'Mixed Content with Text Nodes' => [
             <<<XML
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -144,7 +141,6 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 XML
         ];
 
-        // Test with self-closing tags and spaces between attributes
         yield 'Self-Closing Tags with Spaces' => [
             <<<XML
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -156,7 +152,6 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 XML
         ];
 
-        // Test with nested elements and varying whitespace
         yield 'Nested Elements with Varying Whitespace' => [
             <<<XML
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
