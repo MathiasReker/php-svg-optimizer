@@ -15,7 +15,8 @@ use DOMDocument;
 class ConvertColorsToHex implements SvgOptimizerRuleInterface
 {
     /**
-     * Convert RGB colors to HEX colors in the SVG document.
+     * Convert RGB colors to shorthand HEX colors in the SVG document, if possible,
+     * and convert the result to lowercase. Invalid RGB values are ignored.
      *
      * @param \DOMDocument $domDocument the DOMDocument instance representing the SVG file to be optimized
      */
@@ -26,26 +27,65 @@ class ConvertColorsToHex implements SvgOptimizerRuleInterface
         $attributes = ['fill', 'stroke'];
 
         foreach ($attributes as $attribute) {
-            /**
-             * @var \DOMNodeList<\DOMAttr> $nodeList
-             */
             $nodeList = $domXPath->query('//@' . $attribute);
 
-            foreach ($nodeList as $node) {
-                /**
-                 * @var \DOMAttr $node
-                 */
-                $value = $node->nodeValue;
+            // Check if $nodeList is a valid DOMNodeList
+            if ($nodeList instanceof \DOMNodeList) {
+                foreach ($nodeList as $node) {
+                    if ($node instanceof \DOMAttr) {
+                        $value = $node->nodeValue;
 
-                if (\is_string($value) && (bool) preg_match('/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/', $value, $matches)) {
-                    $r = (int) $matches[1];
-                    $g = (int) $matches[2];
-                    $b = (int) $matches[3];
+                        if (!\is_string($value)) {
+                            continue;
+                        }
 
-                    $hex = \sprintf('#%02X%02X%02X', $r, $g, $b);
-                    $node->nodeValue = $hex;
+                        $value = trim($value);
+
+                        $matches = [];
+                        if (1 === preg_match('/^rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/', $value, $matches)) {
+                            $r = (int) $matches[1];
+                            $g = (int) $matches[2];
+                            $b = (int) $matches[3];
+
+                            if ($this->isValidRgbValue($r) && $this->isValidRgbValue($g) && $this->isValidRgbValue($b)) {
+                                $hex = mb_strtolower(\sprintf('#%02x%02x%02x', $r, $g, $b));
+
+                                if ($this->canBeShortened($hex)) {
+                                    $hex = mb_strtolower(\sprintf('#%1x%1x%1x', $r >> 4, $g >> 4, $b >> 4));
+                                }
+
+                                $node->nodeValue = $hex;
+                            }
+                        } elseif (1 === preg_match('/^#([a-fA-F0-9]{6})$/', $value) || 1 === preg_match('/^#([a-fA-F0-9]{3})$/', $value)) {
+                            $node->nodeValue = mb_strtolower($value);
+                        }
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Validate if a given value is a valid RGB component (0-255).
+     *
+     * @param int $value The RGB component value
+     *
+     * @return bool true if valid, false otherwise
+     */
+    private function isValidRgbValue(int $value): bool
+    {
+        return $value >= 0 && $value <= 255;
+    }
+
+    /**
+     * Check if a full #RRGGBB hex color can be shortened to #RGB.
+     *
+     * @param string $hex the full #RRGGBB hex string
+     *
+     * @return bool true if it can be shortened, false otherwise
+     */
+    private function canBeShortened(string $hex): bool
+    {
+        return $hex[1] === $hex[2] && $hex[3] === $hex[4] && $hex[5] === $hex[6];
     }
 }
