@@ -131,6 +131,9 @@ class SvgOptimizerBuilder
         return $this;
     }
 
+    /**
+     * Get the optimized SVG content.
+     */
     public function getContent(): string
     {
         return $this->svgOptimizer->getContent();
