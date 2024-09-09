@@ -166,15 +166,15 @@ $svgOptimizer->optimize();
 $svgOptimizer->getContent();
 ```
 
-`getMetaData` Returns the metadata of the operation. E.g.
+`getMetaData` Returns the metadata of the operation as an array. E.g.
 
-```json
-{
-  "originalSize": 537,
-  "optimizedSize": 470,
-  "savedBytes": 67,
-  "savedPercentage": 12.48
-}
+```php
+[
+  "originalSize" => 537,
+  "optimizedSize" => 470,
+  "savedBytes" => 67,
+  "savedPercentage" => 12.48,
+]
 ```
 
 ```php
