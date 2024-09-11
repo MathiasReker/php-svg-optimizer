@@ -10,11 +10,22 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Providers;
 
-use MathiasReker\PhpSvgOptimizer\Exceptions\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Services\MetaData;
+use MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers\SvgProviderInterface;
+use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
+use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 
 class StringProvider implements SvgProviderInterface
 {
+    /**
+     * Regex for XML declaration.
+     *
+     * @see https://regex101.com/r/TxLqGh/1
+     *
+     * @var string
+     */
+    private const XML_DECLARATION_REGEX = '/^\s*<\?xml[^>]*\?>\s*/';
+
     private string $output;
 
     /**
@@ -35,7 +46,7 @@ class StringProvider implements SvgProviderInterface
             throw new XmlProcessingException('Failed to save XML content.');
         }
 
-        $xmlContent = preg_replace('/^\s*<\?xml[^>]*\?>\s*/', '', $xmlContent);
+        $xmlContent = preg_replace(self::XML_DECLARATION_REGEX, '', $xmlContent);
 
         if (null === $xmlContent) {
             throw new XmlProcessingException('Failed to process XML content.');
@@ -54,21 +65,18 @@ class StringProvider implements SvgProviderInterface
     public function load(): \DOMDocument
     {
         $domDocument = new \DOMDocument();
-        $domDocument->preserveWhiteSpace = false;
         $domDocument->formatOutput = false;
+        $domDocument->preserveWhiteSpace = false;
         $domDocument->loadXML($this->input);
 
         return $domDocument;
     }
 
-    /**
-     * @return array{ originalSize: int, optimizedSize: int, savedBytes: int, savedPercentage: float}
-     */
-    public function getMetaData(): array
+    public function getMetaData(): MetaDataValueObject
     {
         $metaData = new MetaData(mb_strlen($this->input, '8bit'), mb_strlen($this->output, '8bit'));
 
-        return $metaData->toArray();
+        return $metaData->toValueObject();
     }
 
     public function getInputContent(): string

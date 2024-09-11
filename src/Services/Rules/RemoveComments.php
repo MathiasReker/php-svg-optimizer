@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use DOMDocument;
+use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
 class RemoveComments implements SvgOptimizerRuleInterface
 {

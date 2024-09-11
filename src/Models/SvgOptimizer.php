@@ -10,10 +10,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Models;
 
-use DOMDocument;
-use MathiasReker\PhpSvgOptimizer\Exceptions\SvgValidationException;
-use MathiasReker\PhpSvgOptimizer\Services\Providers\SvgProviderInterface;
-use MathiasReker\PhpSvgOptimizer\Services\Rules\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers\SvgProviderInterface;
+use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
 
 class SvgOptimizer
@@ -85,12 +84,7 @@ class SvgOptimizer
         }
     }
 
-    /**
-     * Get the metadata of the SVG file.
-     *
-     * @return array{ originalSize: int, optimizedSize: int, savedBytes: int, savedPercentage: float}
-     */
-    public function getMetaData(): array
+    public function getMetaData(): MetaDataValueObject
     {
         return $this->svgProvider->getMetaData();
     }

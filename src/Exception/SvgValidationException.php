@@ -8,12 +8,8 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Services;
+namespace MathiasReker\PhpSvgOptimizer\Exception;
 
-/**
- * This class is the main entry point for the SVG optimizer.
- * It provides a syntax sugar for the SvgOptimizerBuilder.
- */
-final class SvgOptimizer extends SvgOptimizerBuilder
+class SvgValidationException extends \InvalidArgumentException
 {
 }

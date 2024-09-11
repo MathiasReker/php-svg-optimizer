@@ -13,9 +13,36 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Validators;
 class SvgValidator
 {
     /**
+     * Regular expression to match the XML declaration.
+     *
+     * @see https://regex101.com/r/ykHufE/1
+     *
+     * @var string
+     */
+    private const XML_DECLARATION_REGEX = '/^\s*<\?xml[^>]*\?>\s*/i';
+
+    /**
+     * Regular expression to match the DOCTYPE declaration.
+     *
+     * @see https://regex101.com/r/DIe4La/1
+     *
+     * @var string
+     */
+    private const DOCTYPE_REGEX = '/<!DOCTYPE[^>]*>/i';
+
+    /**
+     * Regular expression to match the start of an SVG tag.
+     *
+     * @see https://regex101.com/r/dJUVOx/1
+     *
+     * @var string
+     */
+    private const SVG_TAG_REGEX = '/^\s*<svg\b[^>]*>/i';
+
+    /**
      * Checks if the provided content is a valid SVG.
      *
-     * @param string $svgContent the SVG content to be validated
+     * @param string|null $svgContent the SVG content to be validated
      *
      * @return bool true if the content is valid SVG, false otherwise
      */
@@ -26,12 +53,12 @@ class SvgValidator
         }
 
         // Remove XML declaration
-        $svgContent = (string) preg_replace('/^\s*<\?xml[^>]*\?>\s*/i', '', $svgContent);
+        $svgContent = (string) preg_replace(self::XML_DECLARATION_REGEX, '', $svgContent);
 
         // Remove DOCTYPE
-        $svgContent = preg_replace('/<!DOCTYPE[^>]*>/i', '', $svgContent);
+        $svgContent = preg_replace(self::DOCTYPE_REGEX, '', $svgContent);
 
         // Check if the cleaned content starts with a valid <svg> tag
-        return 1 === preg_match('/^\s*<svg\b[^>]*>/i', (string) $svgContent);
+        return 1 === preg_match(self::SVG_TAG_REGEX, (string) $svgContent);
     }
 }

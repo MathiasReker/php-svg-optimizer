@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use DOMDocument;
+use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
 class FlattenGroups implements SvgOptimizerRuleInterface
 {
@@ -32,11 +33,9 @@ class FlattenGroups implements SvgOptimizerRuleInterface
 
         foreach ($groups as $group) {
             if ($group->hasAttributes()) {
-                // Apply the group's attributes to its child elements
                 $this->applyGroupAttributesToChildren($group);
             }
 
-            // Flatten the group if it has no attributes or if attributes have been applied to its children
             $this->flattenGroup($group);
         }
     }
@@ -48,22 +47,23 @@ class FlattenGroups implements SvgOptimizerRuleInterface
      */
     private function applyGroupAttributesToChildren(\DOMElement $domElement): void
     {
+        /**
+         * @var \DOMElement $child
+         */
         foreach ($domElement->childNodes as $child) {
-            if ($child instanceof \DOMElement) {
-                foreach ($domElement->attributes as $attr) {
-                    /**
-                     * @var \DOMAttr $attr
-                     */
-                    if ($child->hasAttribute($attr->nodeName)) {
-                        continue;
-                    }
-
-                    if (!\is_string($attr->nodeValue)) {
-                        continue;
-                    }
-
-                    $child->setAttribute($attr->nodeName, $attr->nodeValue);
+            foreach ($domElement->attributes as $attr) {
+                /**
+                 * @var \DOMAttr $attr
+                 */
+                if ($child->hasAttribute($attr->nodeName)) {
+                    continue;
                 }
+
+                if (!\is_string($attr->nodeValue)) {
+                    continue;
+                }
+
+                $child->setAttribute($attr->nodeName, $attr->nodeValue);
             }
         }
     }
@@ -81,13 +81,14 @@ class FlattenGroups implements SvgOptimizerRuleInterface
             $children[] = $child;
         }
 
+        /**
+         * @var \DOMNode $parentNode
+         */
         $parentNode = $domElement->parentNode;
-        if ($parentNode instanceof \DOMNode) {
-            foreach ($children as $child) {
-                $parentNode->insertBefore($child, $domElement);
-            }
-
-            $parentNode->removeChild($domElement);
+        foreach ($children as $child) {
+            $parentNode->insertBefore($child, $domElement);
         }
+
+        $parentNode->removeChild($domElement);
     }
 }

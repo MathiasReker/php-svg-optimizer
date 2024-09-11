@@ -11,10 +11,37 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use DOMDocument;
-use DOMNodeList;
+use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
 class ConvertColorsToHex implements SvgOptimizerRuleInterface
 {
+    /**
+     * Regex for RGB colors.
+     *
+     * @see https://regex101.com/r/DUVXtz/1
+     *
+     * @var string
+     */
+    private const RGB_REGEX = '/^rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/';
+
+    /**
+     * Regex for full HEX colors.
+     *
+     * @see https://regex101.com/r/wg9AQj/1
+     *
+     * @var string
+     */
+    private const HEX_REGEX_FULL_REGEX = '/^#([a-fA-F0-9]{6})$/';
+
+    /**
+     * Regex for short HEX colors.
+     *
+     * @see https://regex101.com/r/BrABtc/1
+     *
+     * @var string
+     */
+    private const HEX_REGEX_SHORT_REGEX = '/^#([a-fA-F0-9]{3})$/';
+
     /**
      * The minimum RGB value.
      *
@@ -39,42 +66,40 @@ class ConvertColorsToHex implements SvgOptimizerRuleInterface
     {
         $domXPath = new \DOMXPath($domDocument);
 
-        $attributes = ['fill', 'stroke'];
+        $attributes = ['fill', 'stroke', 'color'];
 
         foreach ($attributes as $attribute) {
+            /**
+             * @var \DOMNodeList<\DOMAttr> $nodeList
+             */
             $nodeList = $domXPath->query('//@' . $attribute);
 
-            // Check if $nodeList is a valid DOMNodeList
-            if ($nodeList instanceof \DOMNodeList) {
-                foreach ($nodeList as $node) {
-                    if ($node instanceof \DOMAttr) {
-                        $value = $node->nodeValue;
+            foreach ($nodeList as $node) {
+                $value = $node->nodeValue;
 
-                        if (!\is_string($value)) {
-                            continue;
+                if (!\is_string($value)) {
+                    continue;
+                }
+
+                $value = trim($value);
+
+                $matches = [];
+                if (1 === preg_match(self::RGB_REGEX, $value, $matches)) {
+                    $r = (int) $matches[1];
+                    $g = (int) $matches[2];
+                    $b = (int) $matches[3];
+
+                    if ($this->isValidRgbValue($r) && $this->isValidRgbValue($g) && $this->isValidRgbValue($b)) {
+                        $hex = mb_strtolower(\sprintf('#%02x%02x%02x', $r, $g, $b));
+
+                        if ($this->canBeShortened($hex)) {
+                            $hex = mb_strtolower(\sprintf('#%1x%1x%1x', $r >> 4, $g >> 4, $b >> 4));
                         }
 
-                        $value = trim($value);
-
-                        $matches = [];
-                        if (1 === preg_match('/^rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/', $value, $matches)) {
-                            $r = (int) $matches[1];
-                            $g = (int) $matches[2];
-                            $b = (int) $matches[3];
-
-                            if ($this->isValidRgbValue($r) && $this->isValidRgbValue($g) && $this->isValidRgbValue($b)) {
-                                $hex = mb_strtolower(\sprintf('#%02x%02x%02x', $r, $g, $b));
-
-                                if ($this->canBeShortened($hex)) {
-                                    $hex = mb_strtolower(\sprintf('#%1x%1x%1x', $r >> 4, $g >> 4, $b >> 4));
-                                }
-
-                                $node->nodeValue = $hex;
-                            }
-                        } elseif (1 === preg_match('/^#([a-fA-F0-9]{6})$/', $value) || 1 === preg_match('/^#([a-fA-F0-9]{3})$/', $value)) {
-                            $node->nodeValue = mb_strtolower($value);
-                        }
+                        $node->nodeValue = $hex;
                     }
+                } elseif (1 === preg_match(self::HEX_REGEX_FULL_REGEX, $value) || 1 === preg_match(self::HEX_REGEX_SHORT_REGEX, $value)) {
+                    $node->nodeValue = mb_strtolower($value);
                 }
             }
         }

@@ -10,13 +10,15 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit;
 
-use MathiasReker\PhpSvgOptimizer\Services\MetaData;
+use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
+use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(MetaData::class)]
+#[CoversClass(MetaDataValueObject::class)]
 final class MetaDataTest extends TestCase
 {
     public static function metadataProvider(): \Iterator
@@ -24,57 +26,34 @@ final class MetaDataTest extends TestCase
         yield [
             1000,
             500,
-            [
-                'originalSize' => 1000,
-                'optimizedSize' => 500,
-                'savedBytes' => 500,
-                'savedPercentage' => 50.0,
-            ],
+            new MetaDataValueObject(1000, 500, 500, 50.0),
         ];
         yield [
             1000,
             1000,
-            [
-                'originalSize' => 1000,
-                'optimizedSize' => 1000,
-                'savedBytes' => 0,
-                'savedPercentage' => 0.0,
-            ],
+            new MetaDataValueObject(1000, 1000, 0, 0.0),
         ];
         yield [
+            1,
             0,
-            0,
-            [
-                'originalSize' => 0,
-                'optimizedSize' => 0,
-                'savedBytes' => 0,
-                'savedPercentage' => 0.0,
-            ],
+            new MetaDataValueObject(1, 0, 1, 100.0),
         ];
         yield [
-            0,
+            1,
             500,
-            [
-                'originalSize' => 0,
-                'optimizedSize' => 500,
-                'savedBytes' => -500,
-                'savedPercentage' => 0.0,
-            ],
+            new MetaDataValueObject(1, 500, -499, -49900.0),
         ];
     }
 
-    /**
-     * @param array{originalSize: int, optimizedSize: int, savedBytes: int, savedPercentage: float} $expected
-     */
     #[DataProvider('metadataProvider')]
-    public function testToArray(int $originalSize, int $optimizedSize, array $expected): void
+    public function testToValueObject(int $originalSize, int $optimizedSize, MetaDataValueObject $metaDataValueObject): void
     {
         $metaData = new MetaData($originalSize, $optimizedSize);
-        $result = $metaData->toArray();
+        $result = $metaData->toValueObject();
 
-        Assert::assertSame($expected['originalSize'], $result['originalSize']);
-        Assert::assertSame($expected['optimizedSize'], $result['optimizedSize']);
-        Assert::assertSame($expected['savedBytes'], $result['savedBytes']);
-        Assert::assertSame($expected['savedPercentage'], $result['savedPercentage']);
+        Assert::assertSame($metaDataValueObject->getOriginalSize(), $result->getOriginalSize());
+        Assert::assertSame($metaDataValueObject->getOptimizedSize(), $result->getOptimizedSize());
+        Assert::assertSame($metaDataValueObject->getSavedBytes(), $result->getSavedBytes());
+        Assert::assertSame($metaDataValueObject->getSavedPercentage(), $result->getSavedPercentage());
     }
 }

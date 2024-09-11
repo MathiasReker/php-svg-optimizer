@@ -8,8 +8,8 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Exceptions;
+namespace MathiasReker\PhpSvgOptimizer\Exception;
 
-class XmlProcessingException extends \RuntimeException
+class RegexProcessingException extends \InvalidArgumentException
 {
 }

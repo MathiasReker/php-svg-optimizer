@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use DOMDocument;
+use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
 class RemoveTitleAndDesc implements SvgOptimizerRuleInterface
 {
@@ -36,9 +37,12 @@ class RemoveTitleAndDesc implements SvgOptimizerRuleInterface
         $domNodeList = $domDocument->getElementsByTagName($tagName);
 
         while ($domNodeList->length > 0) {
+            /**
+             * @var \DOMElement|null $element
+             */
             $element = $domNodeList->item(0);
 
-            if ($element instanceof \DOMNode && $element->parentNode instanceof \DOMNode) {
+            if ($element instanceof \DOMElement && $element->parentNode instanceof \DOMNode) {
                 $element->parentNode->removeChild($element);
             }
         }

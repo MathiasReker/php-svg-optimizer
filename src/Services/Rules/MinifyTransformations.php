@@ -11,9 +11,82 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use DOMDocument;
+use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
 class MinifyTransformations implements SvgOptimizerRuleInterface
 {
+    /**
+     * Regex for percentage values in transformations.
+     *
+     * @see https://regex101.com/r/JUBzng/1
+     *
+     * @var string
+     */
+    private const PERCENTAGE_REGEX = '/(\d+)%/';
+
+    /**
+     * Regex for identity translate transformations.
+     *
+     * @see https://regex101.com/r/WjV7Zr/1
+     *
+     * @var string
+     */
+    private const TRANSLATE_REGEX = '/\btranslate\(\s*0\s*(,\s*0\s*)?\)/';
+
+    /**
+     * Regex for identity scale transformations.
+     *
+     * @see https://regex101.com/r/wZi4DL/1
+     *
+     * @var string
+     */
+    private const SCALE_REGEX = '/\bscale\(\s*1\s*(,\s*1\s*)?\)/';
+
+    /**
+     * Regex for identity rotate, skewX, and skewY transformations.
+     *
+     * @see https://regex101.com/r/2vmgRO/1
+     *
+     * @var string
+     */
+    private const ROTATE_REGEX = '/\brotate\(\s*0\s*\)/';
+
+    /**
+     * Regex for identity skewX transformations.
+     *
+     * @see https://regex101.com/r/83aNVu/1
+     *
+     * @var string
+     */
+    private const SKEW_X_REGEX = '/\bskewX\(\s*0\s*\)/';
+
+    /**
+     * Regex for identity skewY transformations.
+     *
+     * @see https://regex101.com/r/tiPsgQ/1
+     *
+     * @var string
+     */
+    private const SKEW_Y_REGEX = '/\bskewY\(\s*0\s*\)/';
+
+    /**
+     * Regex for multiple spaces.
+     *
+     * @see https://regex101.com/r/OuyK7V/1
+     *
+     * @var string
+     */
+    private const MULTIPLE_SPACES_REGEX = '/\s+/';
+
+    /**
+     * Regex for redundant commas.
+     *
+     * @see https://regex101.com/r/E8wfPk/1
+     *
+     * @var string
+     */
+    private const REDUNDANT_COMMAS_REGEX = '/\s*,\s*/';
+
     /**
      * Optimize the given SVG document by minifying transformations.
      *
@@ -38,15 +111,15 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
             $transform = $this->convertPercentagesToNumbers($transform);
 
             // Remove identity transforms with more flexible regex
-            $transform = (string) preg_replace('/\btranslate\(\s*0\s*(,\s*0\s*)?\)/', '', $transform);
-            $transform = (string) preg_replace('/\bscale\(\s*1\s*(,\s*1\s*)?\)/', '', $transform);
-            $transform = (string) preg_replace('/\brotate\(\s*0\s*\)/', '', $transform);
-            $transform = (string) preg_replace('/\bskewX\(\s*0\s*\)/', '', $transform);
-            $transform = (string) preg_replace('/\bskewY\(\s*0\s*\)/', '', $transform);
+            $transform = (string) preg_replace(self::TRANSLATE_REGEX, '', $transform);
+            $transform = (string) preg_replace(self::SCALE_REGEX, '', $transform);
+            $transform = (string) preg_replace(self::ROTATE_REGEX, '', $transform);
+            $transform = (string) preg_replace(self::SKEW_X_REGEX, '', $transform);
+            $transform = (string) preg_replace(self::SKEW_Y_REGEX, '', $transform);
 
             // Remove multiple spaces, redundant commas, and trim
-            $transform = (string) preg_replace('/\s+/', ' ', $transform);
-            $transform = (string) preg_replace('/\s*,\s*/', ',', $transform);
+            $transform = (string) preg_replace(self::MULTIPLE_SPACES_REGEX, ' ', $transform);
+            $transform = (string) preg_replace(self::REDUNDANT_COMMAS_REGEX, ',', $transform);
             $transform = trim($transform);
 
             // Remove the transform attribute if it's empty after optimization
@@ -64,8 +137,8 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
     private function convertPercentagesToNumbers(string $transform): string
     {
         $result = preg_replace_callback(
-            '/(\d+)%/',
-            fn ($matches): string => (string) ((float) $matches[1] / 100),
+            self::PERCENTAGE_REGEX,
+            fn (array $matches): string => (string) ((float) $matches[1] / 100),
             $transform
         );
 

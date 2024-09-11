@@ -8,10 +8,13 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Services\Providers;
+namespace MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers;
 
-use DOMDocument;
+use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 
+/**
+ * Represents a provider for SVG content.
+ */
 interface SvgProviderInterface
 {
     /**
@@ -59,8 +62,6 @@ interface SvgProviderInterface
      * This method provides details about the sizes of the original and
      * optimized SVG content, as well as the amount of bytes saved and the
      * percentage of space saved.
-     *
-     * @return array{ originalSize: int, optimizedSize: int, savedBytes: int, savedPercentage: float}
      */
-    public function getMetaData(): array;
+    public function getMetaData(): MetaDataValueObject;
 }

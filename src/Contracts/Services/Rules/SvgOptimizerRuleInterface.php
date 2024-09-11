@@ -8,10 +8,13 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
+namespace MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules;
 
 use DOMDocument;
 
+/**
+ * Interface SvgOptimizerRuleInterface.
+ */
 interface SvgOptimizerRuleInterface
 {
     /**

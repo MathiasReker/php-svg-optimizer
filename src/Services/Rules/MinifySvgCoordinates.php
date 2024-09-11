@@ -11,9 +11,37 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use DOMDocument;
+use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
 class MinifySvgCoordinates implements SvgOptimizerRuleInterface
 {
+    /**
+     * Regular expression pattern to remove unnecessary trailing zeroes in decimal numbers.
+     *
+     * @see https://regex101.com/r/bQpK9Q/1
+     *
+     * @var string
+     */
+    private const TRAILING_ZEROES_REGEX = '/(\.\d*?)0+(\D|$)/';
+
+    /**
+     * Regular expression pattern to remove unnecessary decimal point if there are no digits after it.
+     *
+     * @see https://regex101.com/r/zEFuoB/1
+     *
+     * @var string
+     */
+    private const UNNECESSARY_DECIMAL_POINT_REGEX = '/(?<=\d)\.0+(\D|$)/';
+
+    /**
+     * Regular expression pattern to remove unnecessary trailing decimal point if there are no digits following it.
+     *
+     * @see https://regex101.com/r/XYoySI/1
+     *
+     * @var string
+     */
+    private const TRAILING_DECIMAL_POINT_REGEX = '/(?<=\d)\.(?=\D|$)/';
+
     /**
      * Optimize the given SVG document by minifying the coordinates of the path, rect, circle, ellipse, line, polyline, and polygon elements.
      *
@@ -40,7 +68,10 @@ class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         $coordinateElements = $domXPath->query('//svg:rect | //svg:circle | //svg:ellipse | //svg:line | //svg:polyline | //svg:polygon');
         foreach ($coordinateElements as $coordinateElement) {
             foreach ($coordinateElement->attributes as $attribute) {
-                if ($attribute instanceof \DOMAttr && \in_array($attribute->name, ['x', 'x1', 'x2', 'y', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'rx', 'ry', 'r', 'points', 'd'], true)) {
+                /**
+                 * @var \DOMAttr $attribute
+                 */
+                if (\in_array($attribute->name, ['x', 'x1', 'x2', 'y', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'rx', 'ry', 'r', 'points', 'd'], true)) {
                     $attribute->value = $this->minifyCoordinates($attribute->value);
                 }
             }
@@ -61,12 +92,12 @@ class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         }
 
         // Remove unnecessary trailing zeroes in decimal numbers
-        $value = preg_replace('/(\.\d*?)0+(\D|$)/', '$1$2', $value) ?? $value;
+        $value = preg_replace(self::TRAILING_ZEROES_REGEX, '$1$2', $value) ?? $value;
 
         // Remove unnecessary decimal point if there are no digits after it
-        $value = preg_replace('/(?<=\d)\.0+(\D|$)/', '$1', $value) ?? $value;
+        $value = preg_replace(self::UNNECESSARY_DECIMAL_POINT_REGEX, '$1', $value) ?? $value;
 
         // Remove unnecessary trailing decimal point if there are no digits following it
-        return preg_replace('/(?<=\d)\.(?=\D|$)/', '', $value) ?? $value;
+        return preg_replace(self::TRAILING_DECIMAL_POINT_REGEX, '', $value) ?? $value;
     }
 }

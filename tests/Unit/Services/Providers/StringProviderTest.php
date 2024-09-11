@@ -10,14 +10,17 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Providers;
 
-use MathiasReker\PhpSvgOptimizer\Services\MetaData;
+use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
+use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(StringProvider::class)]
 #[CoversClass(MetaData::class)]
+#[CoversClass(MetaDataValueObject::class)]
 final class StringProviderTest extends TestCase
 {
     private const TEST_INPUT_STRING = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>';
@@ -54,20 +57,18 @@ final class StringProviderTest extends TestCase
 
         $stringProvider->optimize($domDocument);
 
-        $metaData = $stringProvider->getMetaData();
-
-        Assert::assertArrayHasKey('originalSize', $metaData);
-        Assert::assertArrayHasKey('optimizedSize', $metaData);
-        Assert::assertArrayHasKey('savedBytes', $metaData);
-        Assert::assertArrayHasKey('savedPercentage', $metaData);
+        $metaDataValueObject = $stringProvider->getMetaData();
 
         $originalSize = mb_strlen(self::TEST_INPUT_STRING);
         $optimizedSize = mb_strlen($stringProvider->getOutputContent());
 
-        Assert::assertSame($originalSize, $metaData['originalSize']);
-        Assert::assertSame($optimizedSize, $metaData['optimizedSize']);
+        Assert::assertSame($originalSize, $metaDataValueObject->getOriginalSize());
+        Assert::assertSame($optimizedSize, $metaDataValueObject->getOptimizedSize());
     }
 
+    /**
+     * @throws Exception
+     */
     public function testOptimizeThrowsExceptionIfSaveXMLFails(): void
     {
         $stringProvider = new StringProvider(self::TEST_INPUT_STRING);

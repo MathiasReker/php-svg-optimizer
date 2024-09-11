@@ -10,14 +10,17 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Providers;
 
-use MathiasReker\PhpSvgOptimizer\Services\MetaData;
+use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
+use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(FileProvider::class)]
 #[CoversClass(MetaData::class)]
+#[CoversClass(MetaDataValueObject::class)]
 final class FileProviderTest extends TestCase
 {
     private const TEST_INPUT_FILE = 'input.svg';
@@ -63,14 +66,10 @@ final class FileProviderTest extends TestCase
 
         $fileProvider->optimize($domDocument);
 
-        $metaData = $fileProvider->getMetaData();
+        $metaDataValueObject = $fileProvider->getMetaData();
 
-        Assert::assertArrayHasKey('originalSize', $metaData);
-        Assert::assertArrayHasKey('optimizedSize', $metaData);
-        Assert::assertArrayHasKey('savedBytes', $metaData);
-        Assert::assertArrayHasKey('savedPercentage', $metaData);
-        Assert::assertEquals(filesize(self::TEST_INPUT_FILE), $metaData['originalSize']);
-        Assert::assertEquals(filesize(self::TEST_OUTPUT_FILE), $metaData['optimizedSize']);
+        Assert::assertSame(filesize(self::TEST_INPUT_FILE), $metaDataValueObject->getOriginalSize());
+        Assert::assertSame(filesize(self::TEST_OUTPUT_FILE), $metaDataValueObject->getOptimizedSize());
     }
 
     public function testGetInputContentThrowsExceptionIfFileDoesNotExist(): void
@@ -83,6 +82,9 @@ final class FileProviderTest extends TestCase
         $fileProvider->getInputContent();
     }
 
+    /**
+     * @throws Exception
+     */
     public function testOptimizeThrowsExceptionIfSaveXMLFails(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE, self::TEST_OUTPUT_FILE);
