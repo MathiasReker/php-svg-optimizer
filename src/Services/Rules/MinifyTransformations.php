@@ -101,28 +101,30 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
          */
         $elements = $domXPath->query('//*[@transform]');
 
+        $patterns = [
+            self::TRANSLATE_REGEX,
+            self::SCALE_REGEX,
+            self::ROTATE_REGEX,
+            self::SKEW_X_REGEX,
+            self::SKEW_Y_REGEX,
+        ];
+
         /**
          * @var \DOMElement $element
          */
         foreach ($elements as $element) {
             $transform = $element->getAttribute('transform');
 
-            // Convert percentages to numbers
             $transform = $this->convertPercentagesToNumbers($transform);
 
-            // Remove identity transforms with more flexible regex
-            $transform = (string) preg_replace(self::TRANSLATE_REGEX, '', $transform);
-            $transform = (string) preg_replace(self::SCALE_REGEX, '', $transform);
-            $transform = (string) preg_replace(self::ROTATE_REGEX, '', $transform);
-            $transform = (string) preg_replace(self::SKEW_X_REGEX, '', $transform);
-            $transform = (string) preg_replace(self::SKEW_Y_REGEX, '', $transform);
+            $transform = (string) preg_replace($patterns, '', $transform);
 
-            // Remove multiple spaces, redundant commas, and trim
             $transform = (string) preg_replace(self::MULTIPLE_SPACES_REGEX, ' ', $transform);
+
             $transform = (string) preg_replace(self::REDUNDANT_COMMAS_REGEX, ',', $transform);
+
             $transform = trim($transform);
 
-            // Remove the transform attribute if it's empty after optimization
             if ('' === $transform || '0' === $transform) {
                 $element->removeAttribute('transform');
             } else {

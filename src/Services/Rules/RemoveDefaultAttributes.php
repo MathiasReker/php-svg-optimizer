@@ -16,6 +16,16 @@ use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterf
 class RemoveDefaultAttributes implements SvgOptimizerRuleInterface
 {
     /**
+     * Default attributes to be removed from the SVG document.
+     *
+     * @var array<string, string>
+     */
+    private const DEFAULT_SVG_ATTRIBUTES = [
+        'fill' => 'none',
+        'stroke' => 'none',
+    ];
+
+    /**
      * Remove default attributes from the SVG document.
      *
      * @param \DOMDocument $domDocument the DOMDocument instance representing the SVG file to be optimized
@@ -24,12 +34,7 @@ class RemoveDefaultAttributes implements SvgOptimizerRuleInterface
     {
         $domXPath = new \DOMXPath($domDocument);
 
-        $defaultAttributes = [
-            'fill' => 'none',
-            'stroke' => 'none',
-        ];
-
-        foreach ($defaultAttributes as $attribute => $defaultValue) {
+        foreach (self::DEFAULT_SVG_ATTRIBUTES as $attribute => $defaultValue) {
             /**
              * @var \DOMNodeList<\DOMAttr> $nodes
              */

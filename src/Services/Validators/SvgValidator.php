@@ -52,13 +52,15 @@ class SvgValidator
             return false;
         }
 
-        // Remove XML declaration
-        $svgContent = (string) preg_replace(self::XML_DECLARATION_REGEX, '', $svgContent);
+        $svgContent = (string) preg_replace(
+            [
+                self::XML_DECLARATION_REGEX,
+                self::DOCTYPE_REGEX,
+            ],
+            '',
+            $svgContent
+        );
 
-        // Remove DOCTYPE
-        $svgContent = preg_replace(self::DOCTYPE_REGEX, '', $svgContent);
-
-        // Check if the cleaned content starts with a valid <svg> tag
-        return 1 === preg_match(self::SVG_TAG_REGEX, (string) $svgContent);
+        return 1 === preg_match(self::SVG_TAG_REGEX, $svgContent);
     }
 }
