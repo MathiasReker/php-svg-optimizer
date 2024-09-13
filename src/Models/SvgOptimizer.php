@@ -21,22 +21,22 @@ class SvgOptimizer
     /**
      * Array of optimization rules to be applied to the SVG document.
      *
-     * @var SvgOptimizerRuleInterface[] Array of optimization strategies.
+     * @var SvgOptimizerRuleInterface[] Array of optimization strategies
      */
     private array $rules = [];
 
     /**
      * The optimized SVG content.
      *
-     * @var ?string The SVG content after optimization, or null if not yet optimized.
+     * @var ?string The SVG content after optimization, or null if not yet optimized
      */
     private ?string $domDocument = null;
 
     /**
      * SvgOptimizer constructor.
      *
-     * @param SvgProviderInterface $svgProvider  The provider used to get and save SVG content.
-     * @param SvgValidator         $svgValidator The validator used to check the validity of the SVG content.
+     * @param SvgProviderInterface $svgProvider  The provider used to get and save SVG content
+     * @param SvgValidator         $svgValidator The validator used to check the validity of the SVG content
      */
     public function __construct(
         private readonly SvgProviderInterface $svgProvider,
@@ -47,7 +47,7 @@ class SvgOptimizer
     /**
      * Add an optimization rule to the optimizer.
      *
-     * @param SvgOptimizerRuleInterface $svgOptimizerRule The optimization rule to add.
+     * @param SvgOptimizerRuleInterface $svgOptimizerRule The optimization rule to add
      */
     public function addRule(SvgOptimizerRuleInterface $svgOptimizerRule): void
     {
@@ -57,9 +57,9 @@ class SvgOptimizer
     /**
      * Optimize the SVG content by applying all added optimization rules.
      *
-     * @return SvgOptimizer The current instance of SvgOptimizer for method chaining.
+     * @return SvgOptimizer The current instance of SvgOptimizer for method chaining
      *
-     * @throws SvgValidationException If the SVG content is not valid.
+     * @throws SvgValidationException If the SVG content is not valid
      */
     public function optimize(): self
     {
@@ -79,7 +79,7 @@ class SvgOptimizer
     /**
      * Apply all optimization rules to the provided DOMDocument.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
     private function applyRules(\DOMDocument $domDocument): void
     {
@@ -91,7 +91,7 @@ class SvgOptimizer
     /**
      * Get metadata related to the SVG content.
      *
-     * @return MetaDataValueObject The metadata containing information about the SVG file sizes.
+     * @return MetaDataValueObject The metadata containing information about the SVG file sizes
      */
     public function getMetaData(): MetaDataValueObject
     {
@@ -101,7 +101,7 @@ class SvgOptimizer
     /**
      * Get the optimized SVG content.
      *
-     * @return string The optimized SVG content, or an empty string if not yet optimized.
+     * @return string The optimized SVG content, or an empty string if not yet optimized
      */
     public function getContent(): string
     {

@@ -51,7 +51,7 @@ class MinifySvgCoordinates implements SvgOptimizerRuleInterface
      *
      * It removes unnecessary trailing zeroes, decimal points, and trailing decimal points in coordinates.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
     public function optimize(\DOMDocument $domDocument): void
     {
@@ -91,9 +91,9 @@ class MinifySvgCoordinates implements SvgOptimizerRuleInterface
      * - Removes unnecessary decimal points if there are no digits following them.
      * - Removes trailing decimal points if there are no digits following them.
      *
-     * @param string $value The value to minify.
+     * @param string $value The value to minify
      *
-     * @return string The minified value.
+     * @return string The minified value
      */
     private function minifyCoordinates(string $value): string
     {
@@ -101,13 +101,24 @@ class MinifySvgCoordinates implements SvgOptimizerRuleInterface
             return $value;
         }
 
-        // Remove unnecessary trailing zeroes in decimal numbers
-        $value = preg_replace(self::TRAILING_ZEROES_REGEX, '$1$2', $value) ?? $value;
+        $value = $this->removeTrailingZeroes($value);
+        $value = $this->removeUnnecessaryDecimalPoint($value);
 
-        // Remove unnecessary decimal point if there are no digits after it
-        $value = preg_replace(self::UNNECESSARY_DECIMAL_POINT_REGEX, '$1', $value) ?? $value;
+        return $this->removeTrailingDecimalPoint($value);
+    }
 
-        // Remove unnecessary trailing decimal point if there are no digits following it
+    private function removeTrailingZeroes(string $value): string
+    {
+        return preg_replace(self::TRAILING_ZEROES_REGEX, '$1$2', $value) ?? $value;
+    }
+
+    private function removeUnnecessaryDecimalPoint(string $value): string
+    {
+        return preg_replace(self::UNNECESSARY_DECIMAL_POINT_REGEX, '$1', $value) ?? $value;
+    }
+
+    private function removeTrailingDecimalPoint(string $value): string
+    {
         return preg_replace(self::TRAILING_DECIMAL_POINT_REGEX, '', $value) ?? $value;
     }
 }

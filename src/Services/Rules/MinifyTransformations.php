@@ -96,7 +96,7 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
      * - Reduces multiple spaces to a single space.
      * - Removes redundant commas.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
     public function optimize(\DOMDocument $domDocument): void
     {
@@ -149,9 +149,9 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
      *
      * This method replaces percentage values in the transform attribute with their decimal equivalents.
      *
-     * @param string $transform The transform attribute value to be processed.
+     * @param string $transform The transform attribute value to be processed
      *
-     * @return string The transformed value with percentages converted to decimals.
+     * @return string The transformed value with percentages converted to decimals
      */
     private function convertPercentagesToNumbers(string $transform): string
     {

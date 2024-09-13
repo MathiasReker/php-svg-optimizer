@@ -38,8 +38,8 @@ class FileProvider implements SvgProviderInterface
     /**
      * FileProvider constructor.
      *
-     * @param string      $inputFile  The path to the input SVG file.
-     * @param string|null $outputFile The optional path to the output SVG file. If null, the output is not saved to a file.
+     * @param string      $inputFile  The path to the input SVG file
+     * @param string|null $outputFile The optional path to the output SVG file. If null, the output is not saved to a file
      */
     public function __construct(
         private readonly string $inputFile,
@@ -50,10 +50,10 @@ class FileProvider implements SvgProviderInterface
     /**
      * Retrieve the content of the input file.
      *
-     * @return string The content of the input file.
+     * @return string The content of the input file
      *
-     * @throws FileNotFoundException If the input file does not exist.
-     * @throws IOException           If the content cannot be read from the input file.
+     * @throws FileNotFoundException If the input file does not exist
+     * @throws IOException           If the content cannot be read from the input file
      */
     public function getInputContent(): string
     {
@@ -73,12 +73,12 @@ class FileProvider implements SvgProviderInterface
     /**
      * Optimize the given DOMDocument and save the result to the output file if specified.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance to optimize.
+     * @param \DOMDocument $domDocument The DOMDocument instance to optimize
      *
-     * @return self The FileProvider instance for method chaining.
+     * @return self The FileProvider instance for method chaining
      *
-     * @throws XmlProcessingException If the XML content cannot be saved.
-     * @throws IOException            If the optimized content cannot be written to the output file.
+     * @throws XmlProcessingException If the XML content cannot be saved
+     * @throws IOException            If the optimized content cannot be written to the output file
      */
     public function optimize(\DOMDocument $domDocument): self
     {
@@ -101,7 +101,7 @@ class FileProvider implements SvgProviderInterface
     /**
      * Get the optimized SVG content.
      *
-     * @return string The optimized SVG content.
+     * @return string The optimized SVG content
      */
     public function getOutputContent(): string
     {
@@ -111,9 +111,9 @@ class FileProvider implements SvgProviderInterface
     /**
      * Load the input file into a DOMDocument.
      *
-     * @return \DOMDocument The loaded DOMDocument instance.
+     * @return \DOMDocument The loaded DOMDocument instance
      *
-     * @throws \RuntimeException If the SVG content cannot be loaded into the DOMDocument.
+     * @throws \RuntimeException If the SVG content cannot be loaded into the DOMDocument
      */
     public function load(): \DOMDocument
     {
@@ -128,9 +128,9 @@ class FileProvider implements SvgProviderInterface
     /**
      * Get metadata about the input and output files.
      *
-     * @return MetaDataValueObject The metadata value object containing the sizes of the input and output files.
+     * @return MetaDataValueObject The metadata value object containing the sizes of the input and output files
      *
-     * @throws FileSizeException If the size of the input or output files cannot be determined.
+     * @throws FileSizeException If the size of the input or output files cannot be determined
      */
     public function getMetaData(): MetaDataValueObject
     {

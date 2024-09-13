@@ -56,7 +56,7 @@ class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * This method processes the SVG document to find and convert RGB colors to HEX format.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
     public function optimize(\DOMDocument $domDocument): void
     {
@@ -77,12 +77,11 @@ class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * This method updates the node values from RGB to HEX if applicable and ensures HEX values are in lowercase.
      *
-     * @param \DOMNodeList<\DOMNode> $domNodeList The node list containing color attributes to be processed.
+     * @param \DOMNodeList<\DOMNode> $domNodeList The node list containing color attributes to be processed
      */
     private function processNodeList(\DOMNodeList $domNodeList): void
     {
         foreach ($domNodeList as $node) {
-            // Check if $node is an instance of DOMElement
             $value = trim((string) $node->nodeValue);
 
             if ($this->isRgbColor($value)) {
@@ -96,9 +95,9 @@ class ConvertColorsToHex implements SvgOptimizerRuleInterface
     /**
      * Determine if a value is a valid RGB color string.
      *
-     * @param string $value The value to check.
+     * @param string $value The value to check
      *
-     * @return bool True if the value matches the RGB color pattern, false otherwise.
+     * @return bool True if the value matches the RGB color pattern, false otherwise
      */
     private function isRgbColor(string $value): bool
     {
@@ -110,9 +109,9 @@ class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * This method also attempts to shorten the HEX color if all RGB components are the same.
      *
-     * @param string $rgbValue The RGB color string to convert.
+     * @param string $rgbValue The RGB color string to convert
      *
-     * @return string The corresponding HEX color string.
+     * @return string The corresponding HEX color string
      */
     private function convertRgbToHex(string $rgbValue): string
     {
@@ -133,9 +132,9 @@ class ConvertColorsToHex implements SvgOptimizerRuleInterface
     /**
      * Validate if a given value is a valid RGB component (0-255).
      *
-     * @param int $value The RGB component value to check.
+     * @param int $value The RGB component value to check
      *
-     * @return bool True if the value is within the valid range, false otherwise.
+     * @return bool True if the value is within the valid range, false otherwise
      */
     private function isValidRgbValue(int $value): bool
     {
@@ -145,9 +144,9 @@ class ConvertColorsToHex implements SvgOptimizerRuleInterface
     /**
      * Determine if a full #RRGGBB HEX color can be shortened to #RGB.
      *
-     * @param string $hex The full #RRGGBB HEX color string to check.
+     * @param string $hex The full #RRGGBB HEX color string to check
      *
-     * @return bool True if the HEX color can be shortened, false otherwise.
+     * @return bool True if the HEX color can be shortened, false otherwise
      */
     private function canBeShortened(string $hex): bool
     {
@@ -157,9 +156,9 @@ class ConvertColorsToHex implements SvgOptimizerRuleInterface
     /**
      * Determine if a value is a valid HEX color string.
      *
-     * @param string $value The value to check.
+     * @param string $value The value to check
      *
-     * @return bool True if the value matches the HEX color pattern, false otherwise.
+     * @return bool True if the value matches the HEX color pattern, false otherwise
      */
     private function isHexColor(string $value): bool
     {

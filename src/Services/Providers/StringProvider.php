@@ -37,9 +37,7 @@ class StringProvider implements SvgProviderInterface
     /**
      * Constructor for StringProvider.
      *
-     * @param string $input The SVG content as a string.
-     *
-     * @throws \RuntimeException If the input is invalid or processing fails.
+     * @param string $input The SVG content as a string
      */
     public function __construct(private readonly string $input)
     {
@@ -50,9 +48,9 @@ class StringProvider implements SvgProviderInterface
      *
      * This method processes the DOMDocument to remove the XML declaration and updates the optimized content.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance to be optimized.
+     * @param \DOMDocument $domDocument The DOMDocument instance to be optimized
      *
-     * @throws XmlProcessingException If XML content cannot be saved or processed.
+     * @throws XmlProcessingException If XML content cannot be saved or processed
      */
     public function optimize(\DOMDocument $domDocument): self
     {
@@ -75,7 +73,7 @@ class StringProvider implements SvgProviderInterface
     /**
      * Get the optimized SVG content.
      *
-     * @return string The optimized SVG content.
+     * @return string The optimized SVG content
      */
     public function getOutputContent(): string
     {
@@ -85,9 +83,9 @@ class StringProvider implements SvgProviderInterface
     /**
      * Load the input string into a DOMDocument instance.
      *
-     * @return \DOMDocument The DOMDocument instance loaded with the input XML.
+     * @return \DOMDocument The DOMDocument instance loaded with the input XML
      *
-     * @throws XmlProcessingException If the input string cannot be loaded as valid XML.
+     * @throws XmlProcessingException If the input string cannot be loaded as valid XML
      */
     public function load(): \DOMDocument
     {
@@ -107,7 +105,7 @@ class StringProvider implements SvgProviderInterface
      *
      * This method computes metadata based on the input and output content.
      *
-     * @return MetaDataValueObject Metadata about the optimization.
+     * @return MetaDataValueObject Metadata about the optimization
      */
     public function getMetaData(): MetaDataValueObject
     {
@@ -122,7 +120,7 @@ class StringProvider implements SvgProviderInterface
     /**
      * Get the input SVG content.
      *
-     * @return string The input SVG content.
+     * @return string The input SVG content
      */
     public function getInputContent(): string
     {

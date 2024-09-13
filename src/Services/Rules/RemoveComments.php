@@ -21,7 +21,7 @@ class RemoveComments implements SvgOptimizerRuleInterface
      * This method locates all comment nodes in the SVG document and removes them.
      * It uses XPath to query for comment nodes and then removes each one from its parent node.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
     public function optimize(\DOMDocument $domDocument): void
     {
@@ -34,8 +34,6 @@ class RemoveComments implements SvgOptimizerRuleInterface
 
         foreach ($comments as $comment) {
             /*
-             * Remove the comment node from its parent node.
-             *
              * @var \DOMComment $comment
              */
             $comment->parentNode?->removeChild($comment);

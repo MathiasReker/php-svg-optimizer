@@ -23,7 +23,7 @@ class FlattenGroups implements SvgOptimizerRuleInterface
      * - Applies the group's attributes to its child elements if they do not already have them.
      * - Moves the child elements up to the group's parent and removes the group element.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
     public function optimize(\DOMDocument $domDocument): void
     {
@@ -50,7 +50,7 @@ class FlattenGroups implements SvgOptimizerRuleInterface
      * This method iterates over each child of the group and sets attributes from the group
      * to the child elements, but only if the child does not already have those attributes.
      *
-     * @param \DOMElement $domElement The group element whose attributes will be applied to its children.
+     * @param \DOMElement $domElement The group element whose attributes will be applied to its children
      */
     private function applyGroupAttributesToChildren(\DOMElement $domElement): void
     {
@@ -71,14 +71,13 @@ class FlattenGroups implements SvgOptimizerRuleInterface
      * This method moves each child of the group element to the group's parent element
      * and then removes the group element itself from the DOM.
      *
-     * @param \DOMElement $domElement The group element to be flattened.
+     * @param \DOMElement $domElement The group element to be flattened
      */
     private function flattenGroup(\DOMElement $domElement): void
     {
         $parentNode = $domElement->parentNode;
 
         if ($parentNode instanceof \DOMElement) {
-            // Convert children to array without preserving keys
             $children = iterator_to_array($domElement->childNodes, false);
 
             foreach ($children as $child) {

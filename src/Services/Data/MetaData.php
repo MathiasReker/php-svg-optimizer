@@ -20,10 +20,10 @@ readonly class MetaData
     /**
      * Constructor for MetaData.
      *
-     * @param int $originalSize  The original size of the SVG file in bytes.
-     * @param int $optimizedSize The optimized size of the SVG file in bytes.
+     * @param int $originalSize  The original size of the SVG file in bytes
+     * @param int $optimizedSize The optimized size of the SVG file in bytes
      *
-     * @throws \InvalidArgumentException If the original size is less than or equal to 0.
+     * @throws \InvalidArgumentException If the original size is less than or equal to 0
      */
     public function __construct(
         private int $originalSize,
@@ -37,7 +37,7 @@ readonly class MetaData
     /**
      * Converts the metadata to a value object.
      *
-     * @return MetaDataValueObject The value object representing the metadata.
+     * @return MetaDataValueObject The value object representing the metadata
      */
     public function toValueObject(): MetaDataValueObject
     {
@@ -52,7 +52,7 @@ readonly class MetaData
     /**
      * Calculates the number of bytes saved through optimization.
      *
-     * @return int The number of bytes saved.
+     * @return int The number of bytes saved
      */
     private function calculateSavedBytes(): int
     {
@@ -62,7 +62,7 @@ readonly class MetaData
     /**
      * Calculates the percentage of bytes saved through optimization.
      *
-     * @return float The percentage of bytes saved.
+     * @return float The percentage of bytes saved
      */
     private function calculateSavedPercentage(): float
     {

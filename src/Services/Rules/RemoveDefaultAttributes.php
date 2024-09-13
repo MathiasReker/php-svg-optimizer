@@ -34,7 +34,7 @@ class RemoveDefaultAttributes implements SvgOptimizerRuleInterface
      * This method iterates through the predefined default attributes and removes them
      * from the SVG document if their values match the default values specified.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
     public function optimize(\DOMDocument $domDocument): void
     {

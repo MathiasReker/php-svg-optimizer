@@ -18,10 +18,10 @@ readonly class MetaDataValueObject
     /**
      * Constructor for MetaDataValueObject.
      *
-     * @param int   $originalSize    The original size of the SVG file in bytes.
-     * @param int   $optimizedSize   The optimized size of the SVG file in bytes.
-     * @param int   $savedBytes      The number of bytes saved through optimization.
-     * @param float $savedPercentage The percentage of bytes saved through optimization.
+     * @param int   $originalSize    The original size of the SVG file in bytes
+     * @param int   $optimizedSize   The optimized size of the SVG file in bytes
+     * @param int   $savedBytes      The number of bytes saved through optimization
+     * @param float $savedPercentage The percentage of bytes saved through optimization
      */
     public function __construct(
         private int $originalSize,
@@ -34,7 +34,7 @@ readonly class MetaDataValueObject
     /**
      * Get the original size of the SVG file.
      *
-     * @return int The original size of the SVG file in bytes.
+     * @return int The original size of the SVG file in bytes
      */
     public function getOriginalSize(): int
     {
@@ -44,7 +44,7 @@ readonly class MetaDataValueObject
     /**
      * Get the optimized size of the SVG file.
      *
-     * @return int The optimized size of the SVG file in bytes.
+     * @return int The optimized size of the SVG file in bytes
      */
     public function getOptimizedSize(): int
     {
@@ -54,7 +54,7 @@ readonly class MetaDataValueObject
     /**
      * Get the number of bytes saved through optimization.
      *
-     * @return int The number of bytes saved through optimization.
+     * @return int The number of bytes saved through optimization
      */
     public function getSavedBytes(): int
     {
@@ -64,7 +64,7 @@ readonly class MetaDataValueObject
     /**
      * Get the percentage of bytes saved through optimization.
      *
-     * @return float The percentage of bytes saved through optimization.
+     * @return float The percentage of bytes saved through optimization
      */
     public function getSavedPercentage(): float
     {

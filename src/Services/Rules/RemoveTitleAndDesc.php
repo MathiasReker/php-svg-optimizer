@@ -22,7 +22,7 @@ class RemoveTitleAndDesc implements SvgOptimizerRuleInterface
      * and descriptive purposes but can be removed if not needed to reduce
      * the file size.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
     public function optimize(\DOMDocument $domDocument): void
     {
@@ -37,8 +37,8 @@ class RemoveTitleAndDesc implements SvgOptimizerRuleInterface
      * DOMDocument. It continues removing elements until none with the given
      * tag name remain in the document.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
-     * @param string       $tagName     The tag name of the elements to be removed.
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param string       $tagName     The tag name of the elements to be removed
      */
     private function removeElementsByTagName(\DOMDocument $domDocument, string $tagName): void
     {

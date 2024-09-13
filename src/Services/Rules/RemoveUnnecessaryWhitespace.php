@@ -60,10 +60,10 @@ class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
      * unnecessary whitespace, and then reloads the optimized content back
      * into the DOMDocument.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      *
-     * @throws XmlProcessingException   When XML content cannot be saved or loaded.
-     * @throws RegexProcessingException When regex processing fails.
+     * @throws XmlProcessingException   When XML content cannot be saved or loaded
+     * @throws RegexProcessingException When regex processing fails
      */
     public function optimize(\DOMDocument $domDocument): void
     {
@@ -91,9 +91,9 @@ class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
      * This method processes the SVG content to trim and reduce whitespace
      * within attribute values.
      *
-     * @param string $content The SVG content to process.
+     * @param string $content The SVG content to process
      *
-     * @return string The processed SVG content with reduced whitespace in attribute values.
+     * @return string The processed SVG content with reduced whitespace in attribute values
      */
     private function removeAttributeValueWhitespace(string $content): string
     {
@@ -114,9 +114,9 @@ class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
      * This method processes the SVG content to remove all whitespace within
      * style attribute values, which helps to compact the style definitions.
      *
-     * @param string $content The SVG content to process.
+     * @param string $content The SVG content to process
      *
-     * @return string The processed SVG content with whitespace removed from style attributes.
+     * @return string The processed SVG content with whitespace removed from style attributes
      */
     private function removeStyleAttributeWhitespace(string $content): string
     {
