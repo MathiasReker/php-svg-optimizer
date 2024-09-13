@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Providers;
 
+use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
@@ -76,8 +77,8 @@ final class FileProviderTest extends TestCase
     {
         $fileProvider = new FileProvider('nonexistent.svg', self::TEST_OUTPUT_FILE);
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Input file does not exist');
+        $this->expectException(FileNotFoundException::class);
+        $this->expectExceptionMessage('Input file does not exist: nonexistent.svg');
 
         $fileProvider->getInputContent();
     }

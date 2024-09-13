@@ -14,14 +14,19 @@ use DOMDocument;
 
 /**
  * Interface SvgOptimizerRuleInterface.
+ *
+ * Defines the contract for optimization rules that can be applied to an SVG document.
  */
 interface SvgOptimizerRuleInterface
 {
     /**
-     * This method modifies the $domDocument in place, applying optimization rules.
-     * The modifications should be done directly on the $domDocument, without returning any value.
+     * Apply optimization rules to the given DOMDocument instance.
      *
-     * @param \DOMDocument $domDocument the DOMDocument instance representing the SVG file to be optimized
+     * This method modifies the provided $domDocument instance in place,
+     * applying any defined optimization rules. The modifications should be
+     * made directly on the $domDocument, and the method should not return any value.
+     *
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
     public function optimize(\DOMDocument $domDocument): void;
 }

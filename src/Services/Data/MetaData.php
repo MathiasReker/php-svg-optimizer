@@ -12,24 +12,32 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Data;
 
 use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 
-class MetaData
+/**
+ * Represents metadata about SVG optimization, including original and optimized sizes.
+ */
+readonly class MetaData
 {
-    public function __construct(private int $originalSize, private readonly int $optimizedSize)
-    {
-        $this->setOriginalSize($originalSize);
-    }
-
-    private function setOriginalSize(int $originalSize): void
-    {
+    /**
+     * Constructor for MetaData.
+     *
+     * @param int $originalSize  The original size of the SVG file in bytes.
+     * @param int $optimizedSize The optimized size of the SVG file in bytes.
+     *
+     * @throws \InvalidArgumentException If the original size is less than or equal to 0.
+     */
+    public function __construct(
+        private int $originalSize,
+        private int $optimizedSize
+    ) {
         if ($this->originalSize <= 0) {
-            throw new \InvalidArgumentException('Original size must be greater than 0.');
+            throw new \InvalidArgumentException(\sprintf('Original size must be greater than 0. Given: %d', $this->originalSize));
         }
-
-        $this->originalSize = $originalSize;
     }
 
     /**
      * Converts the metadata to a value object.
+     *
+     * @return MetaDataValueObject The value object representing the metadata.
      */
     public function toValueObject(): MetaDataValueObject
     {
@@ -41,11 +49,21 @@ class MetaData
         );
     }
 
+    /**
+     * Calculates the number of bytes saved through optimization.
+     *
+     * @return int The number of bytes saved.
+     */
     private function calculateSavedBytes(): int
     {
         return $this->originalSize - $this->optimizedSize;
     }
 
+    /**
+     * Calculates the percentage of bytes saved through optimization.
+     *
+     * @return float The percentage of bytes saved.
+     */
     private function calculateSavedPercentage(): float
     {
         return ($this->calculateSavedBytes() / $this->originalSize) * 100;

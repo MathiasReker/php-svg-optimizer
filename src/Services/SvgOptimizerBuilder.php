@@ -24,19 +24,33 @@ use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnnecessaryWhitespace;
 
 /**
- * This class is the main entry point for the SVG optimizer.
+ * This class is the main entry point for building and configuring the SVG optimizer.
+ *
+ * It allows you to add various optimization rules to the SVG optimizer and
+ * build the final SVG optimizer object that can then be used to optimize SVG content.
+ *
+ * @see https://github.com/MathiasReker/php-svg-optimizer
  */
 final readonly class SvgOptimizerBuilder
 {
     private SvgOptimizer $svgOptimizer;
 
+    /**
+     * Constructor for SvgOptimizerBuilder.
+     *
+     * Initializes the SvgOptimizer with a provided SVG provider.
+     *
+     * @param SvgProviderInterface $svgProvider The SVG provider to be used by the optimizer
+     */
     public function __construct(SvgProviderInterface $svgProvider)
     {
         $this->svgOptimizer = new SvgOptimizer($svgProvider);
     }
 
     /**
-     * Remove the title and desc elements from the SVG document.
+     * Add a rule to remove the title and desc elements from the SVG document.
+     *
+     * @return $this The current instance for method chaining
      */
     public function removeTitleAndDesc(): self
     {
@@ -46,7 +60,9 @@ final readonly class SvgOptimizerBuilder
     }
 
     /**
-     * Remove the metadata from the SVG document.
+     * Add a rule to remove metadata elements from the SVG document.
+     *
+     * @return $this The current instance for method chaining
      */
     public function removeMetadata(): self
     {
@@ -56,7 +72,9 @@ final readonly class SvgOptimizerBuilder
     }
 
     /**
-     * Remove all comments from the SVG document.
+     * Add a rule to remove all comments from the SVG document.
+     *
+     * @return $this The current instance for method chaining
      */
     public function removeComments(): self
     {
@@ -66,7 +84,9 @@ final readonly class SvgOptimizerBuilder
     }
 
     /**
-     * Remove default attributes from the SVG document.
+     * Add a rule to remove unnecessary whitespace from attribute values in the SVG document.
+     *
+     * @return $this The current instance for method chaining
      */
     public function removeUnnecessaryWhitespace(): self
     {
@@ -76,7 +96,9 @@ final readonly class SvgOptimizerBuilder
     }
 
     /**
-     * Remove default attributes from the SVG document.
+     * Add a rule to remove default attributes from the SVG document.
+     *
+     * @return $this The current instance for method chaining
      */
     public function removeDefaultAttributes(): self
     {
@@ -86,7 +108,9 @@ final readonly class SvgOptimizerBuilder
     }
 
     /**
-     * Flatten groups in the SVG document.
+     * Add a rule to flatten groups in the SVG document.
+     *
+     * @return $this The current instance for method chaining
      */
     public function flattenGroups(): self
     {
@@ -96,7 +120,9 @@ final readonly class SvgOptimizerBuilder
     }
 
     /**
-     * Convert colors to hexadecimal values in the SVG document.
+     * Add a rule to convert colors to hexadecimal values in the SVG document.
+     *
+     * @return $this The current instance for method chaining
      */
     public function convertColorsToHex(): self
     {
@@ -106,7 +132,9 @@ final readonly class SvgOptimizerBuilder
     }
 
     /**
-     * Minify SVG coordinates in the SVG document.
+     * Add a rule to minify SVG coordinates in the SVG document.
+     *
+     * @return $this The current instance for method chaining
      */
     public function minifySvgCoordinates(): self
     {
@@ -116,7 +144,9 @@ final readonly class SvgOptimizerBuilder
     }
 
     /**
-     * Minify transformations in the SVG document.
+     * Add a rule to minify transformations in the SVG document.
+     *
+     * @return $this The current instance for method chaining
      */
     public function minifyTransformations(): self
     {
@@ -126,7 +156,9 @@ final readonly class SvgOptimizerBuilder
     }
 
     /**
-     * Optimize the SVG file.
+     * Optimize the SVG file by applying all added rules.
+     *
+     * @return $this The current instance for method chaining
      */
     public function build(): self
     {
@@ -137,6 +169,8 @@ final readonly class SvgOptimizerBuilder
 
     /**
      * Get the optimized SVG content.
+     *
+     * @return string The optimized SVG content
      */
     public function getContent(): string
     {
@@ -145,6 +179,8 @@ final readonly class SvgOptimizerBuilder
 
     /**
      * Get the metadata about the optimization process.
+     *
+     * @return MetaDataValueObject The metadata about the optimization
      */
     public function getMetaData(): MetaDataValueObject
     {

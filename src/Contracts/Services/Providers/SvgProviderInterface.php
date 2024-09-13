@@ -10,49 +10,57 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers;
 
+use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 
 /**
- * Represents a provider for SVG content.
+ * Interface SvgProviderInterface.
+ *
+ * Defines the contract for an SVG content provider, including loading, optimizing,
+ * and retrieving SVG content and metadata.
  */
 interface SvgProviderInterface
 {
     /**
      * Loads the SVG content into a DOMDocument instance.
      *
-     * @return \DOMDocument the DOMDocument instance representing the loaded SVG content
+     * This method should return a DOMDocument instance that represents the
+     * SVG content to be processed.
+     *
+     * @return \DOMDocument The DOMDocument instance representing the loaded SVG content
      */
     public function load(): \DOMDocument;
 
     /**
-     * Optimizes the given DOMDocument instance.
+     * Optimizes the provided DOMDocument instance.
      *
-     * This method performs the optimization on the SVG content represented
-     * by the provided DOMDocument. The optimization process may modify the
-     * DOMDocument instance or prepare it for further processing.
+     * This method performs optimization on the SVG content represented by the
+     * given DOMDocument instance. It may modify the instance in place or
+     * prepare it for further processing.
      *
-     * @param \DOMDocument $domDocument the DOMDocument instance representing the SVG content to be optimized
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG content to be optimized
      *
-     * @return self returns the current instance to allow method chaining
+     * @return self Returns the current instance to allow method chaining
      */
     public function optimize(\DOMDocument $domDocument): self;
 
     /**
-     * Retrieves the input content before optimization.
+     * Retrieves the raw input SVG content before optimization.
      *
-     * This method returns the raw SVG content that was initially provided
-     * to the provider, before any optimization has taken place.
+     * This method returns the original SVG content as a string, prior to any
+     * optimization being applied.
      *
-     * @return string the raw input SVG content
+     * @return string The raw input SVG content
      */
     public function getInputContent(): string;
 
     /**
-     * Retrieves the optimized content after processing.
+     * Retrieves the optimized SVG content after processing.
      *
-     * This method returns the SVG content after optimization has been applied.
+     * This method returns the SVG content as a string after optimization has
+     * been applied.
      *
-     * @return string the optimized SVG content
+     * @return string The optimized SVG content
      */
     public function getOutputContent(): string;
 
@@ -60,8 +68,10 @@ interface SvgProviderInterface
      * Retrieves metadata about the optimization process.
      *
      * This method provides details about the sizes of the original and
-     * optimized SVG content, as well as the amount of bytes saved and the
+     * optimized SVG content, including the amount of bytes saved and the
      * percentage of space saved.
+     *
+     * @return MetaDataValueObject The metadata about the optimization process
      */
     public function getMetaData(): MetaDataValueObject;
 }

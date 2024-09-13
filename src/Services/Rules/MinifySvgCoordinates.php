@@ -43,14 +43,19 @@ class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     private const TRAILING_DECIMAL_POINT_REGEX = '/(?<=\d)\.(?=\D|$)/';
 
     /**
-     * Optimize the given SVG document by minifying the coordinates of the path, rect, circle, ellipse, line, polyline, and polygon elements.
+     * Optimize the SVG document by minifying the coordinates of specific elements.
      *
-     * @param \DOMDocument $domDocument the DOMDocument instance representing the SVG file to be optimized
+     * This method processes the following elements and their attributes:
+     * - `<path>` elements with `d` attribute
+     * - `<rect>`, `<circle>`, `<ellipse>`, `<line>`, `<polyline>`, and `<polygon>` elements with coordinate attributes
+     *
+     * It removes unnecessary trailing zeroes, decimal points, and trailing decimal points in coordinates.
+     *
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
      */
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-
         $domXPath->registerNamespace('svg', 'http://www.w3.org/2000/svg');
 
         /**
@@ -79,11 +84,16 @@ class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Minify the coordinates of the given value.
+     * Minify the coordinates of the given value by removing unnecessary formatting.
      *
-     * @param string $value the value to minify
+     * This method performs the following transformations:
+     * - Removes unnecessary trailing zeroes in decimal numbers.
+     * - Removes unnecessary decimal points if there are no digits following them.
+     * - Removes trailing decimal points if there are no digits following them.
      *
-     * @return string the minified value
+     * @param string $value The value to minify.
+     *
+     * @return string The minified value.
      */
     private function minifyCoordinates(string $value): string
     {

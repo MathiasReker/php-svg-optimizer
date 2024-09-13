@@ -11,8 +11,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Exception;
 
 /**
- * Exception thrown when regex processing fails.
+ * Exception thrown when a file is not found.
  */
-class RegexProcessingException extends \InvalidArgumentException
+class FileNotFoundException extends \RuntimeException
 {
 }

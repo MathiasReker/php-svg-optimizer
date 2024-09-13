@@ -16,14 +16,18 @@ use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterf
 class FlattenGroups implements SvgOptimizerRuleInterface
 {
     /**
-     * Flatten groups in the SVG document, applying attributes to child elements if necessary.
+     * Flatten groups in the SVG document by applying their attributes to child elements
+     * and removing the group elements.
      *
-     * @param \DOMDocument $domDocument the DOMDocument instance representing the SVG file to be optimized
+     * This method processes each `<svg:g>` element in the SVG document:
+     * - Applies the group's attributes to its child elements if they do not already have them.
+     * - Moves the child elements up to the group's parent and removes the group element.
+     *
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
      */
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-
         $domXPath->registerNamespace('svg', 'http://www.w3.org/2000/svg');
 
         /**
@@ -41,54 +45,47 @@ class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Apply the group's attributes to its child elements.
+     * Apply the attributes of a group element to its child elements.
      *
-     * @param \DOMElement $domElement the group element whose attributes will be applied to its children
+     * This method iterates over each child of the group and sets attributes from the group
+     * to the child elements, but only if the child does not already have those attributes.
+     *
+     * @param \DOMElement $domElement The group element whose attributes will be applied to its children.
      */
     private function applyGroupAttributesToChildren(\DOMElement $domElement): void
     {
-        /**
-         * @var \DOMElement $child
-         */
         foreach ($domElement->childNodes as $child) {
-            foreach ($domElement->attributes as $attr) {
-                /**
-                 * @var \DOMAttr $attr
-                 */
-                if ($child->hasAttribute($attr->nodeName)) {
-                    continue;
+            if ($child instanceof \DOMElement) {
+                foreach ($domElement->attributes as $attr) {
+                    if ($attr instanceof \DOMAttr && !$child->hasAttribute($attr->nodeName) && \is_string($attr->nodeValue)) {
+                        $child->setAttribute($attr->nodeName, $attr->nodeValue);
+                    }
                 }
-
-                if (!\is_string($attr->nodeValue)) {
-                    continue;
-                }
-
-                $child->setAttribute($attr->nodeName, $attr->nodeValue);
             }
         }
     }
 
     /**
-     * Flatten the group by moving its children up and removing the group.
+     * Flatten a group element by moving its child elements up and removing the group.
      *
-     * @param \DOMElement $domElement the group element to flatten
+     * This method moves each child of the group element to the group's parent element
+     * and then removes the group element itself from the DOM.
+     *
+     * @param \DOMElement $domElement The group element to be flattened.
      */
     private function flattenGroup(\DOMElement $domElement): void
     {
-        $children = [];
-
-        foreach ($domElement->childNodes as $child) {
-            $children[] = $child;
-        }
-
-        /**
-         * @var \DOMNode $parentNode
-         */
         $parentNode = $domElement->parentNode;
-        foreach ($children as $child) {
-            $parentNode->insertBefore($child, $domElement);
-        }
 
-        $parentNode->removeChild($domElement);
+        if ($parentNode instanceof \DOMElement) {
+            // Convert children to array without preserving keys
+            $children = iterator_to_array($domElement->childNodes, false);
+
+            foreach ($children as $child) {
+                $parentNode->insertBefore($child, $domElement);
+            }
+
+            $parentNode->removeChild($domElement);
+        }
     }
 }

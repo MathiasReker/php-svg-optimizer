@@ -16,7 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterf
 class MinifyTransformations implements SvgOptimizerRuleInterface
 {
     /**
-     * Regex for percentage values in transformations.
+     * Regex pattern to match percentage values in transformations.
      *
      * @see https://regex101.com/r/JUBzng/1
      *
@@ -25,7 +25,7 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
     private const PERCENTAGE_REGEX = '/(\d+)%/';
 
     /**
-     * Regex for identity translate transformations.
+     * Regex pattern to match identity translate transformations.
      *
      * @see https://regex101.com/r/WjV7Zr/1
      *
@@ -34,7 +34,7 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
     private const TRANSLATE_REGEX = '/\btranslate\(\s*0\s*(,\s*0\s*)?\)/';
 
     /**
-     * Regex for identity scale transformations.
+     * Regex pattern to match identity scale transformations.
      *
      * @see https://regex101.com/r/wZi4DL/1
      *
@@ -43,7 +43,7 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
     private const SCALE_REGEX = '/\bscale\(\s*1\s*(,\s*1\s*)?\)/';
 
     /**
-     * Regex for identity rotate, skewX, and skewY transformations.
+     * Regex pattern to match identity rotate transformations.
      *
      * @see https://regex101.com/r/2vmgRO/1
      *
@@ -52,7 +52,7 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
     private const ROTATE_REGEX = '/\brotate\(\s*0\s*\)/';
 
     /**
-     * Regex for identity skewX transformations.
+     * Regex pattern to match identity skewX transformations.
      *
      * @see https://regex101.com/r/83aNVu/1
      *
@@ -61,7 +61,7 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
     private const SKEW_X_REGEX = '/\bskewX\(\s*0\s*\)/';
 
     /**
-     * Regex for identity skewY transformations.
+     * Regex pattern to match identity skewY transformations.
      *
      * @see https://regex101.com/r/tiPsgQ/1
      *
@@ -70,7 +70,7 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
     private const SKEW_Y_REGEX = '/\bskewY\(\s*0\s*\)/';
 
     /**
-     * Regex for multiple spaces.
+     * Regex pattern to match multiple consecutive spaces.
      *
      * @see https://regex101.com/r/OuyK7V/1
      *
@@ -79,7 +79,7 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
     private const MULTIPLE_SPACES_REGEX = '/\s+/';
 
     /**
-     * Regex for redundant commas.
+     * Regex pattern to match redundant commas.
      *
      * @see https://regex101.com/r/E8wfPk/1
      *
@@ -88,9 +88,15 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
     private const REDUNDANT_COMMAS_REGEX = '/\s*,\s*/';
 
     /**
-     * Optimize the given SVG document by minifying transformations.
+     * Optimize the SVG document by minifying transformations.
      *
-     * @param \DOMDocument $domDocument the DOMDocument instance representing the SVG file to be optimized
+     * This method processes the `transform` attribute of all elements in the SVG document and performs the following optimizations:
+     * - Converts percentage values to decimal numbers.
+     * - Removes identity transformations such as `translate(0, 0)`, `scale(1, 1)`, `rotate(0)`, `skewX(0)`, and `skewY(0)`.
+     * - Reduces multiple spaces to a single space.
+     * - Removes redundant commas.
+     *
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
      */
     public function optimize(\DOMDocument $domDocument): void
     {
@@ -101,27 +107,32 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
          */
         $elements = $domXPath->query('//*[@transform]');
 
-        $patterns = [
-            self::TRANSLATE_REGEX,
-            self::SCALE_REGEX,
-            self::ROTATE_REGEX,
-            self::SKEW_X_REGEX,
-            self::SKEW_Y_REGEX,
-        ];
-
-        /**
-         * @var \DOMElement $element
-         */
         foreach ($elements as $element) {
             $transform = $element->getAttribute('transform');
 
+            // Convert percentages to numbers and minify the transform attribute
             $transform = $this->convertPercentagesToNumbers($transform);
-
-            $transform = (string) preg_replace($patterns, '', $transform);
-
-            $transform = (string) preg_replace(self::MULTIPLE_SPACES_REGEX, ' ', $transform);
-
-            $transform = (string) preg_replace(self::REDUNDANT_COMMAS_REGEX, ',', $transform);
+            $transform = preg_replace(
+                [
+                    self::TRANSLATE_REGEX,
+                    self::SCALE_REGEX,
+                    self::ROTATE_REGEX,
+                    self::SKEW_X_REGEX,
+                    self::SKEW_Y_REGEX,
+                    self::MULTIPLE_SPACES_REGEX,
+                    self::REDUNDANT_COMMAS_REGEX,
+                ],
+                [
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    ' ',
+                    ',',
+                ],
+                $transform
+            ) ?? '';
 
             $transform = trim($transform);
 
@@ -135,16 +146,19 @@ class MinifyTransformations implements SvgOptimizerRuleInterface
 
     /**
      * Convert percentage values in transformations to decimal numbers.
+     *
+     * This method replaces percentage values in the transform attribute with their decimal equivalents.
+     *
+     * @param string $transform The transform attribute value to be processed.
+     *
+     * @return string The transformed value with percentages converted to decimals.
      */
     private function convertPercentagesToNumbers(string $transform): string
     {
-        $result = preg_replace_callback(
+        return preg_replace_callback(
             self::PERCENTAGE_REGEX,
-            fn (array $matches): string => (string) ((float) $matches[1] / 100),
+            static fn (array $matches): string => (string) ((float) $matches[1] / 100),
             $transform
-        );
-
-        // Ensure the result is always a string, even if preg_replace_callback returns null
-        return $result ?? $transform;
+        ) ?? $transform;
     }
 }

@@ -18,7 +18,11 @@ class RemoveMetadata implements SvgOptimizerRuleInterface
     /**
      * Remove the metadata elements from the SVG document.
      *
-     * @param \DOMDocument $domDocument the DOMDocument instance representing the SVG file to be optimized
+     * This method will find and remove all `<metadata>` elements within the SVG
+     * document. Metadata elements typically contain information that is not
+     * essential for rendering the SVG image.
+     *
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
      */
     public function optimize(\DOMDocument $domDocument): void
     {
@@ -28,8 +32,12 @@ class RemoveMetadata implements SvgOptimizerRuleInterface
     /**
      * Remove all elements with the given tag name from the DOMDocument.
      *
-     * @param \DOMDocument $domDocument the DOMDocument instance representing the SVG file to be optimized
-     * @param string       $tagName     the tag name of the elements to be removed
+     * This method removes all elements with the specified tag name from the
+     * DOMDocument. It repeatedly removes elements until none with the given tag
+     * name remain.
+     *
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
+     * @param string       $tagName     The tag name of the elements to be removed.
      */
     private function removeElementsByTagName(\DOMDocument $domDocument, string $tagName): void
     {

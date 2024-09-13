@@ -15,6 +15,9 @@ class SvgValidator
     /**
      * Regular expression to match the XML declaration.
      *
+     * This regex pattern is used to identify and remove XML declarations
+     * from the SVG content.
+     *
      * @see https://regex101.com/r/ykHufE/1
      *
      * @var string
@@ -23,6 +26,9 @@ class SvgValidator
 
     /**
      * Regular expression to match the DOCTYPE declaration.
+     *
+     * This regex pattern is used to identify and remove DOCTYPE declarations
+     * from the SVG content.
      *
      * @see https://regex101.com/r/DIe4La/1
      *
@@ -33,6 +39,9 @@ class SvgValidator
     /**
      * Regular expression to match the start of an SVG tag.
      *
+     * This regex pattern is used to check if the cleaned content contains
+     * a valid SVG tag.
+     *
      * @see https://regex101.com/r/dJUVOx/1
      *
      * @var string
@@ -42,9 +51,13 @@ class SvgValidator
     /**
      * Checks if the provided content is a valid SVG.
      *
-     * @param string|null $svgContent the SVG content to be validated
+     * This method validates if the content is a valid SVG by checking for
+     * the presence of an SVG tag after removing any XML and DOCTYPE
+     * declarations.
      *
-     * @return bool true if the content is valid SVG, false otherwise
+     * @param string|null $svgContent The SVG content to be validated
+     *
+     * @return bool True if the content is a valid SVG, false otherwise
      */
     public function isValid(?string $svgContent): bool
     {
@@ -52,15 +65,45 @@ class SvgValidator
             return false;
         }
 
-        $svgContent = (string) preg_replace(
+        $cleanedContent = $this->removeUnnecessaryDeclarations($svgContent);
+
+        return $this->containsSvgTag($cleanedContent);
+    }
+
+    /**
+     * Remove XML and DOCTYPE declarations from the SVG content.
+     *
+     * This method cleans the SVG content by removing any XML and DOCTYPE
+     * declarations to simplify validation.
+     *
+     * @param string $content The SVG content with potential declarations
+     *
+     * @return string The cleaned SVG content
+     */
+    private function removeUnnecessaryDeclarations(string $content): string
+    {
+        return preg_replace(
             [
                 self::XML_DECLARATION_REGEX,
                 self::DOCTYPE_REGEX,
             ],
             '',
-            $svgContent
-        );
+            $content
+        ) ?? '';
+    }
 
-        return 1 === preg_match(self::SVG_TAG_REGEX, $svgContent);
+    /**
+     * Checks if the cleaned content contains a valid SVG tag.
+     *
+     * This method checks for the presence of an SVG tag in the cleaned SVG
+     * content.
+     *
+     * @param string $content The cleaned SVG content
+     *
+     * @return bool True if the content contains a valid SVG tag, false otherwise
+     */
+    private function containsSvgTag(string $content): bool
+    {
+        return 1 === preg_match(self::SVG_TAG_REGEX, $content);
     }
 }

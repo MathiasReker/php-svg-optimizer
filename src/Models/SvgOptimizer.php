@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Models;
 
+use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
@@ -18,34 +19,35 @@ use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
 class SvgOptimizer
 {
     /**
-     * @var SvgOptimizerRuleInterface[] array of optimization rules
+     * Array of optimization rules to be applied to the SVG document.
+     *
+     * @var SvgOptimizerRuleInterface[] Array of optimization strategies.
      */
     private array $rules = [];
 
     /**
-     * @var string the SVG document
+     * The optimized SVG content.
+     *
+     * @var ?string The SVG content after optimization, or null if not yet optimized.
      */
-    private string $domDocument;
-
-    /**
-     * @var SvgValidator the SVG validator
-     */
-    private readonly SvgValidator $svgValidator;
+    private ?string $domDocument = null;
 
     /**
      * SvgOptimizer constructor.
      *
-     * @param SvgProviderInterface $svgProvider the SVG provider
+     * @param SvgProviderInterface $svgProvider  The provider used to get and save SVG content.
+     * @param SvgValidator         $svgValidator The validator used to check the validity of the SVG content.
      */
-    public function __construct(private readonly SvgProviderInterface $svgProvider)
-    {
-        $this->svgValidator = new SvgValidator();
+    public function __construct(
+        private readonly SvgProviderInterface $svgProvider,
+        private readonly SvgValidator $svgValidator = new SvgValidator()
+    ) {
     }
 
     /**
-     * Add an optimization strategy to the optimizer.
+     * Add an optimization rule to the optimizer.
      *
-     * @param SvgOptimizerRuleInterface $svgOptimizerRule the optimization strategy to add
+     * @param SvgOptimizerRuleInterface $svgOptimizerRule The optimization rule to add.
      */
     public function addRule(SvgOptimizerRuleInterface $svgOptimizerRule): void
     {
@@ -53,15 +55,17 @@ class SvgOptimizer
     }
 
     /**
-     * Optimize the SVG file.
+     * Optimize the SVG content by applying all added optimization rules.
      *
-     * @return SvgOptimizer the SvgOptimizer instance
+     * @return SvgOptimizer The current instance of SvgOptimizer for method chaining.
+     *
+     * @throws SvgValidationException If the SVG content is not valid.
      */
     public function optimize(): self
     {
-        $isValidSvg = $this->svgValidator->isValid($this->svgProvider->getInputContent());
+        $svgContent = $this->svgProvider->getInputContent();
 
-        if (false === $isValidSvg) {
+        if (!$this->svgValidator->isValid($svgContent)) {
             throw new SvgValidationException('The file does not appear to be a valid SVG file.');
         }
 
@@ -73,9 +77,9 @@ class SvgOptimizer
     }
 
     /**
-     * Apply all optimization strategies to the SVG document.
+     * Apply all optimization rules to the provided DOMDocument.
      *
-     * @param \DOMDocument $domDocument the DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
      */
     private function applyRules(\DOMDocument $domDocument): void
     {
@@ -84,6 +88,11 @@ class SvgOptimizer
         }
     }
 
+    /**
+     * Get metadata related to the SVG content.
+     *
+     * @return MetaDataValueObject The metadata containing information about the SVG file sizes.
+     */
     public function getMetaData(): MetaDataValueObject
     {
         return $this->svgProvider->getMetaData();
@@ -92,10 +101,10 @@ class SvgOptimizer
     /**
      * Get the optimized SVG content.
      *
-     * @return string the optimized SVG content
+     * @return string The optimized SVG content, or an empty string if not yet optimized.
      */
     public function getContent(): string
     {
-        return $this->domDocument;
+        return $this->domDocument ?? '';
     }
 }

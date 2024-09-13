@@ -11,8 +11,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Exception;
 
 /**
- * Exception thrown when regex processing fails.
+ * Exception thrown when an IO operation fails.
  */
-class RegexProcessingException extends \InvalidArgumentException
+class IOException extends \RuntimeException
 {
 }
