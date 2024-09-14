@@ -12,6 +12,7 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Providers;
 
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers\SvgProviderInterface;
+use MathiasReker\PhpSvgOptimizer\Exception\FileLoadingException;
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\FileSizeException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
@@ -113,13 +114,13 @@ class FileProvider implements SvgProviderInterface
      *
      * @return \DOMDocument The loaded DOMDocument instance
      *
-     * @throws \RuntimeException If the SVG content cannot be loaded into the DOMDocument
+     * @throws FileLoadingException If the SVG content cannot be loaded into the DOMDocument
      */
     public function load(): \DOMDocument
     {
         $domDocument = new \DOMDocument();
         if (!$domDocument->load($this->inputFile)) {
-            throw new \RuntimeException(\sprintf('Failed to load SVG content into DOMDocument: %s', $this->inputFile));
+            throw new FileLoadingException(\sprintf('Failed to load SVG content into DOMDocument: %s', $this->inputFile));
         }
 
         return $domDocument;

@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Providers;
 
+use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
@@ -75,7 +76,7 @@ final class StringProviderTest extends TestCase
         $domDocument = $this->createMock(\DOMDocument::class);
         $domDocument->method('saveXML')->willReturn(false);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(XmlProcessingException::class);
         $this->expectExceptionMessage('Failed to save XML content.');
 
         $stringProvider->optimize($domDocument);
