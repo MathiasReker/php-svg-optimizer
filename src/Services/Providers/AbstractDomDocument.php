@@ -17,9 +17,9 @@ abstract class AbstractDomDocument
     /**
      * Saves the current DOMDocument content as an XML string.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance to be saved.
+     * @param \DOMDocument $domDocument The DOMDocument instance to be saved
      *
-     * @return string|false Returns the XML content as a string or null on failure.
+     * @return string|false Returns the XML content as a string or null on failure
      */
     public function saveToString(\DOMDocument $domDocument): false|string
     {
@@ -29,9 +29,9 @@ abstract class AbstractDomDocument
     /**
      * Loads an XML file into a DOMDocument, suppressing errors.
      *
-     * @param string $filePath The path to the XML file.
+     * @param string $filePath The path to the XML file
      *
-     * @return \DOMDocument|null Returns the loaded DOMDocument or null on failure.
+     * @return \DOMDocument|null Returns the loaded DOMDocument or null on failure
      */
     public function loadFromFile(string $filePath): ?\DOMDocument
     {
@@ -41,9 +41,9 @@ abstract class AbstractDomDocument
     /**
      * Common method for loading a DOMDocument with error handling.
      *
-     * @param callable $loader A callback that loads the DOMDocument (file or string).
+     * @param callable $loader A callback that loads the DOMDocument (file or string)
      *
-     * @return \DOMDocument|null Returns the loaded DOMDocument or null on failure.
+     * @return \DOMDocument|null Returns the loaded DOMDocument or null on failure
      */
     private function loadDomDocument(callable $loader): ?\DOMDocument
     {
@@ -77,9 +77,9 @@ abstract class AbstractDomDocument
     /**
      * Loads XML from a string into a DOMDocument, suppressing errors.
      *
-     * @param string $xmlContent The XML content as a string.
+     * @param string $xmlContent The XML content as a string
      *
-     * @return \DOMDocument|null Returns the loaded DOMDocument or null on failure.
+     * @return \DOMDocument|null Returns the loaded DOMDocument or null on failure
      */
     public function loadFromString(string $xmlContent): ?\DOMDocument
     {

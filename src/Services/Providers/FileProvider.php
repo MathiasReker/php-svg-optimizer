@@ -113,9 +113,9 @@ class FileProvider extends AbstractDomDocument implements SvgProviderInterface
     /**
      * Ensures that the directory for the output file exists. Creates it if necessary.
      *
-     * @param string $directoryPath The directory path to check/create.
+     * @param string $directoryPath The directory path to check/create
      *
-     * @throws IOException If the directory cannot be created.
+     * @throws IOException If the directory cannot be created
      */
     private function ensureDirectoryExists(string $directoryPath): void
     {
