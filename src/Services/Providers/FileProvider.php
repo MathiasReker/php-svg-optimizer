@@ -20,7 +20,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 
-class FileProvider implements SvgProviderInterface
+class FileProvider extends AbstractDomDocument implements SvgProviderInterface
 {
     /**
      * Regex pattern for XML declaration.
@@ -37,6 +37,11 @@ class FileProvider implements SvgProviderInterface
     private string $output;
 
     /**
+     * The content of the input file.
+     */
+    private readonly string $inputContent;
+
+    /**
      * FileProvider constructor.
      *
      * @param string      $inputFile  The path to the input SVG file
@@ -46,6 +51,8 @@ class FileProvider implements SvgProviderInterface
         private readonly string $inputFile,
         private readonly ?string $outputFile = null
     ) {
+        // Store the content without any optimization to have a reference for metadata.
+        $this->inputContent = $this->getInputContent();
     }
 
     /**
@@ -83,20 +90,38 @@ class FileProvider implements SvgProviderInterface
      */
     public function optimize(\DOMDocument $domDocument): self
     {
-        $xmlContent = $domDocument->saveXML();
+        $xmlContent = $this->saveToString($domDocument);
         if (false === $xmlContent) {
-            throw new XmlProcessingException('Failed to save XML content');
+            throw new XmlProcessingException('Failed to save XML content as a string.');
         }
 
-        $xmlContent = preg_replace(self::XML_DECLARATION_REGEX, '', $xmlContent);
+        $xmlContent = (string) preg_replace(self::XML_DECLARATION_REGEX, '', $xmlContent);
 
-        if (null !== $this->outputFile && false === file_put_contents($this->outputFile, $xmlContent)) {
-            throw new IOException(\sprintf('Failed to write optimized content to the output file: %s', $this->outputFile));
+        if (null !== $this->outputFile) {
+            $this->ensureDirectoryExists(\dirname($this->outputFile));
+
+            if (false === file_put_contents($this->outputFile, $xmlContent)) {
+                throw new IOException(\sprintf('Failed to write optimized content to the output file: %s', $this->outputFile));
+            }
         }
 
-        $this->output = trim((string) $xmlContent);
+        $this->output = trim($xmlContent);
 
         return $this;
+    }
+
+    /**
+     * Ensures that the directory for the output file exists. Creates it if necessary.
+     *
+     * @param string $directoryPath The directory path to check/create.
+     *
+     * @throws IOException If the directory cannot be created.
+     */
+    private function ensureDirectoryExists(string $directoryPath): void
+    {
+        if (!is_dir($directoryPath) && !mkdir($directoryPath, 0o755, true)) {
+            throw new IOException(\sprintf('Failed to create directory: %s', $directoryPath));
+        }
     }
 
     /**
@@ -110,20 +135,20 @@ class FileProvider implements SvgProviderInterface
     }
 
     /**
-     * Load the input file into a DOMDocument.
+     * Load the input file into a DOMDocument instance.
      *
-     * @return \DOMDocument The loaded DOMDocument instance
+     * @return \DOMDocument The DOMDocument instance loaded with the input SVG file
      *
-     * @throws FileLoadingException If the SVG content cannot be loaded into the DOMDocument
+     * @throws FileLoadingException If the SVG content cannot be loaded into a DOMDocument
      */
     public function load(): \DOMDocument
     {
-        $domDocument = new \DOMDocument();
-        $domDocument->formatOutput = false;
-        $domDocument->preserveWhiteSpace = false;
+        $domDocument = $this->loadFromFile($this->inputFile);
 
-        if (!$domDocument->load($this->inputFile)) {
-            throw new FileLoadingException(\sprintf('Failed to load SVG content into DOMDocument: %s', $this->inputFile));
+        if (!$domDocument instanceof \DOMDocument) {
+            $errorMessage = \sprintf('Unable to load SVG content from file: %s', $this->inputFile);
+
+            throw new FileLoadingException($errorMessage);
         }
 
         return $domDocument;
@@ -138,7 +163,7 @@ class FileProvider implements SvgProviderInterface
      */
     public function getMetaData(): MetaDataValueObject
     {
-        $originalSize = filesize($this->inputFile);
+        $originalSize = mb_strlen($this->inputContent, '8bit');
         if (false === $originalSize) {
             throw new FileSizeException(\sprintf('Failed to determine size of the input file: %s', $this->inputFile));
         }

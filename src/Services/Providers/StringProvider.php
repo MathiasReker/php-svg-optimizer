@@ -16,7 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 
-class StringProvider implements SvgProviderInterface
+class StringProvider extends AbstractDomDocument implements SvgProviderInterface
 {
     /**
      * Regex pattern for XML declaration.
@@ -54,7 +54,7 @@ class StringProvider implements SvgProviderInterface
      */
     public function optimize(\DOMDocument $domDocument): self
     {
-        $xmlContent = $domDocument->saveXML();
+        $xmlContent = $this->saveToString($domDocument);
 
         if (false === \is_string($xmlContent)) {
             throw new XmlProcessingException('Failed to save XML content.');
@@ -89,12 +89,10 @@ class StringProvider implements SvgProviderInterface
      */
     public function load(): \DOMDocument
     {
-        $domDocument = new \DOMDocument();
-        $domDocument->formatOutput = false;
-        $domDocument->preserveWhiteSpace = false;
+        $domDocument = $this->loadFromString($this->input);
 
-        if (false === $domDocument->loadXML($this->input)) {
-            throw new XmlProcessingException('Failed to load input as valid XML.');
+        if (!$domDocument instanceof \DOMDocument) {
+            throw new XmlProcessingException('The provided input could not be loaded as valid XML.');
         }
 
         return $domDocument;
