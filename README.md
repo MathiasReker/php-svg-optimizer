@@ -60,10 +60,11 @@ try {
         ->minifyTransformations()
         ->build();
 
-    echo $svgOptimizer->getMetaData()->getOptimizedSize();
-    echo $svgOptimizer->getMetaData()->getOriginalSize();
-    echo $svgOptimizer->getMetaData()->getSavedBytes();
-    echo $svgOptimizer->getMetaData()->getSavedPercentage();
+    $metaData = $svgOptimizer->getMetaData();
+    echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
+    echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
+    echo sprintf('Saved bytes: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
+    echo sprintf('Saved percentage: %s %%%s', number_format($metaData->getSavedPercentage(), 2), \PHP_EOL);
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
@@ -95,12 +96,13 @@ try {
         ->minifyTransformations()
         ->build();
 
-    echo $svgOptimizer->getContent();
-
-    echo $svgOptimizer->getMetaData()->getOptimizedSize();
-    echo $svgOptimizer->getMetaData()->getOriginalSize();
-    echo $svgOptimizer->getMetaData()->getSavedBytes();
-    echo $svgOptimizer->getMetaData()->getSavedPercentage();
+    echo sprintf('Get content: ', $svgOptimizer->getContent(), \PHP_EOL);
+     
+    $metaData = $svgOptimizer->getMetaData();
+    echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
+    echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
+    echo sprintf('Saved bytes: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
+    echo sprintf('Saved percentage: %s %%%s', number_format($metaData->getSavedPercentage(), 2), \PHP_EOL);
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
@@ -130,19 +132,20 @@ try {
         ->minifySvgCoordinates()
         ->minifyTransformations()
         ->build();
-    
-    echo $svgOptimizer->getContent();
-    
-    echo $svgOptimizer->getMetaData()->getOptimizedSize();
-    echo $svgOptimizer->getMetaData()->getOriginalSize();
-    echo $svgOptimizer->getMetaData()->getSavedBytes();
-    echo $svgOptimizer->getMetaData()->getSavedPercentage();
+
+    echo sprintf('Get content: ', $svgOptimizer->getContent(), \PHP_EOL);
+     
+    $metaData = $svgOptimizer->getMetaData();
+    echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
+    echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
+    echo sprintf('Saved bytes: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
+    echo sprintf('Saved percentage: %s %%%s', number_format($metaData->getSavedPercentage(), 2), \PHP_EOL);
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
 ```
 
-### Example parsing from a directory and optimizing all SVG files
+### Example parsing from a directory and optimizing all SVG files (overwriting the original files)
 
 ```php
 <?php
@@ -154,9 +157,13 @@ require_once __DIR__ . '/vendor/autoload.php';
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerBuilder;
 
-$optimizeSvg = function (string $filePath): void {
+$totalOriginalSize = 0;
+$totalOptimizedSize = 0;
+$optimizedFiles = 0;
+
+$optimizeSvg = function (string $filePath) use (&$totalOriginalSize, &$totalOptimizedSize, &$optimizedFiles): void {
     try {
-        (new SvgOptimizerBuilder(new FileProvider($filePath, $filePath)))
+        $svgOptimizer = (new SvgOptimizerBuilder(new FileProvider($filePath, $filePath)))
             ->removeTitleAndDesc()
             ->removeComments()
             ->removeUnnecessaryWhitespace()
@@ -167,6 +174,11 @@ $optimizeSvg = function (string $filePath): void {
             ->minifySvgCoordinates()
             ->minifyTransformations()
             ->build();
+
+        $metaData = $svgOptimizer->getMetaData();
+        $totalOriginalSize += $metaData->getOriginalSize();
+        $totalOptimizedSize += $metaData->getOptimizedSize();
+        ++$optimizedFiles;
     } catch (Exception) {
         // Skip the file if an exception occurs
     }
@@ -184,6 +196,13 @@ foreach ($iterator as $fileInfo) {
         $optimizeSvg($fileInfo->getPathname());
     }
 }
+
+$reduction = $totalOriginalSize - $totalOptimizedSize;
+$reductionPercentage = $totalOriginalSize > 0 ? ($reduction / $totalOriginalSize) * 100 : 0;
+
+echo sprintf('Files optimized: %d%s', $optimizedFiles, \PHP_EOL);
+echo sprintf('Total size reduction: %d bytes%s', $reduction, \PHP_EOL);
+echo sprintf('Total reduction percentage: %s %%%s', number_format($reductionPercentage, 2), \PHP_EOL);
 ```
 
 ### Documentation
