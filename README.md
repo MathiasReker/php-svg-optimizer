@@ -259,9 +259,28 @@ the [open issues](https://github.com/MathiasReker/php-svg-optimizer/issues).
 
 ### Contributing
 
-Contributions are welcome! If you have suggestions for improvements, please fork the repository and create a pull
-request. You can also open an issue with the tag "enhancement." Don’t forget to give the project a star if you find it
-useful!
+We welcome all contributions! If you have ideas for improvements, feel free to fork the repository and submit a pull
+request. You can also open an issue and tag it with "enhancement." If you find this project helpful, don’t forget to
+give it a star!
+
+#### Library Structure and Contribution Guide
+
+The library implements the Strategy Pattern, where strategies are encapsulated as "rules" located in the
+`/src/Services/Rules` directory.
+
+##### Adding a New Rule
+
+1) **Create the Rule**: Add a new class in the `/src/Services/Rules` directory that implements
+   the `SvgOptimizerRuleInterface`.
+
+2) **Write Tests**: Ensure your new rule is thoroughly tested by creating corresponding test cases
+   in `/tests/Services/Rules`.
+
+3) **Integrate the Rule**: Add your new rule to the builder in `/src/Services/SvgOptimizerBuilder.php`.
+
+4) **Update Documentation**: Finally, update the `README.md` to reflect the addition of the new rule and its purpose.
+
+By following these steps, you'll ensure that your contribution is well-integrated into the project.
 
 #### Docker
 
