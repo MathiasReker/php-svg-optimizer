@@ -21,6 +21,7 @@ operations.
 ### Requirements
 
 - `ext-dom`: Required PHP extension for XML handling.
+- `ext-libxml`: Required PHP extension for XML error handling.
 
 ### Installation
 
