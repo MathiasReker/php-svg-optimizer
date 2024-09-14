@@ -183,7 +183,7 @@ $optimizeSvg = function (string $filePath) use (&$totalOriginalSize, &$totalOpti
         $totalOriginalSize += $metaData->getOriginalSize();
         $totalOptimizedSize += $metaData->getOptimizedSize();
         ++$optimizedFiles;
-    } catch (Exception) {
+    } catch (\Exception) {
         // Skip the file if an exception occurs
     }
 };
