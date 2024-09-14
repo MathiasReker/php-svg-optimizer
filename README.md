@@ -142,6 +142,50 @@ try {
 }
 ```
 
+### Example parsing from a directory and optimizing all SVG files
+
+```php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
+use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerBuilder;
+
+$optimizeSvg = function (string $filePath): void {
+    try {
+        (new SvgOptimizerBuilder(new FileProvider($filePath, $filePath)))
+            ->removeTitleAndDesc()
+            ->removeComments()
+            ->removeUnnecessaryWhitespace()
+            ->removeDefaultAttributes()
+            ->removeMetadata()
+            ->flattenGroups()
+            ->convertColorsToHex()
+            ->minifySvgCoordinates()
+            ->minifyTransformations()
+            ->build();
+    } catch (Exception) {
+        // Skip the file if an exception occurs
+    }
+};
+
+$directoryPath = 'path/to/directory';
+
+$iterator = new RecursiveIteratorIterator(
+    new RecursiveDirectoryIterator($directoryPath, FilesystemIterator::SKIP_DOTS),
+    RecursiveIteratorIterator::LEAVES_ONLY
+);
+
+foreach ($iterator as $fileInfo) {
+    if ($fileInfo->isFile() && 'svg' === $fileInfo->getExtension()) {
+        $optimizeSvg($fileInfo->getPathname());
+    }
+}
+```
+
 ### Documentation
 
 The constructor initializes the SVG optimizer with an SVG provider.

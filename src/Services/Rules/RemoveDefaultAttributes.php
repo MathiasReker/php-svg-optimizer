@@ -24,7 +24,6 @@ class RemoveDefaultAttributes implements SvgOptimizerRuleInterface
      * @var array<string, string>
      */
     private const DEFAULT_SVG_ATTRIBUTES = [
-        'fill' => 'none',
         'stroke' => 'none',
     ];
 

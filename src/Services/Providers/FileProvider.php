@@ -119,6 +119,9 @@ class FileProvider implements SvgProviderInterface
     public function load(): \DOMDocument
     {
         $domDocument = new \DOMDocument();
+        $domDocument->formatOutput = false;
+        $domDocument->preserveWhiteSpace = false;
+
         if (!$domDocument->load($this->inputFile)) {
             throw new FileLoadingException(\sprintf('Failed to load SVG content into DOMDocument: %s', $this->inputFile));
         }
