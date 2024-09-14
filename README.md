@@ -62,6 +62,7 @@ try {
         ->build();
 
     $metaData = $svgOptimizer->getMetaData();
+
     echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
     echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
     echo sprintf('Saved bytes: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
@@ -100,6 +101,7 @@ try {
     echo sprintf('Get content: ', $svgOptimizer->getContent(), \PHP_EOL);
      
     $metaData = $svgOptimizer->getMetaData();
+
     echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
     echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
     echo sprintf('Saved bytes: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
@@ -137,6 +139,7 @@ try {
     echo sprintf('Get content: ', $svgOptimizer->getContent(), \PHP_EOL);
      
     $metaData = $svgOptimizer->getMetaData();
+
     echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
     echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
     echo sprintf('Saved bytes: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
