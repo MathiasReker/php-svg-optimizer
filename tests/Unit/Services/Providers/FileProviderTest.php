@@ -76,12 +76,10 @@ final class FileProviderTest extends TestCase
 
     public function testGetInputContentThrowsExceptionIfFileDoesNotExist(): void
     {
-        $fileProvider = new FileProvider('nonexistent.svg', self::TEST_OUTPUT_FILE);
-
         $this->expectException(FileNotFoundException::class);
         $this->expectExceptionMessage('Input file does not exist: nonexistent.svg');
 
-        $fileProvider->getInputContent();
+        new FileProvider('nonexistent.svg', self::TEST_OUTPUT_FILE);
     }
 
     /**

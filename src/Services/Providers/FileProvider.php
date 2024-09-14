@@ -164,9 +164,6 @@ class FileProvider extends AbstractDomDocument implements SvgProviderInterface
     public function getMetaData(): MetaDataValueObject
     {
         $originalSize = mb_strlen($this->inputContent, '8bit');
-        if (false === $originalSize) {
-            throw new FileSizeException(\sprintf('Failed to determine size of the input file: %s', $this->inputFile));
-        }
 
         $optimizedSize = null === $this->outputFile
             ? mb_strlen($this->output, '8bit')
