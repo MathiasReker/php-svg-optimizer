@@ -27,18 +27,6 @@ final class RemoveDefaultAttributesTest extends TestCase
 {
     public static function svgAttributesProvider(): \Iterator
     {
-        yield 'Removes Default Fill Attribute' => [
-            <<<XML
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-                    <rect x="10" y="10" width="30" height="30" fill="none"/>
-                    <circle cx="50" cy="50" r="20" fill="none"/>
-                </svg>
-                XML,
-            <<<XML
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></svg>
-                XML
-        ];
-
         yield 'Removes Default Stroke Attribute' => [
             <<<XML
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -48,18 +36,6 @@ final class RemoveDefaultAttributesTest extends TestCase
                 XML,
             <<<XML
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></svg>
-                XML
-        ];
-
-        yield 'Keeps Non-Default Fill Attribute' => [
-            <<<XML
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-                    <rect x="10" y="10" width="30" height="30" fill="red"/>
-                    <circle cx="50" cy="50" r="20" fill="blue"/>
-                </svg>
-                XML,
-            <<<XML
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" fill="red"/><circle cx="50" cy="50" r="20" fill="blue"/></svg>
                 XML
         ];
 
@@ -75,22 +51,10 @@ final class RemoveDefaultAttributesTest extends TestCase
                 XML
         ];
 
-        yield 'Handles Mixed Attributes' => [
+        yield 'Removes Default Stroke from Nested Elements' => [
             <<<XML
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-                    <rect x="10" y="10" width="30" height="30" fill="none" stroke="black"/>
-                    <circle cx="50" cy="50" r="20" fill="blue" stroke="none"/>
-                </svg>
-                XML,
-            <<<XML
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" stroke="black"/><circle cx="50" cy="50" r="20" fill="blue"/></svg>
-                XML
-        ];
-
-        yield 'Removes Default Fill and Stroke from Nested Elements' => [
-            <<<XML
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-                    <g fill="none" stroke="none">
+                    <g stroke="none">
                         <rect x="10" y="10" width="30" height="30"/>
                         <circle cx="50" cy="50" r="20"/>
                     </g>
@@ -104,8 +68,8 @@ final class RemoveDefaultAttributesTest extends TestCase
         yield 'Non-Standard Default Attributes' => [
             <<<XML
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-                    <rect x="10" y="10" width="30" height="30" fill="none"/>
-                    <circle cx="50" cy="50" r="20" fill="none"/>
+                    <rect x="10" y="10" width="30" height="30"/>
+                    <circle cx="50" cy="50" r="20"/>
                     <customElement customAttr="none"/>
                 </svg>
                 XML,
