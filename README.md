@@ -30,6 +30,11 @@ To install the library, run:
 composer require mathiasreker/php-svg-optimizer
 ```
 
+> To ensure robustness when using the library, it's crucial to handle exceptions, as invalid or malformed SVG files
+> could lead to runtime errors. Catching these exceptions will allow you to manage potential issues gracefully and
+> prevent
+> your application from crashing.
+
 ### Example parsing from a file and saving to a file
 
 ```php
@@ -42,22 +47,27 @@ require_once __DIR__ . '/vendor/autoload.php';
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerBuilder;
 
-$svgOptimizer = (new SvgOptimizerBuilder(new FileProvider('path/to/source.svg', 'path/to/output.svg')))
-    ->removeTitleAndDesc()
-    ->removeComments()
-    ->removeUnnecessaryWhitespace()
-    ->removeDefaultAttributes()
-    ->removeMetadata()
-    ->flattenGroups()
-    ->convertColorsToHex()
-    ->minifySvgCoordinates()
-    ->minifyTransformations()
-    ->build();
+try {
+    $svgOptimizer = (new SvgOptimizerBuilder(new FileProvider('path/to/source.svg', 'path/to/output.svg')))
+        ->removeTitleAndDesc()
+        ->removeComments()
+        ->removeUnnecessaryWhitespace()
+        ->removeDefaultAttributes()
+        ->removeMetadata()
+        ->flattenGroups()
+        ->convertColorsToHex()
+        ->minifySvgCoordinates()
+        ->minifyTransformations()
+        ->build();
 
-echo $svgOptimizer->getMetaData()->getOptimizedSize();
-echo $svgOptimizer->getMetaData()->getOriginalSize();
-echo $svgOptimizer->getMetaData()->getSavedBytes();
-echo $svgOptimizer->getMetaData()->getSavedPercentage();
+    echo $svgOptimizer->getMetaData()->getOptimizedSize();
+    echo $svgOptimizer->getMetaData()->getOriginalSize();
+    echo $svgOptimizer->getMetaData()->getSavedBytes();
+    echo $svgOptimizer->getMetaData()->getSavedPercentage();
+} catch (\Exception $exception) {
+    echo $exception->getMessage();
+}
+
 ```
 
 ### Example parsing from a file and returning the content
@@ -72,24 +82,28 @@ require_once __DIR__ . '/vendor/autoload.php';
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerBuilder;
 
-$svgOptimizer = (new SvgOptimizerBuilder(new FileProvider('path/to/source.svg')))
-    ->removeTitleAndDesc()
-    ->removeComments()
-    ->removeUnnecessaryWhitespace()
-    ->removeDefaultAttributes()
-    ->removeMetadata()
-    ->flattenGroups()
-    ->convertColorsToHex()
-    ->minifySvgCoordinates()
-    ->minifyTransformations()
-    ->build();
+try {
+    $svgOptimizer = (new SvgOptimizerBuilder(new FileProvider('path/to/source.svg')))
+        ->removeTitleAndDesc()
+        ->removeComments()
+        ->removeUnnecessaryWhitespace()
+        ->removeDefaultAttributes()
+        ->removeMetadata()
+        ->flattenGroups()
+        ->convertColorsToHex()
+        ->minifySvgCoordinates()
+        ->minifyTransformations()
+        ->build();
 
-echo $svgOptimizer->getContent();
+    echo $svgOptimizer->getContent();
 
-echo $svgOptimizer->getMetaData()->getOptimizedSize();
-echo $svgOptimizer->getMetaData()->getOriginalSize();
-echo $svgOptimizer->getMetaData()->getSavedBytes();
-echo $svgOptimizer->getMetaData()->getSavedPercentage();
+    echo $svgOptimizer->getMetaData()->getOptimizedSize();
+    echo $svgOptimizer->getMetaData()->getOriginalSize();
+    echo $svgOptimizer->getMetaData()->getSavedBytes();
+    echo $svgOptimizer->getMetaData()->getSavedPercentage();
+} catch (\Exception $exception) {
+    echo $exception->getMessage();
+}
 ```
 
 ### Example parsing from a string and returning the content
@@ -104,24 +118,28 @@ require_once __DIR__ . '/vendor/autoload.php';
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerBuilder;
 
-$svgOptimizer = (new SvgOptimizerBuilder(new StringProvider('<svg>...</svg>')))
-    ->removeTitleAndDesc()
-    ->removeComments()
-    ->removeUnnecessaryWhitespace()
-    ->removeDefaultAttributes()
-    ->removeMetadata()
-    ->flattenGroups()
-    ->convertColorsToHex()
-    ->minifySvgCoordinates()
-    ->minifyTransformations()
-    ->build();
-
-echo $svgOptimizer->getContent();
-
-echo $svgOptimizer->getMetaData()->getOptimizedSize();
-echo $svgOptimizer->getMetaData()->getOriginalSize();
-echo $svgOptimizer->getMetaData()->getSavedBytes();
-echo $svgOptimizer->getMetaData()->getSavedPercentage();
+try {
+    $svgOptimizer = (new SvgOptimizerBuilder(new StringProvider('<svg>...</svg>')))
+        ->removeTitleAndDesc()
+        ->removeComments()
+        ->removeUnnecessaryWhitespace()
+        ->removeDefaultAttributes()
+        ->removeMetadata()
+        ->flattenGroups()
+        ->convertColorsToHex()
+        ->minifySvgCoordinates()
+        ->minifyTransformations()
+        ->build();
+    
+    echo $svgOptimizer->getContent();
+    
+    echo $svgOptimizer->getMetaData()->getOptimizedSize();
+    echo $svgOptimizer->getMetaData()->getOriginalSize();
+    echo $svgOptimizer->getMetaData()->getSavedBytes();
+    echo $svgOptimizer->getMetaData()->getSavedPercentage();
+} catch (\Exception $exception) {
+    echo $exception->getMessage();
+}
 ```
 
 ### Documentation
