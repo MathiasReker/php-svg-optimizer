@@ -147,6 +147,68 @@ final class FlattenGroupsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30"/></svg>
                 XML
         ];
+
+        yield 'Group with Multiple Attributes' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g stroke="black" stroke-width="2" fill="green">
+                        <rect x="10" y="10" width="30" height="30"/>
+                        <circle cx="50" cy="50" r="20"/>
+                    </g>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" stroke="black" stroke-width="2" fill="green"/><circle cx="50" cy="50" r="20" stroke="black" stroke-width="2" fill="green"/></svg>
+                XML
+        ];
+
+        yield 'Attributes Inherited from Parent Group' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g stroke="black">
+                        <g stroke-width="2">
+                            <rect x="10" y="10" width="30" height="30"/>
+                        </g>
+                        <circle cx="50" cy="50" r="20"/>
+                    </g>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" stroke-width="2" stroke="black"/><circle cx="50" cy="50" r="20" stroke="black"/></svg>
+                XML
+        ];
+
+        yield 'Groups with Mixed Attributes on Children' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g fill="blue">
+                        <rect x="10" y="10" width="30" height="30"/>
+                        <circle cx="50" cy="50" r="20" fill="red"/>
+                    </g>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" fill="blue"/><circle cx="50" cy="50" r="20" fill="red"/></svg>
+                XML
+        ];
+
+        yield 'Large SVG Document' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="10000" height="10000">
+                    <g>
+                        <rect x="100" y="100" width="3000" height="3000"/>
+                        <circle cx="5000" cy="5000" r="2000"/>
+                    </g>
+                    <g>
+                        <rect x="4000" y="4000" width="3000" height="3000"/>
+                        <circle cx="8000" cy="8000" r="2000"/>
+                    </g>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="10000" height="10000"><rect x="100" y="100" width="3000" height="3000"/><circle cx="5000" cy="5000" r="2000"/><rect x="4000" y="4000" width="3000" height="3000"/><circle cx="8000" cy="8000" r="2000"/></svg>
+                XML
+        ];
     }
 
     #[DataProvider('svgGroupsProvider')]

@@ -119,6 +119,71 @@ final class RemoveTitleAndDescTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><titleExtra>Extra Title</titleExtra><descExtra>Extra Description</descExtra><rect width="100" height="100" fill="red"/></svg>
                 XML
         ];
+
+        yield 'Handles SVG with Attributes in Title and Desc' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <title id="title1" lang="en">Title with Attributes</title>
+                    <desc lang="en" id="desc1">Description with Attributes</desc>
+                    <rect width="100" height="100" fill="blue"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="blue"/></svg>
+                XML
+        ];
+
+        yield 'Empty Title and Desc Elements' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <title></title>
+                    <desc></desc>
+                    <rect width="100" height="100" fill="blue"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="blue"/></svg>
+                XML
+        ];
+
+        yield 'Mixed Content with Title and Desc' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <title>This is a title</title>
+                    <desc>This is a description</desc>
+                    <rect width="100" height="100" fill="blue"/>
+                    <circle cx="50" cy="50" r="40" fill="red"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="blue"/><circle cx="50" cy="50" r="40" fill="red"/></svg>
+                XML
+        ];
+
+        yield 'Special Characters in Title and Desc' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <title>Title with &amp; special characters</title>
+                    <desc>Description with &lt; and &gt; special characters</desc>
+                    <rect width="100" height="100" fill="yellow"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="yellow"/></svg>
+                XML
+        ];
+
+        yield 'SVG with Only Title and Desc' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <title>Only Title</title>
+                    <desc>Only Description</desc>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>
+                XML
+        ];
     }
 
     #[DataProvider('svgTitleDescProvider')]

@@ -138,6 +138,76 @@ final class MinifySvgCoordinatesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="1e-5" cy="1e5" r="2e2"/></svg>
                 XML
         ];
+
+        // New test cases:
+
+        yield 'Handles Zero Values' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <rect x="0.0000000" y="0.0000000" width="0.0000000" height="0.0000000"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="0" y="0" width="0" height="0"/></svg>
+                XML
+        ];
+
+        yield 'Handles Very Small Values' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <circle cx="0.0000000001" cy="0.0000000001" r="0.0000000001"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="0.0000000001" cy="0.0000000001" r="0.0000000001"/></svg>
+                XML
+        ];
+
+        yield 'Handles Very Large Values' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <circle cx="1000000000.000000" cy="1000000000.000000" r="1000000000.000000"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="1000000000" cy="1000000000" r="1000000000"/></svg>
+                XML
+        ];
+
+        yield 'Handles Mixed Scientific and Decimal Notation' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <circle cx="1e-10" cy="1e10" r="1e-5"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="1e-10" cy="1e10" r="1e-5"/></svg>
+                XML
+        ];
+
+        yield 'Handles Negative Values' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <circle cx="-10.000000" cy="-20.000000" r="-30.000000"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="-10" cy="-20" r="-30"/></svg>
+                XML
+        ];
+
+        yield 'Handles Multiple Coordinated Elements' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <rect x="10.0000" y="20.0000" width="30.0000" height="40.0000"/>
+                    <circle cx="50.0000" cy="50.0000" r="25.0000"/>
+                    <path d="M10.0000 20.0000 L30.0000 40.0000"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="20" width="30" height="40"/><circle cx="50" cy="50" r="25"/><path d="M10 20 L30 40"/></svg>
+                XML
+        ];
     }
 
     #[DataProvider('svgCoordinatesProvider')]

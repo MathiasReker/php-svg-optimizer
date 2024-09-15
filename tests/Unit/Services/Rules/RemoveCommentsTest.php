@@ -134,6 +134,48 @@ final class RemoveCommentsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30"/></svg>
                 XML
         ];
+
+        // Additional Test Cases
+        yield 'Handles Comments with Inline SVG Elements' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <defs>
+                        <!-- Inline SVG Comment -->
+                        <linearGradient id="grad1">
+                            <stop offset="0%" style="stop-color:rgb(255,255,255);stop-opacity:1"/>
+                            <stop offset="100%" style="stop-color:rgb(0,0,0);stop-opacity:1"/>
+                        </linearGradient>
+                    </defs>
+                    <rect x="10" y="10" width="30" height="30"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><defs><linearGradient id="grad1"><stop offset="0%" style="stop-color:rgb(255,255,255);stop-opacity:1"/><stop offset="100%" style="stop-color:rgb(0,0,0);stop-opacity:1"/></linearGradient></defs><rect x="10" y="10" width="30" height="30"/></svg>
+                XML
+        ];
+
+        yield 'Handles Complex SVG Document' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <!-- Outer comment -->
+                    <g>
+                        <rect x="10" y="10" width="30" height="30"/>
+                        <!-- Inner comment -->
+                        <circle cx="50" cy="50" r="20"/>
+                        <defs>
+                            <!-- Comment in defs -->
+                            <linearGradient id="grad1">
+                                <stop offset="0%" style="stop-color:rgb(255,255,255);stop-opacity:1"/>
+                                <stop offset="100%" style="stop-color:rgb(0,0,0);stop-opacity:1"/>
+                            </linearGradient>
+                        </defs>
+                    </g>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/><defs><linearGradient id="grad1"><stop offset="0%" style="stop-color:rgb(255,255,255);stop-opacity:1"/><stop offset="100%" style="stop-color:rgb(0,0,0);stop-opacity:1"/></linearGradient></defs></g></svg>
+                XML
+        ];
     }
 
     #[DataProvider('svgCommentsProvider')]

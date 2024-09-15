@@ -79,6 +79,32 @@ final class RemoveDefaultAttributesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/><customElement customAttr="none"/></svg>
                 XML
         ];
+
+        yield 'Keeps Attributes with Different Values' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <rect x="10" y="10" width="30" height="30" stroke="red"/>
+                    <circle cx="50" cy="50" r="20" stroke="blue"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" stroke="red"/><circle cx="50" cy="50" r="20" stroke="blue"/></svg>
+                XML
+        ];
+
+        yield 'Removes Default Attributes from Nested Groups' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g stroke="none">
+                        <rect x="10" y="10" width="30" height="30" stroke="none"/>
+                        <circle cx="50" cy="50" r="20" stroke="none"/>
+                    </g>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></g></svg>
+                XML
+        ];
     }
 
     #[DataProvider('svgAttributesProvider')]

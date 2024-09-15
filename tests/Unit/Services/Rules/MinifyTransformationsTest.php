@@ -134,6 +134,73 @@ final class MinifyTransformationsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="scale(0.5,0.5)"><rect x="10" y="10" width="30" height="30"/></g></svg>
                 XML
         ];
+
+        yield 'Handles Multiple Transformations' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="translate(10,20) scale(2,0.5) rotate(45) skewX(10) skewY(20)">
+                        <rect x="10" y="10" width="30" height="30"/>
+                    </g>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(10,20) scale(2,0.5) rotate(45) skewX(10) skewY(20)"><rect x="10" y="10" width="30" height="30"/></g></svg>
+                XML
+        ];
+
+        yield 'Handles Nested Identity Transformations' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="translate(0,0)">
+                        <g transform="scale(1,1)">
+                            <circle cx="50" cy="50" r="20"/>
+                        </g>
+                    </g>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><g><circle cx="50" cy="50" r="20"/></g></g></svg>
+                XML
+        ];
+
+        yield 'Handles Complex Transformations with Percentages' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="translate(10%,20%) scale(50%,50%) rotate(45deg)">
+                        <rect x="10" y="10" width="30" height="30"/>
+                    </g>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(0.1,0.2) scale(0.5,0.5) rotate(45deg)"><rect x="10" y="10" width="30" height="30"/></g></svg>
+                XML
+        ];
+
+        yield 'Handles Single Transformations with Percentages' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="scale(75%)">
+                        <circle cx="50" cy="50" r="20"/>
+                    </g>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="scale(0.75)"><circle cx="50" cy="50" r="20"/></g></svg>
+                XML
+        ];
+
+        yield 'Handles Mixed Identity Transformations with Non-Identity' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="translate(0,0) scale(1,1) rotate(45)">
+                        <rect x="10" y="10" width="30" height="30"/>
+                    </g>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="rotate(45)"><rect x="10" y="10" width="30" height="30"/></g></svg>
+                XML
+        ];
     }
 
     #[DataProvider('svgTransformationsProvider')]

@@ -211,6 +211,107 @@ final class ConvertColorsToHexTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#808080"/><circle cx="50" cy="50" r="40" stroke="#008000"/></svg>
                 XML
         ];
+
+        yield 'Converts RGB with leading/trailing spaces' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <rect width="100" height="100" fill="   rgb( 255, 0, 0 )   "/>
+                    <circle cx="50" cy="50" r="40" stroke="   rgb(0, 255, 0)   "/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#f00"/><circle cx="50" cy="50" r="40" stroke="#0f0"/></svg>
+                XML
+        ];
+
+        yield 'Handles missing color values in RGB' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <rect width="100" height="100" fill="rgb(255, 0)"/>
+                    <circle cx="50" cy="50" r="40" stroke="rgb(0, , 0)"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="rgb(255, 0)"/><circle cx="50" cy="50" r="40" stroke="rgb(0, , 0)"/></svg>
+                XML
+        ];
+
+        yield 'Ignores RGB colors with invalid values' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <rect width="100" height="100" fill="rgb(-1, 256, 300)"/>
+                    <circle cx="50" cy="50" r="40" stroke="rgb(256, 256, 256)"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="rgb(-1, 256, 300)"/><circle cx="50" cy="50" r="40" stroke="rgb(256, 256, 256)"/></svg>
+                XML
+        ];
+
+        yield 'Properly handles inline SVGs with nested elements' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g>
+                        <rect width="50" height="50" fill="rgb(128, 128, 128)"/>
+                        <circle cx="25" cy="25" r="20" stroke="rgb(0, 128, 0)"/>
+                    </g>
+                    <g>
+                        <ellipse cx="75" cy="75" rx="20" ry="10" fill="rgb(255, 255, 255)"/>
+                    </g>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><rect width="50" height="50" fill="#808080"/><circle cx="25" cy="25" r="20" stroke="#008000"/></g><g><ellipse cx="75" cy="75" rx="20" ry="10" fill="#fff"/></g></svg>
+                XML
+        ];
+
+        yield 'Handles multiple color attributes on same element' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <rect width="100" height="100" fill="rgb(255, 0, 0)" stroke="rgb(0, 255, 0)"/>
+                    <circle cx="50" cy="50" r="40" fill="rgb(0, 0, 255)" stroke="rgb(255, 255, 0)"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#f00" stroke="#0f0"/><circle cx="50" cy="50" r="40" fill="#00f" stroke="#ff0"/></svg>
+                XML
+        ];
+
+        yield 'Handles non-standard attributes with RGB values' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <rect width="100" height="100" data-color="rgb(255, 0, 0)" />
+                    <circle cx="50" cy="50" r="40" data-stroke="rgb(0, 255, 0)" />
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" data-color="rgb(255, 0, 0)"/><circle cx="50" cy="50" r="40" data-stroke="rgb(0, 255, 0)"/></svg>
+                XML
+        ];
+
+        yield 'Handles colors with extra whitespace' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <rect width="100" height="100" fill=" rgb(255, 0, 0) "/>
+                    <circle cx="50" cy="50" r="40" stroke="rgb(0, 255, 0)  "/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#f00"/><circle cx="50" cy="50" r="40" stroke="#0f0"/></svg>
+                XML
+        ];
+
+        yield 'Ignore unsupported color formats (HSL and others)' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <rect width="100" height="100" fill="hsl(120, 100%, 50%)"/>
+                    <circle cx="50" cy="50" r="40" stroke="hsla(240, 100%, 50%, 0.5)"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="hsl(120, 100%, 50%)"/><circle cx="50" cy="50" r="40" stroke="hsla(240, 100%, 50%, 0.5)"/></svg>
+                XML
+        ];
     }
 
     #[DataProvider('svgContentProvider')]
