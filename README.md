@@ -66,7 +66,7 @@ try {
     echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
     echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
     echo sprintf('Saved bytes: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
-    echo sprintf('Saved percentage: %s %%%s', number_format($metaData->getSavedPercentage(), 2), \PHP_EOL);
+    echo sprintf('Saved percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
@@ -105,7 +105,7 @@ try {
     echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
     echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
     echo sprintf('Saved bytes: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
-    echo sprintf('Saved percentage: %s %%%s', number_format($metaData->getSavedPercentage(), 2), \PHP_EOL);
+    echo sprintf('Saved percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
@@ -143,7 +143,7 @@ try {
     echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
     echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
     echo sprintf('Saved bytes: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
-    echo sprintf('Saved percentage: %s %%%s', number_format($metaData->getSavedPercentage(), 2), \PHP_EOL);
+    echo sprintf('Saved percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
