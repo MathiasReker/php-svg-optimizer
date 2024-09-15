@@ -32,7 +32,8 @@
     "rector/rector": "^1.2",
     "shipmonk/phpstan-rules": "^3.2",
     "squizlabs/php_codesniffer": "^3.10",
-    "symplify/phpstan-rules": "^13.0"
+    "symplify/phpstan-rules": "^13.0",
+    "tomasvotruba/cognitive-complexity": "^0.2.3"
   },
   "autoload": {
     "psr-4": {
