@@ -33,7 +33,7 @@ final class StringProvider implements SvgProviderInterface
     /**
      * The optimized SVG content.
      */
-    private string $output;
+    private string $outputContent;
 
     /**
      * The DOMDocumentWrapper instance.
@@ -69,7 +69,7 @@ final class StringProvider implements SvgProviderInterface
             throw new XmlProcessingException('Failed to process XML content.');
         }
 
-        $this->output = trim($xmlContent);
+        $this->outputContent = trim($xmlContent);
 
         return $this;
     }
@@ -81,7 +81,7 @@ final class StringProvider implements SvgProviderInterface
      */
     public function getOutputContent(): string
     {
-        return $this->output;
+        return $this->outputContent;
     }
 
     /**
@@ -105,7 +105,7 @@ final class StringProvider implements SvgProviderInterface
     {
         $metaData = new MetaData(
             mb_strlen($this->input, '8bit'),
-            mb_strlen($this->output, '8bit')
+            mb_strlen($this->outputContent, '8bit')
         );
 
         return $metaData->toValueObject();
