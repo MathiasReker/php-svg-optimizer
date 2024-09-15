@@ -404,4 +404,4 @@ composer format
 ### License
 
 This project is licensed under the MIT License. See
-the [LICENSE](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/LICENSE.txt) file for more information.
+the [LICENSE](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/LICENSE) file for more information.
