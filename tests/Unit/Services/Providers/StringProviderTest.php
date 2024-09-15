@@ -14,6 +14,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
+use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\Exception;
@@ -22,6 +23,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(MetaData::class)]
 #[CoversClass(MetaDataValueObject::class)]
+#[CoversClass(DomDocumentWrapper::class)]
 final class StringProviderTest extends TestCase
 {
     private const TEST_INPUT_STRING = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>';

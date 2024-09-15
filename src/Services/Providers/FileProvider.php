@@ -51,6 +51,8 @@ final class FileProvider implements SvgProviderInterface
      *
      * @param string      $inputFile  The path to the input SVG file
      * @param string|null $outputFile The optional path to the output SVG file. If null, the output is not saved to a file
+     *
+     * @phpstan-ignore-next-line
      */
     public function __construct(
         private readonly string $inputFile,

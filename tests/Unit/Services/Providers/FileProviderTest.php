@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
+use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\Exception;
@@ -23,6 +24,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(FileProvider::class)]
 #[CoversClass(MetaData::class)]
 #[CoversClass(MetaDataValueObject::class)]
+#[CoversClass(DomDocumentWrapper::class)]
 final class FileProviderTest extends TestCase
 {
     private const TEST_INPUT_FILE = 'input.svg';

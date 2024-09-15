@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Rules;
 use MathiasReker\PhpSvgOptimizer\Models\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDefaultAttributes;
+use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -23,6 +24,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
+#[CoversClass(DomDocumentWrapper::class)]
 final class RemoveDefaultAttributesTest extends TestCase
 {
     public static function svgAttributesProvider(): \Iterator
