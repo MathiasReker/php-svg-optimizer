@@ -15,7 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 /**
  * Represents metadata about SVG optimization, including original and optimized sizes.
  */
-readonly class MetaData
+final readonly class MetaData
 {
     /**
      * Constructor for MetaData.

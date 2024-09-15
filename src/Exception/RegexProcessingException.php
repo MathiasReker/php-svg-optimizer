@@ -13,6 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Exception;
 /**
  * Exception thrown when regex processing fails.
  */
-class RegexProcessingException extends \InvalidArgumentException
+final class RegexProcessingException extends \InvalidArgumentException
 {
 }

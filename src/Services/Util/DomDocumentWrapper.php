@@ -8,22 +8,31 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Services\Providers;
+namespace MathiasReker\PhpSvgOptimizer\Services\Util;
 
 use DOMDocument;
+use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
-abstract class AbstractDomDocument
+final class DomDocumentWrapper
 {
     /**
      * Saves the current DOMDocument content as an XML string.
      *
      * @param \DOMDocument $domDocument The DOMDocument instance to be saved
      *
-     * @return string|false Returns the XML content as a string or null on failure
+     * @return string Returns the XML content as a string
+     *
+     * @throws XmlProcessingException If the XML content cannot be saved
      */
-    public function saveToString(\DOMDocument $domDocument): false|string
+    public function saveToString(\DOMDocument $domDocument): string
     {
-        return $domDocument->saveXML();
+        $saveXML = $domDocument->saveXML();
+
+        if (false === $saveXML) {
+            throw new XmlProcessingException('Failed to save XML content.');
+        }
+
+        return $saveXML;
     }
 
     /**
@@ -31,9 +40,11 @@ abstract class AbstractDomDocument
      *
      * @param string $filePath The path to the XML file
      *
-     * @return \DOMDocument|null Returns the loaded DOMDocument or null on failure
+     * @return \DOMDocument Returns the loaded DOMDocument
+     *
+     * @throws \RuntimeException If the XML file cannot be loaded
      */
-    public function loadFromFile(string $filePath): ?\DOMDocument
+    public function loadFromFile(string $filePath): \DOMDocument
     {
         return $this->loadDomDocument(static fn (\DOMDocument $domDocument): bool => $domDocument->load($filePath));
     }
@@ -43,9 +54,11 @@ abstract class AbstractDomDocument
      *
      * @param callable $loader A callback that loads the DOMDocument (file or string)
      *
-     * @return \DOMDocument|null Returns the loaded DOMDocument or null on failure
+     * @return \DOMDocument Returns the loaded DOMDocument
+     *
+     * @throws XmlProcessingException If the DOMDocument fails to load
      */
-    private function loadDomDocument(callable $loader): ?\DOMDocument
+    private function loadDomDocument(callable $loader): \DOMDocument
     {
         $domDocument = $this->createDomDocument();
         libxml_use_internal_errors(true);
@@ -54,7 +67,7 @@ abstract class AbstractDomDocument
             libxml_clear_errors();
             libxml_use_internal_errors(false);
 
-            return null;
+            throw new XmlProcessingException('Failed to load DOMDocument.');
         }
 
         libxml_use_internal_errors(false);
@@ -79,9 +92,9 @@ abstract class AbstractDomDocument
      *
      * @param string $xmlContent The XML content as a string
      *
-     * @return \DOMDocument|null Returns the loaded DOMDocument or null on failure
+     * @return \DOMDocument Returns the loaded DOMDocument
      */
-    public function loadFromString(string $xmlContent): ?\DOMDocument
+    public function loadFromString(string $xmlContent): \DOMDocument
     {
         return $this->loadDomDocument(static fn (\DOMDocument $domDocument): bool => $domDocument->loadXML($xmlContent));
     }

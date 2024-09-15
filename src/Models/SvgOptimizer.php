@@ -16,7 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterf
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
 
-class SvgOptimizer
+final class SvgOptimizer
 {
     /**
      * Array of optimization rules to be applied to the SVG document.
@@ -33,15 +33,21 @@ class SvgOptimizer
     private ?string $domDocument = null;
 
     /**
+     * The SVG validator used to check the validity of the SVG content.
+     *
+     * @var SvgValidator The SVG validator
+     */
+    private readonly SvgValidator $svgValidator;
+
+    /**
      * SvgOptimizer constructor.
      *
-     * @param SvgProviderInterface $svgProvider  The provider used to get and save SVG content
-     * @param SvgValidator         $svgValidator The validator used to check the validity of the SVG content
+     * @param SvgProviderInterface $svgProvider The provider used to get and save SVG content
      */
     public function __construct(
-        private readonly SvgProviderInterface $svgProvider,
-        private readonly SvgValidator $svgValidator = new SvgValidator()
+        private readonly SvgProviderInterface $svgProvider
     ) {
+        $this->svgValidator = new SvgValidator();
     }
 
     /**

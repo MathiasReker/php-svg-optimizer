@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-class FlattenGroups implements SvgOptimizerRuleInterface
+final class FlattenGroups implements SvgOptimizerRuleInterface
 {
     /**
      * Flatten groups in the SVG document by applying their attributes to child elements
@@ -56,12 +56,42 @@ class FlattenGroups implements SvgOptimizerRuleInterface
     {
         foreach ($domElement->childNodes as $child) {
             if ($child instanceof \DOMElement) {
-                foreach ($domElement->attributes as $attr) {
-                    if ($attr instanceof \DOMAttr && !$child->hasAttribute($attr->nodeName) && \is_string($attr->nodeValue)) {
-                        $child->setAttribute($attr->nodeName, $attr->nodeValue);
-                    }
-                }
+                $this->applyAttributesToChild($domElement, $child);
             }
+        }
+    }
+
+    /**
+     * Apply the attributes of a parent element to a child element.
+     *
+     * This method iterates over the attributes of the parent element and sets them on the child element,
+     * but only if the child does not already have that attribute.
+     *
+     * @param \DOMElement $parent The parent element whose attributes will be applied to the child
+     * @param \DOMElement $child  The child element to which the parent's attributes will be applied
+     */
+    private function applyAttributesToChild(\DOMElement $parent, \DOMElement $child): void
+    {
+        /**
+         * @var \DOMAttr $attribute
+         */
+        foreach ($parent->attributes as $attribute) {
+            $this->setAttributeIfNotExists($child, $attribute);
+        }
+    }
+
+    /**
+     * Set an attribute on an element if it does not already exist.
+     *
+     * This method sets an attribute on an element if the element does not already have that attribute.
+     *
+     * @param \DOMElement $domElement The element to which the attribute will be applied
+     * @param \DOMAttr    $domAttr    The attribute to be applied to the element
+     */
+    private function setAttributeIfNotExists(\DOMElement $domElement, \DOMAttr $domAttr): void
+    {
+        if (!$domElement->hasAttribute($domAttr->nodeName) && \is_string($domAttr->nodeValue)) {
+            $domElement->setAttribute($domAttr->nodeName, $domAttr->nodeValue);
         }
     }
 

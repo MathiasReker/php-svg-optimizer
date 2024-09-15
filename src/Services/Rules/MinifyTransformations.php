@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-class MinifyTransformations implements SvgOptimizerRuleInterface
+final class MinifyTransformations implements SvgOptimizerRuleInterface
 {
     /**
      * Regex pattern to match percentage values in transformations.

@@ -15,7 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterf
 use MathiasReker\PhpSvgOptimizer\Exception\RegexProcessingException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
-class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
+final class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
 {
     /**
      * Regex pattern for matching attribute values.

@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Models;
 /**
  * Represents metadata about SVG optimization, including sizes and savings.
  */
-readonly class MetaDataValueObject
+final readonly class MetaDataValueObject
 {
     /**
      * Constructor for MetaDataValueObject.

@@ -15,8 +15,9 @@ use MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers\SvgProviderInterfa
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
+use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 
-class StringProvider extends AbstractDomDocument implements SvgProviderInterface
+final class StringProvider implements SvgProviderInterface
 {
     /**
      * Regex pattern for XML declaration.
@@ -35,12 +36,19 @@ class StringProvider extends AbstractDomDocument implements SvgProviderInterface
     private string $output;
 
     /**
+     * The DOMDocumentWrapper instance.
+     */
+    private readonly DomDocumentWrapper $domDocumentWrapper;
+
+    /**
      * Constructor for StringProvider.
      *
      * @param string $input The SVG content as a string
      */
-    public function __construct(private readonly string $input)
-    {
+    public function __construct(
+        private readonly string $input,
+    ) {
+        $this->domDocumentWrapper = new DomDocumentWrapper();
     }
 
     /**
@@ -54,11 +62,7 @@ class StringProvider extends AbstractDomDocument implements SvgProviderInterface
      */
     public function optimize(\DOMDocument $domDocument): self
     {
-        $xmlContent = $this->saveToString($domDocument);
-
-        if (false === \is_string($xmlContent)) {
-            throw new XmlProcessingException('Failed to save XML content.');
-        }
+        $xmlContent = $this->domDocumentWrapper->saveToString($domDocument);
 
         $xmlContent = preg_replace(self::XML_DECLARATION_REGEX, '', $xmlContent);
         if (null === $xmlContent) {
@@ -84,18 +88,10 @@ class StringProvider extends AbstractDomDocument implements SvgProviderInterface
      * Load the input string into a DOMDocument instance.
      *
      * @return \DOMDocument The DOMDocument instance loaded with the input XML
-     *
-     * @throws XmlProcessingException If the input string cannot be loaded as valid XML
      */
     public function load(): \DOMDocument
     {
-        $domDocument = $this->loadFromString($this->input);
-
-        if (!$domDocument instanceof \DOMDocument) {
-            throw new XmlProcessingException('The provided input could not be loaded as valid XML.');
-        }
-
-        return $domDocument;
+        return $this->domDocumentWrapper->loadFromString($this->input);
     }
 
     /**

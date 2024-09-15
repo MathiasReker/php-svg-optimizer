@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-class ConvertColorsToHex implements SvgOptimizerRuleInterface
+final class ConvertColorsToHex implements SvgOptimizerRuleInterface
 {
     /**
      * Regex pattern for RGB color values.

@@ -13,6 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Exception;
 /**
  * Exception thrown when files size cannot be determined.
  */
-class FileSizeException extends \RuntimeException
+final class FileSizeException extends \RuntimeException
 {
 }

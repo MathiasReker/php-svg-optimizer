@@ -13,6 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Exception;
 /**
  * Exception thrown when a file cannot be loaded.
  */
-class FileLoadingException extends \RuntimeException
+final class FileLoadingException extends \RuntimeException
 {
 }

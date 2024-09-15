@@ -13,6 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Exception;
 /**
  * Exception thrown when SVG validation fails.
  */
-class SvgValidationException extends \InvalidArgumentException
+final class SvgValidationException extends \InvalidArgumentException
 {
 }

@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Validators;
 
-class SvgValidator
+final class SvgValidator
 {
     /**
      * Regular expression to match the XML declaration.
@@ -55,16 +55,12 @@ class SvgValidator
      * the presence of an SVG tag after removing any XML and DOCTYPE
      * declarations.
      *
-     * @param string|null $svgContent The SVG content to be validated
+     * @param string $svgContent The SVG content to be validated
      *
      * @return bool True if the content is a valid SVG, false otherwise
      */
-    public function isValid(?string $svgContent): bool
+    public function isValid(string $svgContent): bool
     {
-        if (null === $svgContent) {
-            return false;
-        }
-
         $cleanedContent = $this->removeUnnecessaryDeclarations($svgContent);
 
         return $this->containsSvgTag($cleanedContent);

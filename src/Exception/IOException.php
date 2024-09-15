@@ -13,6 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Exception;
 /**
  * Exception thrown when an IO operation fails.
  */
-class IOException extends \RuntimeException
+final class IOException extends \RuntimeException
 {
 }

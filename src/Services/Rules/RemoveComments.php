@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-class RemoveComments implements SvgOptimizerRuleInterface
+final class RemoveComments implements SvgOptimizerRuleInterface
 {
     /**
      * Remove all comments from the SVG document.

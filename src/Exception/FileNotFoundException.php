@@ -13,6 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Exception;
 /**
  * Exception thrown when a file is not found.
  */
-class FileNotFoundException extends \RuntimeException
+final class FileNotFoundException extends \RuntimeException
 {
 }

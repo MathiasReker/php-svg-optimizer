@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-class RemoveDefaultAttributes implements SvgOptimizerRuleInterface
+final class RemoveDefaultAttributes implements SvgOptimizerRuleInterface
 {
     /**
      * Default attributes to be removed from the SVG document.

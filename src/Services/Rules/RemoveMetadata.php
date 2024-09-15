@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-class RemoveMetadata implements SvgOptimizerRuleInterface
+final class RemoveMetadata implements SvgOptimizerRuleInterface
 {
     /**
      * Remove the metadata elements from the SVG document.

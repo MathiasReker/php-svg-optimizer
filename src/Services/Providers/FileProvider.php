@@ -12,15 +12,15 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Providers;
 
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers\SvgProviderInterface;
-use MathiasReker\PhpSvgOptimizer\Exception\FileLoadingException;
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\FileSizeException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
+use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 
-class FileProvider extends AbstractDomDocument implements SvgProviderInterface
+final class FileProvider implements SvgProviderInterface
 {
     /**
      * Regex pattern for XML declaration.
@@ -34,12 +34,17 @@ class FileProvider extends AbstractDomDocument implements SvgProviderInterface
     /**
      * Holds the optimized SVG content.
      */
-    private string $output;
+    private string $outputContent;
 
     /**
      * The content of the input file.
      */
     private readonly string $inputContent;
+
+    /**
+     * The DOMDocumentWrapper instance.
+     */
+    private readonly DomDocumentWrapper $domDocumentWrapper;
 
     /**
      * FileProvider constructor.
@@ -51,6 +56,8 @@ class FileProvider extends AbstractDomDocument implements SvgProviderInterface
         private readonly string $inputFile,
         private readonly ?string $outputFile = null
     ) {
+        $this->domDocumentWrapper = new DomDocumentWrapper();
+
         // Store the content without any optimization to have a reference for metadata.
         $this->inputContent = $this->getInputContent();
     }
@@ -90,10 +97,7 @@ class FileProvider extends AbstractDomDocument implements SvgProviderInterface
      */
     public function optimize(\DOMDocument $domDocument): self
     {
-        $xmlContent = $this->saveToString($domDocument);
-        if (false === $xmlContent) {
-            throw new XmlProcessingException('Failed to save XML content as a string.');
-        }
+        $xmlContent = $this->domDocumentWrapper->saveToString($domDocument);
 
         $xmlContent = (string) preg_replace(self::XML_DECLARATION_REGEX, '', $xmlContent);
 
@@ -105,7 +109,7 @@ class FileProvider extends AbstractDomDocument implements SvgProviderInterface
             }
         }
 
-        $this->output = trim($xmlContent);
+        $this->outputContent = trim($xmlContent);
 
         return $this;
     }
@@ -131,27 +135,17 @@ class FileProvider extends AbstractDomDocument implements SvgProviderInterface
      */
     public function getOutputContent(): string
     {
-        return $this->output;
+        return $this->outputContent;
     }
 
     /**
      * Load the input file into a DOMDocument instance.
      *
      * @return \DOMDocument The DOMDocument instance loaded with the input SVG file
-     *
-     * @throws FileLoadingException If the SVG content cannot be loaded into a DOMDocument
      */
     public function load(): \DOMDocument
     {
-        $domDocument = $this->loadFromFile($this->inputFile);
-
-        if (!$domDocument instanceof \DOMDocument) {
-            $errorMessage = \sprintf('Unable to load SVG content from file: %s', $this->inputFile);
-
-            throw new FileLoadingException($errorMessage);
-        }
-
-        return $domDocument;
+        return $this->domDocumentWrapper->loadFromFile($this->inputFile);
     }
 
     /**
@@ -166,7 +160,7 @@ class FileProvider extends AbstractDomDocument implements SvgProviderInterface
         $originalSize = mb_strlen($this->inputContent, '8bit');
 
         $optimizedSize = null === $this->outputFile
-            ? mb_strlen($this->output, '8bit')
+            ? mb_strlen($this->outputContent, '8bit')
             : filesize($this->outputFile);
 
         if (false === $optimizedSize) {
