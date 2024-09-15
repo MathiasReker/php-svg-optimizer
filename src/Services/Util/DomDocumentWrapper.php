@@ -83,6 +83,8 @@ final class DomDocumentWrapper
         $domDocument = new \DOMDocument();
         $domDocument->formatOutput = false;
         $domDocument->preserveWhiteSpace = false;
+        $domDocument->encoding = 'UTF-8';
+        $domDocument->xmlVersion = '1.0';
 
         return $domDocument;
     }
