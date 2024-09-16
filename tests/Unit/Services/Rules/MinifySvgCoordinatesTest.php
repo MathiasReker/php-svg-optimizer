@@ -139,8 +139,6 @@ final class MinifySvgCoordinatesTest extends TestCase
                 XML
         ];
 
-        // New test cases:
-
         yield 'Handles Zero Values' => [
             <<<XML
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">

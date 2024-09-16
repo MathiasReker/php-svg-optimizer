@@ -135,7 +135,6 @@ final class RemoveCommentsTest extends TestCase
                 XML
         ];
 
-        // Additional Test Cases
         yield 'Handles Comments with Inline SVG Elements' => [
             <<<XML
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
