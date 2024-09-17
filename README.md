@@ -46,10 +46,10 @@ declare(strict_types=1);
 require_once __DIR__ . '/vendor/autoload.php';
 
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
-use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerBuilder;
+use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 
 try {
-    $svgOptimizer = (new SvgOptimizerBuilder(new FileProvider('path/to/source.svg', 'path/to/output.svg')))
+    $svgOptimizer = (new SvgOptimizerService(new FileProvider('path/to/source.svg')))
         ->removeTitleAndDesc()
         ->removeComments()
         ->removeUnnecessaryWhitespace()
@@ -59,14 +59,15 @@ try {
         ->convertColorsToHex()
         ->minifySvgCoordinates()
         ->minifyTransformations()
-        ->build();
+        ->optimize()
+        ->saveToFile('path/to/output.svg');
 
     $metaData = $svgOptimizer->getMetaData();
 
     echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
     echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
-    echo sprintf('Saved bytes: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
-    echo sprintf('Saved percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
+    echo sprintf('Size reduction: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
+    echo sprintf('Reduction percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
@@ -83,10 +84,10 @@ declare(strict_types=1);
 require_once __DIR__ . '/vendor/autoload.php';
 
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
-use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerBuilder;
+use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 
 try {
-    $svgOptimizer = (new SvgOptimizerBuilder(new FileProvider('path/to/source.svg')))
+    $svgOptimizer = (new SvgOptimizerService(new FileProvider('path/to/source.svg')))
         ->removeTitleAndDesc()
         ->removeComments()
         ->removeUnnecessaryWhitespace()
@@ -96,7 +97,7 @@ try {
         ->convertColorsToHex()
         ->minifySvgCoordinates()
         ->minifyTransformations()
-        ->build();
+        ->optimize();
 
     echo sprintf('Get content: ', $svgOptimizer->getContent(), \PHP_EOL);
      
@@ -104,8 +105,8 @@ try {
 
     echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
     echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
-    echo sprintf('Saved bytes: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
-    echo sprintf('Saved percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
+    echo sprintf('Size reduction: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
+    echo sprintf('Reduction percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
@@ -121,10 +122,10 @@ declare(strict_types=1);
 require_once __DIR__ . '/vendor/autoload.php';
 
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
-use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerBuilder;
+use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 
 try {
-    $svgOptimizer = (new SvgOptimizerBuilder(new StringProvider('<svg>...</svg>')))
+    $svgOptimizer = (new SvgOptimizerService(new StringProvider('<svg>...</svg>')))
         ->removeTitleAndDesc()
         ->removeComments()
         ->removeUnnecessaryWhitespace()
@@ -134,16 +135,16 @@ try {
         ->convertColorsToHex()
         ->minifySvgCoordinates()
         ->minifyTransformations()
-        ->build();
+        ->optimize();
 
-    echo sprintf('Get content: ', $svgOptimizer->getContent(), \PHP_EOL);
+    echo sprintf('Content: ', $svgOptimizer->getContent(), \PHP_EOL);
      
     $metaData = $svgOptimizer->getMetaData();
 
     echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
     echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
-    echo sprintf('Saved bytes: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
-    echo sprintf('Saved percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
+    echo sprintf('Size reduction: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
+    echo sprintf('Reduction percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
@@ -159,7 +160,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/vendor/autoload.php';
 
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
-use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerBuilder;
+use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 
 $totalOriginalSize = 0;
 $totalOptimizedSize = 0;
@@ -167,7 +168,7 @@ $optimizedFiles = 0;
 
 $optimizeSvg = function (string $filePath) use (&$totalOriginalSize, &$totalOptimizedSize, &$optimizedFiles): void {
     try {
-        $svgOptimizer = (new SvgOptimizerBuilder(new FileProvider($filePath, $filePath)))
+        $svgOptimizer = (new SvgOptimizerService(new FileProvider($filePath)))
             ->removeTitleAndDesc()
             ->removeComments()
             ->removeUnnecessaryWhitespace()
@@ -177,7 +178,8 @@ $optimizeSvg = function (string $filePath) use (&$totalOriginalSize, &$totalOpti
             ->convertColorsToHex()
             ->minifySvgCoordinates()
             ->minifyTransformations()
-            ->build();
+            ->optimize()
+            ->saveToFile($filePath);
 
         $metaData = $svgOptimizer->getMetaData();
         $totalOriginalSize += $metaData->getOriginalSize();
@@ -214,7 +216,7 @@ echo sprintf('Total reduction percentage: %s %%%s', number_format($reductionPerc
 The constructor initializes the SVG optimizer with an SVG provider.
 
 ```php
-$svgOptimizer = new SvgOptimizerBuilder(new FileProvider('path/to/source.svg', 'path/to/output.svg'));
+$svgOptimizer = new SvgOptimizerBuilder(new FileProvider('path/to/source.svg'));
 ```
 
 or
@@ -286,7 +288,13 @@ $svgOptimizer->minifyTransformations();
 `optimize` Finalizes the optimization process and generates the optimized SVG file.
 
 ```php
-$svgOptimizer->build();
+$svgOptimizer->optimize();
+```
+
+`saveToFile` Saves the optimized SVG file to the specified path.
+
+```php
+$svgOptimizer->saveToFile('path/to/output.svg');
 ```
 
 `getContent` Returns the optimized SVG content.

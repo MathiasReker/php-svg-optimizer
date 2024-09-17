@@ -31,7 +31,7 @@ use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnnecessaryWhitespace;
  *
  * @see https://github.com/MathiasReker/php-svg-optimizer
  */
-final readonly class SvgOptimizerBuilder
+final readonly class SvgOptimizerService
 {
     private SvgOptimizer $svgOptimizer;
 
@@ -160,7 +160,7 @@ final readonly class SvgOptimizerBuilder
      *
      * @return $this The current instance for method chaining
      */
-    public function build(): self
+    public function optimize(): self
     {
         $this->svgOptimizer->optimize();
 
@@ -175,6 +175,18 @@ final readonly class SvgOptimizerBuilder
     public function getContent(): string
     {
         return $this->svgOptimizer->getContent();
+    }
+
+    /**
+     * Save the optimized SVG content to a file.
+     *
+     * @param string $outputPath The path to save the optimized SVG content to
+     */
+    public function saveToFile(string $outputPath): self
+    {
+        $this->svgOptimizer->saveToFile($outputPath);
+
+        return $this;
     }
 
     /**

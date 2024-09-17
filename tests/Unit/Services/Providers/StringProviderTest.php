@@ -31,7 +31,7 @@ final class StringProviderTest extends TestCase
     public function testLoad(): void
     {
         $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
-        $domDocument = $stringProvider->load();
+        $domDocument = $stringProvider->loadContent();
 
         Assert::assertInstanceOf(\DOMDocument::class, $domDocument);
     }
@@ -39,7 +39,7 @@ final class StringProviderTest extends TestCase
     public function testOptimize(): void
     {
         $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
-        $domDocument = $stringProvider->load();
+        $domDocument = $stringProvider->loadContent();
 
         $stringProvider->optimize($domDocument);
 
@@ -56,7 +56,7 @@ final class StringProviderTest extends TestCase
     public function testGetMetaData(): void
     {
         $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
-        $domDocument = $stringProvider->load();
+        $domDocument = $stringProvider->loadContent();
 
         $stringProvider->optimize($domDocument);
 

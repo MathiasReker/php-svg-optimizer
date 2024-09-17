@@ -29,7 +29,7 @@ interface SvgProviderInterface
      *
      * @return \DOMDocument The DOMDocument instance representing the loaded SVG content
      */
-    public function load(): \DOMDocument;
+    public function loadContent(): \DOMDocument;
 
     /**
      * Optimizes the provided DOMDocument instance.
@@ -74,4 +74,13 @@ interface SvgProviderInterface
      * @return MetaDataValueObject The metadata about the optimization process
      */
     public function getMetaData(): MetaDataValueObject;
+
+    /**
+     * Save the optimized SVG content to a file.
+     *
+     * This method saves the optimized SVG content to the specified file path.
+     *
+     * @param string $outputPath The path to save the optimized SVG content to
+     */
+    public function saveToFile(string $outputPath): self;
 }

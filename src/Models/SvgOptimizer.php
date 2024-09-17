@@ -75,7 +75,7 @@ final class SvgOptimizer
             throw new SvgValidationException('The file does not appear to be a valid SVG file.');
         }
 
-        $domDocument = $this->svgProvider->load();
+        $domDocument = $this->svgProvider->loadContent();
         $this->applyRules($domDocument);
         $this->domDocument = $this->svgProvider->optimize($domDocument)->getOutputContent();
 
@@ -112,5 +112,17 @@ final class SvgOptimizer
     public function getContent(): string
     {
         return $this->domDocument ?? '';
+    }
+
+    /**
+     * Save the optimized SVG content to a file.
+     *
+     * @param string $outputPath The path to save the optimized SVG content to
+     */
+    public function saveToFile(string $outputPath): self
+    {
+        $this->svgProvider->saveToFile($outputPath);
+
+        return $this;
     }
 }

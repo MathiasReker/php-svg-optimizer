@@ -29,11 +29,9 @@ final class FileProviderTest extends TestCase
 {
     private const TEST_INPUT_FILE = 'input.svg';
 
-    private const TEST_OUTPUT_FILE = 'output.svg';
-
     public function testGetInputContent(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE, self::TEST_OUTPUT_FILE);
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
         $content = $fileProvider->getInputContent();
 
         Assert::assertStringContainsString('<svg', $content);
@@ -42,13 +40,12 @@ final class FileProviderTest extends TestCase
 
     public function testOptimize(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE, self::TEST_OUTPUT_FILE);
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>');
 
         $fileProvider->optimize($domDocument);
 
-        Assert::assertFileExists(self::TEST_OUTPUT_FILE);
         $outputContent = $fileProvider->getOutputContent();
         Assert::assertStringContainsString('<svg', $outputContent);
         Assert::assertStringContainsString('</svg>', $outputContent);
@@ -56,15 +53,15 @@ final class FileProviderTest extends TestCase
 
     public function testLoad(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE, self::TEST_OUTPUT_FILE);
-        $domDocument = $fileProvider->load();
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $domDocument = $fileProvider->loadContent();
 
         Assert::assertInstanceOf(\DOMDocument::class, $domDocument);
     }
 
     public function testGetMetaData(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE, self::TEST_OUTPUT_FILE);
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>');
 
@@ -73,7 +70,6 @@ final class FileProviderTest extends TestCase
         $metaDataValueObject = $fileProvider->getMetaData();
 
         Assert::assertSame(filesize(self::TEST_INPUT_FILE), $metaDataValueObject->getOriginalSize());
-        Assert::assertSame(filesize(self::TEST_OUTPUT_FILE), $metaDataValueObject->getOptimizedSize());
     }
 
     public function testGetInputContentThrowsExceptionIfFileDoesNotExist(): void
@@ -81,7 +77,7 @@ final class FileProviderTest extends TestCase
         $this->expectException(FileNotFoundException::class);
         $this->expectExceptionMessage('Input file does not exist: nonexistent.svg');
 
-        new FileProvider('nonexistent.svg', self::TEST_OUTPUT_FILE);
+        new FileProvider('nonexistent.svg');
     }
 
     /**
@@ -89,7 +85,7 @@ final class FileProviderTest extends TestCase
      */
     public function testOptimizeThrowsExceptionIfSaveXMLFails(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE, self::TEST_OUTPUT_FILE);
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
         $domDocument = $this->createMock(\DOMDocument::class);
         $domDocument->method('saveXML')->willReturn(false);
 
@@ -112,10 +108,6 @@ final class FileProviderTest extends TestCase
         // Clean up the files created during the test
         if (file_exists(self::TEST_INPUT_FILE)) {
             unlink(self::TEST_INPUT_FILE);
-        }
-
-        if (file_exists(self::TEST_OUTPUT_FILE)) {
-            unlink(self::TEST_OUTPUT_FILE);
         }
 
         parent::tearDown();

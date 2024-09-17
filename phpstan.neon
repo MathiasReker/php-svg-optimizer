@@ -30,6 +30,7 @@ parameters:
       classesAllowedToBeExtended:
         - RuntimeException
         - InvalidArgumentException
+        - MathiasReker\PhpSvgOptimizer\Services\Providers\AbstractProvider
 includes:
     - vendor/symplify/phpstan-rules/config/code-complexity-rules.neon
     - vendor/symplify/phpstan-rules/config/naming-rules.neon
