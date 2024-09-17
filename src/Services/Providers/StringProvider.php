@@ -43,10 +43,10 @@ final class StringProvider implements SvgProviderInterface
     /**
      * Constructor for StringProvider.
      *
-     * @param string $input The SVG content as a string
+     * @param string $inputContent The SVG content as a string
      */
     public function __construct(
-        private readonly string $input,
+        private readonly string $inputContent,
     ) {
         $this->domDocumentWrapper = new DomDocumentWrapper();
     }
@@ -91,7 +91,7 @@ final class StringProvider implements SvgProviderInterface
      */
     public function load(): \DOMDocument
     {
-        return $this->domDocumentWrapper->loadFromString($this->input);
+        return $this->domDocumentWrapper->loadFromString($this->inputContent);
     }
 
     /**
@@ -104,7 +104,7 @@ final class StringProvider implements SvgProviderInterface
     public function getMetaData(): MetaDataValueObject
     {
         $metaData = new MetaData(
-            mb_strlen($this->input, '8bit'),
+            mb_strlen($this->inputContent, '8bit'),
             mb_strlen($this->outputContent, '8bit')
         );
 
@@ -118,6 +118,6 @@ final class StringProvider implements SvgProviderInterface
      */
     public function getInputContent(): string
     {
-        return $this->input;
+        return $this->inputContent;
     }
 }

@@ -124,7 +124,7 @@ final class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
             self::STYLE_ATTRIBUTE_REGEX,
             static fn (array $matches): string => \sprintf(
                 'style="%s"',
-                str_replace(' ', '', $matches[1])
+                rtrim(str_replace(' ', '', $matches[1]), ';')
             ),
             $content
         ) ?? $content;
