@@ -16,7 +16,7 @@ operations.
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^3.0    | ^8.2 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^4.0    | ^8.2 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
@@ -376,7 +376,7 @@ The library implements the Strategy Pattern, where strategies are encapsulated a
 2) **Write Tests**: Ensure your new rule is thoroughly tested by creating corresponding test cases
    in `/tests/Services/Rules`.
 
-3) **Integrate the Rule**: Add your new rule to the builder in `/src/Services/SvgOptimizerBuilder.php`.
+3) **Integrate the Rule**: Add your new rule to the builder in `/src/Services/SvgOptimizerService.php`.
 
 4) **Update Documentation**: Finally, update the `README.md` to reflect the addition of the new rule and its purpose.
 

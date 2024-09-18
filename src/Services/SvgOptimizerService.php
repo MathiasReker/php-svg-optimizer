@@ -36,12 +36,14 @@ use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnnecessaryWhitespace;
 final readonly class SvgOptimizerService
 {
     /**
-     * The SVG optimizer instance.
+     * @var SvgOptimizer The instance responsible for performing SVG optimizations
      */
     private SvgOptimizer $svgOptimizer;
 
     /**
-     * SvgOptimizerService constructor.
+     * Initializes the SvgOptimizerService with a specified SVG provider.
+     *
+     * @param SvgProviderInterface $svgProvider The provider for retrieving the SVG content
      */
     public function __construct(SvgProviderInterface $svgProvider)
     {
@@ -49,7 +51,11 @@ final readonly class SvgOptimizerService
     }
 
     /**
-     * Static factory method to create SvgOptimizerService from a file path.
+     * Creates an instance of SvgOptimizerService from a file path.
+     *
+     * @param string $filePath The path to the SVG file
+     *
+     * @return static The SvgOptimizerService instance configured for file-based SVG content
      */
     public static function fromFile(string $filePath): self
     {
@@ -57,7 +63,11 @@ final readonly class SvgOptimizerService
     }
 
     /**
-     * Static factory method to create SvgOptimizerService from a string.
+     * Creates an instance of SvgOptimizerService from a string.
+     *
+     * @param string $content The SVG content as a string
+     *
+     * @return static The SvgOptimizerService instance configured for string-based SVG content
      */
     public static function fromString(string $content): self
     {
@@ -65,7 +75,11 @@ final readonly class SvgOptimizerService
     }
 
     /**
-     * Optimize the SVG content.
+     * Optimizes the SVG content using the configured rules.
+     *
+     * If no rules have been added, a default set of rules will be applied.
+     *
+     * @return $this The SvgOptimizerService instance
      */
     public function optimize(): self
     {
@@ -79,7 +93,21 @@ final readonly class SvgOptimizerService
     }
 
     /**
-     * Add an optimization rule to the SVG optimizer.
+     * Configures the optimization rules for the SVG optimizer.
+     *
+     * Each rule can be enabled or disabled via the respective parameters.
+     *
+     * @param bool $removeTitleAndDesc          Whether to remove the <title> and <desc> elements
+     * @param bool $removeComments              Whether to remove XML comments from the SVG
+     * @param bool $removeUnnecessaryWhitespace Whether to remove unnecessary whitespace
+     * @param bool $removeDefaultAttributes     Whether to remove default attributes from elements
+     * @param bool $removeMetadata              Whether to remove metadata elements from the SVG
+     * @param bool $convertColorsToHex          Whether to convert colors to hexadecimal format
+     * @param bool $minifySvgCoordinates        Whether to minify coordinate values within the SVG
+     * @param bool $minifyTransformations       Whether to minify transformation attributes
+     * @param bool $flattenGroups               Whether to flatten nested group elements
+     *
+     * @return $this The SvgOptimizerService instance
      */
     public function withRules(
         bool $removeTitleAndDesc = true,
@@ -90,7 +118,7 @@ final readonly class SvgOptimizerService
         bool $convertColorsToHex = true,
         bool $minifySvgCoordinates = true,
         bool $minifyTransformations = true,
-        bool $flattenGroups = true
+        bool $flattenGroups = true,
     ): self {
         $rules = [
             RemoveTitleAndDesc::class => $removeTitleAndDesc,
@@ -112,7 +140,11 @@ final readonly class SvgOptimizerService
     }
 
     /**
-     * Save the optimized SVG content to a file.
+     * Saves the optimized SVG content to a specified file path.
+     *
+     * @param string $outputPath The file path where the optimized SVG content will be saved
+     *
+     * @return $this The SvgOptimizerService instance
      */
     public function saveToFile(string $outputPath): self
     {
@@ -122,7 +154,9 @@ final readonly class SvgOptimizerService
     }
 
     /**
-     * Get metadata related to the SVG content.
+     * Retrieves metadata related to the SVG content.
+     *
+     * @return MetaDataValueObject The metadata associated with the SVG content
      */
     public function getMetaData(): MetaDataValueObject
     {
@@ -130,7 +164,9 @@ final readonly class SvgOptimizerService
     }
 
     /**
-     * Get the optimized SVG content.
+     * Retrieves the optimized SVG content as a string.
+     *
+     * @return string The optimized SVG content
      */
     public function getContent(): string
     {
