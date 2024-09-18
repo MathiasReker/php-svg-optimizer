@@ -45,20 +45,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 
 try {
-    $svgOptimizer = (new SvgOptimizerService(new FileProvider('path/to/source.svg')))
-        ->removeTitleAndDesc()
-        ->removeComments()
-        ->removeUnnecessaryWhitespace()
-        ->removeDefaultAttributes()
-        ->removeMetadata()
-        ->flattenGroups()
-        ->convertColorsToHex()
-        ->minifySvgCoordinates()
-        ->minifyTransformations()
+    $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
         ->optimize()
         ->saveToFile('path/to/output.svg');
 
@@ -87,16 +77,7 @@ use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 
 try {
-    $svgOptimizer = (new SvgOptimizerService(new FileProvider('path/to/source.svg')))
-        ->removeTitleAndDesc()
-        ->removeComments()
-        ->removeUnnecessaryWhitespace()
-        ->removeDefaultAttributes()
-        ->removeMetadata()
-        ->flattenGroups()
-        ->convertColorsToHex()
-        ->minifySvgCoordinates()
-        ->minifyTransformations()
+    $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
         ->optimize();
 
     echo sprintf('Get content: ', $svgOptimizer->getContent(), \PHP_EOL);
@@ -125,16 +106,7 @@ use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 
 try {
-    $svgOptimizer = (new SvgOptimizerService(new StringProvider('<svg>...</svg>')))
-        ->removeTitleAndDesc()
-        ->removeComments()
-        ->removeUnnecessaryWhitespace()
-        ->removeDefaultAttributes()
-        ->removeMetadata()
-        ->flattenGroups()
-        ->convertColorsToHex()
-        ->minifySvgCoordinates()
-        ->minifyTransformations()
+    $svgOptimizer = SvgOptimizerService::fromString('<svg>...</svg>')
         ->optimize();
 
     echo sprintf('Content: ', $svgOptimizer->getContent(), \PHP_EOL);
@@ -168,16 +140,7 @@ $optimizedFiles = 0;
 
 $optimizeSvg = function (string $filePath) use (&$totalOriginalSize, &$totalOptimizedSize, &$optimizedFiles): void {
     try {
-        $svgOptimizer = (new SvgOptimizerService(new FileProvider($filePath)))
-            ->removeTitleAndDesc()
-            ->removeComments()
-            ->removeUnnecessaryWhitespace()
-            ->removeDefaultAttributes()
-            ->removeMetadata()
-            ->flattenGroups()
-            ->convertColorsToHex()
-            ->minifySvgCoordinates()
-            ->minifyTransformations()
+        $svgOptimizer = SvgOptimizerService::fromFile($filePath)
             ->optimize()
             ->saveToFile($filePath);
 
@@ -213,115 +176,146 @@ echo sprintf('Total reduction percentage: %s %%%s', number_format($reductionPerc
 
 ### Documentation
 
-The constructor initializes the SVG optimizer with an SVG provider.
+Static factory method to create `SvgOptimizerService` from a file path.
 
 ```php
-$svgOptimizer = new SvgOptimizerBuilder(new FileProvider('path/to/source.svg'));
+$svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg');
 ```
 
-or
+Static factory method to create `SvgOptimizerService` from a string.
 
 ```php
-$svgOptimizer = new SvgOptimizerBuilder(new FileProvider('path/to/source.svg'));
+$svgOptimizer = SvgOptimizerService::fromString('<svg>...</svg>');
 ```
 
-or
+#### `withRules` Method
+
+Configure which SVG optimization rules to apply. The method accepts boolean parameters that determine whether specific
+rules should be enabled or disabled.
+
+##### Parameters:
+
+Removes `<title>` and `<desc>` tags from the SVG:
 
 ```php
-$svgOptimizer = new SvgOptimizerBuilder(new StringProvider('<svg>...</svg>'));
+$svgOptimizer->withRules(removeTitleAndDesc: true);
 ```
 
-`removeTitleAndDesc` Removes `<title>` and `<desc>` tags from the SVG.
+Removes all comments from the SVG:
 
 ```php
-$svgOptimizer->removeTitleAndDesc();
+$svgOptimizer->withRules(removeComments: true);
 ```
 
-`removeComments` Removes all comments from the SVG.
+Cleans up unnecessary whitespace in the SVG:
 
 ```php
-$svgOptimizer->removeComments();
+$svgOptimizer->withRules(removeUnnecessaryWhitespace: true);
 ```
 
-`removeUnnecessaryWhitespace` Cleans up unnecessary whitespace in the SVG.
+Removes default attribute values that match common defaults:
 
 ```php
-$svgOptimizer->removeUnnecessaryWhitespace();
+$svgOptimizer->withRules(removeDefaultAttributes: true);
 ```
 
-`removeDefaultAttributes` Removes default attribute values that match common defaults.
+Removes `<metadata>` tags from the SVG:
 
 ```php
-$svgOptimizer->removeDefaultAttributes();
+$svgOptimizer->withRules(removeMetadata: true);
 ```
 
-`removeMetadata` Removes `<metadata>` tags from the SVG.
+Flattens nested `<g>` elements, moving their child elements up to the parent node:
 
 ```php
-$svgOptimizer->removeMetadata();
+$svgOptimizer->withRules(flattenGroups: true);
 ```
 
-`flattenGroups` Flattens nested `<g>` elements, moving their child elements up to the parent node.
+Converts `rgb()` color values to hexadecimal format:
 
 ```php
-$svgOptimizer->flattenGroups();
+$svgOptimizer->withRules(convertColorsToHex: true);
 ```
 
-`convertColorsToHex` Converts `rgb()` color values to hexadecimal format.
+Minifies coordinate values by removing unnecessary precision:
 
 ```php
-$svgOptimizer->convertColorsToHex();
+$svgOptimizer->withRules(minifySvgCoordinates: true);
 ```
 
-`minifySvgCoordinates` Minifies coordinate values by removing unnecessary precision.
+Minifies transformation attributes by removing redundant values:
 
 ```php
-$svgOptimizer->minifySvgCoordinates();
+$svgOptimizer->withRules(minifyTransformations: true);
 ```
 
-`minifyTransformations` Minifies transformation attributes by removing redundant values.
+All options are set to true by default. You can configure them individually by passing the desired values to it:
 
 ```php
-$svgOptimizer->minifyTransformations();
+$svgOptimizer->withRules(
+    removeTitleAndDesc: false,
+    removeComments: true,
+    removeUnnecessaryWhitespace: true,
+    removeDefaultAttributes: false,
+    removeMetadata: true,
+    flattenGroups: true,
+    convertColorsToHex: true,
+    minifySvgCoordinates: true,
+    minifyTransformations: false,
+);
 ```
 
-`optimize` Finalizes the optimization process and generates the optimized SVG file.
+#### `optimize` Method
+
+Finalizes the optimization process and generates the optimized SVG file.
 
 ```php
 $svgOptimizer->optimize();
 ```
 
-`saveToFile` Saves the optimized SVG file to the specified path.
+#### `saveToFile` Method
+
+Saves the optimized SVG file to the specified path.
 
 ```php
 $svgOptimizer->saveToFile('path/to/output.svg');
 ```
 
-`getContent` Returns the optimized SVG content.
+#### `getContent` Method
+
+Returns the optimized SVG content.
 
 ```php
 $svgOptimizer->getContent();
 ```
 
-`getOptimizedSize` Returns the size of the optimized SVG file.
+#### `getOptimizedSize` Method
+
+Returns the size of the optimized SVG file.
 
 ```php
 $svgOptimizer->getMetaData()->getOptimizedSize();
 ```
 
-`getOriginalSize` Returns the size of the original SVG file.
+#### `getOriginalSize` Method
+
+Returns the size of the original SVG file.
 
 ```php
 $svgOptimizer->getMetaData()->getOriginalSize();
 ```
 
-`getSavedBytes` Returns the number of bytes saved by the optimization process.
+#### `getSavedBytes` Method
+
+Returns the number of bytes saved by the optimization process.
 
 ```php
 $svgOptimizer->getMetaData()->getSavedBytes();
 ```
 
-`getSavedPercentage` Returns the percentage of bytes saved by the optimization process.
+#### `getSavedPercentage` Method
+
+Returns the percentage of bytes saved by the optimization process.
 
 ```php
 $svgOptimizer->getMetaData()->getSavedPercentage();

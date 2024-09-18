@@ -13,6 +13,8 @@ namespace MathiasReker\PhpSvgOptimizer\Services;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 use MathiasReker\PhpSvgOptimizer\Models\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
+use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\ConvertColorsToHex;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\FlattenGroups;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\MinifySvgCoordinates;
@@ -33,14 +35,13 @@ use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnnecessaryWhitespace;
  */
 final readonly class SvgOptimizerService
 {
+    /**
+     * The SVG optimizer instance.
+     */
     private SvgOptimizer $svgOptimizer;
 
     /**
-     * Constructor for SvgOptimizerBuilder.
-     *
-     * Initializes the SvgOptimizer with a provided SVG provider.
-     *
-     * @param SvgProviderInterface $svgProvider The SVG provider to be used by the optimizer
+     * SvgOptimizerService constructor.
      */
     public function __construct(SvgProviderInterface $svgProvider)
     {
@@ -48,139 +49,70 @@ final readonly class SvgOptimizerService
     }
 
     /**
-     * Add a rule to remove the title and desc elements from the SVG document.
-     *
-     * @return $this The current instance for method chaining
+     * Static factory method to create SvgOptimizerService from a file path.
      */
-    public function removeTitleAndDesc(): self
+    public static function fromFile(string $filePath): self
     {
-        $this->svgOptimizer->addRule(new RemoveTitleAndDesc());
-
-        return $this;
+        return new self(new FileProvider($filePath));
     }
 
     /**
-     * Add a rule to remove metadata elements from the SVG document.
-     *
-     * @return $this The current instance for method chaining
+     * Static factory method to create SvgOptimizerService from a string.
      */
-    public function removeMetadata(): self
+    public static function fromString(string $content): self
     {
-        $this->svgOptimizer->addRule(new RemoveMetadata());
-
-        return $this;
+        return new self(new StringProvider($content));
     }
 
     /**
-     * Add a rule to remove all comments from the SVG document.
-     *
-     * @return $this The current instance for method chaining
-     */
-    public function removeComments(): self
-    {
-        $this->svgOptimizer->addRule(new RemoveComments());
-
-        return $this;
-    }
-
-    /**
-     * Add a rule to remove unnecessary whitespace from attribute values in the SVG document.
-     *
-     * @return $this The current instance for method chaining
-     */
-    public function removeUnnecessaryWhitespace(): self
-    {
-        $this->svgOptimizer->addRule(new RemoveUnnecessaryWhitespace());
-
-        return $this;
-    }
-
-    /**
-     * Add a rule to remove default attributes from the SVG document.
-     *
-     * @return $this The current instance for method chaining
-     */
-    public function removeDefaultAttributes(): self
-    {
-        $this->svgOptimizer->addRule(new RemoveDefaultAttributes());
-
-        return $this;
-    }
-
-    /**
-     * Add a rule to flatten groups in the SVG document.
-     *
-     * @return $this The current instance for method chaining
-     */
-    public function flattenGroups(): self
-    {
-        $this->svgOptimizer->addRule(new FlattenGroups());
-
-        return $this;
-    }
-
-    /**
-     * Add a rule to convert colors to hexadecimal values in the SVG document.
-     *
-     * @return $this The current instance for method chaining
-     */
-    public function convertColorsToHex(): self
-    {
-        $this->svgOptimizer->addRule(new ConvertColorsToHex());
-
-        return $this;
-    }
-
-    /**
-     * Add a rule to minify SVG coordinates in the SVG document.
-     *
-     * @return $this The current instance for method chaining
-     */
-    public function minifySvgCoordinates(): self
-    {
-        $this->svgOptimizer->addRule(new MinifySvgCoordinates());
-
-        return $this;
-    }
-
-    /**
-     * Add a rule to minify transformations in the SVG document.
-     *
-     * @return $this The current instance for method chaining
-     */
-    public function minifyTransformations(): self
-    {
-        $this->svgOptimizer->addRule(new MinifyTransformations());
-
-        return $this;
-    }
-
-    /**
-     * Optimize the SVG file by applying all added rules.
-     *
-     * @return $this The current instance for method chaining
+     * Optimize the SVG content.
      */
     public function optimize(): self
     {
+        if (0 === $this->svgOptimizer->getRulesCount()) {
+            $this->withRules();
+        }
+
         $this->svgOptimizer->optimize();
 
         return $this;
     }
 
     /**
-     * Get the optimized SVG content.
-     *
-     * @return string The optimized SVG content
+     * Add an optimization rule to the SVG optimizer.
      */
-    public function getContent(): string
-    {
-        return $this->svgOptimizer->getContent();
+    public function withRules(
+        bool $removeTitleAndDesc = true,
+        bool $removeComments = true,
+        bool $removeUnnecessaryWhitespace = true,
+        bool $removeDefaultAttributes = true,
+        bool $removeMetadata = true,
+        bool $convertColorsToHex = true,
+        bool $minifySvgCoordinates = true,
+        bool $minifyTransformations = true,
+        bool $flattenGroups = true
+    ): self {
+        $rules = [
+            RemoveTitleAndDesc::class => $removeTitleAndDesc,
+            RemoveComments::class => $removeComments,
+            RemoveUnnecessaryWhitespace::class => $removeUnnecessaryWhitespace,
+            RemoveDefaultAttributes::class => $removeDefaultAttributes,
+            RemoveMetadata::class => $removeMetadata,
+            ConvertColorsToHex::class => $convertColorsToHex,
+            MinifySvgCoordinates::class => $minifySvgCoordinates,
+            MinifyTransformations::class => $minifyTransformations,
+            FlattenGroups::class => $flattenGroups,
+        ];
+
+        foreach (array_keys(array_filter($rules)) as $ruleClass) {
+            $this->svgOptimizer->addRule(new $ruleClass());
+        }
+
+        return $this;
     }
 
     /**
      * Save the optimized SVG content to a file.
-     *
-     * @param string $outputPath The path to save the optimized SVG content to
      */
     public function saveToFile(string $outputPath): self
     {
@@ -190,12 +122,18 @@ final readonly class SvgOptimizerService
     }
 
     /**
-     * Get the metadata about the optimization process.
-     *
-     * @return MetaDataValueObject The metadata about the optimization
+     * Get metadata related to the SVG content.
      */
     public function getMetaData(): MetaDataValueObject
     {
         return $this->svgOptimizer->getMetaData();
+    }
+
+    /**
+     * Get the optimized SVG content.
+     */
+    public function getContent(): string
+    {
+        return $this->svgOptimizer->getContent();
     }
 }

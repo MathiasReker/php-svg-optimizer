@@ -125,4 +125,14 @@ final class SvgOptimizer
 
         return $this;
     }
+
+    /**
+     * Get the number of optimization rules added to the optimizer.
+     *
+     * @return int The number of optimization rules
+     */
+    public function getRulesCount(): int
+    {
+        return \count($this->rules);
+    }
 }

@@ -107,16 +107,25 @@ final class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         return $this->removeTrailingDecimalPoint($value);
     }
 
+    /**
+     * Remove unnecessary trailing zeroes in decimal numbers.
+     */
     private function removeTrailingZeroes(string $value): string
     {
         return preg_replace(self::TRAILING_ZEROES_REGEX, '$1$2', $value) ?? $value;
     }
 
+    /**
+     * Remove unnecessary decimal point if there are no digits following it.
+     */
     private function removeUnnecessaryDecimalPoint(string $value): string
     {
         return preg_replace(self::UNNECESSARY_DECIMAL_POINT_REGEX, '$1', $value) ?? $value;
     }
 
+    /**
+     * Remove trailing decimal point if there are no digits following it.
+     */
     private function removeTrailingDecimalPoint(string $value): string
     {
         return preg_replace(self::TRAILING_DECIMAL_POINT_REGEX, '', $value) ?? $value;
