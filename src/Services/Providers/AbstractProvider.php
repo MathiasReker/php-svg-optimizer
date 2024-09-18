@@ -122,7 +122,11 @@ abstract class AbstractProvider implements SvgProviderInterface
      */
     private function doDirectoryExists(string $directoryPath): bool
     {
-        return !(!is_dir($directoryPath) && !mkdir($directoryPath, 0o755, true));
+        if (is_dir($directoryPath)) {
+            return true;
+        }
+
+        return mkdir($directoryPath, 0o755, true);
     }
 
     /**
