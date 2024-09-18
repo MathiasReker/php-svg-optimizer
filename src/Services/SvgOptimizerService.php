@@ -45,7 +45,7 @@ final readonly class SvgOptimizerService
      *
      * @param SvgProviderInterface $svgProvider The provider for retrieving the SVG content
      */
-    public function __construct(SvgProviderInterface $svgProvider)
+    private function __construct(SvgProviderInterface $svgProvider)
     {
         $this->svgOptimizer = new SvgOptimizer($svgProvider);
     }
