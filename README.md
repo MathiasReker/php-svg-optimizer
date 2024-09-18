@@ -36,7 +36,38 @@ composer require mathiasreker/php-svg-optimizer
 > prevent
 > your application from crashing.
 
-### Example parsing from a file and saving to a file
+### Example specifying rules
+
+```php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
+
+try {
+    $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
+        ->withRules(
+            removeTitleAndDesc: false,
+            removeComments: true,
+            removeUnnecessaryWhitespace: true,
+            removeDefaultAttributes: false,
+            removeMetadata: true,
+            flattenGroups: true,
+            convertColorsToHex: true,
+            minifySvgCoordinates: true,
+            minifyTransformations: false,
+         )
+        ->optimize()
+        ->saveToFile('path/to/output.svg');
+} catch (\Exception $exception) {
+    echo $exception->getMessage();
+}
+```
+
+### Example parsing from a file and saving to a file using default rules
 
 ```php
 <?php
@@ -64,7 +95,7 @@ try {
 
 ```
 
-### Example parsing from a file and returning the content
+### Example parsing from a file and returning the content using default rules
 
 ```php
 <?php
@@ -93,7 +124,7 @@ try {
 }
 ```
 
-### Example parsing from a string and returning the content
+### Example parsing from a string and returning the content using default rules
 
 ```php
 <?php
@@ -122,7 +153,7 @@ try {
 }
 ```
 
-### Example parsing from a directory and optimizing all SVG files (overwriting the original files)
+### Example parsing from a directory and optimizing all SVG files using default rules (overwriting the original files)
 
 ```php
 <?php
