@@ -25,7 +25,7 @@ final class FileProvider extends AbstractProvider
     {
         parent::__construct();
 
-        // Load the input content immediately to ensure file exists
+        // Load the input content immediately to have it as a reference for metadata.
         $this->inputContent = $this->getInputContent();
     }
 

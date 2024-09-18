@@ -80,7 +80,7 @@ interface SvgProviderInterface
      *
      * This method saves the optimized SVG content to the specified file path.
      *
-     * @param string $outputPath The path to save the optimized SVG content to
+     * @param string $path The path to save the optimized SVG content to
      */
-    public function saveToFile(string $outputPath): self;
+    public function saveToFile(string $path): self;
 }

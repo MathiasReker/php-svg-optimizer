@@ -96,16 +96,18 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Save the optimized SVG content to a file.
      *
-     * @param string $outputOutputPath The path to save the optimized SVG content to
+     * @param string $path The path to save the optimized SVG content to
      *
      * @throws IOException If the output file cannot be written
      */
-    final public function saveToFile(string $outputOutputPath): self
+    final public function saveToFile(string $path): self
     {
-        $this->doDirectoryExists(\dirname($outputOutputPath));
+        if (!$this->doDirectoryExists(\dirname($path))) {
+            throw new IOException(\sprintf('Failed to create directory for output file: %s', $path));
+        }
 
-        if (false === file_put_contents($outputOutputPath, $this->getOutputContent())) {
-            throw new IOException(\sprintf('Failed to write optimized content to the output file: %s', $outputOutputPath));
+        if (false === file_put_contents($path, $this->getOutputContent())) {
+            throw new IOException(\sprintf('Failed to write optimized content to the output file: %s', $path));
         }
 
         return $this;
@@ -118,11 +120,9 @@ abstract class AbstractProvider implements SvgProviderInterface
      *
      * @throws IOException If the directory cannot be created
      */
-    private function doDirectoryExists(string $directoryPath): void
+    private function doDirectoryExists(string $directoryPath): bool
     {
-        if (!is_dir($directoryPath) && !mkdir($directoryPath, 0o755, true)) {
-            throw new IOException(\sprintf('Failed to create directory: %s', $directoryPath));
-        }
+        return !(!is_dir($directoryPath) && !mkdir($directoryPath, 0o755, true));
     }
 
     /**
