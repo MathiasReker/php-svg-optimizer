@@ -37,4 +37,3 @@ includes:
     - vendor/symplify/phpstan-rules/config/regex-rules.neon
     - vendor/symplify/phpstan-rules/config/static-rules.neon
     - phar://phpstan.phar/conf/bleedingEdge.neon
-
