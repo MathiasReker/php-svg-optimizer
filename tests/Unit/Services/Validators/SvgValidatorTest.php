@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the php-svg-optimizer package.
  * (c) Mathias Reker <github@reker.dk>

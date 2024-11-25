@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the php-svg-optimizer package.
  * (c) Mathias Reker <github@reker.dk>
@@ -21,7 +22,7 @@ final class FileProvider extends AbstractProvider
      *
      * @param string $inputFile The path to the input SVG file
      */
-    public function __construct(protected readonly string $inputFile)
+    public function __construct(private readonly string $inputFile)
     {
         parent::__construct();
 
