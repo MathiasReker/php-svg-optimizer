@@ -176,6 +176,20 @@ final class RemoveCommentsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/><defs><linearGradient id="grad1"><stop offset="0%" style="stop-color:rgb(255,255,255);stop-opacity:1"/><stop offset="100%" style="stop-color:rgb(0,0,0);stop-opacity:1"/></linearGradient></defs></g></svg>
                 XML
         ];
+
+        yield 'Comment before svg tag' => [
+            <<<XML
+                <?xml version="1.0" encoding="utf-8"?>
+                <!-- comment -->
+                <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                    width="500px" height="50px" viewBox="0 0 500 50" enable-background="new 0 0 500 50" xml:space="preserve">
+                </svg>
+                XML,
+            <<<XML
+                <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" width="500px" height="50px" viewBox="0 0 500 50" enable-background="new 0 0 500 50" xml:space="preserve"></svg>
+                XML
+        ];
     }
 
     #[DataProvider('svgCommentsProvider')]

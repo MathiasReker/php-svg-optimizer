@@ -61,6 +61,18 @@ final class SvgValidatorTest extends TestCase
         Assert::assertTrue($this->svgValidator->isValid($svgElementOnly));
     }
 
+    public function testIsValidWithComment(): void
+    {
+        $svgComment = '<svg xmlns="http://www.w3.org/2000/svg"><!-- comment -->';
+        Assert::assertTrue($this->svgValidator->isValid($svgComment));
+    }
+
+    public function testIsValidWithCommentInFrontOfSvg(): void
+    {
+        $svgComment = '<!-- comment --><svg xmlns="http://www.w3.org/2000/svg">';
+        Assert::assertTrue($this->svgValidator->isValid($svgComment));
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

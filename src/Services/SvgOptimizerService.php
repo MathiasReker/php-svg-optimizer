@@ -123,7 +123,6 @@ final readonly class SvgOptimizerService
     ): self {
         $rules = [
             RemoveTitleAndDesc::class => $removeTitleAndDesc,
-            RemoveComments::class => $removeComments,
             RemoveUnnecessaryWhitespace::class => $removeUnnecessaryWhitespace,
             RemoveDefaultAttributes::class => $removeDefaultAttributes,
             RemoveMetadata::class => $removeMetadata,
@@ -131,6 +130,7 @@ final readonly class SvgOptimizerService
             MinifySvgCoordinates::class => $minifySvgCoordinates,
             MinifyTransformations::class => $minifyTransformations,
             FlattenGroups::class => $flattenGroups,
+            RemoveComments::class => $removeComments,
         ];
 
         foreach (array_keys(array_filter($rules)) as $ruleClass) {

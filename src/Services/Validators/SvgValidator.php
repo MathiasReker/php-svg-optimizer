@@ -50,6 +50,17 @@ final class SvgValidator
     private const SVG_TAG_REGEX = '/^\s*<svg\b[^>]*>/i';
 
     /**
+     * Regular expression to match HTML comments of an SVG tag.
+     *
+     * This regex pattern is used to identify and remove comments from the SVG content
+     *
+     * @see https://regex101.com/r/uu204z/1
+     *
+     * @var string
+     */
+    private const HTML_COMMENT_REGEX = '/<!--.*?-->/s';
+
+    /**
      * Checks if the provided content is a valid SVG.
      *
      * This method validates if the content is a valid SVG by checking for
@@ -83,6 +94,7 @@ final class SvgValidator
             [
                 self::XML_DECLARATION_REGEX,
                 self::DOCTYPE_REGEX,
+                self::HTML_COMMENT_REGEX,
             ],
             '',
             $content

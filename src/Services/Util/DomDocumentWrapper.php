@@ -33,7 +33,22 @@ final class DomDocumentWrapper
             throw new XmlProcessingException('Failed to save XML content.');
         }
 
-        return $saveXML;
+        return $this->removeLineFeeds($saveXML);
+    }
+
+    /**
+     * Removes line feeds (newlines, carriage returns) from the given content.
+     *
+     * This method will remove all newline characters, including `\n` (LF) and `\r` (CR),
+     * but will preserve spaces and tabs.
+     *
+     * @param string $content The content from which line feeds will be removed
+     *
+     * @return string The cleaned content with line feeds removed
+     */
+    private function removeLineFeeds(string $content): string
+    {
+        return str_replace(["\r", "\n"], '', $content);
     }
 
     /**

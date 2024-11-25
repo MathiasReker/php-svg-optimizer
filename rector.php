@@ -16,18 +16,18 @@ return RectorConfig::configure()
     ->withIndent()
     ->withPreparedSets(
         deadCode: true,
+        codeQuality: true,
         codingStyle: true,
         typeDeclarations: true,
         privatization: true,
+        naming: true,
         instanceOf: true,
         earlyReturn: true,
         strictBooleans: true,
         rectorPreset: true,
-        symfonyCodeQuality: true,
-        codeQuality: true,
-        naming: true,
-        phpunit: true,
         phpunitCodeQuality: true,
+        symfonyCodeQuality: true,
+        phpunit: true,
     )
     ->withSkipPath(__DIR__ . '/vendor')
     ->withPaths([__DIR__])
