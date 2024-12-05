@@ -16,7 +16,7 @@ operations.
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^4.0    | ^8.2 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^4.1    | ^8.2 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
@@ -50,15 +50,16 @@ use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 try {
     $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
         ->withRules(
-            removeTitleAndDesc: false,
-            removeComments: true,
-            removeUnnecessaryWhitespace: true,
-            removeDefaultAttributes: false,
-            removeMetadata: true,
-            flattenGroups: true,
             convertColorsToHex: true,
+            flattenGroups: true,
             minifySvgCoordinates: true,
             minifyTransformations: false,
+            removeComments: true,
+            removeDefaultAttributes: false,
+            removeDoctype: false,
+            removeMetadata: true,
+            removeTitleAndDesc: false,
+            removeUnnecessaryWhitespace: true,
          )
         ->optimize()
         ->saveToFile('path/to/output.svg');
@@ -280,19 +281,26 @@ Minifies transformation attributes by removing redundant values:
 $svgOptimizer->withRules(minifyTransformations: true);
 ```
 
+Removes the SVG doctype declaration:
+
+```php
+$svgOptimizer->withRules(removeDoctype: true);
+```
+
 All options are set to true by default. You can configure them individually by passing the desired values to it:
 
 ```php
 $svgOptimizer->withRules(
-    removeTitleAndDesc: false,
-    removeComments: true,
-    removeUnnecessaryWhitespace: true,
-    removeDefaultAttributes: false,
-    removeMetadata: true,
-    flattenGroups: true,
-    convertColorsToHex: true,
-    minifySvgCoordinates: true,
-    minifyTransformations: false,
+   convertColorsToHex: true,
+   flattenGroups: true,
+   minifySvgCoordinates: true,
+   minifyTransformations: true,
+   removeComments: true,
+   removeDefaultAttributes: true,
+   removeDoctype: true,
+   removeMetadata: true,
+   removeTitleAndDesc: true,
+   removeUnnecessaryWhitespace: true,
 );
 ```
 

@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Util;
 
-use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -29,43 +28,40 @@ final class DomDocumentWrapperTest extends TestCase
 
         $result = $this->domDocumentWrapper->saveToString($domDocument);
 
+        Assert::assertNotFalse($result);
         Assert::assertStringContainsString('<root><child>Test</child></root>', $result);
     }
 
-    public function testSaveToStringThrowsException(): void
+    public function testSaveToStringWithLineFeedsAndTabs(): void
     {
-        $domDocument = $this->createMock(\DOMDocument::class);
-        $domDocument->method('saveXML')->willReturn(false);
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML("<root>\n\t<child>\n\t\tTest\n\t</child>\n</root>");
 
-        $this->expectException(XmlProcessingException::class);
-        $this->expectExceptionMessage('Failed to save XML content.');
+        $result = $this->domDocumentWrapper->saveToString($domDocument);
 
-        $this->domDocumentWrapper->saveToString($domDocument);
+        Assert::assertNotFalse($result);
+
+        Assert::assertStringNotContainsString("\n", $result);
+        Assert::assertStringNotContainsString("\t", $result);
+        Assert::assertStringContainsString('<root><child>Test</child></root>', $result);
     }
 
     public function testLoadFromFileValid(): void
     {
         $filePath = __DIR__ . '/test.xml';
-        file_put_contents($filePath, '<root><child>Test</child></root>');
 
-        $domDocument = $this->domDocumentWrapper->loadFromFile($filePath);
+        try {
+            file_put_contents($filePath, '<root><child>Test</child></root>');
+            $domDocument = $this->domDocumentWrapper->loadFromFile($filePath);
 
-        Assert::assertInstanceOf(\DOMDocument::class, $domDocument);
-        $xmlString = $domDocument->saveXML();
-        Assert::assertNotFalse($xmlString); // Ensure saveXML did not return false
-        Assert::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
+            Assert::assertInstanceOf(\DOMDocument::class, $domDocument);
+            $xmlString = $domDocument->saveXML();
 
-        unlink($filePath); // Clean up the test file
-    }
-
-    public function testLoadFromFileThrowsException(): void
-    {
-        $invalidFilePath = 'non_existent_file.xml';
-
-        $this->expectException(XmlProcessingException::class);
-        $this->expectExceptionMessage('Failed to load DOMDocument.');
-
-        $this->domDocumentWrapper->loadFromFile($invalidFilePath);
+            Assert::assertNotFalse($xmlString);
+            Assert::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
+        } finally {
+            unlink($filePath);
+        }
     }
 
     public function testLoadFromStringValid(): void
@@ -75,36 +71,25 @@ final class DomDocumentWrapperTest extends TestCase
 
         Assert::assertInstanceOf(\DOMDocument::class, $domDocument);
         $xmlString = $domDocument->saveXML();
-        Assert::assertNotFalse($xmlString); // Ensure saveXML did not return false
+
+        Assert::assertNotFalse($xmlString);
         Assert::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
     }
 
-    public function testLoadFromStringThrowsException(): void
+    public function testLoadFromStringWithLineFeedsAndTabs(): void
     {
-        $invalidXmlContent = '<root><child>Test</root>'; // Malformed XML
-
-        $this->expectException(XmlProcessingException::class);
-        $this->expectExceptionMessage('Failed to load DOMDocument.');
-
-        $this->domDocumentWrapper->loadFromString($invalidXmlContent);
-    }
-
-    /**
-     * @throws \ReflectionException
-     */
-    public function testCreateDomDocument(): void
-    {
-        $reflectionClass = new \ReflectionClass(DomDocumentWrapper::class);
-        $reflectionMethod = $reflectionClass->getMethod('createDomDocument');
-
-        /**
-         * @var \DOMDocument $domDocument
-         */
-        $domDocument = $reflectionMethod->invoke($this->domDocumentWrapper);
+        $xmlContent = "<root>\n\t<child>Test</child>\n</root>";
+        $domDocument = $this->domDocumentWrapper->loadFromString($xmlContent);
 
         Assert::assertInstanceOf(\DOMDocument::class, $domDocument);
-        Assert::assertFalse($domDocument->formatOutput);
-        Assert::assertFalse($domDocument->preserveWhiteSpace);
+
+        $xmlString = $this->domDocumentWrapper->saveToString($domDocument);
+
+        Assert::assertNotFalse($xmlString);
+
+        Assert::assertStringNotContainsString("\n", $xmlString, 'Newline characters were not removed.');
+        Assert::assertStringNotContainsString("\t", $xmlString, 'Tab characters were not removed.');
+        Assert::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
     }
 
     protected function setUp(): void

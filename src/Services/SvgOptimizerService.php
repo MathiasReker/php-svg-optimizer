@@ -22,6 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Services\Rules\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\MinifyTransformations;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDefaultAttributes;
+use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDoctype;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnnecessaryWhitespace;
@@ -98,39 +99,41 @@ final readonly class SvgOptimizerService
      *
      * Each rule can be enabled or disabled via the respective parameters.
      *
-     * @param bool $removeTitleAndDesc          Whether to remove the <title> and <desc> elements
-     * @param bool $removeComments              Whether to remove XML comments from the SVG
-     * @param bool $removeUnnecessaryWhitespace Whether to remove unnecessary whitespace
-     * @param bool $removeDefaultAttributes     Whether to remove default attributes from elements
-     * @param bool $removeMetadata              Whether to remove metadata elements from the SVG
      * @param bool $convertColorsToHex          Whether to convert colors to hexadecimal format
+     * @param bool $flattenGroups               Whether to flatten nested group elements
      * @param bool $minifySvgCoordinates        Whether to minify coordinate values within the SVG
      * @param bool $minifyTransformations       Whether to minify transformation attributes
-     * @param bool $flattenGroups               Whether to flatten nested group elements
+     * @param bool $removeComments              Whether to remove XML comments from the SVG
+     * @param bool $removeDefaultAttributes     Whether to remove default attributes from elements
+     * @param bool $removeMetadata              Whether to remove metadata elements from the SVG
+     * @param bool $removeTitleAndDesc          Whether to remove the <title> and <desc> elements
+     * @param bool $removeUnnecessaryWhitespace Whether to remove unnecessary whitespace
      *
      * @return $this The SvgOptimizerService instance
      */
     public function withRules(
-        bool $removeTitleAndDesc = true,
-        bool $removeComments = true,
-        bool $removeUnnecessaryWhitespace = true,
-        bool $removeDefaultAttributes = true,
-        bool $removeMetadata = true,
         bool $convertColorsToHex = true,
+        bool $flattenGroups = true,
         bool $minifySvgCoordinates = true,
         bool $minifyTransformations = true,
-        bool $flattenGroups = true,
+        bool $removeComments = true,
+        bool $removeDefaultAttributes = true,
+        bool $removeDoctype = true,
+        bool $removeMetadata = true,
+        bool $removeTitleAndDesc = true,
+        bool $removeUnnecessaryWhitespace = true
     ): self {
         $rules = [
-            RemoveTitleAndDesc::class => $removeTitleAndDesc,
-            RemoveUnnecessaryWhitespace::class => $removeUnnecessaryWhitespace,
-            RemoveDefaultAttributes::class => $removeDefaultAttributes,
-            RemoveMetadata::class => $removeMetadata,
             ConvertColorsToHex::class => $convertColorsToHex,
+            FlattenGroups::class => $flattenGroups,
             MinifySvgCoordinates::class => $minifySvgCoordinates,
             MinifyTransformations::class => $minifyTransformations,
-            FlattenGroups::class => $flattenGroups,
             RemoveComments::class => $removeComments,
+            RemoveDefaultAttributes::class => $removeDefaultAttributes,
+            RemoveDoctype::class => $removeDoctype,
+            RemoveMetadata::class => $removeMetadata,
+            RemoveTitleAndDesc::class => $removeTitleAndDesc,
+            RemoveUnnecessaryWhitespace::class => $removeUnnecessaryWhitespace,
         ];
 
         foreach (array_keys(array_filter($rules)) as $ruleClass) {
