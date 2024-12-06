@@ -24,7 +24,7 @@ final class RemoveDefaultAttributes implements SvgOptimizerRuleInterface
      *
      * @var array<string, string>
      */
-    private const DEFAULT_SVG_ATTRIBUTES = [
+    private const array DEFAULT_SVG_ATTRIBUTES = [
         'stroke' => 'none',
     ];
 
@@ -36,6 +36,7 @@ final class RemoveDefaultAttributes implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
+    #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);

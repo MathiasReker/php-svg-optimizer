@@ -41,6 +41,7 @@ final class MetaDataValueObjectTest extends TestCase
         Assert::assertEqualsWithDelta(20.0, $this->metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->metaDataValueObject = new MetaDataValueObject(

@@ -26,7 +26,7 @@ $config
         ],
 
         // Migration Rules
-        '@PHP82Migration' => true,
+        '@PHP83Migration' => true,
         '@PHP80Migration:risky' => true,
         '@PHPUnit100Migration:risky' => true,
 

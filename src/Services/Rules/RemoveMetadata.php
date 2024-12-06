@@ -25,6 +25,7 @@ final class RemoveMetadata implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
+    #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
         $this->removeElementsByTagName($domDocument, 'metadata');

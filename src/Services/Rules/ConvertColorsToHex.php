@@ -22,10 +22,8 @@ final class ConvertColorsToHex implements SvgOptimizerRuleInterface
      * This regular expression matches RGB color values in the format rgb(R, G, B).
      *
      * @see https://regex101.com/r/DUVXtz/1
-     *
-     * @var string
      */
-    private const RGB_REGEX = '/^rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/';
+    private const string RGB_REGEX = '/^rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/';
 
     /**
      * Regex pattern for HEX color values.
@@ -33,24 +31,29 @@ final class ConvertColorsToHex implements SvgOptimizerRuleInterface
      * This regular expression matches both full (#RRGGBB) and shorthand (#RGB) HEX color values.
      *
      * @see https://regex101.com/r/wg9AQj/1
-     *
-     * @var string
      */
-    private const HEX_REGEX = '/^#([a-fA-F0-9]{3,6})$/';
+    private const string HEX_REGEX = '/^#([a-fA-F0-9]{3,6})$/';
 
     /**
      * Minimum valid value for RGB components.
      *
      * @var int
      */
-    private const MIN_RGB_VALUE = 0;
+    private const int MIN_RGB_VALUE = 0;
 
     /**
      * Maximum valid value for RGB components.
      *
      * @var int
      */
-    private const MAX_RGB_VALUE = 255;
+    private const int MAX_RGB_VALUE = 255;
+
+    /**
+     * List of color attributes to process.
+     *
+     * @var string[]
+     */
+    private const array COLOR_ATTRIBUTES = ['fill', 'stroke', 'color'];
 
     /**
      * Convert RGB color values to shorthand HEX colors if possible.
@@ -59,12 +62,12 @@ final class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
+    #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $attributes = ['fill', 'stroke', 'color'];
 
-        foreach ($attributes as $attribute) {
+        foreach (self::COLOR_ATTRIBUTES as $attribute) {
             $nodeList = $domXPath->query('//@' . $attribute);
 
             if ($nodeList instanceof \DOMNodeList) {

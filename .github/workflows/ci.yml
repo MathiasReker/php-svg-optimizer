@@ -14,8 +14,8 @@ jobs:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:
-        operating-system: [ 'ubuntu-latest', 'macos-latest' ]
-        php-versions: [ '8.2', '8.3', '8.4-beta' ]
+        operating-system: [ 'ubuntu-latest' ]
+        php-versions: [ '8.3', '8.4-beta' ]
     name: PHP ${{ matrix.php-versions }} Test on ${{ matrix.operating-system }}
     steps:
       - name: Checkout Code
@@ -73,4 +73,4 @@ jobs:
         run: composer normalize --dry-run --no-check-lock
 
       - name: Detect Magic Numbers in Code
-        run: composer magic-number-detector
+        run: composer phpmnd

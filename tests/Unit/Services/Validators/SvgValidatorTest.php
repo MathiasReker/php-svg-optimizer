@@ -73,6 +73,7 @@ final class SvgValidatorTest extends TestCase
         Assert::assertTrue($this->svgValidator->isValid($svgComment));
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

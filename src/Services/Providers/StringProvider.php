@@ -28,6 +28,7 @@ final class StringProvider extends AbstractProvider
     /**
      * Load the input string into a DOMDocument instance.
      */
+    #[\Override]
     public function loadContent(): \DOMDocument
     {
         return $this->domDocumentWrapper->loadFromString($this->inputContent);
@@ -36,6 +37,7 @@ final class StringProvider extends AbstractProvider
     /**
      * Get the input SVG content.
      */
+    #[\Override]
     public function getInputContent(): string
     {
         return $this->inputContent;

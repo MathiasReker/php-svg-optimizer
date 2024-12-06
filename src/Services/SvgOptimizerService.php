@@ -22,6 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Services\Rules\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\MinifyTransformations;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDefaultAttributes;
+use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDeprecatedAttributes;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDoctype;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveTitleAndDesc;
@@ -105,6 +106,7 @@ final readonly class SvgOptimizerService
      * @param bool $minifyTransformations       Whether to minify transformation attributes
      * @param bool $removeComments              Whether to remove XML comments from the SVG
      * @param bool $removeDefaultAttributes     Whether to remove default attributes from elements
+     * @param bool $removeDeprecatedAttributes  Whether to remove the xlink namespace
      * @param bool $removeMetadata              Whether to remove metadata elements from the SVG
      * @param bool $removeTitleAndDesc          Whether to remove the <title> and <desc> elements
      * @param bool $removeUnnecessaryWhitespace Whether to remove unnecessary whitespace
@@ -118,10 +120,11 @@ final readonly class SvgOptimizerService
         bool $minifyTransformations = true,
         bool $removeComments = true,
         bool $removeDefaultAttributes = true,
+        bool $removeDeprecatedAttributes = true,
         bool $removeDoctype = true,
         bool $removeMetadata = true,
         bool $removeTitleAndDesc = true,
-        bool $removeUnnecessaryWhitespace = true
+        bool $removeUnnecessaryWhitespace = true,
     ): self {
         $rules = [
             ConvertColorsToHex::class => $convertColorsToHex,
@@ -130,6 +133,7 @@ final readonly class SvgOptimizerService
             MinifyTransformations::class => $minifyTransformations,
             RemoveComments::class => $removeComments,
             RemoveDefaultAttributes::class => $removeDefaultAttributes,
+            RemoveDeprecatedAttributes::class => $removeDeprecatedAttributes,
             RemoveDoctype::class => $removeDoctype,
             RemoveMetadata::class => $removeMetadata,
             RemoveTitleAndDesc::class => $removeTitleAndDesc,

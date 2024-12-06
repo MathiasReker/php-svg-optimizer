@@ -26,6 +26,7 @@ final class FlattenGroups implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
+    #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);

@@ -16,7 +16,7 @@ operations.
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^4.1    | ^8.2 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^4.1    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
@@ -53,10 +53,11 @@ try {
             convertColorsToHex: true,
             flattenGroups: true,
             minifySvgCoordinates: true,
-            minifyTransformations: false,
+            minifyTransformations: true,
             removeComments: true,
-            removeDefaultAttributes: false,
-            removeDoctype: false,
+            removeDefaultAttributes: true,
+            removeDeprecatedAttributes: true,
+            removeDoctype: true,
             removeMetadata: true,
             removeTitleAndDesc: false,
             removeUnnecessaryWhitespace: true,
@@ -251,6 +252,12 @@ Removes default attribute values that match common defaults:
 $svgOptimizer->withRules(removeDefaultAttributes: true);
 ```
 
+Removes deprecated attributes from the SVG:
+
+```php
+$svgOptimizer->withRules(removeDeprecatedAttributes: true);
+```
+
 Removes `<metadata>` tags from the SVG:
 
 ```php
@@ -297,6 +304,7 @@ $svgOptimizer->withRules(
    minifyTransformations: true,
    removeComments: true,
    removeDefaultAttributes: true,
+   removeDeprecatedAttributes: true,
    removeDoctype: true,
    removeMetadata: true,
    removeTitleAndDesc: true,

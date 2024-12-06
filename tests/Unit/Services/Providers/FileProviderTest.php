@@ -28,7 +28,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class FileProviderTest extends TestCase
 {
-    private const TEST_INPUT_FILE = 'input.svg';
+    private const string TEST_INPUT_FILE = 'input.svg';
 
     public function testGetInputContent(): void
     {
@@ -96,17 +96,17 @@ final class FileProviderTest extends TestCase
         $fileProvider->optimize($domDocument);
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Create a temporary input file with some SVG content
         file_put_contents(self::TEST_INPUT_FILE, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>');
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
-        // Clean up the files created during the test
         if (file_exists(self::TEST_INPUT_FILE)) {
             unlink(self::TEST_INPUT_FILE);
         }

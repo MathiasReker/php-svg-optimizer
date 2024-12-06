@@ -25,10 +25,8 @@ abstract class AbstractProvider implements SvgProviderInterface
      * Regex pattern for XML declaration.
      *
      * @see https://regex101.com/r/uWTo0N/1
-     *
-     * @var string
      */
-    private const XML_DECLARATION_REGEX = '/^\s*<\?xml[^>]*\?>\s*/';
+    private const string XML_DECLARATION_REGEX = '/^\s*<\?xml[^>]*\?>\s*/';
 
     /**
      * Holds the optimized SVG content.
@@ -58,6 +56,7 @@ abstract class AbstractProvider implements SvgProviderInterface
      *
      * @throws XmlProcessingException
      */
+    #[\Override]
     final public function optimize(\DOMDocument $domDocument): self
     {
         $xmlContent = $this->domDocumentWrapper->saveToString($domDocument);
@@ -74,6 +73,7 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Get metadata about the optimization.
      */
+    #[\Override]
     final public function getMetaData(): MetaDataValueObject
     {
         $metaData = new MetaData(
@@ -87,11 +87,13 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Abstract method to load content into DOMDocument.
      */
+    #[\Override]
     abstract public function loadContent(): \DOMDocument;
 
     /**
      * Abstract method to get the input content.
      */
+    #[\Override]
     abstract public function getInputContent(): string;
 
     /**
@@ -101,6 +103,7 @@ abstract class AbstractProvider implements SvgProviderInterface
      *
      * @throws IOException If the output file cannot be written
      */
+    #[\Override]
     final public function saveToFile(string $path): self
     {
         if (!$this->doDirectoryExists(\dirname($path))) {
@@ -133,6 +136,7 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Get the optimized SVG content.
      */
+    #[\Override]
     final public function getOutputContent(): string
     {
         return $this->outputContent;

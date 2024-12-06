@@ -20,10 +20,8 @@ final class SvgValidator
      * from the SVG content.
      *
      * @see https://regex101.com/r/ykHufE/1
-     *
-     * @var string
      */
-    private const XML_DECLARATION_REGEX = '/^\s*<\?xml[^>]*\?>\s*/i';
+    private const string XML_DECLARATION_REGEX = '/^\s*<\?xml[^>]*\?>\s*/i';
 
     /**
      * Regular expression to match the DOCTYPE declaration.
@@ -32,10 +30,8 @@ final class SvgValidator
      * from the SVG content.
      *
      * @see https://regex101.com/r/DIe4La/1
-     *
-     * @var string
      */
-    private const DOCTYPE_REGEX = '/<!DOCTYPE[^>]*>/i';
+    private const string DOCTYPE_REGEX = '/<!DOCTYPE[^>]*>/i';
 
     /**
      * Regular expression to match the start of an SVG tag.
@@ -44,10 +40,8 @@ final class SvgValidator
      * a valid SVG tag.
      *
      * @see https://regex101.com/r/dJUVOx/1
-     *
-     * @var string
      */
-    private const SVG_TAG_REGEX = '/^\s*<svg\b[^>]*>/i';
+    private const string SVG_TAG_REGEX = '/^\s*<svg\b[^>]*>/i';
 
     /**
      * Regular expression to match HTML comments of an SVG tag.
@@ -55,10 +49,8 @@ final class SvgValidator
      * This regex pattern is used to identify and remove comments from the SVG content
      *
      * @see https://regex101.com/r/uu204z/1
-     *
-     * @var string
      */
-    private const HTML_COMMENT_REGEX = '/<!--.*?-->/s';
+    private const string HTML_COMMENT_REGEX = '/<!--.*?-->/s';
 
     /**
      * Checks if the provided content is a valid SVG.

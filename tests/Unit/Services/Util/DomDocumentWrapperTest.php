@@ -92,6 +92,7 @@ final class DomDocumentWrapperTest extends TestCase
         Assert::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->domDocumentWrapper = new DomDocumentWrapper();

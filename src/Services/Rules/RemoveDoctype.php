@@ -24,10 +24,8 @@ final class RemoveDoctype implements SvgOptimizerRuleInterface
      * from the SVG content.
      *
      * @see https://regex101.com/r/DIe4La/1
-     *
-     * @var string
      */
-    private const DOCTYPE_REGEX = '/<!DOCTYPE[^>]*>/i';
+    private const string DOCTYPE_REGEX = '/<!DOCTYPE[^>]*>/i';
 
     /**
      * Optimizes the given DOMDocument by removing the DOCTYPE declaration.
@@ -36,6 +34,7 @@ final class RemoveDoctype implements SvgOptimizerRuleInterface
      *
      * @throws XmlProcessingException If an error occurs during processing
      */
+    #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
         $svgContent = $domDocument->saveXML();

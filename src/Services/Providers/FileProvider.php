@@ -36,6 +36,7 @@ final class FileProvider extends AbstractProvider
      * @throws FileNotFoundException
      * @throws IOException
      */
+    #[\Override]
     public function getInputContent(): string
     {
         if (!file_exists($this->inputFile)) {
@@ -53,6 +54,7 @@ final class FileProvider extends AbstractProvider
     /**
      * Load the input file into a DOMDocument instance.
      */
+    #[\Override]
     public function loadContent(): \DOMDocument
     {
         return $this->domDocumentWrapper->loadFromFile($this->inputFile);

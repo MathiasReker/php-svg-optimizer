@@ -12,7 +12,7 @@ declare(strict_types=1);
 use Rector\Config\RectorConfig;
 
 return RectorConfig::configure()
-    ->withPhpSets(php82: true)
+    ->withPhpSets(php83: true)
     ->withIndent()
     ->withPreparedSets(
         deadCode: true,

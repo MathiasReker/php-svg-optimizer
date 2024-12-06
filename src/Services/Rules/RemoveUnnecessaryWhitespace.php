@@ -25,10 +25,8 @@ final class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
      * to be removed within the values.
      *
      * @see https://regex101.com/r/6oZWnx/1
-     *
-     * @var string
      */
-    private const ATTRIBUTE_VALUE_REGEX = '/(\S+)=\s*"([^"]*)"/';
+    private const string ATTRIBUTE_VALUE_REGEX = '/(\S+)=\s*"([^"]*)"/';
 
     /**
      * Regex pattern for matching style attribute values.
@@ -37,10 +35,8 @@ final class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
      * whitespace to be removed within the style values.
      *
      * @see https://regex101.com/r/JFLCQm/1
-     *
-     * @var string
      */
-    private const STYLE_ATTRIBUTE_REGEX = '/style\s*=\s*"([^"]*)"/';
+    private const string STYLE_ATTRIBUTE_REGEX = '/style\s*=\s*"([^"]*)"/';
 
     /**
      * Regex pattern for matching whitespace characters.
@@ -49,10 +45,8 @@ final class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
      * within attribute values.
      *
      * @see https://regex101.com/r/pxX489/1
-     *
-     * @var string
      */
-    private const WHITESPACE_REGEX = '/\s+/';
+    private const string WHITESPACE_REGEX = '/\s+/';
 
     /**
      * Remove unnecessary whitespace from the SVG document.
@@ -66,6 +60,7 @@ final class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
      * @throws XmlProcessingException   When XML content cannot be saved or loaded
      * @throws RegexProcessingException When regex processing fails
      */
+    #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
         $svgContent = $domDocument->saveXML();

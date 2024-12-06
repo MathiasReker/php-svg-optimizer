@@ -20,28 +20,22 @@ final class MinifySvgCoordinates implements SvgOptimizerRuleInterface
      * Regular expression pattern to remove unnecessary trailing zeroes in decimal numbers.
      *
      * @see https://regex101.com/r/bQpK9Q/1
-     *
-     * @var string
      */
-    private const TRAILING_ZEROES_REGEX = '/(\.\d*?)0+(\D|$)/';
+    private const string TRAILING_ZEROES_REGEX = '/(\.\d*?)0+(\D|$)/';
 
     /**
      * Regular expression pattern to remove unnecessary decimal point if there are no digits after it.
      *
      * @see https://regex101.com/r/zEFuoB/1
-     *
-     * @var string
      */
-    private const UNNECESSARY_DECIMAL_POINT_REGEX = '/(?<=\d)\.0+(\D|$)/';
+    private const string UNNECESSARY_DECIMAL_POINT_REGEX = '/(?<=\d)\.0+(\D|$)/';
 
     /**
      * Regular expression pattern to remove unnecessary trailing decimal point if there are no digits following it.
      *
      * @see https://regex101.com/r/XYoySI/1
-     *
-     * @var string
      */
-    private const TRAILING_DECIMAL_POINT_REGEX = '/(?<=\d)\.(?=\D|$)/';
+    private const string TRAILING_DECIMAL_POINT_REGEX = '/(?<=\d)\.(?=\D|$)/';
 
     /**
      * Optimize the SVG document by minifying the coordinates of specific elements.
@@ -54,6 +48,7 @@ final class MinifySvgCoordinates implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
+    #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);

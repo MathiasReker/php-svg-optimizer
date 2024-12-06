@@ -20,73 +20,57 @@ final class MinifyTransformations implements SvgOptimizerRuleInterface
      * Regex pattern to match percentage values in transformations.
      *
      * @see https://regex101.com/r/JUBzng/1
-     *
-     * @var string
      */
-    private const PERCENTAGE_REGEX = '/(\d+)%/';
+    private const string PERCENTAGE_REGEX = '/(\d+)%/';
 
     /**
      * Regex pattern to match identity translate transformations.
      *
      * @see https://regex101.com/r/WjV7Zr/1
-     *
-     * @var string
      */
-    private const TRANSLATE_REGEX = '/\btranslate\(\s*0\s*(,\s*0\s*)?\)/';
+    private const string TRANSLATE_REGEX = '/\btranslate\(\s*0\s*(,\s*0\s*)?\)/';
 
     /**
      * Regex pattern to match identity scale transformations.
      *
      * @see https://regex101.com/r/wZi4DL/1
-     *
-     * @var string
      */
-    private const SCALE_REGEX = '/\bscale\(\s*1\s*(,\s*1\s*)?\)/';
+    private const string SCALE_REGEX = '/\bscale\(\s*1\s*(,\s*1\s*)?\)/';
 
     /**
      * Regex pattern to match identity rotate transformations.
      *
      * @see https://regex101.com/r/2vmgRO/1
-     *
-     * @var string
      */
-    private const ROTATE_REGEX = '/\brotate\(\s*0\s*\)/';
+    private const string ROTATE_REGEX = '/\brotate\(\s*0\s*\)/';
 
     /**
      * Regex pattern to match identity skewX transformations.
      *
      * @see https://regex101.com/r/83aNVu/1
-     *
-     * @var string
      */
-    private const SKEW_X_REGEX = '/\bskewX\(\s*0\s*\)/';
+    private const string SKEW_X_REGEX = '/\bskewX\(\s*0\s*\)/';
 
     /**
      * Regex pattern to match identity skewY transformations.
      *
      * @see https://regex101.com/r/tiPsgQ/1
-     *
-     * @var string
      */
-    private const SKEW_Y_REGEX = '/\bskewY\(\s*0\s*\)/';
+    private const string SKEW_Y_REGEX = '/\bskewY\(\s*0\s*\)/';
 
     /**
      * Regex pattern to match multiple consecutive spaces.
      *
      * @see https://regex101.com/r/OuyK7V/1
-     *
-     * @var string
      */
-    private const MULTIPLE_SPACES_REGEX = '/\s+/';
+    private const string MULTIPLE_SPACES_REGEX = '/\s+/';
 
     /**
      * Regex pattern to match redundant commas.
      *
      * @see https://regex101.com/r/E8wfPk/1
-     *
-     * @var string
      */
-    private const REDUNDANT_COMMAS_REGEX = '/\s*,\s*/';
+    private const string REDUNDANT_COMMAS_REGEX = '/\s*,\s*/';
 
     /**
      * Optimize the SVG document by minifying transformations.
@@ -99,6 +83,7 @@ final class MinifyTransformations implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
+    #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
