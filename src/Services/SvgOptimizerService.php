@@ -54,18 +54,6 @@ final readonly class SvgOptimizerService
     }
 
     /**
-     * Creates an instance of SvgOptimizerService from a file path.
-     *
-     * @param string $filePath The path to the SVG file
-     *
-     * @return static The SvgOptimizerService instance configured for file-based SVG content
-     */
-    public static function fromFile(string $filePath): self
-    {
-        return new self(new FileProvider($filePath));
-    }
-
-    /**
      * Creates an instance of SvgOptimizerService from a string.
      *
      * @param string $content The SVG content as a string
@@ -75,6 +63,18 @@ final readonly class SvgOptimizerService
     public static function fromString(string $content): self
     {
         return new self(new StringProvider($content));
+    }
+
+    /**
+     * Creates an instance of SvgOptimizerService from a file path.
+     *
+     * @param string $filePath The path to the SVG file
+     *
+     * @return static The SvgOptimizerService instance configured for file-based SVG content
+     */
+    public static function fromFile(string $filePath): self
+    {
+        return new self(new FileProvider($filePath));
     }
 
     /**

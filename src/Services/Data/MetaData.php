@@ -19,6 +19,11 @@ use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
 final readonly class MetaData
 {
     /**
+     * Constant for the percentage factor used in calculations.
+     */
+    private const int PERCENTAGE_FACTOR = 100;
+
+    /**
      * Constructor for MetaData.
      *
      * @param int $originalSize  The original size of the SVG file in bytes
@@ -67,6 +72,6 @@ final readonly class MetaData
      */
     private function calculateSavedPercentage(): float
     {
-        return ($this->calculateSavedBytes() / $this->originalSize) * 100;
+        return ($this->calculateSavedBytes() / $this->originalSize) * self::PERCENTAGE_FACTOR;
     }
 }

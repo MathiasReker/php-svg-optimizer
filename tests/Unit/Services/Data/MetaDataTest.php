@@ -21,31 +21,33 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MetaDataValueObject::class)]
 final class MetaDataTest extends TestCase
 {
-    public function testConstructorValid(): void
-    {
-        $metaData = new MetaData(1000, 800);
+    private const int ORIGINAL_SIZE = 1000;
 
-        Assert::assertInstanceOf(MetaData::class, $metaData);
-    }
+    private const int OPTIMIZED_SIZE = 800;
+
+    private const int ZERO_SIZE = 0;
+
+    private const int EXPECTED_SAVED_BYTES = 200;
+
+    private const float EXPECTED_SAVED_PERCENTAGE = 20.0;
 
     public function testConstructorInvalidOriginalSize(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Original size must be greater than 0. Given: 0');
 
-        new MetaData(0, 500);
+        new MetaData(self::ZERO_SIZE, self::OPTIMIZED_SIZE);
     }
 
     public function testToValueObject(): void
     {
-        $metaData = new MetaData(1000, 800);
+        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE);
         $metaDataValueObject = $metaData->toValueObject();
 
-        Assert::assertInstanceOf(MetaDataValueObject::class, $metaDataValueObject);
-        Assert::assertSame(1000, $metaDataValueObject->getOriginalSize());
-        Assert::assertSame(800, $metaDataValueObject->getOptimizedSize());
-        Assert::assertSame(200, $metaDataValueObject->getSavedBytes());
-        Assert::assertEqualsWithDelta(20.0, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+        Assert::assertSame(self::ORIGINAL_SIZE, $metaDataValueObject->getOriginalSize());
+        Assert::assertSame(self::OPTIMIZED_SIZE, $metaDataValueObject->getOptimizedSize());
+        Assert::assertSame(self::EXPECTED_SAVED_BYTES, $metaDataValueObject->getSavedBytes());
+        Assert::assertEqualsWithDelta(self::EXPECTED_SAVED_PERCENTAGE, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
     /**
@@ -53,14 +55,14 @@ final class MetaDataTest extends TestCase
      */
     public function testCalculateSavedBytes(): void
     {
-        $metaData = new MetaData(1000, 800);
+        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE);
 
         $reflectionClass = new \ReflectionClass($metaData);
         $reflectionMethod = $reflectionClass->getMethod('calculateSavedBytes');
 
         $savedBytes = $reflectionMethod->invoke($metaData);
 
-        Assert::assertSame(200, $savedBytes);
+        Assert::assertSame(self::EXPECTED_SAVED_BYTES, $savedBytes);
     }
 
     /**
@@ -68,13 +70,13 @@ final class MetaDataTest extends TestCase
      */
     public function testCalculateSavedPercentage(): void
     {
-        $metaData = new MetaData(1000, 800);
+        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE);
 
         $reflectionClass = new \ReflectionClass($metaData);
         $reflectionMethod = $reflectionClass->getMethod('calculateSavedPercentage');
 
         $savedPercentage = $reflectionMethod->invoke($metaData);
 
-        Assert::assertEqualsWithDelta(20.0, $savedPercentage, \PHP_FLOAT_EPSILON);
+        Assert::assertEqualsWithDelta(self::EXPECTED_SAVED_PERCENTAGE, $savedPercentage, \PHP_FLOAT_EPSILON);
     }
 }

@@ -56,6 +56,13 @@ final class ConvertColorsToHex implements SvgOptimizerRuleInterface
     private const array COLOR_ATTRIBUTES = ['fill', 'stroke', 'color'];
 
     /**
+     * Constant for bitwise shift when converting RGB to shorthand HEX.
+     *
+     * @var int
+     */
+    private const int BITWISE_SHIFT = 4;
+
+    /**
      * Convert RGB color values to shorthand HEX colors if possible.
      *
      * This method processes the SVG document to find and convert RGB colors to HEX format.
@@ -129,7 +136,7 @@ final class ConvertColorsToHex implements SvgOptimizerRuleInterface
         $hex = mb_strtolower(\sprintf('#%02x%02x%02x', $r, $g, $b));
 
         return $this->canBeShortened($hex)
-            ? \sprintf('#%1x%1x%1x', $r >> 4, $g >> 4, $b >> 4)
+            ? \sprintf('#%1x%1x%1x', $r >> self::BITWISE_SHIFT, $g >> self::BITWISE_SHIFT, $b >> self::BITWISE_SHIFT)
             : $hex;
     }
 

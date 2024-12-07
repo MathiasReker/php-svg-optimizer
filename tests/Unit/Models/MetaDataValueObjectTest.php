@@ -19,36 +19,44 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MetaDataValueObject::class)]
 final class MetaDataValueObjectTest extends TestCase
 {
+    private const int ORIGINAL_SIZE = 1000;
+
+    private const int OPTIMIZED_SIZE = 800;
+
+    private const int SAVED_BYTES = 200;
+
+    private const float SAVED_PERCENTAGE = 20.0;
+
     private MetaDataValueObject $metaDataValueObject;
 
     public function testGetOriginalSize(): void
     {
-        Assert::assertSame(1000, $this->metaDataValueObject->getOriginalSize());
+        Assert::assertSame(self::ORIGINAL_SIZE, $this->metaDataValueObject->getOriginalSize());
     }
 
     public function testGetOptimizedSize(): void
     {
-        Assert::assertSame(800, $this->metaDataValueObject->getOptimizedSize());
+        Assert::assertSame(self::OPTIMIZED_SIZE, $this->metaDataValueObject->getOptimizedSize());
     }
 
     public function testGetSavedBytes(): void
     {
-        Assert::assertSame(200, $this->metaDataValueObject->getSavedBytes());
+        Assert::assertSame(self::SAVED_BYTES, $this->metaDataValueObject->getSavedBytes());
     }
 
     public function testGetSavedPercentage(): void
     {
-        Assert::assertEqualsWithDelta(20.0, $this->metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+        Assert::assertEqualsWithDelta(self::SAVED_PERCENTAGE, $this->metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
     #[\Override]
     protected function setUp(): void
     {
         $this->metaDataValueObject = new MetaDataValueObject(
-            1000,
-            800,
-            200,
-            20.0
+            self::ORIGINAL_SIZE,
+            self::OPTIMIZED_SIZE,
+            self::SAVED_BYTES,
+            self::SAVED_PERCENTAGE
         );
     }
 }

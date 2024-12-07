@@ -11,11 +11,12 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Util;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
 final class DomDocumentWrapper
 {
+    private const string DEFAULT_XML_VERSION = '1.0';
+
     /**
      * Saves the current DOMDocument content as an XML string.
      *
@@ -100,7 +101,7 @@ final class DomDocumentWrapper
         $domDocument->formatOutput = false;
         $domDocument->preserveWhiteSpace = false;
         $domDocument->encoding = 'UTF-8';
-        $domDocument->xmlVersion = '1.0';
+        $domDocument->xmlVersion = self::DEFAULT_XML_VERSION;
 
         return $domDocument;
     }

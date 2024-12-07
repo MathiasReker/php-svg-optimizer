@@ -22,27 +22,75 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MetaDataValueObject::class)]
 final class MetaDataTest extends TestCase
 {
+    private const int ORIGINAL_SIZE_1 = 1000;
+
+    private const int ORIGINAL_SIZE_2 = 1;
+
+    private const int OPTIMIZED_SIZE_1 = 500;
+
+    private const int OPTIMIZED_SIZE_2 = 1000;
+
+    private const int OPTIMIZED_SIZE_3 = 0;
+
+    private const int OPTIMIZED_SIZE_4 = 500;
+
+    private const int SAVED_BYTES_1 = 500;
+
+    private const int SAVED_BYTES_2 = 0;
+
+    private const int SAVED_BYTES_3 = 1;
+
+    private const int SAVED_BYTES_4 = -499;
+
+    private const float SAVED_PERCENTAGE_1 = 50.0;
+
+    private const float SAVED_PERCENTAGE_2 = 0.0;
+
+    private const float SAVED_PERCENTAGE_3 = 100.0;
+
+    private const float SAVED_PERCENTAGE_4 = -49900.0;
+
     public static function metadataProvider(): \Iterator
     {
         yield [
-            1000,
-            500,
-            new MetaDataValueObject(1000, 500, 500, 50.0),
+            self::ORIGINAL_SIZE_1,
+            self::OPTIMIZED_SIZE_1,
+            new MetaDataValueObject(
+                self::ORIGINAL_SIZE_1,
+                self::OPTIMIZED_SIZE_1,
+                self::SAVED_BYTES_1,
+                self::SAVED_PERCENTAGE_1
+            ),
         ];
         yield [
-            1000,
-            1000,
-            new MetaDataValueObject(1000, 1000, 0, 0.0),
+            self::ORIGINAL_SIZE_1,
+            self::OPTIMIZED_SIZE_2,
+            new MetaDataValueObject(
+                self::ORIGINAL_SIZE_1,
+                self::OPTIMIZED_SIZE_2,
+                self::SAVED_BYTES_2,
+                self::SAVED_PERCENTAGE_2
+            ),
         ];
         yield [
-            1,
-            0,
-            new MetaDataValueObject(1, 0, 1, 100.0),
+            self::ORIGINAL_SIZE_2,
+            self::OPTIMIZED_SIZE_3,
+            new MetaDataValueObject(
+                self::ORIGINAL_SIZE_2,
+                self::OPTIMIZED_SIZE_3,
+                self::SAVED_BYTES_3,
+                self::SAVED_PERCENTAGE_3
+            ),
         ];
         yield [
-            1,
-            500,
-            new MetaDataValueObject(1, 500, -499, -49900.0),
+            self::ORIGINAL_SIZE_2,
+            self::OPTIMIZED_SIZE_4,
+            new MetaDataValueObject(
+                self::ORIGINAL_SIZE_2,
+                self::OPTIMIZED_SIZE_4,
+                self::SAVED_BYTES_4,
+                self::SAVED_PERCENTAGE_4
+            ),
         ];
     }
 

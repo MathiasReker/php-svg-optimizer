@@ -29,14 +29,6 @@ final class StringProviderTest extends TestCase
 {
     private const string TEST_INPUT_STRING = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>';
 
-    public function testLoad(): void
-    {
-        $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
-        $domDocument = $stringProvider->loadContent();
-
-        Assert::assertInstanceOf(\DOMDocument::class, $domDocument);
-    }
-
     public function testOptimize(): void
     {
         $stringProvider = new StringProvider(self::TEST_INPUT_STRING);

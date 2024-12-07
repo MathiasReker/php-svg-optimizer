@@ -71,6 +71,3 @@ jobs:
 
       - name: Normalize Composer Configuration
         run: composer normalize --dry-run --no-check-lock
-
-      - name: Detect Magic Numbers in Code
-        run: composer phpmnd

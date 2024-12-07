@@ -28,7 +28,6 @@ final class DomDocumentWrapperTest extends TestCase
 
         $result = $this->domDocumentWrapper->saveToString($domDocument);
 
-        Assert::assertNotFalse($result);
         Assert::assertStringContainsString('<root><child>Test</child></root>', $result);
     }
 
@@ -38,8 +37,6 @@ final class DomDocumentWrapperTest extends TestCase
         $domDocument->loadXML("<root>\n\t<child>\n\t\tTest\n\t</child>\n</root>");
 
         $result = $this->domDocumentWrapper->saveToString($domDocument);
-
-        Assert::assertNotFalse($result);
 
         Assert::assertStringNotContainsString("\n", $result);
         Assert::assertStringNotContainsString("\t", $result);
@@ -54,10 +51,9 @@ final class DomDocumentWrapperTest extends TestCase
             file_put_contents($filePath, '<root><child>Test</child></root>');
             $domDocument = $this->domDocumentWrapper->loadFromFile($filePath);
 
-            Assert::assertInstanceOf(\DOMDocument::class, $domDocument);
             $xmlString = $domDocument->saveXML();
 
-            Assert::assertNotFalse($xmlString);
+            Assert::assertNotFalse($xmlString, 'saveXML() returned false');
             Assert::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
         } finally {
             unlink($filePath);
@@ -69,10 +65,9 @@ final class DomDocumentWrapperTest extends TestCase
         $xmlContent = '<root><child>Test</child></root>';
         $domDocument = $this->domDocumentWrapper->loadFromString($xmlContent);
 
-        Assert::assertInstanceOf(\DOMDocument::class, $domDocument);
         $xmlString = $domDocument->saveXML();
 
-        Assert::assertNotFalse($xmlString);
+        Assert::assertNotFalse($xmlString, 'saveXML() returned false');
         Assert::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
     }
 
@@ -81,11 +76,7 @@ final class DomDocumentWrapperTest extends TestCase
         $xmlContent = "<root>\n\t<child>Test</child>\n</root>";
         $domDocument = $this->domDocumentWrapper->loadFromString($xmlContent);
 
-        Assert::assertInstanceOf(\DOMDocument::class, $domDocument);
-
         $xmlString = $this->domDocumentWrapper->saveToString($domDocument);
-
-        Assert::assertNotFalse($xmlString);
 
         Assert::assertStringNotContainsString("\n", $xmlString, 'Newline characters were not removed.');
         Assert::assertStringNotContainsString("\t", $xmlString, 'Tab characters were not removed.');

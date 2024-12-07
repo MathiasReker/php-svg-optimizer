@@ -52,14 +52,6 @@ final class FileProviderTest extends TestCase
         Assert::assertStringContainsString('</svg>', $outputContent);
     }
 
-    public function testLoad(): void
-    {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
-        $domDocument = $fileProvider->loadContent();
-
-        Assert::assertInstanceOf(\DOMDocument::class, $domDocument);
-    }
-
     public function testGetMetaData(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);

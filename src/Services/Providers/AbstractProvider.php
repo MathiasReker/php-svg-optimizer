@@ -29,6 +29,11 @@ abstract class AbstractProvider implements SvgProviderInterface
     private const string XML_DECLARATION_REGEX = '/^\s*<\?xml[^>]*\?>\s*/';
 
     /**
+     * Default directory permissions for newly created directories.
+     */
+    private const int DEFAULT_DIRECTORY_PERMISSIONS = 0o755;
+
+    /**
      * Holds the optimized SVG content.
      */
     protected string $outputContent;
@@ -130,7 +135,7 @@ abstract class AbstractProvider implements SvgProviderInterface
             return true;
         }
 
-        return mkdir($directoryPath, 0o755, true);
+        return mkdir($directoryPath, self::DEFAULT_DIRECTORY_PERMISSIONS, true);
     }
 
     /**
