@@ -1,6 +1,7 @@
 parameters:
   level: max
   paths:
+    - bin
     - src
     - tests
   excludePaths:
@@ -11,6 +12,9 @@ parameters:
   customRulesetUsed: true
   fileExtensions:
     - php
+  ignoreErrors:
+    - '#Method .* has a nullable return type declaration.#'
+    - '#Method .* has parameter .* with a nullable type declaration.#'
   strictRules:
     disallowedLooseComparison: true
     booleansInConditions: true

@@ -16,7 +16,7 @@ operations.
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^4.1    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^4.2    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
@@ -143,7 +143,7 @@ try {
         ->optimize();
 
     echo sprintf('Content: ', $svgOptimizer->getContent(), \PHP_EOL);
-     
+
     $metaData = $svgOptimizer->getMetaData();
 
     echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
@@ -153,58 +153,6 @@ try {
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
-```
-
-### Example parsing from a directory and optimizing all SVG files using default rules (overwriting the original files)
-
-```php
-<?php
-
-declare(strict_types=1);
-
-require_once __DIR__ . '/vendor/autoload.php';
-
-use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
-use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
-
-$totalOriginalSize = 0;
-$totalOptimizedSize = 0;
-$optimizedFiles = 0;
-
-$optimizeSvg = function (string $filePath) use (&$totalOriginalSize, &$totalOptimizedSize, &$optimizedFiles): void {
-    try {
-        $svgOptimizer = SvgOptimizerService::fromFile($filePath)
-            ->optimize()
-            ->saveToFile($filePath);
-
-        $metaData = $svgOptimizer->getMetaData();
-        $totalOriginalSize += $metaData->getOriginalSize();
-        $totalOptimizedSize += $metaData->getOptimizedSize();
-        ++$optimizedFiles;
-    } catch (\Exception) {
-        // Skip the file if an exception occurs
-    }
-};
-
-$directoryPath = 'path/to/directory';
-
-$iterator = new RecursiveIteratorIterator(
-    new RecursiveDirectoryIterator($directoryPath, FilesystemIterator::SKIP_DOTS),
-    RecursiveIteratorIterator::LEAVES_ONLY
-);
-
-foreach ($iterator as $fileInfo) {
-    if ($fileInfo->isFile() && 'svg' === $fileInfo->getExtension()) {
-        $optimizeSvg($fileInfo->getPathname());
-    }
-}
-
-$reduction = $totalOriginalSize - $totalOptimizedSize;
-$reductionPercentage = $totalOriginalSize > 0 ? ($reduction / $totalOriginalSize) * 100 : 0;
-
-echo sprintf('Files optimized: %d%s', $optimizedFiles, \PHP_EOL);
-echo sprintf('Total size reduction: %d bytes%s', $reduction, \PHP_EOL);
-echo sprintf('Total reduction percentage: %s %%%s', number_format($reductionPercentage, 2), \PHP_EOL);
 ```
 
 ### Documentation
@@ -414,37 +362,19 @@ docker exec -it php-svg-optimizer bash
 
 #### Tools
 
-PHP Coding Standards Fixer:
-
-```bash
-composer cs-fix
-```
-
-PHP Coding Standards Checker:
-
-```bash
-composer cs-check
-```
-
-PHP Stan (level 9):
+Run phpstan:
 
 ```bash
 composer phpstan
 ```
 
-Unit tests:
+Run tests:
 
 ```bash
 composer test
 ```
 
-Magic number detector:
-
-```bash
-composer magic-number-detector
-```
-
-Run all formatting tools:
+Format code:
 
 ```bash
 composer format

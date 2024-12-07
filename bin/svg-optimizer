@@ -1,0 +1,30 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * This file is part of the php-svg-optimizer package.
+ * (c) Mathias Reker <github@reker.dk>
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+use MathiasReker\PhpSvgOptimizer\Commands\SvgOptimizerCommand;
+
+ini_set('memory_limit', '-1');
+error_reporting(E_ALL);
+ini_set('display_errors', 'stderr');
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+/*
+ * This is the entry point for the PHP SVG Optimizer command-line tool.
+ * It parses the arguments, initializes the SvgOptimizerCommand, and runs the optimization process.
+ *
+ * For more information, please refer to the project repository:
+ * @see https://github.com/MathiasReker/php-svg-optimizer
+ *
+ * @var string[] $argv
+ */
+SvgOptimizerCommand::fromArgs($argv)->run();

@@ -19,7 +19,7 @@ final class MinifyTransformations implements SvgOptimizerRuleInterface
     /**
      * Constant for the percentage factor used in calculations.
      */
-    private const float PERCENTAGE_FACTOR = 100;
+    private const int PERCENTAGE_FACTOR = 100;
 
     /**
      * Regex pattern to match percentage values in transformations.

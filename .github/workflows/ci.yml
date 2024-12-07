@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         operating-system: [ 'ubuntu-latest' ]
-        php-versions: [ '8.3', '8.4-beta' ]
+        php-versions: [ '8.3', '8.4' ]
     name: PHP ${{ matrix.php-versions }} Test on ${{ matrix.operating-system }}
     steps:
       - name: Checkout Code
@@ -35,18 +35,10 @@ jobs:
         run: composer self-update
 
       - name: Install Composer Dependencies
-        run: |
-          if [[ "${{ matrix.php-versions }}" == "8.4-beta" ]]; then
-            composer install --optimize-autoloader --ignore-platform-reqs
-          else
-            composer install --optimize-autoloader
-          fi
+        run: composer install --optimize-autoloader
 
       - name: Validate Composer Configuration
-        run: |
-          if [[ "${{ matrix.php-versions }}" != "8.4-beta" ]]; then
-            composer check
-          fi
+        run: composer check
 
       - name: Lint PHP Files
         run: |
@@ -59,7 +51,7 @@ jobs:
 
       - name: Check Code Style with PHP CS Fixer
         run: |
-          if [[ "${{ matrix.php-versions }}" != "8.4-beta" ]]; then
+          if [[ "${{ matrix.php-versions }}" != "8.4" ]]; then
             composer cs-check
           fi
 

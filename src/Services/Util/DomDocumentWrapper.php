@@ -15,6 +15,9 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
 final class DomDocumentWrapper
 {
+    /**
+     * Default XML version used when saving the DOMDocument.
+     */
     private const string DEFAULT_XML_VERSION = '1.0';
 
     /**
