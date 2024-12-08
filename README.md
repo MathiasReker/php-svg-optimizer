@@ -10,13 +10,13 @@
 [![MIT License](https://img.shields.io/github/license/MathiasReker/php-svg-optimizer.svg)](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/LICENSE.txt)
 
 `php-svg-optimizer` is a PHP library designed to optimize SVG files by applying various transformations and cleanup
-operations.
+operations.r
 
 ### Versions & Dependencies
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^4.2    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^5.0    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
@@ -64,6 +64,8 @@ vendor/bin/svg-optimizer --dry-run process /path/to/svgs
 vendor/bin/svg-optimizer --config=config.json process /path/to/file.svg
 vendor/bin/svg-optimizer --quiet process /path/to/file.svg
 ```
+
+### Package
 
 > To ensure robustness when using the library, it's crucial to handle exceptions, as invalid or malformed SVG files
 > could lead to runtime errors. Catching these exceptions will allow you to manage potential issues gracefully and
