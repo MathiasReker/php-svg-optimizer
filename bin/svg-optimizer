@@ -16,7 +16,7 @@ ini_set('memory_limit', '-1');
 error_reporting(E_ALL);
 ini_set('display_errors', 'stderr');
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once realpath(__DIR__ . '/../../../../vendor/autoload.php');
 
 /*
  * This is the entry point for the PHP SVG Optimizer command-line tool.
