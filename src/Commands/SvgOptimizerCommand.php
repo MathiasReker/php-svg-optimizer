@@ -17,14 +17,29 @@ use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 
 final class SvgOptimizerCommand
 {
+    /**
+     * The percentage factor used for calculating reductions.
+     */
     private const int PERCENTAGE_FACTOR = 100;
 
+    /**
+     * The default precision for percentage calculations.
+     */
     private const int DEFAULT_PRECISION = 2;
 
+    /**
+     * Total original size of all processed files.
+     */
     private int $totalOriginalSize = 0;
 
+    /**
+     * Total optimized size of all processed files.
+     */
     private int $totalOptimizedSize = 0;
 
+    /**
+     * Total number of files optimized.
+     */
     private int $optimizedFiles = 0;
 
     /**
@@ -34,8 +49,14 @@ final class SvgOptimizerCommand
      */
     private ?array $config = null;
 
+    /**
+     * Whether to run in dry-run mode.
+     */
     private bool $dryRun = false;
 
+    /**
+     * Whether to suppress all output except errors.
+     */
     private bool $quiet = false;
 
     /**
@@ -84,13 +105,6 @@ final class SvgOptimizerCommand
         $configPath = $argumentParser->getOption('--config');
         $dryRun = $argumentParser->hasOption('--dry-run');
         $quiet = $argumentParser->hasOption('--quiet');
-
-        $subcommand = $args[$argumentParser->getNextPositionalArgumentIndex()] ?? null;
-
-        if ('process' !== $subcommand) {
-            self::printHelp();
-            exit(1);
-        }
 
         $paths = \array_slice($args, $argumentParser->getNextPositionalArgumentIndex() + 1);
         if ([] === $paths) {
