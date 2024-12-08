@@ -11,72 +11,70 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Commands;
 
-use MathiasReker\PhpSvgOptimizer\Commands\Helpers\ArgumentParser;
-use MathiasReker\PhpSvgOptimizer\Commands\Helpers\ConfigLoader;
+use MathiasReker\PhpSvgOptimizer\Configs\RuleConfig;
+use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Services\Util\ArgumentParser;
+use MathiasReker\PhpSvgOptimizer\Services\Util\ConfigLoader;
 
 final class SvgOptimizerCommand
 {
     /**
-     * The percentage factor used for calculating reductions.
+     * The factor to convert a decimal to a percentage.
      */
     private const int PERCENTAGE_FACTOR = 100;
 
     /**
-     * The default precision for percentage calculations.
+     * The default precision for percentage values.
      */
     private const int DEFAULT_PRECISION = 2;
 
     /**
-     * Total original size of all processed files.
+     * The total original size of the SVG files.
      */
     private int $totalOriginalSize = 0;
 
     /**
-     * Total optimized size of all processed files.
+     * The total optimized size of the SVG files.
      */
     private int $totalOptimizedSize = 0;
 
     /**
-     * Total number of files optimized.
+     * The number of files optimized.
      */
     private int $optimizedFiles = 0;
 
     /**
-     * Configuration for SVG optimization rules.
-     *
      * @var array<string, bool>|null
      */
     private ?array $config = null;
 
     /**
-     * Whether to run in dry-run mode.
+     * Whether to run the command in dry-run mode.
      */
     private bool $dryRun = false;
 
     /**
-     * Whether to suppress all output except errors.
+     * Whether to run the command in quiet mode.
      */
     private bool $quiet = false;
 
     /**
-     * @var string[] List of paths to files or directories
+     * @var array<string>
      */
     private readonly array $paths;
 
     /**
-     * Constructor.
+     * Constructor for the SvgOptimizerCommand class.
      *
-     * @param string[]    $paths      Paths to SVG files or directories
-     * @param string|null $configPath Path to the configuration file
-     *
-     * @throws \InvalidArgumentException If any path is invalid
+     * @param array<string> $paths      The paths to the SVG files or directories to process
+     * @param string|null   $configPath The path to the configuration file
      */
     public function __construct(array $paths, ?string $configPath)
     {
         foreach ($paths as $path) {
             if (!is_dir($path) && !is_file($path)) {
-                echo \sprintf('Error: "%s" is not a valid directory or file.', $path);
+                fprintf(\STDERR, 'Error: "%s" is not a valid directory or file.', $path);
                 exit(1);
             }
         }
@@ -84,69 +82,117 @@ final class SvgOptimizerCommand
         $this->paths = $paths;
 
         if (null !== $configPath) {
-            $this->config = ConfigLoader::loadConfig($configPath);
+            try {
+                $this->config = ConfigLoader::loadConfig($configPath);
+            } catch (\InvalidArgumentException $exception) {
+                fprintf(\STDERR, '%s', $exception->getMessage());
+                exit(1);
+            }
         }
     }
 
     /**
-     * Create an instance of the command from CLI arguments.
+     * Creates a new SvgOptimizerCommand instance from the command-line arguments.
      *
-     * @param array<string> $args Command-line arguments
+     * @param array<string> $args The command-line arguments passed to the script
+     *
+     * @return SvgOptimizerCommand The SvgOptimizerCommand instance
      */
     public static function fromArgs(array $args): self
     {
         $argumentParser = new ArgumentParser($args);
 
-        if ($argumentParser->hasOption('--help') || 1 === \count($args)) {
+        if ($argumentParser->hasOption('help') || 1 === \count($args)) {
             self::printHelp();
             exit(0);
         }
 
-        $configPath = $argumentParser->getOption('--config');
-        $dryRun = $argumentParser->hasOption('--dry-run');
-        $quiet = $argumentParser->hasOption('--quiet');
+        if ($argumentParser->hasOption('version')) {
+            self::printVersion();
+            exit(0);
+        }
 
-        $paths = \array_slice($args, $argumentParser->getNextPositionalArgumentIndex() + 1);
-        if ([] === $paths) {
-            echo "Error: No paths provided for processing.\n";
-            self::printHelp();
+        try {
+            $paths = \array_slice($args, $argumentParser->getNextPositionalArgumentIndex() + 1);
+        } catch (\InvalidArgumentException $invalidArgumentException) {
+            fprintf(\STDERR, "%s\n", $invalidArgumentException->getMessage());
             exit(1);
         }
 
-        $command = new self($paths, $configPath);
-        $command->dryRun = $dryRun;
-        $command->quiet = $quiet;
+        if ([] === $paths) {
+            self::printHelp();
+            exit(0);
+        }
+
+        $command = new self($paths, $argumentParser->getOption('config'));
+        $command->dryRun = $argumentParser->hasOption('dryRun');
+        $command->quiet = $argumentParser->hasOption('quiet');
 
         return $command;
     }
 
     /**
-     * Print help information for the command.
+     * Prints the help message for the command.
      */
-    public static function printHelp(): void
+    private static function printHelp(): void
     {
-        echo <<<HELP
-            PHP SVG Optimizer
+        $argumentData = new ArgumentData();
+        printf('PHP SVG Optimizer%s%s', \PHP_EOL, \PHP_EOL);
+        printf('Usage:%s', \PHP_EOL);
+        printf('  %s%s%s', $argumentData->getFormat(), \PHP_EOL, \PHP_EOL);
+        printf('Options:%s', \PHP_EOL);
+        foreach ($argumentData->getOptions() as $argumentOptionValueObject) {
+            $shorthand = $argumentOptionValueObject->getShorthand();
+            $full = $argumentOptionValueObject->getFull();
+            $description = $argumentOptionValueObject->getDescription();
+            printf('  %-3s, %-20s %s' . \PHP_EOL, $shorthand, $full, $description);
+        }
 
-            Usage:
-              vendor/bin/svg-optimizer [options] process <path1> <path2> ...
+        echo \PHP_EOL;
+        printf('Commands:%s', \PHP_EOL);
+        foreach ($argumentData->getCommands() as $commandOptionValueObject) {
+            printf('  %-25s %-3s' . \PHP_EOL, $commandOptionValueObject->getTitle(), $commandOptionValueObject->getDescription());
+        }
 
-            Options:
-              -h, --help                 Display help for the command.
-              -c, --config=<config.json> Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.
-              -d, --dry-run              Only calculate potential savings without modifying the files.
-              -q, --quiet                Suppress all output except errors.
-
-            Examples:
-              vendor/bin/svg-optimizer --dry-run --quiet process /path/to/svgs
-              vendor/bin/svg-optimizer --config=config.json process /path/to/file.svg
-            HELP;
+        printf('%sExamples:%s', \PHP_EOL, \PHP_EOL);
+        foreach ($argumentData->getExamples() as $exampleCommandValueObject) {
+            printf('  %s%s', $exampleCommandValueObject->getCommand(), \PHP_EOL);
+        }
     }
 
     /**
-     * Run the optimization command.
-     *
-     * @throws \InvalidArgumentException If a path is not valid
+     * Prints the version of the library.
+     */
+    private static function printVersion(): void
+    {
+        $version = self::getVersionFromPackageJson();
+
+        printf('PHP SVG Optimizer v%s%s', $version, \PHP_EOL);
+    }
+
+    /**
+     * Retrieves the version of the library from the package.json file.
+     */
+    private static function getVersionFromPackageJson(): ?string
+    {
+        $packageJsonPath = __DIR__ . '/../../composer.json';
+        if (file_exists($packageJsonPath)) {
+            $packageJson = file_get_contents($packageJsonPath);
+            if (false === $packageJson) {
+                return null;
+            }
+
+            $data = json_decode($packageJson, true);
+            if (\is_array($data) && \array_key_exists('version', $data) && \is_string($data['version'])) {
+                return $data['version'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Runs the SVG optimization process.
      */
     public function run(): void
     {
@@ -156,7 +202,7 @@ final class SvgOptimizerCommand
             } elseif (is_file($path) && 'svg' === pathinfo($path, \PATHINFO_EXTENSION)) {
                 $this->optimizeSvg($path);
             } else {
-                echo \sprintf('Error: "%s" is not a valid SVG file.', $path) . \PHP_EOL;
+                printf('Error: "%s" is not a valid SVG file.', $path);
             }
         }
 
@@ -166,9 +212,9 @@ final class SvgOptimizerCommand
     }
 
     /**
-     * Process a directory of SVG files.
+     * Processes all SVG files in a directory.
      *
-     * @param string $directoryPath Path to the directory
+     * @param string $directoryPath The path to the directory containing the SVG files
      */
     private function processDirectory(string $directoryPath): void
     {
@@ -176,7 +222,6 @@ final class SvgOptimizerCommand
             new \RecursiveDirectoryIterator($directoryPath, \FilesystemIterator::SKIP_DOTS),
             \RecursiveIteratorIterator::LEAVES_ONLY
         );
-
         foreach ($iterator as $fileInfo) {
             if ($fileInfo instanceof \SplFileInfo && $fileInfo->isFile() && 'svg' === $fileInfo->getExtension()) {
                 $this->optimizeSvg($fileInfo->getPathname());
@@ -185,33 +230,21 @@ final class SvgOptimizerCommand
     }
 
     /**
-     * Optimize a single SVG file.
+     * Optimizes an SVG file.
      *
-     * @param string $filePath Path to the SVG file
+     * @param string $filePath The path to the SVG file
      */
     private function optimizeSvg(string $filePath): void
     {
         try {
             $svgOptimizer = SvgOptimizerService::fromFile($filePath);
-
+            $rules = RuleConfig::DEFAULT_RULES;
             if (null !== $this->config) {
-                $svgOptimizer = $svgOptimizer->withRules(
-                    convertColorsToHex: $this->config['convertColorsToHex'] ?? true,
-                    flattenGroups: $this->config['flattenGroups'] ?? true,
-                    minifySvgCoordinates: $this->config['minifySvgCoordinates'] ?? true,
-                    minifyTransformations: $this->config['minifyTransformations'] ?? true,
-                    removeComments: $this->config['removeComments'] ?? true,
-                    removeDefaultAttributes: $this->config['removeDefaultAttributes'] ?? true,
-                    removeDeprecatedAttributes: $this->config['removeDeprecatedAttributes'] ?? true,
-                    removeDoctype: $this->config['removeDoctype'] ?? true,
-                    removeMetadata: $this->config['removeMetadata'] ?? true,
-                    removeTitleAndDesc: $this->config['removeTitleAndDesc'] ?? true,
-                    removeUnnecessaryWhitespace: $this->config['removeUnnecessaryWhitespace'] ?? true,
-                );
+                $rules = array_merge($rules, $this->config);
             }
 
+            $svgOptimizer = $svgOptimizer->withRules(convertColorsToHex: $rules['convertColorsToHex'], flattenGroups: $rules['flattenGroups'], minifySvgCoordinates: $rules['minifySvgCoordinates'], minifyTransformations: $rules['minifyTransformations'], removeComments: $rules['removeComments'], removeDefaultAttributes: $rules['removeDefaultAttributes'], removeDeprecatedAttributes: $rules['removeDeprecatedAttributes'], removeDoctype: $rules['removeDoctype'], removeMetadata: $rules['removeMetadata'], removeTitleAndDesc: $rules['removeTitleAndDesc'], removeUnnecessaryWhitespace: $rules['removeUnnecessaryWhitespace']);
             $svgOptimizer->optimize();
-
             if (!$this->dryRun) {
                 $svgOptimizer->saveToFile($filePath);
             }
@@ -220,24 +253,27 @@ final class SvgOptimizerCommand
             $this->totalOriginalSize += $metaData->getOriginalSize();
             $this->totalOptimizedSize += $metaData->getOptimizedSize();
             ++$this->optimizedFiles;
-
             $reduction = $metaData->getOriginalSize() - $metaData->getOptimizedSize();
             $reductionPercentage = $metaData->getOriginalSize() > 0
                 ? ($reduction / $metaData->getOriginalSize()) * self::PERCENTAGE_FACTOR
                 : 0;
-
             if (!$this->quiet) {
-                echo \sprintf('%s (%s%%)%s', $filePath, number_format($reductionPercentage, self::DEFAULT_PRECISION), \PHP_EOL);
+                printf(
+                    '%s (%s%%)%s',
+                    $filePath,
+                    number_format($reductionPercentage, self::DEFAULT_PRECISION),
+                    \PHP_EOL
+                );
             }
         } catch (\Exception $exception) {
             if (!$this->quiet) {
-                echo \sprintf('Error processing "%s": %s%s', $filePath, $exception->getMessage(), \PHP_EOL);
+                fprintf(\STDERR, 'Error: Failed processing "%s": %s%s', $filePath, $exception->getMessage(), \PHP_EOL);
             }
         }
     }
 
     /**
-     * Print a summary of the optimization results.
+     * Prints a summary of the SVG optimization process.
      */
     private function printSummary(): void
     {
@@ -245,10 +281,9 @@ final class SvgOptimizerCommand
         $reductionPercentage = $this->totalOriginalSize > 0
             ? ($reduction / $this->totalOriginalSize) * self::PERCENTAGE_FACTOR
             : 0;
-
         echo \PHP_EOL;
-        echo \sprintf('Total files processed: %d%s', $this->optimizedFiles, \PHP_EOL);
-        echo \sprintf('Total size reduction: %d bytes%s', $reduction, \PHP_EOL);
-        echo \sprintf('Total reduction percentage: %s%%%s', number_format($reductionPercentage, self::DEFAULT_PRECISION), \PHP_EOL);
+        printf('Total files processed: %d%s', $this->optimizedFiles, \PHP_EOL);
+        printf('Total size reduction: %d bytes%s', $reduction, \PHP_EOL);
+        printf('Total reduction percentage: %s%%%s', number_format($reductionPercentage, self::DEFAULT_PRECISION), \PHP_EOL);
     }
 }

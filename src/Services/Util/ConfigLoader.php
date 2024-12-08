@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Commands\Helpers;
+namespace MathiasReker\PhpSvgOptimizer\Services\Util;
 
 final class ConfigLoader
 {
@@ -31,21 +31,21 @@ final class ConfigLoader
         $configContent = file_exists($config) ? file_get_contents($config) : $config;
 
         if (false === $configContent) {
-            throw new \InvalidArgumentException('Failed to read configuration content.');
+            throw new \InvalidArgumentException('Error: Failed to read configuration content.');
         }
 
         if (!json_validate($configContent)) {
-            throw new \InvalidArgumentException('Invalid JSON configuration.');
+            throw new \InvalidArgumentException('Error: Invalid JSON configuration.');
         }
 
         $decodedConfig = json_decode($configContent, true);
 
         if (null === $decodedConfig) {
-            throw new \InvalidArgumentException('Failed to decode configuration JSON.');
+            throw new \InvalidArgumentException('Error: Failed to decode configuration JSON.');
         }
 
         if (!\is_array($decodedConfig)) {
-            throw new \InvalidArgumentException('Configuration must be an associative array.');
+            throw new \InvalidArgumentException('Error: Configuration must be an associative array.');
         }
 
         return array_combine(

@@ -31,6 +31,40 @@ To install the library, run:
 composer require mathiasreker/php-svg-optimizer
 ```
 
+## Using the Library
+
+You can use this library either as a **standalone package** or as a **command-line tool (CLI)**.
+
+---
+
+### CLI
+
+#### Usage
+
+```bash
+vendor/bin/svg-optimizer [options] process <path1> <path2> ...
+```
+
+```bash
+Options:
+-h , --help               Display help for the command.
+-c , --config             Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.
+-d , --dry-run            Only calculate potential savings without modifying the files.
+-q , --quiet              Suppress all output except errors.
+-v , --version            Display the version of the library.
+
+Commands:
+Process                   Provide a list of directories or files to process.
+```
+
+#### Examples:
+
+```bash
+vendor/bin/svg-optimizer --dry-run process /path/to/svgs
+vendor/bin/svg-optimizer --config=config.json process /path/to/file.svg
+vendor/bin/svg-optimizer --quiet process /path/to/file.svg
+```
+
 > To ensure robustness when using the library, it's crucial to handle exceptions, as invalid or malformed SVG files
 > could lead to runtime errors. Catching these exceptions will allow you to manage potential issues gracefully and
 > prevent
