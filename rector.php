@@ -27,7 +27,6 @@ return RectorConfig::configure()
         rectorPreset: true,
         phpunitCodeQuality: true,
         symfonyCodeQuality: true,
-        phpunit: true,
     )
     ->withSkipPath(__DIR__ . '/vendor')
     ->withPaths([__DIR__])

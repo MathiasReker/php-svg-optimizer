@@ -12,32 +12,8 @@ parameters:
   customRulesetUsed: true
   fileExtensions:
     - php
-  ignoreErrors:
-    - '#Method .* has a nullable return type declaration.#'
-    - '#Method .* has parameter .* with a nullable type declaration.#'
-  strictRules:
-    disallowedLooseComparison: true
-    booleansInConditions: true
-    uselessCast: true
-    requireParentConstructorCall: true
-    disallowedConstructs: true
-    overwriteVariablesWithLoop: true
-    closureUsesThis: true
-    matchingInheritedMethodNames: true
-    numericOperandsInArithmeticOperators: true
-    strictCalls: true
-    switchConditionsMatchingType: true
-    noVariableVariables: true
-    strictArrayFilter: true
-  ergebnis:
-    noExtends:
-      classesAllowedToBeExtended:
-        - RuntimeException
-        - InvalidArgumentException
-        - MathiasReker\PhpSvgOptimizer\Services\Providers\AbstractProvider
 includes:
     - vendor/symplify/phpstan-rules/config/code-complexity-rules.neon
     - vendor/symplify/phpstan-rules/config/naming-rules.neon
-    - vendor/symplify/phpstan-rules/config/regex-rules.neon
     - vendor/symplify/phpstan-rules/config/static-rules.neon
     - phar://phpstan.phar/conf/bleedingEdge.neon
