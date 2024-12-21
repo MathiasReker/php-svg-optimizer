@@ -127,7 +127,7 @@ final class SvgOptimizerCommand
 
         $command = new self($paths, $argumentParser->getOption(Option::CONFIG));
         $command->dryRun = $argumentParser->hasOption(Option::DRY_RUN);
-        $command->quiet = $argumentParser->hasOption(Option::DRY_RUN);
+        $command->quiet = $argumentParser->hasOption(Option::QUIET);
 
         return $command;
     }
