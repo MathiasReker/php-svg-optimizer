@@ -75,7 +75,8 @@ final class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
      * Replaces specific attributes in the SVG document with their modern equivalents.
      *
      * This function scans the document for the deprecated attributes listed in `$attributes`
-     * and replaces them with the new names.
+     * and replaces them with the new names, but only if the new attribute's value is not
+     * already set to the same value.
      *
      * @param \DOMXPath             $domXPath   The DOMXPath instance used to query the SVG elements
      * @param array<string, string> $attributes An associative array where the key is the old attribute
@@ -95,8 +96,11 @@ final class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
                 }
 
                 $value = $node->getAttribute($oldName);
+
+                if (!$node->hasAttribute($newName) || $node->getAttribute($newName) !== $value) {
+                    $node->setAttribute($newName, $value);
+                }
                 $node->removeAttribute($oldName);
-                $node->setAttribute($newName, $value);
             }
         }
     }

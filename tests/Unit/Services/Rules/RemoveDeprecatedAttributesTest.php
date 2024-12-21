@@ -164,6 +164,17 @@ final class RemoveDeprecatedAttributesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><circle cx="100" cy="100" r="50" fill="green"/><use href="#someIcon"/></svg>
                 XML
         ];
+
+        yield 'Does not replace if new attribute value is the same' => [
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <use xlink:href="#icon" href="#icon"/>
+                </svg>
+                XML,
+            <<<XML
+                <svg xmlns="http://www.w3.org/2000/svg"><use href="#icon"/></svg>
+                XML
+        ];
     }
 
     #[DataProvider('svgXlinkProvider')]
