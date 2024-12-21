@@ -70,7 +70,7 @@ final class SvgOptimizerCommand
      * @param array<string> $paths      The paths to the SVG files or directories to process
      * @param string|null   $configPath The path to the configuration file
      */
-    public function __construct(array $paths, ?string $configPath)
+    private function __construct(array $paths, ?string $configPath)
     {
         foreach ($paths as $path) {
             if (!is_dir($path) && !is_file($path)) {
@@ -218,10 +218,7 @@ final class SvgOptimizerCommand
      */
     private function processDirectory(string $directoryPath): void
     {
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directoryPath, \FilesystemIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::LEAVES_ONLY
-        );
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directoryPath, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::LEAVES_ONLY);
         foreach ($iterator as $fileInfo) {
             if ($fileInfo instanceof \SplFileInfo && $fileInfo->isFile() && 'svg' === $fileInfo->getExtension()) {
                 $this->optimizeSvg($fileInfo->getPathname());
@@ -254,16 +251,9 @@ final class SvgOptimizerCommand
             $this->totalOptimizedSize += $metaData->getOptimizedSize();
             ++$this->optimizedFiles;
             $reduction = $metaData->getOriginalSize() - $metaData->getOptimizedSize();
-            $reductionPercentage = $metaData->getOriginalSize() > 0
-                ? ($reduction / $metaData->getOriginalSize()) * self::PERCENTAGE_FACTOR
-                : 0;
+            $reductionPercentage = $metaData->getOriginalSize() > 0 ? ($reduction / $metaData->getOriginalSize()) * self::PERCENTAGE_FACTOR : 0;
             if (!$this->quiet) {
-                printf(
-                    '%s (%s%%)%s',
-                    $filePath,
-                    number_format($reductionPercentage, self::DEFAULT_PRECISION),
-                    \PHP_EOL
-                );
+                printf('%s (%s%%)%s', $filePath, number_format($reductionPercentage, self::DEFAULT_PRECISION), \PHP_EOL);
             }
         } catch (\Exception $exception) {
             if (!$this->quiet) {
@@ -278,9 +268,8 @@ final class SvgOptimizerCommand
     private function printSummary(): void
     {
         $reduction = $this->totalOriginalSize - $this->totalOptimizedSize;
-        $reductionPercentage = $this->totalOriginalSize > 0
-            ? ($reduction / $this->totalOriginalSize) * self::PERCENTAGE_FACTOR
-            : 0;
+        $reductionPercentage = $this->totalOriginalSize > 0 ? ($reduction / $this->totalOriginalSize) * self::PERCENTAGE_FACTOR : 0;
+
         echo \PHP_EOL;
         printf('Total files processed: %d%s', $this->optimizedFiles, \PHP_EOL);
         printf('Total size reduction: %d bytes%s', $reduction, \PHP_EOL);
