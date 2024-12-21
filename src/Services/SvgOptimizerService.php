@@ -27,6 +27,7 @@ use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDoctype;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnnecessaryWhitespace;
+use MathiasReker\PhpSvgOptimizer\Services\Rules\SortAttributes;
 
 /**
  * This class is the main entry point for building and configuring the SVG optimizer.
@@ -110,6 +111,7 @@ final readonly class SvgOptimizerService
      * @param bool $removeMetadata              Whether to remove metadata elements from the SVG
      * @param bool $removeTitleAndDesc          Whether to remove the <title> and <desc> elements
      * @param bool $removeUnnecessaryWhitespace Whether to remove unnecessary whitespace
+     * @param bool $sortAttributes              Whether to sort attributes
      *
      * @return $this The SvgOptimizerService instance
      */
@@ -125,6 +127,7 @@ final readonly class SvgOptimizerService
         bool $removeMetadata = true,
         bool $removeTitleAndDesc = true,
         bool $removeUnnecessaryWhitespace = true,
+        bool $sortAttributes = true
     ): self {
         $rules = [
             ConvertColorsToHex::class => $convertColorsToHex,
@@ -138,6 +141,7 @@ final readonly class SvgOptimizerService
             RemoveMetadata::class => $removeMetadata,
             RemoveTitleAndDesc::class => $removeTitleAndDesc,
             RemoveUnnecessaryWhitespace::class => $removeUnnecessaryWhitespace,
+            SortAttributes::class => $sortAttributes,
         ];
 
         foreach (array_keys(array_filter($rules)) as $ruleClass) {

@@ -79,7 +79,8 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
   "removeDoctype": true,
   "removeMetadata": true,
   "removeTitleAndDesc": true,
-  "removeUnnecessaryWhitespace": true
+  "removeUnnecessaryWhitespace": true,
+  "sortAttributes": true
 }
 ```
 
@@ -115,6 +116,7 @@ try {
             removeMetadata: true,
             removeTitleAndDesc: false,
             removeUnnecessaryWhitespace: true,
+            sortAttributes: true,
          )
         ->optimize()
         ->saveToFile('path/to/output.svg');
@@ -248,6 +250,12 @@ Cleans up unnecessary whitespace in the SVG:
 $svgOptimizer->withRules(removeUnnecessaryWhitespace: true);
 ```
 
+Sorts attributes within each element:
+
+```php
+$svgOptimizer->withRules(sortAttributes: true);
+```
+
 Removes default attribute values that match common defaults:
 
 ```php
@@ -311,6 +319,7 @@ $svgOptimizer->withRules(
    removeMetadata: true,
    removeTitleAndDesc: true,
    removeUnnecessaryWhitespace: true,
+   sortAttributes: true,
 );
 ```
 

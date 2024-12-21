@@ -30,5 +30,6 @@ final class RuleConfig
         'removeMetadata' => true,
         'removeTitleAndDesc' => true,
         'removeUnnecessaryWhitespace' => true,
+        'sortAttributes' => true,
     ];
 }

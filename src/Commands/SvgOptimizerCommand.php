@@ -240,7 +240,7 @@ final class SvgOptimizerCommand
                 $rules = array_merge($rules, $this->config);
             }
 
-            $svgOptimizer = $svgOptimizer->withRules(convertColorsToHex: $rules['convertColorsToHex'], flattenGroups: $rules['flattenGroups'], minifySvgCoordinates: $rules['minifySvgCoordinates'], minifyTransformations: $rules['minifyTransformations'], removeComments: $rules['removeComments'], removeDefaultAttributes: $rules['removeDefaultAttributes'], removeDeprecatedAttributes: $rules['removeDeprecatedAttributes'], removeDoctype: $rules['removeDoctype'], removeMetadata: $rules['removeMetadata'], removeTitleAndDesc: $rules['removeTitleAndDesc'], removeUnnecessaryWhitespace: $rules['removeUnnecessaryWhitespace']);
+            $svgOptimizer = $svgOptimizer->withRules(convertColorsToHex: $rules['convertColorsToHex'], flattenGroups: $rules['flattenGroups'], minifySvgCoordinates: $rules['minifySvgCoordinates'], minifyTransformations: $rules['minifyTransformations'], removeComments: $rules['removeComments'], removeDefaultAttributes: $rules['removeDefaultAttributes'], removeDeprecatedAttributes: $rules['removeDeprecatedAttributes'], removeDoctype: $rules['removeDoctype'], removeMetadata: $rules['removeMetadata'], removeTitleAndDesc: $rules['removeTitleAndDesc'], removeUnnecessaryWhitespace: $rules['removeUnnecessaryWhitespace'], sortAttributes: $rules['sortAttributes']);
             $svgOptimizer->optimize();
             if (!$this->dryRun) {
                 $svgOptimizer->saveToFile($filePath);
