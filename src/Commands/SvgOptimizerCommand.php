@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Commands;
 
 use MathiasReker\PhpSvgOptimizer\Configs\RuleConfig;
+use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 use MathiasReker\PhpSvgOptimizer\Services\Util\ArgumentParser;
@@ -102,12 +103,12 @@ final class SvgOptimizerCommand
     {
         $argumentParser = new ArgumentParser($args);
 
-        if ($argumentParser->hasOption('help') || 1 === \count($args)) {
+        if ($argumentParser->hasOption(Option::HELP) || 1 === \count($args)) {
             self::printHelp();
             exit(0);
         }
 
-        if ($argumentParser->hasOption('version')) {
+        if ($argumentParser->hasOption(Option::VERSION)) {
             self::printVersion();
             exit(0);
         }
@@ -124,9 +125,9 @@ final class SvgOptimizerCommand
             exit(0);
         }
 
-        $command = new self($paths, $argumentParser->getOption('config'));
-        $command->dryRun = $argumentParser->hasOption('dryRun');
-        $command->quiet = $argumentParser->hasOption('quiet');
+        $command = new self($paths, $argumentParser->getOption(Option::CONFIG));
+        $command->dryRun = $argumentParser->hasOption(Option::DRY_RUN);
+        $command->quiet = $argumentParser->hasOption(Option::DRY_RUN);
 
         return $command;
     }

@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Util;
 
+use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Models\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 
@@ -41,13 +42,13 @@ final readonly class ArgumentParser
      *
      * @return bool True if the option is present, false otherwise
      */
-    public function hasOption(string $option): bool
+    public function hasOption(Option $option): bool
     {
         $argsObject = array_filter(array_map(fn (string $arg): ?ArgumentOptionValueObject => $this->isOption($arg)
             ? $this->argumentData->getOptionByName($this->getOptionKey($arg))
             : null, $this->args));
 
-        return \in_array($this->argumentData->getOption($option), $argsObject, true);
+        return \in_array($this->argumentData->getOption($option->value), $argsObject, true);
     }
 
     /**
@@ -75,14 +76,14 @@ final readonly class ArgumentParser
     /**
      * Get the value of the given option from the command-line arguments.
      *
-     * @param string $option The option to get the value of
+     * @param Option $option The option to get the value of
      *
      * @return string|null The value of the option, or null if the option is not present
      */
-    public function getOption(string $option): ?string
+    public function getOption(Option $option): ?string
     {
         foreach ($this->args as $arg) {
-            if ($this->isOption($arg) && $this->argumentData->getOptionByName($this->getOptionKey($arg)) === $this->argumentData->getOption($option)) {
+            if ($this->isOption($arg) && $this->argumentData->getOptionByName($this->getOptionKey($arg)) === $this->argumentData->getOption($option->value)) {
                 return $this->getOptionValue($arg);
             }
         }

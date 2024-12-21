@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Util;
 
+use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Models\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\Models\CommandOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\Models\ExampleCommandValueObject;
@@ -27,27 +28,25 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ArgumentData::class)]
 final class ArgumentParserTest extends TestCase
 {
-    private const string CONFIG_OPTION = 'config';
-
     private const array EXAMPLE_ARGS = ['vendor/bin/svg-optimizer', '--config=config.json', 'process', '/path/to/file.svg'];
 
     private ArgumentParser $argumentParser;
 
     public function testHasOptionReturnsFalseIfOptionDoesNotExist(): void
     {
-        $hasDryRunOption = $this->argumentParser->hasOption('dryRun');
+        $hasDryRunOption = $this->argumentParser->hasOption(Option::DRY_RUN);
         Assert::assertFalse($hasDryRunOption);
     }
 
     public function testGetOptionReturnsCorrectValue(): void
     {
-        $configOptionValue = $this->argumentParser->getOption(self::CONFIG_OPTION);
+        $configOptionValue = $this->argumentParser->getOption(Option::CONFIG);
         Assert::assertSame('config.json', $configOptionValue);
     }
 
     public function testGetOptionReturnsNullIfOptionDoesNotExist(): void
     {
-        $dryRunOptionValue = $this->argumentParser->getOption('dryRun');
+        $dryRunOptionValue = $this->argumentParser->getOption(Option::DRY_RUN);
         Assert::assertNull($dryRunOptionValue);
     }
 
