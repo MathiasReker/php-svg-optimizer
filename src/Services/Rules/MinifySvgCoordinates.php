@@ -59,8 +59,7 @@ final class MinifySvgCoordinates implements SvgOptimizerRuleInterface
          */
         $pathAttributes = $domXPath->query('//svg:path/@d');
         foreach ($pathAttributes as $attribute) {
-            $newValue = $this->minifyCoordinates($attribute->value);
-            $attribute->value = $newValue;
+            $attribute->value = $this->minifyCoordinates($attribute->value);
         }
 
         /**

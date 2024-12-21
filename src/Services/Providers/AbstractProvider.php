@@ -31,7 +31,7 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Default directory permissions for newly created directories.
      */
-    private const int DEFAULT_DIRECTORY_PERMISSIONS = 0o755;
+    private const int DEFAULT_DIRECTORY_PERMISSION = 0o755;
 
     /**
      * Holds the optimized SVG content.
@@ -111,7 +111,7 @@ abstract class AbstractProvider implements SvgProviderInterface
     #[\Override]
     final public function saveToFile(string $path): self
     {
-        if (!$this->doDirectoryExists(\dirname($path))) {
+        if (!$this->ensureDirectoryExists(\dirname($path))) {
             throw new IOException(\sprintf('Failed to create directory for output file: %s', $path));
         }
 
@@ -129,13 +129,13 @@ abstract class AbstractProvider implements SvgProviderInterface
      *
      * @throws IOException If the directory cannot be created
      */
-    private function doDirectoryExists(string $directoryPath): bool
+    private function ensureDirectoryExists(string $directoryPath): bool
     {
         if (is_dir($directoryPath)) {
             return true;
         }
 
-        return mkdir($directoryPath, self::DEFAULT_DIRECTORY_PERMISSIONS, true);
+        return mkdir($directoryPath, self::DEFAULT_DIRECTORY_PERMISSION, true);
     }
 
     /**

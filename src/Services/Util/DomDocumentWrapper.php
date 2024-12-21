@@ -19,7 +19,7 @@ final class DomDocumentWrapper
     /**
      * Default XML version used when saving the DOMDocument.
      */
-    private const string DEFAULT_XML_VERSION = '1.0';
+    private const string XML_VERSION = '1.0';
 
     /**
      * Saves the current DOMDocument content as an XML string.
@@ -105,7 +105,7 @@ final class DomDocumentWrapper
         $domDocument->formatOutput = false;
         $domDocument->preserveWhiteSpace = false;
         $domDocument->encoding = 'UTF-8';
-        $domDocument->xmlVersion = self::DEFAULT_XML_VERSION;
+        $domDocument->xmlVersion = self::XML_VERSION;
 
         return $domDocument;
     }
