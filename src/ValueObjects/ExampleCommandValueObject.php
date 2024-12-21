@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Models;
+namespace MathiasReker\PhpSvgOptimizer\ValueObjects;
 
 /**
  * A value object that represents a collection of example commands.

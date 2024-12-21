@@ -9,9 +9,9 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Models;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObjects;
 
-use MathiasReker\PhpSvgOptimizer\Models\ArgumentOptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;

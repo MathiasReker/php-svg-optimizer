@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Models;
+namespace MathiasReker\PhpSvgOptimizer\ValueObjects;
 
 /**
  * Represents metadata about SVG optimization, including sizes and savings.

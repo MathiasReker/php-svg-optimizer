@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Data;
 
-use MathiasReker\PhpSvgOptimizer\Models\ArgumentOptionValueObject;
-use MathiasReker\PhpSvgOptimizer\Models\CommandOptionValueObject;
-use MathiasReker\PhpSvgOptimizer\Models\ExampleCommandValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObjects\ExampleCommandValueObject;
 
 /**
  * Class that represents the available argument options for the command.

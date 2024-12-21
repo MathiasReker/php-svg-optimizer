@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Models;
+namespace MathiasReker\PhpSvgOptimizer\ValueObjects;
 
 /**
  * Value Object that represents a single command line argument option.

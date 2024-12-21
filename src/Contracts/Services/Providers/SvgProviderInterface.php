@@ -11,8 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers;
 
-use DOMDocument;
-use MathiasReker\PhpSvgOptimizer\Models\MetaDataValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
 
 /**
  * Interface SvgProviderInterface.

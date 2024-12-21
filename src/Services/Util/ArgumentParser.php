@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Services\Util;
 
 use MathiasReker\PhpSvgOptimizer\Enums\Option;
-use MathiasReker\PhpSvgOptimizer\Models\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
+use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 
 final readonly class ArgumentParser
 {

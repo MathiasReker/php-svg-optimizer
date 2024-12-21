@@ -12,11 +12,11 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Util;
 
 use MathiasReker\PhpSvgOptimizer\Enums\Option;
-use MathiasReker\PhpSvgOptimizer\Models\ArgumentOptionValueObject;
-use MathiasReker\PhpSvgOptimizer\Models\CommandOptionValueObject;
-use MathiasReker\PhpSvgOptimizer\Models\ExampleCommandValueObject;
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Services\Util\ArgumentParser;
+use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObjects\ExampleCommandValueObject;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
