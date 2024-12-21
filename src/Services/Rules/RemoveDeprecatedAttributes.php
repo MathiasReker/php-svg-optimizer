@@ -100,6 +100,7 @@ final class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
                 if (!$node->hasAttribute($newName) || $node->getAttribute($newName) !== $value) {
                     $node->setAttribute($newName, $value);
                 }
+
                 $node->removeAttribute($oldName);
             }
         }

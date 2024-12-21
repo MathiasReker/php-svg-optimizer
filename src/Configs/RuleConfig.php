@@ -27,6 +27,7 @@ final class RuleConfig
         'removeDefaultAttributes' => true,
         'removeDeprecatedAttributes' => true,
         'removeDoctype' => true,
+        'removeEmptyAttributes' => true,
         'removeMetadata' => true,
         'removeTitleAndDesc' => true,
         'removeUnnecessaryWhitespace' => true,

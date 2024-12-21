@@ -77,6 +77,7 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
   "removeDefaultAttributes": true,
   "removeDeprecatedAttributes": true,
   "removeDoctype": true,
+  "removeEmptyAttributes": true,
   "removeMetadata": true,
   "removeTitleAndDesc": true,
   "removeUnnecessaryWhitespace": true,
@@ -113,6 +114,7 @@ try {
             removeDefaultAttributes: true,
             removeDeprecatedAttributes: true,
             removeDoctype: true,
+            removeEmptyAttributes: true,
             removeMetadata: true,
             removeTitleAndDesc: false,
             removeUnnecessaryWhitespace: true,
@@ -304,6 +306,11 @@ Removes the SVG doctype declaration:
 $svgOptimizer->withRules(removeDoctype: true);
 ```
 
+Removes empty attributes from the SVG:
+```php
+$svgOptimizer->withRules(removeEmptyAttributes: true);
+```
+
 All options are set to true by default. You can configure them individually by passing the desired values to it:
 
 ```php
@@ -316,6 +323,7 @@ $svgOptimizer->withRules(
    removeDefaultAttributes: true,
    removeDeprecatedAttributes: true,
    removeDoctype: true,
+   removeEmptyAttributes: true,
    removeMetadata: true,
    removeTitleAndDesc: true,
    removeUnnecessaryWhitespace: true,
