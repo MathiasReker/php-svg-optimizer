@@ -16,7 +16,7 @@ operations.
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^5.0    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^5.1    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
@@ -33,7 +33,7 @@ composer require mathiasreker/php-svg-optimizer
 
 ### Using the Library
 
-You can use this library either as a **standalone package** or as a **command-line tool (CLI)**.
+You can use this library either as a **command-line tool (CLI)** or as a **standalone package**.
 
 ---
 
@@ -307,6 +307,7 @@ $svgOptimizer->withRules(removeDoctype: true);
 ```
 
 Removes empty attributes from the SVG:
+
 ```php
 $svgOptimizer->withRules(removeEmptyAttributes: true);
 ```
