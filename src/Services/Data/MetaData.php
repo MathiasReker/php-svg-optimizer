@@ -1,10 +1,10 @@
 <?php
 
 /**
- * This file is part of the php-svg-optimizer package.
- * (c) Mathias Reker <github@reker.dk>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
  */
 
 declare(strict_types=1);
@@ -33,7 +33,7 @@ final readonly class MetaData
      */
     public function __construct(
         private int $originalSize,
-        private int $optimizedSize
+        private int $optimizedSize,
     ) {
         if ($this->originalSize <= 0) {
             throw new \InvalidArgumentException(\sprintf('Original size must be greater than 0. Given: %d', $this->originalSize));

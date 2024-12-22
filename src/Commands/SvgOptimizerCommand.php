@@ -1,10 +1,10 @@
 <?php
 
 /**
- * This file is part of the php-svg-optimizer package.
- * (c) Mathias Reker <github@reker.dk>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
  */
 
 declare(strict_types=1);
@@ -76,6 +76,7 @@ final class SvgOptimizerCommand
         foreach ($paths as $path) {
             if (!is_dir($path) && !is_file($path)) {
                 fprintf(\STDERR, 'Error: "%s" is not a valid directory or file.', $path);
+
                 exit(1);
             }
         }
@@ -87,6 +88,7 @@ final class SvgOptimizerCommand
                 $this->config = ConfigLoader::loadConfig($configPath);
             } catch (\InvalidArgumentException $exception) {
                 fprintf(\STDERR, '%s', $exception->getMessage());
+
                 exit(1);
             }
         }
@@ -105,11 +107,13 @@ final class SvgOptimizerCommand
 
         if ($argumentParser->hasOption(Option::HELP) || 1 === \count($args)) {
             self::printHelp();
+
             exit(0);
         }
 
         if ($argumentParser->hasOption(Option::VERSION)) {
             self::printVersion();
+
             exit(0);
         }
 
@@ -117,11 +121,13 @@ final class SvgOptimizerCommand
             $paths = \array_slice($args, $argumentParser->getNextPositionalArgumentIndex() + 1);
         } catch (\InvalidArgumentException $invalidArgumentException) {
             fprintf(\STDERR, "%s\n", $invalidArgumentException->getMessage());
+
             exit(1);
         }
 
         if ([] === $paths) {
             self::printHelp();
+
             exit(0);
         }
 

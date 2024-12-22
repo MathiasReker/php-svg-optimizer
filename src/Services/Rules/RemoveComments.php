@@ -1,10 +1,10 @@
 <?php
 
 /**
- * This file is part of the php-svg-optimizer package.
- * (c) Mathias Reker <github@reker.dk>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
  */
 
 declare(strict_types=1);
@@ -35,9 +35,7 @@ final class RemoveComments implements SvgOptimizerRuleInterface
         $comments = $domXPath->query('//comment()');
 
         foreach ($comments as $comment) {
-            /*
-             * @var \DOMComment $comment
-             */
+            // @var \DOMComment $comment
             $comment->parentNode?->removeChild($comment);
         }
     }

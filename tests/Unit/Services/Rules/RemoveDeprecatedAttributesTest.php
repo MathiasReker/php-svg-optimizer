@@ -1,10 +1,10 @@
 <?php
 
 /**
- * This file is part of the php-svg-optimizer package.
- * (c) Mathias Reker <github@reker.dk>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
  */
 
 declare(strict_types=1);
@@ -22,6 +22,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @internal
+ */
 #[CoversClass(RemoveDeprecatedAttributes::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(AbstractProvider::class)]
@@ -33,147 +36,147 @@ final class RemoveDeprecatedAttributesTest extends TestCase
     public static function svgXlinkProvider(): \Iterator
     {
         yield 'Removes baseProfile attribute' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" baseProfile="tiny">
                     <rect width="100" height="100" fill="blue"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="blue"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Removes zoomAndPan attribute' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" zoomAndPan="disable">
                     <rect width="100" height="100" fill="red"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="red"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Removes requiredFeatures attribute' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" requiredFeatures="http://www.w3.org/TR/SVG11/feature#BasicStructure">
                     <rect width="100" height="100" fill="green"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="green"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Removes version attribute' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
                     <rect width="100" height="100" fill="yellow"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="yellow"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Replaces xlink:href with href' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                     <use xlink:href="#icon" />
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><use href="#icon"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Replaces xlink:title with title' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                     <image xlink:title="Image Title" href="image.png"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><image href="image.png" title="Image Title"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Removes xmlns:xlink namespace' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                     <rect width="100" height="100" fill="pink"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="pink"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Handles combination of attributes and xlink' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" baseProfile="full" version="1.1">
                     <use xlink:href="#icon" zoomAndPan="disable" />
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><use href="#icon"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Does not remove non-deprecated attributes' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <rect fill="purple"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="purple"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Handles attributes with namespaces correctly' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                     <use xlink:href="image.svg"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><use href="image.svg"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Handles no xlink attributes present' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
                     <circle cx="100" cy="100" r="50" fill="orange"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="100" cy="100" r="50" fill="orange"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Removes xlink attributes in mixed content' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="300">
                     <circle cx="100" cy="100" r="50" fill="green"/>
                     <use xlink:href="#someIcon" />
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><circle cx="100" cy="100" r="50" fill="green"/><use href="#someIcon"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Does not replace if new attribute value is the same' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                     <use xlink:href="#icon" href="#icon"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><use href="#icon"/></svg>
-                XML
+                XML,
         ];
     }
 

@@ -1,10 +1,10 @@
 <?php
 
 /**
- * This file is part of the php-svg-optimizer package.
- * (c) Mathias Reker <github@reker.dk>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
  */
 
 declare(strict_types=1);
@@ -21,6 +21,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @internal
+ */
 #[CoversClass(RemoveMetadata::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(StringProvider::class)]
@@ -31,68 +34,68 @@ final class RemoveMetadataTest extends TestCase
     public static function svgMetadataProvider(): \Iterator
     {
         yield 'Removes single <metadata> tag' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <metadata>This is some metadata</metadata>
                     <rect width="100" height="100" fill="blue"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="blue"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Removes multiple <metadata> tags' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <metadata>This is some metadata</metadata>
                     <metadata>This is more metadata</metadata>
                     <rect width="100" height="100" fill="red"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="red"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Removes nested elements inside <metadata>' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <metadata><data>Some nested data</data></metadata>
                     <rect width="100" height="100" fill="green"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="green"/></svg>
-                XML
+                XML,
         ];
 
         yield 'No <metadata> tag present' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <rect width="100" height="100" fill="yellow"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="yellow"/></svg>
-                XML
+                XML,
         ];
 
         yield 'No <metadata> tag, only <title> and <desc>' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <title>SVG Title</title>
                     <desc>SVG Description</desc>
                     <rect width="100" height="100" fill="orange"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><title>SVG Title</title><desc>SVG Description</desc><rect width="100" height="100" fill="orange"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Removes <metadata> from different layers' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <defs>
                         <metadata>Metadata in defs</metadata>
@@ -103,13 +106,13 @@ final class RemoveMetadataTest extends TestCase
                     </g>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><defs/><g><rect width="100" height="100" fill="pink"/></g></svg>
-                XML
+                XML,
         ];
 
         yield 'Keeps non-metadata content intact' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <metadata>This is metadata</metadata>
                     <title>SVG Title</title>
@@ -117,13 +120,13 @@ final class RemoveMetadataTest extends TestCase
                     <rect width="100" height="100" fill="blue"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><title>SVG Title</title><desc>SVG Description</desc><rect width="100" height="100" fill="blue"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Handles complex SVG structure' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <metadata>Metadata 1</metadata>
                     <defs>
@@ -136,21 +139,21 @@ final class RemoveMetadataTest extends TestCase
                     <metadata>Metadata 4</metadata>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><defs/><g><rect width="100" height="100" fill="purple"/></g></svg>
-                XML
+                XML,
         ];
 
         yield 'Well-formed XML after removal' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <metadata>Some metadata</metadata>
                     <rect width="100" height="100" fill="black"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="black"/></svg>
-                XML
+                XML,
         ];
     }
 

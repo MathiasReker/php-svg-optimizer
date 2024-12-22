@@ -1,10 +1,10 @@
 <?php
 
 /**
- * This file is part of the php-svg-optimizer package.
- * (c) Mathias Reker <github@reker.dk>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
  */
 
 declare(strict_types=1);
@@ -21,6 +21,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @internal
+ */
 #[CoversClass(RemoveDoctype::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(StringProvider::class)]
@@ -31,40 +34,40 @@ final class RemoveDoctypeTest extends TestCase
     public static function svgDoctypeProvider(): \Iterator
     {
         yield 'Removes DOCTYPE Declaration' => [
-            <<<XML
+            <<<'XML'
                 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <rect width="100" height="100" fill="red"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="red"/></svg>
-                XML
+                XML,
         ];
 
         yield 'No DOCTYPE to Remove' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <rect width="100" height="100" fill="blue"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="blue"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Handles Empty SVG with DOCTYPE' => [
-            <<<XML
+            <<<'XML'
                 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>
-                XML
+                XML,
         ];
 
         yield 'Handles Nested Content with DOCTYPE' => [
-            <<<XML
+            <<<'XML'
                 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g>
@@ -72,21 +75,21 @@ final class RemoveDoctypeTest extends TestCase
                     </g>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><circle cx="50" cy="50" r="40" fill="green"/></g></svg>
-                XML
+                XML,
         ];
 
         yield 'Special Characters in Attributes with DOCTYPE' => [
-            <<<XML
+            <<<'XML'
                 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <rect width="100" height="100" fill="yellow" data-attr="&quot;value&quot;"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="yellow" data-attr="&quot;value&quot;"/></svg>
-                XML
+                XML,
         ];
     }
 

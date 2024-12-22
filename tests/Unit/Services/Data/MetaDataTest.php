@@ -1,10 +1,10 @@
 <?php
 
 /**
- * This file is part of the php-svg-optimizer package.
- * (c) Mathias Reker <github@reker.dk>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
  */
 
 declare(strict_types=1);
@@ -17,11 +17,14 @@ use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @internal
+ */
 #[CoversClass(MetaData::class)]
 #[CoversClass(MetaDataValueObject::class)]
 final class MetaDataTest extends TestCase
 {
-    private const int ORIGINAL_SIZE = 1000;
+    private const int ORIGINAL_SIZE = 1_000;
 
     private const int OPTIMIZED_SIZE = 800;
 

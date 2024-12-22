@@ -1,10 +1,10 @@
 <?php
 
 /**
- * This file is part of the php-svg-optimizer package.
- * (c) Mathias Reker <github@reker.dk>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
  */
 
 declare(strict_types=1);
@@ -86,7 +86,7 @@ final class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
     {
         foreach ($attributes as $oldName => $newName) {
             $nodes = $domXPath->query(\sprintf('//*[@%s]', $oldName));
-            if (!($nodes instanceof \DOMNodeList)) {
+            if (!$nodes instanceof \DOMNodeList) {
                 continue;
             }
 
@@ -135,7 +135,7 @@ final class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
     {
         foreach (self::ATTRIBUTES_TO_REMOVE as $attribute) {
             $nodes = $domXPath->query(\sprintf('//*[@%s]', $attribute));
-            if (!($nodes instanceof \DOMNodeList)) {
+            if (!$nodes instanceof \DOMNodeList) {
                 continue;
             }
 

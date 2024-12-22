@@ -1,10 +1,10 @@
 <?php
 
 /**
- * This file is part of the php-svg-optimizer package.
- * (c) Mathias Reker <github@reker.dk>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
  */
 
 declare(strict_types=1);
@@ -21,6 +21,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @internal
+ */
 #[CoversClass(RemoveTitleAndDesc::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(StringProvider::class)]
@@ -31,55 +34,55 @@ final class RemoveTitleAndDescTest extends TestCase
     public static function svgTitleDescProvider(): \Iterator
     {
         yield 'Removes Title and Desc' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <title>This is a title</title>
                     <desc>This is a description</desc>
                     <rect width="100" height="100" fill="red"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="red"/></svg>
-                XML
+                XML,
         ];
 
         yield 'No Title or Desc to Remove' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <rect width="100" height="100" fill="red"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="red"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Removes Only Title' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <title>This is a title</title>
                     <rect width="100" height="100" fill="red"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="red"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Removes Only Desc' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <desc>This is a description</desc>
                     <rect width="100" height="100" fill="red"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="red"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Multiple Titles and Descriptions' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <title>First Title</title>
                     <desc>First Description</desc>
@@ -88,13 +91,13 @@ final class RemoveTitleAndDescTest extends TestCase
                     <desc>Second Description</desc>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="40" fill="green"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Nested Elements with Title and Desc' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g>
                         <title>Group Title</title>
@@ -103,52 +106,52 @@ final class RemoveTitleAndDescTest extends TestCase
                     </g>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><circle cx="50" cy="50" r="40" fill="blue"/></g></svg>
-                XML
+                XML,
         ];
 
         yield 'Non-Standard Title and Desc Elements' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <titleExtra>Extra Title</titleExtra>
                     <descExtra>Extra Description</descExtra>
                     <rect width="100" height="100" fill="red"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><titleExtra>Extra Title</titleExtra><descExtra>Extra Description</descExtra><rect width="100" height="100" fill="red"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Handles SVG with Attributes in Title and Desc' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <title id="title1" lang="en">Title with Attributes</title>
                     <desc lang="en" id="desc1">Description with Attributes</desc>
                     <rect width="100" height="100" fill="blue"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="blue"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Empty Title and Desc Elements' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <title></title>
                     <desc></desc>
                     <rect width="100" height="100" fill="blue"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="blue"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Mixed Content with Title and Desc' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <title>This is a title</title>
                     <desc>This is a description</desc>
@@ -156,34 +159,34 @@ final class RemoveTitleAndDescTest extends TestCase
                     <circle cx="50" cy="50" r="40" fill="red"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="blue"/><circle cx="50" cy="50" r="40" fill="red"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Special Characters in Title and Desc' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <title>Title with &amp; special characters</title>
                     <desc>Description with &lt; and &gt; special characters</desc>
                     <rect width="100" height="100" fill="yellow"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="yellow"/></svg>
-                XML
+                XML,
         ];
 
         yield 'SVG with Only Title and Desc' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <title>Only Title</title>
                     <desc>Only Description</desc>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>
-                XML
+                XML,
         ];
     }
 

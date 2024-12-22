@@ -1,10 +1,10 @@
 <?php
 
 /**
- * This file is part of the php-svg-optimizer package.
- * (c) Mathias Reker <github@reker.dk>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
  */
 
 declare(strict_types=1);
@@ -21,6 +21,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @internal
+ */
 #[CoversClass(RemoveDefaultAttributes::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(StringProvider::class)]
@@ -31,31 +34,31 @@ final class RemoveDefaultAttributesTest extends TestCase
     public static function svgAttributesProvider(): \Iterator
     {
         yield 'Removes Default Stroke Attribute' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <rect x="10" y="10" width="30" height="30" stroke="none"/>
                     <circle cx="50" cy="50" r="20" stroke="none"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Keeps Non-Default Stroke Attribute' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <rect x="10" y="10" width="30" height="30" stroke="black"/>
                     <circle cx="50" cy="50" r="20" stroke="green"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" stroke="black"/><circle cx="50" cy="50" r="20" stroke="green"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Removes Default Stroke from Nested Elements' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g stroke="none">
                         <rect x="10" y="10" width="30" height="30"/>
@@ -63,38 +66,38 @@ final class RemoveDefaultAttributesTest extends TestCase
                     </g>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></g></svg>
-                XML
+                XML,
         ];
 
         yield 'Non-Standard Default Attributes' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <rect x="10" y="10" width="30" height="30"/>
                     <circle cx="50" cy="50" r="20"/>
                     <customElement customAttr="none"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/><customElement customAttr="none"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Keeps Attributes with Different Values' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <rect x="10" y="10" width="30" height="30" stroke="red"/>
                     <circle cx="50" cy="50" r="20" stroke="blue"/>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" stroke="red"/><circle cx="50" cy="50" r="20" stroke="blue"/></svg>
-                XML
+                XML,
         ];
 
         yield 'Removes Default Attributes from Nested Groups' => [
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g stroke="none">
                         <rect x="10" y="10" width="30" height="30" stroke="none"/>
@@ -102,9 +105,9 @@ final class RemoveDefaultAttributesTest extends TestCase
                     </g>
                 </svg>
                 XML,
-            <<<XML
+            <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></g></svg>
-                XML
+                XML,
         ];
     }
 
