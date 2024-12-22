@@ -87,8 +87,8 @@ final class SortAttributes implements SvgOptimizerRuleInterface
      * Extract attributes from a DOMElement.
      *
      * This method retrieves all attributes from the given DOMElement and returns
-     * them as an associative array where the keys are attribute names (including
-     * namespace if available) and the values are the corresponding attribute values.
+     * them as an associative array where the keys are attribute names (local names only)
+     * and the values are the corresponding attribute values.
      *
      * @param \DOMElement $domElement The DOMElement whose attributes are to be extracted
      *
@@ -98,9 +98,8 @@ final class SortAttributes implements SvgOptimizerRuleInterface
     {
         $attributes = [];
         foreach ($domElement->attributes as $attribute) {
-            $attributes[null !== $attribute->namespaceURI
-                ? $attribute->namespaceURI . ':' . $attribute->name
-                : $attribute->name] = $attribute->value;
+            $key = $attribute->localName ?? $attribute->name;
+            $attributes[$key] = $attribute->value;
         }
 
         return $attributes;
