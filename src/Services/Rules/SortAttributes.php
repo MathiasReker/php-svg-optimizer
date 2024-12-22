@@ -95,7 +95,11 @@ final class SortAttributes implements SvgOptimizerRuleInterface
     {
         $attributes = [];
         foreach ($domElement->attributes as $attribute) {
-            $attributes[null !== $attribute->namespaceURI ? $attribute->namespaceURI . ':' . $attribute->name : $attribute->name] = $attribute->value;
+            $attributes[
+                null !== $attribute->namespaceURI
+                    ? $attribute->namespaceURI . ':' . $attribute->name
+                    : $attribute->name
+            ] = $attribute->value;
         }
 
         return $attributes;

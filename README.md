@@ -164,7 +164,6 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 
 try {
@@ -193,7 +192,6 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 
 try {
