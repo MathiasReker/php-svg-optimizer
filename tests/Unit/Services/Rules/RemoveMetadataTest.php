@@ -155,6 +155,82 @@ final class RemoveMetadataTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="black"/></svg>
                 XML,
         ];
+
+        yield 'Empty <metadata> tag' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <metadata></metadata>
+                    <rect width="100" height="100" fill="blue"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="blue"/></svg>
+                XML,
+        ];
+
+        yield 'Self-closing <metadata> tag' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <metadata />
+                    <rect width="100" height="100" fill="blue"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="blue"/></svg>
+                XML,
+        ];
+
+        yield 'SVG without xmlns attribute' => [
+            <<<'XML'
+                <svg width="100" height="100">
+                    <metadata>Some metadata</metadata>
+                    <rect width="100" height="100" fill="green"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg width="100" height="100"><rect width="100" height="100" fill="green"/></svg>
+                XML,
+        ];
+
+        yield 'Special characters in <metadata>' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <metadata>Special characters: &amp; &lt; &gt;</metadata>
+                    <rect width="100" height="100" fill="yellow"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="yellow"/></svg>
+                XML,
+        ];
+
+        yield 'Large <metadata> content' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <metadata>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vel libero ac metus venenatis gravida.
+                    </metadata>
+                    <rect width="100" height="100" fill="pink"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="pink"/></svg>
+                XML,
+        ];
+
+        yield 'Nested <metadata> with other elements' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <metadata>
+                        <g><rect width="50" height="50" fill="blue"/></g>
+                    </metadata>
+                    <rect width="100" height="100" fill="purple"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="purple"/></svg>
+                XML,
+        ];
     }
 
     #[DataProvider('svgMetadataProvider')]

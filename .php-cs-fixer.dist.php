@@ -64,7 +64,6 @@ $config->setRiskyAllowed(true)
         // Symfony Rules
         '@Symfony' => true,
         '@Symfony:risky' => true,
-
         'concat_space' => ['spacing' => 'one'],
     ])
     ->setFinder($finder)

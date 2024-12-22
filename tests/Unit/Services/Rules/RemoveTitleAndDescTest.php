@@ -188,6 +188,41 @@ final class RemoveTitleAndDescTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>
                 XML,
         ];
+
+        yield 'Handles Empty Elements Gracefully' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect/>
+                    <circle/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/><circle/></svg>
+                XML,
+        ];
+
+        yield 'Handles Elements with No Attributes' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect></rect>
+                    <circle></circle>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/><circle/></svg>
+                XML,
+        ];
+
+        yield 'Preserves Namespaces in Complex Structures' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100">
+                    <use xlink:href="#some-id"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100"><use xlink:href="#some-id"/></svg>
+                XML,
+        ];
     }
 
     #[DataProvider('svgTitleDescProvider')]

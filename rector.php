@@ -10,6 +10,7 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
 
 return RectorConfig::configure()
     ->withPhpSets(php83: true)
@@ -31,4 +32,7 @@ return RectorConfig::configure()
     ->withSkipPath(__DIR__ . '/vendor')
     ->withPaths([__DIR__])
     ->withoutParallel()
+    ->withSkip([
+        PreferPHPUnitThisCallRector::class,
+    ])
 ;
