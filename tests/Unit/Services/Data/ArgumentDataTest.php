@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Data;
 
+use MathiasReker\PhpSvgOptimizer\Enums\Command;
+use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
@@ -26,12 +28,10 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(CommandOptionValueObject::class)]
 #[CoversClass(ArgumentOptionValueObject::class)]
 #[CoversClass(ExampleCommandValueObject::class)]
+#[CoversClass(Command::class)]
+#[CoversClass(Option::class)]
 final class ArgumentDataTest extends TestCase
 {
-    private const string HELP_OPTION = 'help';
-
-    private const string PROCESS_COMMAND = 'process';
-
     private const string EXAMPLE_COMMAND = 'vendor/bin/svg-optimizer --dry-run process /path/to/svgs';
 
     private ArgumentData $argumentData;
@@ -40,33 +40,33 @@ final class ArgumentDataTest extends TestCase
     {
         $options = $this->argumentData->getOptions();
 
-        Assert::assertArrayHasKey(self::HELP_OPTION, $options);
-        $helpOption = $options[self::HELP_OPTION];
+        Assert::assertArrayHasKey(Option::HELP->value, $options);
+        $helpOption = $options[Option::HELP->value];
 
-        Assert::assertSame('-h', $helpOption->getShorthand());
-        Assert::assertSame('--help', $helpOption->getFull());
-        Assert::assertSame('Display help for the command.', $helpOption->getDescription());
+        Assert::assertSame(Option::HELP->getShorthand(), $helpOption->getShorthand());
+        Assert::assertSame(Option::HELP->getFull(), $helpOption->getFull());
+        Assert::assertSame(Option::HELP->getDescription(), $helpOption->getDescription());
     }
 
     public function testGetCommands(): void
     {
         $commands = $this->argumentData->getCommands();
 
-        Assert::assertArrayHasKey(self::PROCESS_COMMAND, $commands);
-        $processCommand = $commands[self::PROCESS_COMMAND];
+        Assert::assertArrayHasKey(Command::PROCESS->value, $commands);
+        $processCommand = $commands[Command::PROCESS->value];
 
-        Assert::assertSame('Process', $processCommand->getTitle());
-        Assert::assertSame('Provide a list of directories or files to process.', $processCommand->getDescription());
+        Assert::assertSame(Command::PROCESS->getTitle(), $processCommand->getTitle());
+        Assert::assertSame(Command::PROCESS->getDescription(), $processCommand->getDescription());
     }
 
     public function testGetOption(): void
     {
-        $option = $this->argumentData->getOption(self::HELP_OPTION);
+        $option = $this->argumentData->getOption(Option::HELP->value);
 
         Assert::assertInstanceOf(ArgumentOptionValueObject::class, $option);
-        Assert::assertSame('-h', $option->getShorthand());
-        Assert::assertSame('--help', $option->getFull());
-        Assert::assertSame('Display help for the command.', $option->getDescription());
+        Assert::assertSame(Option::HELP->getShorthand(), $option->getShorthand());
+        Assert::assertSame(Option::HELP->getFull(), $option->getFull());
+        Assert::assertSame(Option::HELP->getDescription(), $option->getDescription());
     }
 
     public function testGetExamples(): void

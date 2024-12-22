@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Commands;
 
-use MathiasReker\PhpSvgOptimizer\Configs\RuleConfig;
 use MathiasReker\PhpSvgOptimizer\Enums\Option;
+use MathiasReker\PhpSvgOptimizer\Enums\Rule;
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 use MathiasReker\PhpSvgOptimizer\Services\Util\ArgumentParser;
@@ -242,12 +242,28 @@ final class SvgOptimizerCommand
     {
         try {
             $svgOptimizer = SvgOptimizerService::fromFile($filePath);
-            $rules = RuleConfig::DEFAULT_RULES;
-            if (null !== $this->config) {
-                $rules = array_merge($rules, $this->config);
+
+            $rules = [];
+            foreach (Rule::cases() as $rule) {
+                $rules[$rule->value] = $this->config[$rule->value] ?? $rule->defaultValue();
             }
 
-            $svgOptimizer = $svgOptimizer->withRules(convertColorsToHex: $rules['convertColorsToHex'], flattenGroups: $rules['flattenGroups'], minifySvgCoordinates: $rules['minifySvgCoordinates'], minifyTransformations: $rules['minifyTransformations'], removeComments: $rules['removeComments'], removeDefaultAttributes: $rules['removeDefaultAttributes'], removeDeprecatedAttributes: $rules['removeDeprecatedAttributes'], removeDoctype: $rules['removeDoctype'], removeEmptyAttributes: $rules['removeEmptyAttributes'], removeMetadata: $rules['removeMetadata'], removeTitleAndDesc: $rules['removeTitleAndDesc'], removeUnnecessaryWhitespace: $rules['removeUnnecessaryWhitespace'], sortAttributes: $rules['sortAttributes']);
+            $svgOptimizer = $svgOptimizer->withRules(
+                convertColorsToHex: $rules[Rule::CONVERT_COLORS_TO_HEX->value],
+                flattenGroups: $rules[Rule::FLATTEN_GROUPS->value],
+                minifySvgCoordinates: $rules[Rule::MINIFY_SVG_COORDINATES->value],
+                minifyTransformations: $rules[Rule::MINIFY_TRANSFORMATIONS->value],
+                removeComments: $rules[Rule::REMOVE_COMMENTS->value],
+                removeDefaultAttributes: $rules[Rule::REMOVE_DEFAULT_ATTRIBUTES->value],
+                removeDeprecatedAttributes: $rules[Rule::REMOVE_DEPRECATED_ATTRIBUTES->value],
+                removeDoctype: $rules[Rule::REMOVE_DOCTYPE->value],
+                removeEmptyAttributes: $rules[Rule::REMOVE_EMPTY_ATTRIBUTES->value],
+                removeMetadata: $rules[Rule::REMOVE_METADATA->value],
+                removeTitleAndDesc: $rules[Rule::REMOVE_TITLE_AND_DESC->value],
+                removeUnnecessaryWhitespace: $rules[Rule::REMOVE_UNNECESSARY_WHITESPACE->value],
+                sortAttributes: $rules[Rule::SORT_ATTRIBUTES->value]
+            );
+
             $svgOptimizer->optimize();
             if (!$this->dryRun) {
                 $svgOptimizer->saveToFile($filePath);
@@ -258,7 +274,9 @@ final class SvgOptimizerCommand
             $this->totalOptimizedSize += $metaData->getOptimizedSize();
             ++$this->optimizedFiles;
             $reduction = $metaData->getOriginalSize() - $metaData->getOptimizedSize();
-            $reductionPercentage = $metaData->getOriginalSize() > 0 ? ($reduction / $metaData->getOriginalSize()) * self::PERCENTAGE_FACTOR : 0;
+            $reductionPercentage = $metaData->getOriginalSize() > 0
+                ? ($reduction / $metaData->getOriginalSize()) * self::PERCENTAGE_FACTOR
+                : 0;
             if (!$this->quiet) {
                 printf('%s (%s%%)%s', $filePath, number_format($reductionPercentage, self::DEFAULT_PRECISION), \PHP_EOL);
             }
@@ -275,7 +293,9 @@ final class SvgOptimizerCommand
     private function printSummary(): void
     {
         $reduction = $this->totalOriginalSize - $this->totalOptimizedSize;
-        $reductionPercentage = $this->totalOriginalSize > 0 ? ($reduction / $this->totalOriginalSize) * self::PERCENTAGE_FACTOR : 0;
+        $reductionPercentage = $this->totalOriginalSize > 0
+            ? ($reduction / $this->totalOriginalSize) * self::PERCENTAGE_FACTOR
+            : 0;
 
         echo \PHP_EOL;
         printf('Total files processed: %d%s', $this->optimizedFiles, \PHP_EOL);

@@ -101,7 +101,6 @@ final class MinifyTransformations implements SvgOptimizerRuleInterface
         foreach ($elements as $element) {
             $transform = $element->getAttribute('transform');
 
-            // Convert percentages to numbers and minify the transform attribute
             $transform = $this->convertPercentagesToNumbers($transform);
             $transform = preg_replace(
                 [

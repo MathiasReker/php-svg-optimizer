@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Data;
 
+use MathiasReker\PhpSvgOptimizer\Enums\Command;
+use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ExampleCommandValueObject;
@@ -20,6 +22,11 @@ use MathiasReker\PhpSvgOptimizer\ValueObjects\ExampleCommandValueObject;
  */
 final class ArgumentData
 {
+    /**
+     * The path to the binary.
+     */
+    private const string BINARY_PATH = 'vendor/bin/svg-optimizer';
+
     /**
      * @var array<string, ArgumentOptionValueObject>
      */
@@ -38,21 +45,65 @@ final class ArgumentData
     public function __construct()
     {
         $this->options = [
-            'help' => new ArgumentOptionValueObject('-h', '--help', 'Display help for the command.'),
-            'config' => new ArgumentOptionValueObject('-c', '--config', 'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.'),
-            'dryRun' => new ArgumentOptionValueObject('-d', '--dry-run', 'Only calculate potential savings without modifying the files.'),
-            'quiet' => new ArgumentOptionValueObject('-q', '--quiet', 'Suppress all output except errors.'),
-            'version' => new ArgumentOptionValueObject('-v', '--version', 'Display the version of the library.'),
+            Option::HELP->value => new ArgumentOptionValueObject(
+                Option::HELP->getShorthand(),
+                Option::HELP->getFull(),
+                Option::HELP->getDescription()
+            ),
+            Option::CONFIG->value => new ArgumentOptionValueObject(
+                Option::CONFIG->getShorthand(),
+                Option::CONFIG->getFull(),
+                Option::CONFIG->getDescription()
+            ),
+            Option::DRY_RUN->value => new ArgumentOptionValueObject(
+                Option::DRY_RUN->getShorthand(),
+                Option::DRY_RUN->getFull(),
+                Option::DRY_RUN->getDescription()
+            ),
+            Option::QUIET->value => new ArgumentOptionValueObject(
+                Option::QUIET->getShorthand(),
+                Option::QUIET->getFull(),
+                Option::QUIET->getDescription()
+            ),
+            Option::VERSION->value => new ArgumentOptionValueObject(
+                Option::VERSION->getShorthand(),
+                Option::VERSION->getFull(),
+                Option::VERSION->getDescription()
+            ),
         ];
 
         $this->commands = [
-            'process' => new CommandOptionValueObject('Process', 'Provide a list of directories or files to process.'),
+            Command::PROCESS->value => new CommandOptionValueObject(
+                Command::PROCESS->getTitle(),
+                Command::PROCESS->getDescription()
+            ),
         ];
 
         $this->examples = [
-            new ExampleCommandValueObject('vendor/bin/svg-optimizer --dry-run process /path/to/svgs'),
-            new ExampleCommandValueObject('vendor/bin/svg-optimizer --config=config.json process /path/to/file.svg'),
-            new ExampleCommandValueObject('vendor/bin/svg-optimizer --quiet process /path/to/file.svg'),
+            new ExampleCommandValueObject(
+                \sprintf(
+                    '%s %s %s /path/to/svgs',
+                    self::BINARY_PATH,
+                    Option::DRY_RUN->getFull(),
+                    Command::PROCESS->value,
+                )
+            ),
+            new ExampleCommandValueObject(
+                \sprintf(
+                    '%s %s config.json %s /path/to/file.svg',
+                    self::BINARY_PATH,
+                    Option::CONFIG->getFull(),
+                    Command::PROCESS->value,
+                )
+            ),
+            new ExampleCommandValueObject(
+                \sprintf(
+                    '%s %s %s /path/to/file.svg',
+                    self::BINARY_PATH,
+                    Option::QUIET->getFull(),
+                    Command::PROCESS->value,
+                )
+            ),
         ];
     }
 
@@ -121,6 +172,10 @@ final class ArgumentData
      */
     public function getFormat(): string
     {
-        return 'vendor/bin/svg-optimizer [options] process <path1> <path2> ...';
+        return \sprintf(
+            '%s [options] %s <path1> <path2> ...',
+            self::BINARY_PATH,
+            Command::PROCESS->value,
+        );
     }
 }

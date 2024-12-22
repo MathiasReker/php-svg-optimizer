@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Util;
 
+use MathiasReker\PhpSvgOptimizer\Enums\Command;
 use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Services\Util\ArgumentParser;
@@ -29,6 +30,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(CommandOptionValueObject::class)]
 #[CoversClass(ExampleCommandValueObject::class)]
 #[CoversClass(ArgumentData::class)]
+#[CoversClass(Option::class)]
+#[CoversClass(Command::class)]
 final class ArgumentParserTest extends TestCase
 {
     private const array EXAMPLE_ARGS = ['vendor/bin/svg-optimizer', '--config=config.json', 'process', '/path/to/file.svg'];
