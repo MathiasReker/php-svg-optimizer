@@ -44,9 +44,14 @@ final readonly class ArgumentParser
      */
     public function hasOption(Option $option): bool
     {
-        $argsObject = array_filter(array_map(fn (string $arg): ?ArgumentOptionValueObject => $this->isOption($arg)
-            ? $this->argumentData->getOptionByName($this->getOptionKey($arg))
-            : null, $this->args));
+        $argsObject = array_filter(
+            array_map(
+                fn (string $arg): ?ArgumentOptionValueObject => $this->isOption($arg)
+                    ? $this->argumentData->getOptionByName($this->getOptionKey($arg))
+                : null,
+                $this->args
+            )
+        );
 
         return \in_array($this->argumentData->getOption($option->value), $argsObject, true);
     }

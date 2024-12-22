@@ -71,7 +71,7 @@
     "cs-check": "php vendor/bin/php-cs-fixer --config=.php-cs-fixer.dist.php fix . --dry-run --diff",
     "cs-fix": "php vendor/bin/php-cs-fixer --config=.php-cs-fixer.dist.php fix .",
     "format": "composer normalize && composer phpcbf-fix & composer rector-fix && composer cs-fix",
-    "phpcbf-fix": "vendor/bin/phpcbf -d memory_limit=512M src tests bin",
+    "phpcbf-fix": "vendor/bin/phpcbf --standard=PEAR,PSR1,PSR2,PSR12 -d memory_limit=512M src tests bin",
     "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon",
     "rector-check": "vendor/bin/rector process --dry-run",
     "rector-fix": "vendor/bin/rector process",
