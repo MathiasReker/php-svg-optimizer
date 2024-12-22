@@ -114,6 +114,7 @@ try {
             removeDefaultAttributes: true,
             removeDeprecatedAttributes: true,
             removeDoctype: true,
+            removeEnableBackground: true,
             removeEmptyAttributes: true,
             removeMetadata: true,
             removeTitleAndDesc: false,
@@ -302,6 +303,12 @@ Removes the SVG doctype declaration:
 
 ```php
 $svgOptimizer->withRules(removeDoctype: true);
+```
+
+Removes the `enable-background` attribute from the SVG:
+
+```php
+$svgOptimizer->withRules(removeEnableBackground: true);
 ```
 
 Removes empty attributes from the SVG:

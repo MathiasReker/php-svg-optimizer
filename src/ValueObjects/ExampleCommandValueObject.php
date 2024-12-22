@@ -16,6 +16,11 @@ namespace MathiasReker\PhpSvgOptimizer\ValueObjects;
  */
 final readonly class ExampleCommandValueObject
 {
+    /**
+     * Constructor for ExampleCommandValueObject.
+     *
+     * @param string $command The example command
+     */
     public function __construct(private string $command)
     {
     }
