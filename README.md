@@ -12,6 +12,10 @@
 `php-svg-optimizer` is a PHP library designed to optimize SVG files by applying various transformations and cleanup
 operations. The library ensures that the optimized SVG files are **compliant with SVG 2.0** specifications.
 
+The tool strives to optimize as much as possible without losing any data that could distort the image's quality,
+ensuring the resulting SVG remains visually identical to the original while being more efficient in terms of size and
+performance.
+
 ### Versions & Dependencies
 
 | Version | PHP  | Documentation                                                |
@@ -77,6 +81,7 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
   "removeDefaultAttributes": true,
   "removeDeprecatedAttributes": true,
   "removeDoctype": true,
+  "removeEnableBackground": true,
   "removeEmptyAttributes": true,
   "removeMetadata": true,
   "removeTitleAndDesc": true,
@@ -401,8 +406,7 @@ the [open issues](https://github.com/MathiasReker/php-svg-optimizer/issues).
 ### Contributing
 
 We welcome all contributions! If you have ideas for improvements, feel free to fork the repository and submit a pull
-request. You can also open an issue and tag it with "enhancement." If you find this project helpful, don’t forget to
-give it a star!
+request. You can also open an issue. If you find this project helpful, don’t forget to give it a star!
 
 #### Library Structure and Contribution Guide
 
@@ -411,17 +415,21 @@ The library implements the Strategy Pattern, where strategies are encapsulated a
 
 ##### Adding a New Rule
 
-1) **Create the Rule**: Add a new class in the `/src/Services/Rules` directory that implements
-   the `SvgOptimizerRuleInterface`.
+1. **Create the Rule**:  
+   Implement the `SvgOptimizerRuleInterface` by adding a new class in the `/src/Services/Rules` directory.
 
-2) **Write Tests**: Ensure your new rule is thoroughly tested by creating corresponding test cases
-   in `/tests/Services/Rules`.
+2. **Write Tests**:  
+   Develop comprehensive test cases for your rule in the `/tests/Services/Rules` directory to ensure it behaves as
+   expected.
 
-3) **Integrate the Rule**: Add your new rule to the builder in `/src/Services/SvgOptimizerService.php`.
+3. **Integrate the Rule**:
+    - Register your new rule in the builder located at `/src/Services/SvgOptimizerService.php`.
+    - Configure it for the CLI tool by updating `/src/Commands/SvgOptimizerCommand.php`.
 
-4) **Update Documentation**: Finally, update the `README.md` to reflect the addition of the new rule and its purpose.
+4. **Update Documentation**:  
+   Document your rule's functionality and purpose in the `README.md`.
 
-By following these steps, you'll ensure that your contribution is well-integrated into the project.
+Following these steps ensures your rule is seamlessly integrated into the project.
 
 #### Docker
 
@@ -439,7 +447,7 @@ docker exec -it php-svg-optimizer bash
 
 #### Tools
 
-Run phpstan:
+Run PHPStan:
 
 ```bash
 composer phpstan
