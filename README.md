@@ -81,7 +81,7 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
   "removeDefaultAttributes": true,
   "removeDeprecatedAttributes": true,
   "removeDoctype": true,
-  "removeEnableBackground": true,
+  "removeEnableBackgroundAttribute": true,
   "removeEmptyAttributes": true,
   "removeMetadata": true,
   "removeTitleAndDesc": true,
@@ -119,7 +119,7 @@ try {
             removeDefaultAttributes: true,
             removeDeprecatedAttributes: true,
             removeDoctype: true,
-            removeEnableBackground: true,
+            removeEnableBackgroundAttribute: true,
             removeEmptyAttributes: true,
             removeMetadata: true,
             removeTitleAndDesc: false,
@@ -313,7 +313,7 @@ $svgOptimizer->withRules(removeDoctype: true);
 Removes the `enable-background` attribute from the SVG:
 
 ```php
-$svgOptimizer->withRules(removeEnableBackground: true);
+$svgOptimizer->withRules(removeEnableBackgroundAttribute: true);
 ```
 
 Removes empty attributes from the SVG:

@@ -24,7 +24,7 @@ use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDefaultAttributes;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDeprecatedAttributes;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDoctype;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveEmptyAttributes;
-use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveEnableBackground;
+use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveEnableBackgroundAttribute;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnnecessaryWhitespace;
@@ -126,7 +126,7 @@ final readonly class SvgOptimizerService
         bool $removeDefaultAttributes = true,
         bool $removeDeprecatedAttributes = true,
         bool $removeDoctype = true,
-        bool $removeEnableBackground = true,
+        bool $removeEnableBackgroundAttribute = true,
         bool $removeEmptyAttributes = true,
         bool $removeMetadata = true,
         bool $removeTitleAndDesc = true,
@@ -142,7 +142,7 @@ final readonly class SvgOptimizerService
             RemoveDefaultAttributes::class => $removeDefaultAttributes,
             RemoveDeprecatedAttributes::class => $removeDeprecatedAttributes,
             RemoveDoctype::class => $removeDoctype,
-            RemoveEnableBackground::class => $removeEnableBackground,
+            RemoveEnableBackgroundAttribute::class => $removeEnableBackgroundAttribute,
             RemoveEmptyAttributes::class => $removeEmptyAttributes,
             RemoveMetadata::class => $removeMetadata,
             RemoveTitleAndDesc::class => $removeTitleAndDesc,

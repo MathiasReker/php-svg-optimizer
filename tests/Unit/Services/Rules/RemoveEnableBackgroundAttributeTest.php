@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Rules;
 
 use MathiasReker\PhpSvgOptimizer\Models\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
-use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveEnableBackground;
+use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveEnableBackgroundAttribute;
 use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
 use PHPUnit\Framework\Assert;
@@ -24,12 +24,12 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(RemoveEnableBackground::class)]
+#[CoversClass(RemoveEnableBackgroundAttribute::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
-final class RemoveEnableBackgroundTest extends TestCase
+final class RemoveEnableBackgroundAttributeTest extends TestCase
 {
     public static function svgRemoveEnableBackgroundProvider(): \Iterator
     {
@@ -121,7 +121,7 @@ final class RemoveEnableBackgroundTest extends TestCase
     public function testOptimize(string $svgContent, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
-        $svgOptimizer->addRule(new RemoveEnableBackground());
+        $svgOptimizer->addRule(new RemoveEnableBackgroundAttribute());
 
         $actual = $svgOptimizer->optimize()->getContent();
         Assert::assertSame($expected, $actual);
