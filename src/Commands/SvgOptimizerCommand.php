@@ -261,8 +261,9 @@ final class SvgOptimizerCommand
                 removeInvisibleCharacters: $rules[Rule::REMOVE_INVISIBLE_CHARACTERS->value],
                 removeMetadata: $rules[Rule::REMOVE_METADATA->value],
                 removeTitleAndDesc: $rules[Rule::REMOVE_TITLE_AND_DESC->value],
-                removeUnnecessaryWhitespace: $rules[Rule::REMOVE_UNNECESSARY_WHITESPACE->value],
-                sortAttributes: $rules[Rule::SORT_ATTRIBUTES->value]
+                sortAttributes: $rules[Rule::SORT_ATTRIBUTES->value],
+                convertEmptyTagsToSelfClosing: $rules[Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->value],
+                removeUnnecessaryWhitespace: $rules[Rule::REMOVE_UNNECESSARY_WHITESPACE->value]
             );
 
             $svgOptimizer->optimize();

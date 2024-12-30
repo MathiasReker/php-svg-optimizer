@@ -16,6 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Models\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\ConvertColorsToHex;
+use MathiasReker\PhpSvgOptimizer\Services\Rules\ConvertEmptyTagsToSelfClosing;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\FlattenGroups;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\MinifyTransformations;
@@ -104,18 +105,19 @@ final readonly class SvgOptimizerService
      *
      * Each rule can be enabled or disabled via the respective parameters.
      *
-     * @param bool $convertColorsToHex          Whether to convert colors to hexadecimal format
-     * @param bool $flattenGroups               Whether to flatten nested group elements
-     * @param bool $minifySvgCoordinates        Whether to minify coordinate values within the SVG
-     * @param bool $minifyTransformations       Whether to minify transformation attributes
-     * @param bool $removeComments              Whether to remove XML comments from the SVG
-     * @param bool $removeDefaultAttributes     Whether to remove default attributes from elements
-     * @param bool $removeDeprecatedAttributes  Whether to remove the xlink namespace
-     * @param bool $removeInvisibleCharacters   Whether to remove invisible characters
-     * @param bool $removeMetadata              Whether to remove metadata elements from the SVG
-     * @param bool $removeTitleAndDesc          Whether to remove the <title> and <desc> elements
-     * @param bool $removeUnnecessaryWhitespace Whether to remove unnecessary whitespace
-     * @param bool $sortAttributes              Whether to sort attributes
+     * @param bool $convertColorsToHex            Whether to convert colors to hexadecimal format
+     * @param bool $flattenGroups                 Whether to flatten nested group elements
+     * @param bool $minifySvgCoordinates          Whether to minify coordinate values within the SVG
+     * @param bool $minifyTransformations         Whether to minify transformation attributes
+     * @param bool $removeComments                Whether to remove XML comments from the SVG
+     * @param bool $removeDefaultAttributes       Whether to remove default attributes from elements
+     * @param bool $removeDeprecatedAttributes    Whether to remove the xlink namespace
+     * @param bool $removeInvisibleCharacters     Whether to remove invisible characters
+     * @param bool $removeMetadata                Whether to remove metadata elements from the SVG
+     * @param bool $removeTitleAndDesc            Whether to remove the <title> and <desc> elements
+     * @param bool $sortAttributes                Whether to sort attributes
+     * @param bool $convertEmptyTagsToSelfClosing Whether to convert empty tags to self-closing tags
+     * @param bool $removeUnnecessaryWhitespace   Whether to remove unnecessary whitespace
      *
      * @return $this The SvgOptimizerService instance
      */
@@ -133,8 +135,9 @@ final readonly class SvgOptimizerService
         bool $removeInvisibleCharacters = true,
         bool $removeMetadata = true,
         bool $removeTitleAndDesc = true,
-        bool $removeUnnecessaryWhitespace = true,
         bool $sortAttributes = true,
+        bool $convertEmptyTagsToSelfClosing = true,
+        bool $removeUnnecessaryWhitespace = true,
     ): self {
         $rules = [
             ConvertColorsToHex::class => $convertColorsToHex,
@@ -150,8 +153,9 @@ final readonly class SvgOptimizerService
             RemoveInvisibleCharacters::class => $removeInvisibleCharacters,
             RemoveMetadata::class => $removeMetadata,
             RemoveTitleAndDesc::class => $removeTitleAndDesc,
-            RemoveUnnecessaryWhitespace::class => $removeUnnecessaryWhitespace,
             SortAttributes::class => $sortAttributes,
+            ConvertEmptyTagsToSelfClosing::class => $convertEmptyTagsToSelfClosing,
+            RemoveUnnecessaryWhitespace::class => $removeUnnecessaryWhitespace,
         ];
 
         foreach (array_keys(array_filter($rules)) as $ruleClass) {

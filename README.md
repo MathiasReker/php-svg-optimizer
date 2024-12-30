@@ -86,8 +86,9 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
   "removeMetadata": true,
   "removeInvisibleCharacters": true,
   "removeTitleAndDesc": true,
-  "removeUnnecessaryWhitespace": true,
-  "sortAttributes": true
+  "sortAttributes": true,
+  "convertEmptyTagsToSelfClosing": true,
+  "removeUnnecessaryWhitespace": true
 }
 ```
 
@@ -124,8 +125,9 @@ try {
             removeEmptyAttributes: true,
             removeMetadata: true,
             removeTitleAndDesc: false,
-            removeUnnecessaryWhitespace: true,
             sortAttributes: true,
+            convertEmptyTagsToSelfClosing: true,
+            removeUnnecessaryWhitespace: true,
          )
         ->optimize()
         ->saveToFile('path/to/output.svg');
@@ -251,12 +253,6 @@ Removes all comments from the SVG:
 $svgOptimizer->withRules(removeComments: true);
 ```
 
-Cleans up unnecessary whitespace in the SVG:
-
-```php
-$svgOptimizer->withRules(removeUnnecessaryWhitespace: true);
-```
-
 Sorts attributes within each element:
 
 ```php
@@ -329,6 +325,18 @@ Removes empty attributes from the SVG:
 $svgOptimizer->withRules(removeEmptyAttributes: true);
 ```
 
+Converts empty tags to self-closing tags:
+
+```php
+$svgOptimizer->withRules(convertEmptyTagsToSelfClosing: true);
+```
+
+Cleans up unnecessary whitespace in the SVG:
+
+```php
+$svgOptimizer->withRules(removeUnnecessaryWhitespace: true);
+```
+
 All options are set to true by default. You can configure them individually by passing the desired values to it:
 
 ```php
@@ -345,8 +353,9 @@ $svgOptimizer->withRules(
    removeMetadata: true,
    removeInvisibleCharacters: true,
    removeTitleAndDesc: true,
-   removeUnnecessaryWhitespace: true,
    sortAttributes: true,
+   convertEmptyTagsToSelfClosing: true,
+   removeUnnecessaryWhitespace: true,
 );
 ```
 

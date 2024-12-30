@@ -25,8 +25,9 @@ enum Rule: string
     case REMOVE_INVISIBLE_CHARACTERS = 'removeInvisibleCharacters';
     case REMOVE_METADATA = 'removeMetadata';
     case REMOVE_TITLE_AND_DESC = 'removeTitleAndDesc';
-    case REMOVE_UNNECESSARY_WHITESPACE = 'removeUnnecessaryWhitespace';
     case SORT_ATTRIBUTES = 'sortAttributes';
+    case CONVERT_EMPTY_TAGS_TO_SELF_CLOSING = 'convertEmptyTagsToSelfClosing';
+    case REMOVE_UNNECESSARY_WHITESPACE = 'removeUnnecessaryWhitespace';
 
     /**
      * Get the default value for each rule.
@@ -47,6 +48,7 @@ enum Rule: string
             self::REMOVE_METADATA,
             self::REMOVE_TITLE_AND_DESC,
             self::SORT_ATTRIBUTES,
+            self::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING,
             self::REMOVE_UNNECESSARY_WHITESPACE => true,
         };
     }

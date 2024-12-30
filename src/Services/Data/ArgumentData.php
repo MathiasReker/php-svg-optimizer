@@ -17,9 +17,6 @@ use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ExampleCommandValueObject;
 
-/**
- * Class that represents the available argument options for the command.
- */
 final class ArgumentData
 {
     /**
