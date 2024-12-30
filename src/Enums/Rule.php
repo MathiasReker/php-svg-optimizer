@@ -22,6 +22,7 @@ enum Rule: string
     case REMOVE_DEPRECATED_ATTRIBUTES = 'removeDeprecatedAttributes';
     case REMOVE_DOCTYPE = 'removeDoctype';
     case REMOVE_EMPTY_ATTRIBUTES = 'removeEmptyAttributes';
+    case REMOVE_INVISIBLE_CHARACTERS = 'removeInvisibleCharacters';
     case REMOVE_METADATA = 'removeMetadata';
     case REMOVE_TITLE_AND_DESC = 'removeTitleAndDesc';
     case REMOVE_UNNECESSARY_WHITESPACE = 'removeUnnecessaryWhitespace';
@@ -42,6 +43,7 @@ enum Rule: string
             self::REMOVE_DEPRECATED_ATTRIBUTES,
             self::REMOVE_DOCTYPE,
             self::REMOVE_EMPTY_ATTRIBUTES,
+            self::REMOVE_INVISIBLE_CHARACTERS,
             self::REMOVE_METADATA,
             self::REMOVE_TITLE_AND_DESC,
             self::SORT_ATTRIBUTES,

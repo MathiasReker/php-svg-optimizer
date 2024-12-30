@@ -12,12 +12,14 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Enums;
 
 use MathiasReker\PhpSvgOptimizer\Enums\Rule;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[\PHPUnit\Framework\Attributes\CoversNothing]
+#[CoversClass(Rule::class)]
 final class RuleTest extends TestCase
 {
     /**
@@ -60,13 +62,13 @@ final class RuleTest extends TestCase
         yield [Rule::SORT_ATTRIBUTES, 'sortAttributes'];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('provideDefaultValueCases')]
+    #[DataProvider('provideDefaultValueCases')]
     public function testDefaultValue(Rule $rule, bool $expected): void
     {
         self::assertSame($expected, $rule->defaultValue());
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('provideEnumValuesCases')]
+    #[DataProvider('provideEnumValuesCases')]
     public function testEnumValues(Rule $rule, string $expectedValue): void
     {
         self::assertSame($expectedValue, $rule->value);

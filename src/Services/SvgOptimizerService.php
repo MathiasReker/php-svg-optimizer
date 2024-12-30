@@ -25,6 +25,7 @@ use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDeprecatedAttributes;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDoctype;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveEmptyAttributes;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveEnableBackgroundAttribute;
+use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveInvisibleCharacters;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnnecessaryWhitespace;
@@ -110,6 +111,7 @@ final readonly class SvgOptimizerService
      * @param bool $removeComments              Whether to remove XML comments from the SVG
      * @param bool $removeDefaultAttributes     Whether to remove default attributes from elements
      * @param bool $removeDeprecatedAttributes  Whether to remove the xlink namespace
+     * @param bool $removeInvisibleCharacters   Whether to remove invisible characters
      * @param bool $removeMetadata              Whether to remove metadata elements from the SVG
      * @param bool $removeTitleAndDesc          Whether to remove the <title> and <desc> elements
      * @param bool $removeUnnecessaryWhitespace Whether to remove unnecessary whitespace
@@ -128,6 +130,7 @@ final readonly class SvgOptimizerService
         bool $removeDoctype = true,
         bool $removeEnableBackgroundAttribute = true,
         bool $removeEmptyAttributes = true,
+        bool $removeInvisibleCharacters = true,
         bool $removeMetadata = true,
         bool $removeTitleAndDesc = true,
         bool $removeUnnecessaryWhitespace = true,
@@ -144,6 +147,7 @@ final readonly class SvgOptimizerService
             RemoveDoctype::class => $removeDoctype,
             RemoveEnableBackgroundAttribute::class => $removeEnableBackgroundAttribute,
             RemoveEmptyAttributes::class => $removeEmptyAttributes,
+            RemoveInvisibleCharacters::class => $removeInvisibleCharacters,
             RemoveMetadata::class => $removeMetadata,
             RemoveTitleAndDesc::class => $removeTitleAndDesc,
             RemoveUnnecessaryWhitespace::class => $removeUnnecessaryWhitespace,

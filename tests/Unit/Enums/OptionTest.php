@@ -12,14 +12,14 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Enums;
 
 use MathiasReker\PhpSvgOptimizer\Enums\Option;
-use PHPUnit\Framework\Attributes\CoversNothing;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[CoversNothing]
+#[CoversClass(Option::class)]
 final class OptionTest extends TestCase
 {
     /**

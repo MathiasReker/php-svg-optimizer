@@ -84,6 +84,7 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
   "removeEnableBackgroundAttribute": true,
   "removeEmptyAttributes": true,
   "removeMetadata": true,
+  "removeInvisibleCharacters": true,
   "removeTitleAndDesc": true,
   "removeUnnecessaryWhitespace": true,
   "sortAttributes": true
@@ -280,6 +281,12 @@ Removes `<metadata>` tags from the SVG:
 $svgOptimizer->withRules(removeMetadata: true);
 ```
 
+Removes invisible characters from the SVG:
+
+```php
+$svgOptimizer->withRules(removeInvisibleCharacters: true);
+```
+
 Flattens nested `<g>` elements, moving their child elements up to the parent node:
 
 ```php
@@ -336,6 +343,7 @@ $svgOptimizer->withRules(
    removeDoctype: true,
    removeEmptyAttributes: true,
    removeMetadata: true,
+   removeInvisibleCharacters: true,
    removeTitleAndDesc: true,
    removeUnnecessaryWhitespace: true,
    sortAttributes: true,
@@ -415,21 +423,26 @@ The library implements the Strategy Pattern, where strategies are encapsulated a
 
 ##### Adding a New Rule
 
-1. **Create the Rule**:  
-   Implement the `SvgOptimizerRuleInterface` by adding a new class in the `/src/Services/Rules` directory.
+### 1. **Create the Rule**
 
-2. **Write Tests**:  
-   Develop comprehensive test cases for your rule in the `/tests/Services/Rules` directory to ensure it behaves as
-   expected.
+Create a new **final class** in the `/src/Services/Rules` directory and implement the `SvgOptimizerRuleInterface`. This
+class will define the logic for your rule.
 
-3. **Integrate the Rule**:
-    - Register your new rule in the builder located at `/src/Services/SvgOptimizerService.php`.
-    - Configure it for the CLI tool by updating `/src/Commands/SvgOptimizerCommand.php`.
+### 2. **Write Tests**
 
-4. **Update Documentation**:  
-   Document your rule's functionality and purpose in the `README.md`.
+Write comprehensive **unit tests** for your rule in the `/tests/Unit/Services/Rules` directory. Ensure the tests cover
+various scenarios to verify the correct behavior and edge cases for your rule.
 
-Following these steps ensures your rule is seamlessly integrated into the project.
+### 3. **Integrate the Rule**
+
+- **Register the rule** in the SVG optimizer builder located at `/src/Services/SvgOptimizerService.php`.
+- **Add your rule to the rule enum** in `/src/Enums/Rule.php`.
+- **Include the rule in the CLI tool** by updating `/src/Commands/SvgOptimizerCommand.php`.
+
+### 4. **Update Documentation**
+
+Document the functionality and purpose of your rule in the `README.md` to ensure users understand its behavior and
+usage.
 
 #### Docker
 

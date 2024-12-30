@@ -258,6 +258,7 @@ final class SvgOptimizerCommand
                 removeDeprecatedAttributes: $rules[Rule::REMOVE_DEPRECATED_ATTRIBUTES->value],
                 removeDoctype: $rules[Rule::REMOVE_DOCTYPE->value],
                 removeEmptyAttributes: $rules[Rule::REMOVE_EMPTY_ATTRIBUTES->value],
+                removeInvisibleCharacters: $rules[Rule::REMOVE_INVISIBLE_CHARACTERS->value],
                 removeMetadata: $rules[Rule::REMOVE_METADATA->value],
                 removeTitleAndDesc: $rules[Rule::REMOVE_TITLE_AND_DESC->value],
                 removeUnnecessaryWhitespace: $rules[Rule::REMOVE_UNNECESSARY_WHITESPACE->value],
