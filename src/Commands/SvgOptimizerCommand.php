@@ -200,6 +200,8 @@ final class SvgOptimizerCommand
 
     /**
      * Runs the SVG optimization process.
+     *
+     * @throws \UnexpectedValueException
      */
     public function run(): void
     {
@@ -222,6 +224,8 @@ final class SvgOptimizerCommand
      * Processes all SVG files in a directory.
      *
      * @param string $directoryPath The path to the directory containing the SVG files
+     *
+     * @throws \UnexpectedValueException
      */
     private function processDirectory(string $directoryPath): void
     {

@@ -11,11 +11,13 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Rules;
 
+use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Models\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\ConvertEmptyTagsToSelfClosing;
 use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -31,6 +33,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(SvgValidator::class)]
+#[CoversClass(XmlProcessor::class)]
 final class ConvertEmptyTagsToSelfClosingTest extends TestCase
 {
     public static function svgContentProvider(): \Iterator
@@ -81,6 +84,9 @@ final class ConvertEmptyTagsToSelfClosingTest extends TestCase
         ];
     }
 
+    /**
+     * @throws SvgValidationException
+     */
     #[DataProvider('svgContentProvider')]
     public function testOptimize(string $svgContent, string $expected): void
     {

@@ -76,6 +76,28 @@ final readonly class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInte
     }
 
     /**
+     * Remove all whitespace inside style attribute values.
+     *
+     * This method processes the SVG content to remove all whitespace within
+     * style attribute values, which helps to compact the style definitions.
+     *
+     * @param string $content The SVG content to process
+     *
+     * @return string The processed SVG content with whitespace removed from style attributes
+     */
+    private function removeStyleAttributeWhitespace(string $content): string
+    {
+        return preg_replace_callback(
+            self::STYLE_ATTRIBUTE_REGEX,
+            static fn (array $matches): string => \sprintf(
+                'style="%s"',
+                rtrim(str_replace(' ', '', $matches[1]), ';')
+            ),
+            $content
+        ) ?? $content;
+    }
+
+    /**
      * Remove unnecessary whitespace inside attribute values.
      *
      * This method processes the SVG content to trim and reduce whitespace
@@ -93,28 +115,6 @@ final readonly class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInte
                 '%s="%s"',
                 $matches[1],
                 preg_replace(self::WHITESPACE_REGEX, ' ', trim($matches[2]))
-            ),
-            $content
-        ) ?? $content;
-    }
-
-    /**
-     * Remove all whitespace inside style attribute values.
-     *
-     * This method processes the SVG content to remove all whitespace within
-     * style attribute values, which helps to compact the style definitions.
-     *
-     * @param string $content The SVG content to process
-     *
-     * @return string The processed SVG content with whitespace removed from style attributes
-     */
-    private function removeStyleAttributeWhitespace(string $content): string
-    {
-        return preg_replace_callback(
-            self::STYLE_ATTRIBUTE_REGEX,
-            static fn (array $matches): string => \sprintf(
-                'style="%s"',
-                rtrim(str_replace(' ', '', $matches[1]), ';')
             ),
             $content
         ) ?? $content;

@@ -56,6 +56,9 @@ final class ArgumentParserTest extends TestCase
         Assert::assertNull($dryRunOptionValue);
     }
 
+    /**
+     * @throws \InvalidArgumentException
+     */
     public function testGetNextPositionalArgumentIndexReturnsCorrectIndex(): void
     {
         $index = $this->argumentParser->getNextPositionalArgumentIndex();

@@ -11,10 +11,12 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Rules;
 
+use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Models\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDoctype;
 use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -29,6 +31,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversClass(XmlProcessor::class)]
 final class RemoveDoctypeTest extends TestCase
 {
     public static function svgDoctypeProvider(): \Iterator
@@ -93,6 +96,9 @@ final class RemoveDoctypeTest extends TestCase
         ];
     }
 
+    /**
+     * @throws SvgValidationException
+     */
     #[DataProvider('svgDoctypeProvider')]
     public function testOptimize(string $svgContent, string $expected): void
     {

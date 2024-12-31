@@ -34,6 +34,9 @@ final class MetaDataTest extends TestCase
 
     private const float EXPECTED_SAVED_PERCENTAGE = 20.0;
 
+    /**
+     * @throws \InvalidArgumentException
+     */
     public function testConstructorInvalidOriginalSize(): void
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -42,6 +45,10 @@ final class MetaDataTest extends TestCase
         new MetaData(self::ZERO_SIZE, self::OPTIMIZED_SIZE);
     }
 
+    /**
+     * @throws \InvalidArgumentException
+     * @throws \DivisionByZeroError
+     */
     public function testToValueObject(): void
     {
         $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE);
@@ -55,6 +62,7 @@ final class MetaDataTest extends TestCase
 
     /**
      * @throws \ReflectionException
+     * @throws \InvalidArgumentException
      */
     public function testCalculateSavedBytes(): void
     {
@@ -70,6 +78,7 @@ final class MetaDataTest extends TestCase
 
     /**
      * @throws \ReflectionException
+     * @throws \InvalidArgumentException
      */
     public function testCalculateSavedPercentage(): void
     {

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Validators;
 
-final class SvgValidator
+class SvgValidator
 {
     /**
      * Regular expression to match the XML declaration.

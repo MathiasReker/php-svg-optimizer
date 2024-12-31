@@ -77,6 +77,9 @@ abstract class AbstractProvider implements SvgProviderInterface
 
     /**
      * Get metadata about the optimization.
+     *
+     * @throws \InvalidArgumentException
+     * @throws \DivisionByZeroError
      */
     #[\Override]
     final public function getMetaData(): MetaDataValueObject
@@ -126,8 +129,6 @@ abstract class AbstractProvider implements SvgProviderInterface
      * Ensures that the directory for the output file exists. Creates it if necessary.
      *
      * @param string $directoryPath The directory path to check/create
-     *
-     * @throws IOException If the directory cannot be created
      */
     private function ensureDirectoryExists(string $directoryPath): bool
     {

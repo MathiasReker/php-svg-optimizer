@@ -68,7 +68,7 @@ final class DomDocumentWrapper
      *
      * @return \DOMDocument Returns the loaded DOMDocument
      *
-     * @throws \RuntimeException If the XML file cannot be loaded
+     * @throws XmlProcessingException If the XML file cannot be loaded
      */
     public function loadFromFile(string $filePath): \DOMDocument
     {
@@ -121,6 +121,8 @@ final class DomDocumentWrapper
      * @param string $xmlContent The XML content as a string
      *
      * @return \DOMDocument Returns the loaded DOMDocument
+     *
+     * @throws XmlProcessingException If the XML content cannot be loaded
      */
     public function loadFromString(string $xmlContent): \DOMDocument
     {

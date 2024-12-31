@@ -15,7 +15,7 @@ use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
 
-final readonly class XmlProcessor
+readonly class XmlProcessor
 {
     private SvgValidator $svgValidator;
 
@@ -31,12 +31,12 @@ final readonly class XmlProcessor
      * function to optimize the SVG, checks the callback's result type, validates the
      * optimized content, and loads the content back into the DOMDocument.
      *
-     * @param \DOMDocument $domDocument The DOMDocument containing the SVG content to be processed.
-     * @param callable     $callback    A callable function that will be applied to optimize the SVG content.
+     * @param \DOMDocument $domDocument the DOMDocument containing the SVG content to be processed
+     * @param callable     $callback    a callable function that will be applied to optimize the SVG content
      *
-     * @return string The optimized SVG content.
+     * @return string the optimized SVG content
      *
-     * @throws XmlProcessingException If any error occurs while processing, validating, or loading the XML content.
+     * @throws XmlProcessingException if any error occurs while processing, validating, or loading the XML content
      */
     public function process(\DOMDocument $domDocument, callable $callback): string
     {

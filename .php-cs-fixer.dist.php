@@ -18,9 +18,7 @@ $header = <<<'EOD'
 
 $finder = PhpCsFixer\Finder::create()
     ->ignoreDotFiles(false)
-    ->in([__DIR__])
-;
-
+    ->in([__DIR__]);
 $config = new PhpCsFixer\Config();
 $config->setRiskyAllowed(true)
     ->setRules([
@@ -65,9 +63,11 @@ $config->setRiskyAllowed(true)
         '@Symfony' => true,
         '@Symfony:risky' => true,
         'concat_space' => ['spacing' => 'one'],
+
+        // Disable rule causing issues
+        'multiline_whitespace_before_semicolons' => false,
     ])
     ->setFinder($finder)
-    ->setLineEnding(\PHP_EOL)
-;
+    ->setLineEnding(PHP_EOL);
 
 return $config;

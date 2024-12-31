@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Rules;
 
+use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Models\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveComments;
@@ -194,6 +195,9 @@ final class RemoveCommentsTest extends TestCase
         ];
     }
 
+    /**
+     * @throws SvgValidationException
+     */
     #[DataProvider('svgCommentsProvider')]
     public function testOptimize(string $svgContent, string $expected): void
     {

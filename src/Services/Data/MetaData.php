@@ -44,6 +44,8 @@ final readonly class MetaData
      * Converts the metadata to a value object.
      *
      * @return MetaDataValueObject The value object representing the metadata
+     *
+     * @throws \DivisionByZeroError If the original size is 0
      */
     public function toValueObject(): MetaDataValueObject
     {
@@ -69,6 +71,8 @@ final readonly class MetaData
      * Calculates the percentage of bytes saved through optimization.
      *
      * @return float The percentage of bytes saved
+     *
+     * @throws \DivisionByZeroError If the original size is 0
      */
     private function calculateSavedPercentage(): float
     {

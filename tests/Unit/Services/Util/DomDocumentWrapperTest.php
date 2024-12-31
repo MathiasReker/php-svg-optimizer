@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Util;
 
+use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -24,6 +25,9 @@ final class DomDocumentWrapperTest extends TestCase
 {
     private DomDocumentWrapper $domDocumentWrapper;
 
+    /**
+     * @throws XmlProcessingException
+     */
     public function testSaveToStringValid(): void
     {
         $domDocument = new \DOMDocument();
@@ -34,6 +38,9 @@ final class DomDocumentWrapperTest extends TestCase
         Assert::assertStringContainsString('<root><child>Test</child></root>', $result);
     }
 
+    /**
+     * @throws XmlProcessingException
+     */
     public function testSaveToStringWithLineFeedsAndTabs(): void
     {
         $domDocument = new \DOMDocument();
@@ -46,6 +53,9 @@ final class DomDocumentWrapperTest extends TestCase
         Assert::assertStringContainsString('<root><child>Test</child></root>', $result);
     }
 
+    /**
+     * @throws XmlProcessingException
+     */
     public function testLoadFromFileValid(): void
     {
         $filePath = __DIR__ . '/test.xml';
@@ -63,6 +73,9 @@ final class DomDocumentWrapperTest extends TestCase
         }
     }
 
+    /**
+     * @throws XmlProcessingException
+     */
     public function testLoadFromStringValid(): void
     {
         $xmlContent = '<root><child>Test</child></root>';
@@ -74,6 +87,9 @@ final class DomDocumentWrapperTest extends TestCase
         Assert::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
     }
 
+    /**
+     * @throws XmlProcessingException
+     */
     public function testLoadFromStringWithLineFeedsAndTabs(): void
     {
         $xmlContent = "<root>\n\t<child>Test</child>\n</root>";

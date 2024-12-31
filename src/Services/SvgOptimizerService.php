@@ -12,6 +12,9 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Services;
 
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers\SvgProviderInterface;
+use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
+use MathiasReker\PhpSvgOptimizer\Exception\IOException;
+use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Models\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
@@ -76,6 +79,9 @@ final readonly class SvgOptimizerService
      * @param string $filePath The path to the SVG file
      *
      * @return static The SvgOptimizerService instance configured for file-based SVG content
+     *
+     * @throws FileNotFoundException If the specified file does not exist
+     * @throws IOException           If the file content cannot be read
      */
     public static function fromFile(string $filePath): self
     {
@@ -88,6 +94,8 @@ final readonly class SvgOptimizerService
      * If no rules have been added, a default set of rules will be applied.
      *
      * @return $this The SvgOptimizerService instance
+     *
+     * @throws SvgValidationException If the SVG content is invalid
      */
     public function optimize(): self
     {

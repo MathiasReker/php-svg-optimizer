@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Rules;
 
+use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Models\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
@@ -180,6 +181,9 @@ final class RemoveDeprecatedAttributesTest extends TestCase
         ];
     }
 
+    /**
+     * @throws SvgValidationException
+     */
     #[DataProvider('svgXlinkProvider')]
     public function testOptimize(string $svgContent, string $expected): void
     {

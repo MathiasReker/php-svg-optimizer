@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Services\Providers;
 
 use DOMDocument;
+use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
 final class StringProvider extends AbstractProvider
 {
@@ -27,6 +28,8 @@ final class StringProvider extends AbstractProvider
 
     /**
      * Load the input string into a DOMDocument instance.
+     *
+     * @throws XmlProcessingException
      */
     #[\Override]
     public function loadContent(): \DOMDocument

@@ -12,6 +12,15 @@ parameters:
   customRulesetUsed: true
   fileExtensions:
     - php
+  exceptions:
+    check:
+      missingCheckedExceptionInThrows: true
+      tooWideThrowType: true
+    implicitThrows: false
+  shipmonkRules:
+    forbidCheckedExceptionInCallable:
+      allowedCheckedExceptionCallables:
+        'PHPUnit\Framework\MockObject\Builder\InvocationMocker::willReturnCallback': 0
 includes:
     - vendor/symplify/phpstan-rules/config/code-complexity-rules.neon
     - vendor/symplify/phpstan-rules/config/naming-rules.neon

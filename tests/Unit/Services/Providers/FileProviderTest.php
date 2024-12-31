@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Providers;
 
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
+use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
@@ -33,6 +34,10 @@ final class FileProviderTest extends TestCase
 {
     private const string TEST_INPUT_FILE = 'input.svg';
 
+    /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
     public function testGetInputContent(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
@@ -42,6 +47,11 @@ final class FileProviderTest extends TestCase
         Assert::assertStringContainsString('</svg>', $content);
     }
 
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
     public function testOptimize(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
@@ -55,6 +65,13 @@ final class FileProviderTest extends TestCase
         Assert::assertStringContainsString('</svg>', $outputContent);
     }
 
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws \InvalidArgumentException
+     * @throws IOException
+     * @throws \DivisionByZeroError
+     */
     public function testGetMetaData(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
@@ -68,6 +85,10 @@ final class FileProviderTest extends TestCase
         Assert::assertSame(filesize(self::TEST_INPUT_FILE), $metaDataValueObject->getOriginalSize());
     }
 
+    /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
     public function testGetInputContentThrowsExceptionIfFileDoesNotExist(): void
     {
         $this->expectException(FileNotFoundException::class);
@@ -78,6 +99,9 @@ final class FileProviderTest extends TestCase
 
     /**
      * @throws Exception
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws IOException
      */
     public function testOptimizeThrowsExceptionIfSaveXMLFails(): void
     {
