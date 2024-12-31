@@ -14,8 +14,9 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 
-final class RemoveDoctype implements SvgOptimizerRuleInterface
+final readonly class RemoveDoctype implements SvgOptimizerRuleInterface
 {
     /**
      * Regular expression to match the DOCTYPE declaration.
@@ -27,6 +28,13 @@ final class RemoveDoctype implements SvgOptimizerRuleInterface
      */
     private const string DOCTYPE_REGEX = '/<!DOCTYPE[^>]*>/i';
 
+    private XmlProcessor $xmlProcessor;
+
+    public function __construct()
+    {
+        $this->xmlProcessor = new XmlProcessor();
+    }
+
     /**
      * Optimizes the given DOMDocument by removing the DOCTYPE declaration.
      *
@@ -37,17 +45,7 @@ final class RemoveDoctype implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $svgContent = $domDocument->saveXML();
-
-        if (false === $svgContent) {
-            throw new XmlProcessingException('Failed to save SVG XML content.');
-        }
-
-        $optimizedContent = $this->removeDoctype($svgContent);
-
-        if (!$domDocument->loadXML($optimizedContent)) {
-            throw new XmlProcessingException('Failed to load optimized XML content.');
-        }
+        $this->xmlProcessor->process($domDocument, fn (string $content): string => $this->removeDoctype($content));
     }
 
     /**

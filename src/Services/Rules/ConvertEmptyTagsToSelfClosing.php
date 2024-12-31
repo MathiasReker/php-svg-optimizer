@@ -11,11 +11,11 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 
-final class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleInterface
+final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleInterface
 {
     /**
      * Regex pattern for converting empty tags to self-closing tags without space before the slash.
@@ -23,6 +23,13 @@ final class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleInterface
      * This regex matches any tag that is empty (e.g., <rect></rect>) and converts it to a self-closing tag (<rect/>).
      */
     private const string EMPTY_TAG_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*?)\s*><\/\1>/';
+
+    private XmlProcessor $xmlProcessor;
+
+    public function __construct()
+    {
+        $this->xmlProcessor = new XmlProcessor();
+    }
 
     /**
      * Convert empty tags to self-closing tags in the SVG document.
@@ -33,21 +40,7 @@ final class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleInterface
      */
     public function optimize(\DOMDocument $domDocument): void
     {
-        $svgContent = $domDocument->saveXML();
-
-        if (false === $svgContent) {
-            throw new XmlProcessingException('Failed to save SVG XML content.');
-        }
-
-        try {
-            $svgContent = $this->convertEmptyTagsToSelfClosing($svgContent);
-        } catch (\Exception $exception) {
-            throw new XmlProcessingException('Failed to convert empty tags to self-closing tags.', 0, $exception);
-        }
-
-        if (!$domDocument->loadXML($svgContent)) {
-            throw new XmlProcessingException('Failed to load optimized XML content.');
-        }
+        $this->xmlProcessor->process($domDocument, fn (string $content): string => $this->convertEmptyTagsToSelfClosing($content));
     }
 
     /**

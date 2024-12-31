@@ -14,8 +14,9 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 
-final class RemoveInvisibleCharacters implements SvgOptimizerRuleInterface
+final readonly class RemoveInvisibleCharacters implements SvgOptimizerRuleInterface
 {
     /**
      * Regex pattern for removing invisible characters in HTML entity format.
@@ -24,6 +25,13 @@ final class RemoveInvisibleCharacters implements SvgOptimizerRuleInterface
      * control characters, whitespace, tabs, newlines, zero-width spaces, soft hyphens, etc.
      */
     private const string INVISIBLE_CHARACTERS_REGEX = '/&#x(?:200B|200C|200D|2028|2029|AD|0A|0D|09|D);/u';
+
+    private XmlProcessor $xmlProcessor;
+
+    public function __construct()
+    {
+        $this->xmlProcessor = new XmlProcessor();
+    }
 
     /**
      * Remove invisible characters from the SVG document.
@@ -35,21 +43,7 @@ final class RemoveInvisibleCharacters implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $svgContent = $domDocument->saveXML();
-
-        if (false === $svgContent) {
-            throw new XmlProcessingException('Failed to save SVG XML content.');
-        }
-
-        try {
-            $svgContent = $this->removeInvisibleCharacters($svgContent);
-        } catch (\Exception $exception) {
-            throw new XmlProcessingException('Failed to remove invisible characters from SVG content.', 0, $exception);
-        }
-
-        if (!$domDocument->loadXML($svgContent)) {
-            throw new XmlProcessingException('Failed to load optimized XML content.');
-        }
+        $this->xmlProcessor->process($domDocument, fn (string $content): string => $this->removeInvisibleCharacters($content));
     }
 
     /**

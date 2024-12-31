@@ -13,10 +13,10 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
-use MathiasReker\PhpSvgOptimizer\Exception\RegexProcessingException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 
-final class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
+final readonly class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
 {
     /**
      * Regex pattern for matching attribute values.
@@ -48,6 +48,13 @@ final class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
      */
     private const string WHITESPACE_REGEX = '/\s+/';
 
+    private XmlProcessor $xmlProcessor;
+
+    public function __construct()
+    {
+        $this->xmlProcessor = new XmlProcessor();
+    }
+
     /**
      * Remove unnecessary whitespace from the SVG document.
      *
@@ -57,28 +64,15 @@ final class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      *
-     * @throws XmlProcessingException   When XML content cannot be saved or loaded
-     * @throws RegexProcessingException When regex processing fails
+     * @throws XmlProcessingException When XML content cannot be saved or loaded
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $svgContent = $domDocument->saveXML();
-
-        if (false === $svgContent) {
-            throw new XmlProcessingException('Failed to save SVG XML content.');
-        }
-
-        try {
-            $svgContent = $this->removeAttributeValueWhitespace($svgContent);
-            $svgContent = $this->removeStyleAttributeWhitespace($svgContent);
-        } catch (\Exception $exception) {
-            throw new RegexProcessingException('Failed to process SVG content with regex.', 0, $exception);
-        }
-
-        if (!$domDocument->loadXML($svgContent)) {
-            throw new XmlProcessingException('Failed to load optimized XML content.');
-        }
+        $this->xmlProcessor->process(
+            $domDocument,
+            fn (string $content): string => $this->removeStyleAttributeWhitespace($this->removeAttributeValueWhitespace($content))
+        );
     }
 
     /**
