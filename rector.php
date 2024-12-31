@@ -34,5 +34,4 @@ return RectorConfig::configure()
     ->withoutParallel()
     ->withSkip([
         PreferPHPUnitThisCallRector::class,
-    ])
-;
+    ]);

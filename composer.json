@@ -3,7 +3,7 @@
   "description": "php-svg-optimizer is a PHP library designed to optimize SVG files by applying various transformations and cleanup operations.",
   "license": "MIT",
   "type": "library",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "keywords": [
     "optimize",
     "svg",
@@ -25,7 +25,7 @@
     "ergebnis/composer-normalize": "^2.45",
     "friendsofphp/php-cs-fixer": "^3.66",
     "phpstan/extension-installer": "^1.4",
-    "phpstan/phpstan": "^2.0",
+    "phpstan/phpstan": "^2.1",
     "phpstan/phpstan-deprecation-rules": "^2.0",
     "phpstan/phpstan-phpunit": "^2.0",
     "phpstan/phpstan-strict-rules": "^2.0",
