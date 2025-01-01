@@ -12,7 +12,7 @@ permissions:
   issues: read
 
 jobs:
-  run_script:
+  terminal-demo:
     runs-on: ubuntu-latest
 
     steps:
