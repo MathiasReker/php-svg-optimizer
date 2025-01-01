@@ -6,6 +6,8 @@ on:
       - develop
     paths:
       - 'scripts/demo.sh'
+    tags:
+      - '*'
 
 permissions:
   contents: write
@@ -60,7 +62,9 @@ jobs:
           # Configure Git user
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git pull
+          
+          git checkout develop
+          git pull origin develop
 
           mkdir -p assets
           if [ -f assets/demo.gif ]; then
@@ -69,5 +73,5 @@ jobs:
           mv demo.gif assets/demo.gif
           
           git add assets/demo.gif
-          git commit -m "Build the demo.gif"
+          git commit -m "build the demo.gif"
           git push
