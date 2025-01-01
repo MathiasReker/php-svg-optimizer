@@ -53,7 +53,7 @@ jobs:
 
       - name: Convert Cast to GIF using `agg` binary
         run: |
-          agg --theme monokai --font-size 20 demo.cast demo.gif
+          agg --theme dracula --font-size 20 demo.cast demo.gif
 
       - name: Move demo.gif to assets folder and commit
         env:
@@ -76,5 +76,5 @@ jobs:
           mv demo.gif "$DEMO_GIF_PATH"
 
           git add "$DEMO_GIF_PATH"
-          git commit -m "Build and update demo.gif"
+          git commit -m "build and update demo.gif"
           git push origin develop
