@@ -17,6 +17,5 @@ echo "> vendor/bin/svg-optimizer process php-svg-optimizer/assets/logos" | pv -q
 vendor/bin/svg-optimizer process php-svg-optimizer/assets/logos
 echo ">"
 echo ">"
-echo "> # That's it! Your SVG files are now optimized." | pv -qL 10
-sleep 60
-echo " "
+echo "> # That's it! Your SVG files are now optimized" | pv -qL 10
+sleep 30

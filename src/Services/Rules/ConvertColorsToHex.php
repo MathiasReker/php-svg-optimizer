@@ -36,15 +36,11 @@ final class ConvertColorsToHex implements SvgOptimizerRuleInterface
 
     /**
      * Minimum valid value for RGB components.
-     *
-     * @var int
      */
     private const int MIN_RGB_VALUE = 0;
 
     /**
      * Maximum valid value for RGB components.
-     *
-     * @var int
      */
     private const int MAX_RGB_VALUE = 255;
 
@@ -57,8 +53,6 @@ final class ConvertColorsToHex implements SvgOptimizerRuleInterface
 
     /**
      * Constant for bitwise shift when converting RGB to shorthand HEX.
-     *
-     * @var int
      */
     private const int BITWISE_SHIFT = 4;
 
