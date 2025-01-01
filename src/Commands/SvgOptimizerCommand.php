@@ -229,7 +229,11 @@ final class SvgOptimizerCommand
      */
     private function processDirectory(string $directoryPath): void
     {
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directoryPath, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::LEAVES_ONLY);
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($directoryPath, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
         foreach ($iterator as $fileInfo) {
             if ($fileInfo instanceof \SplFileInfo && $fileInfo->isFile() && 'svg' === $fileInfo->getExtension()) {
                 $this->optimizeSvg($fileInfo->getPathname());
@@ -271,6 +275,7 @@ final class SvgOptimizerCommand
             );
 
             $svgOptimizer->optimize();
+
             if (!$this->dryRun) {
                 $svgOptimizer->saveToFile($filePath);
             }
