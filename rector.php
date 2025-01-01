@@ -10,6 +10,7 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use Rector\Php84\Rector\Param\ExplicitNullableParamTypeRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
 
 return RectorConfig::configure()
@@ -29,9 +30,13 @@ return RectorConfig::configure()
         phpunitCodeQuality: true,
         symfonyCodeQuality: true
     )
+    ->withAttributesSets()
     ->withSkipPath(__DIR__ . '/vendor')
     ->withPaths([__DIR__])
     ->withoutParallel()
     ->withSkip([
         PreferPHPUnitThisCallRector::class,
+    ])
+    ->withRules([
+        ExplicitNullableParamTypeRector::class,
     ]);
