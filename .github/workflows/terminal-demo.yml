@@ -59,19 +59,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Configure Git user
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          
+
+          git fetch origin
           git checkout develop
-          git pull origin develop
+          git reset --hard origin/develop
+
+          DEMO_GIF_PATH="assets/demo.gif"
 
           mkdir -p assets
-          if [ -f assets/demo.gif ]; then
-            rm assets/demo.gif
+          if [ -f "$DEMO_GIF_PATH" ]; then
+            rm "$DEMO_GIF_PATH"
           fi
-          mv demo.gif assets/demo.gif
-          
-          git add assets/demo.gif
-          git commit -m "build the demo.gif"
-          git push
+
+          mv demo.gif "$DEMO_GIF_PATH"
+
+          git add "$DEMO_GIF_PATH"
+          git commit -m "Build and update demo.gif"
+          git push origin develop
