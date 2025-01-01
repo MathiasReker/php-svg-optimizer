@@ -51,7 +51,7 @@ jobs:
 
       - name: Convert Cast to GIF using `agg` binary
         run: |
-          agg demo.cast demo.gif
+          agg --theme monokai --font-size 20 demo.cast demo.gif
 
       - name: Move demo.gif to assets folder and commit
         env:
