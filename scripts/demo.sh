@@ -18,4 +18,4 @@ vendor/bin/svg-optimizer process php-svg-optimizer/assets/logos
 echo ">"
 echo ">"
 echo "> # That's it! Your SVG files are now optimized" | pv -qL 10
-sleep 30
+sleep 10
