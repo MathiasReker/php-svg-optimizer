@@ -1,3 +1,4 @@
+* text=auto eol=lf
 *.md text
 *.php text diff=php
 /.gitattributes export-ignore
@@ -14,4 +15,5 @@
 /rector.php export-ignore
 /tests export-ignore
 /.github export-ignore
-* text=auto eol=lf
+/scripts export-ignore
+/assets export-ignore

@@ -1,0 +1,73 @@
+name: Build Terminal Demo GIF
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'scripts/demo.sh'
+
+permissions:
+  contents: write
+  issues: read
+
+jobs:
+  run_script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Up PHP Environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: mbstring
+
+      - name: Install Pipe Viewer (pv)
+        run: |
+          sudo apt install -y pv
+          pv --version
+
+      - name: Install Asciinema
+        run: |
+          sudo apt install -y asciinema
+          asciinema --version
+
+      - name: Make the script executable
+        run: |
+          chmod +x ./scripts/demo.sh
+
+      - name: Record the script execution
+        run: |
+          asciinema rec --command="./scripts/demo.sh" --quiet --overwrite demo.cast
+
+      - name: Download the prebuilt `agg` binary for Ubuntu (x86_64)
+        run: |
+          wget https://github.com/asciinema/agg/releases/download/v1.5.0/agg-x86_64-unknown-linux-gnu -O agg
+          chmod +x agg
+          sudo mv agg /usr/local/bin
+
+      - name: Convert Cast to GIF using `agg` binary
+        run: |
+          agg demo.cast demo.gif
+
+      - name: Move demo.gif to assets folder and commit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Configure Git user
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git pull
+
+          mkdir -p assets
+          if [ -f assets/demo.gif ]; then
+            rm assets/demo.gif
+          fi
+          mv demo.gif assets/demo.gif
+          
+          git add assets/demo.gif
+          git commit -m "Build the demo.gif"
+          git push
