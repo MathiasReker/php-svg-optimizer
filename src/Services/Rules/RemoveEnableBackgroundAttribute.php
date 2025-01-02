@@ -20,8 +20,10 @@ final class RemoveEnableBackgroundAttribute implements SvgOptimizerRuleInterface
     /**
      * Regular expression to match the "enable-background" value format.
      * The format is: 'new 0 0 width height'.
+     *
+     * @see https://regex101.com/r/h0AgKK/1
      */
-    private const string REGEX_ENABLE_BACKGROUND = '/^new\s0\s0\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)$/';
+    private const string ENABLE_BACKGROUND_REGEX = '/^new\s0\s0\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)$/';
 
     /**
      * Optimizes the given SVG document by removing or cleaning up the `enable-background` attribute.
@@ -77,7 +79,7 @@ final class RemoveEnableBackgroundAttribute implements SvgOptimizerRuleInterface
      */
     private function cleanupEnableBackgroundValue(string $value, string $width, string $height): ?string
     {
-        if (\in_array(preg_match(self::REGEX_ENABLE_BACKGROUND, $value, $matches), [0, false], true)) {
+        if (\in_array(preg_match(self::ENABLE_BACKGROUND_REGEX, $value, $matches), [0, false], true)) {
             return $value;
         }
 

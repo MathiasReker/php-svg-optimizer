@@ -23,6 +23,8 @@ final readonly class RemoveInvisibleCharacters implements SvgOptimizerRuleInterf
      *
      * This regex removes all invisible or non-printing characters, including
      * control characters, whitespace, tabs, newlines, zero-width spaces, soft hyphens, etc.
+     *
+     * @see https://regex101.com/r/7HAFNv/1
      */
     private const string INVISIBLE_CHARACTERS_REGEX = '/&#x(?:200B|200C|200D|2028|2029|AD|0A|0D|09|D);/u';
 

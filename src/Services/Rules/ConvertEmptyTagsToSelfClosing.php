@@ -22,6 +22,8 @@ final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleIn
      * Regex pattern for converting empty tags to self-closing tags without space before the slash.
      *
      * This regex matches any tag that is empty (e.g., <rect></rect>) and converts it to a self-closing tag (<rect/>).
+     *
+     * @see https://regex101.com/r/HolZXY/1
      */
     private const string EMPTY_TAG_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*?)\s*><\/\1>/';
 
@@ -29,6 +31,8 @@ final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleIn
      * Regex pattern for removing space before the slash in self-closing tags.
      *
      * This regex matches self-closing tags with a space before the slash and removes the space.
+     *
+     * @see https://regex101.com/r/Le1XFu/1
      */
     private const string SELF_CLOSING_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*?)\s*\/>/';
 
