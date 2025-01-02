@@ -19,7 +19,6 @@ use MathiasReker\PhpSvgOptimizer\Services\Rules\ConvertEmptyTagsToSelfClosing;
 use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -94,6 +93,6 @@ final class ConvertEmptyTagsToSelfClosingTest extends TestCase
         $svgOptimizer->addRule(new ConvertEmptyTagsToSelfClosing());
 
         $actual = $svgOptimizer->optimize()->getContent();
-        Assert::assertSame($expected, $actual);
+        self::assertSame($expected, $actual);
     }
 }

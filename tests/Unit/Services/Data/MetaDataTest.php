@@ -13,7 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Data;
 
 use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -54,10 +53,10 @@ final class MetaDataTest extends TestCase
         $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE);
         $metaDataValueObject = $metaData->toValueObject();
 
-        Assert::assertSame(self::ORIGINAL_SIZE, $metaDataValueObject->getOriginalSize());
-        Assert::assertSame(self::OPTIMIZED_SIZE, $metaDataValueObject->getOptimizedSize());
-        Assert::assertSame(self::EXPECTED_SAVED_BYTES, $metaDataValueObject->getSavedBytes());
-        Assert::assertEqualsWithDelta(self::EXPECTED_SAVED_PERCENTAGE, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+        self::assertSame(self::ORIGINAL_SIZE, $metaDataValueObject->getOriginalSize());
+        self::assertSame(self::OPTIMIZED_SIZE, $metaDataValueObject->getOptimizedSize());
+        self::assertSame(self::EXPECTED_SAVED_BYTES, $metaDataValueObject->getSavedBytes());
+        self::assertEqualsWithDelta(self::EXPECTED_SAVED_PERCENTAGE, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
     /**
@@ -73,7 +72,7 @@ final class MetaDataTest extends TestCase
 
         $savedBytes = $reflectionMethod->invoke($metaData);
 
-        Assert::assertSame(self::EXPECTED_SAVED_BYTES, $savedBytes);
+        self::assertSame(self::EXPECTED_SAVED_BYTES, $savedBytes);
     }
 
     /**
@@ -89,6 +88,6 @@ final class MetaDataTest extends TestCase
 
         $savedPercentage = $reflectionMethod->invoke($metaData);
 
-        Assert::assertEqualsWithDelta(self::EXPECTED_SAVED_PERCENTAGE, $savedPercentage, \PHP_FLOAT_EPSILON);
+        self::assertEqualsWithDelta(self::EXPECTED_SAVED_PERCENTAGE, $savedPercentage, \PHP_FLOAT_EPSILON);
     }
 }

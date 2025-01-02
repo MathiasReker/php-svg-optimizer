@@ -17,7 +17,6 @@ use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ExampleCommandValueObject;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -40,50 +39,50 @@ final class ArgumentDataTest extends TestCase
     {
         $options = $this->argumentData->getOptions();
 
-        Assert::assertArrayHasKey(Option::HELP->value, $options);
+        self::assertArrayHasKey(Option::HELP->value, $options);
         $helpOption = $options[Option::HELP->value];
 
-        Assert::assertSame(Option::HELP->getShorthand(), $helpOption->getShorthand());
-        Assert::assertSame(Option::HELP->getFull(), $helpOption->getFull());
-        Assert::assertSame(Option::HELP->getDescription(), $helpOption->getDescription());
+        self::assertSame(Option::HELP->getShorthand(), $helpOption->getShorthand());
+        self::assertSame(Option::HELP->getFull(), $helpOption->getFull());
+        self::assertSame(Option::HELP->getDescription(), $helpOption->getDescription());
     }
 
     public function testGetCommands(): void
     {
         $commands = $this->argumentData->getCommands();
 
-        Assert::assertArrayHasKey(Command::PROCESS->value, $commands);
+        self::assertArrayHasKey(Command::PROCESS->value, $commands);
         $processCommand = $commands[Command::PROCESS->value];
 
-        Assert::assertSame(Command::PROCESS->getTitle(), $processCommand->getTitle());
-        Assert::assertSame(Command::PROCESS->getDescription(), $processCommand->getDescription());
+        self::assertSame(Command::PROCESS->getTitle(), $processCommand->getTitle());
+        self::assertSame(Command::PROCESS->getDescription(), $processCommand->getDescription());
     }
 
     public function testGetOption(): void
     {
         $option = $this->argumentData->getOption(Option::HELP->value);
 
-        Assert::assertInstanceOf(ArgumentOptionValueObject::class, $option);
-        Assert::assertSame(Option::HELP->getShorthand(), $option->getShorthand());
-        Assert::assertSame(Option::HELP->getFull(), $option->getFull());
-        Assert::assertSame(Option::HELP->getDescription(), $option->getDescription());
+        self::assertInstanceOf(ArgumentOptionValueObject::class, $option);
+        self::assertSame(Option::HELP->getShorthand(), $option->getShorthand());
+        self::assertSame(Option::HELP->getFull(), $option->getFull());
+        self::assertSame(Option::HELP->getDescription(), $option->getDescription());
     }
 
     public function testGetExamples(): void
     {
         $examples = $this->argumentData->getExamples();
 
-        Assert::assertCount(3, $examples);
+        self::assertCount(3, $examples);
         $example = $examples[0];
 
-        Assert::assertSame(self::EXAMPLE_COMMAND, $example->getCommand());
+        self::assertSame(self::EXAMPLE_COMMAND, $example->getCommand());
     }
 
     public function testGetFormat(): void
     {
         $format = $this->argumentData->getFormat();
 
-        Assert::assertSame('vendor/bin/svg-optimizer [options] process <path1> <path2> ...', $format);
+        self::assertSame('vendor/bin/svg-optimizer [options] process <path1> <path2> ...', $format);
     }
 
     #[\Override]

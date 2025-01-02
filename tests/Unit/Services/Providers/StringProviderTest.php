@@ -16,7 +16,6 @@ use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
@@ -42,14 +41,14 @@ final class StringProviderTest extends TestCase
 
         $stringProvider->optimize($domDocument);
 
-        Assert::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>', $stringProvider->getOutputContent());
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>', $stringProvider->getOutputContent());
     }
 
     public function testGetInputContent(): void
     {
         $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
 
-        Assert::assertSame(self::TEST_INPUT_STRING, $stringProvider->getInputContent());
+        self::assertSame(self::TEST_INPUT_STRING, $stringProvider->getInputContent());
     }
 
     /**
@@ -69,8 +68,8 @@ final class StringProviderTest extends TestCase
         $originalSize = mb_strlen(self::TEST_INPUT_STRING);
         $optimizedSize = mb_strlen($stringProvider->getOutputContent());
 
-        Assert::assertSame($originalSize, $metaDataValueObject->getOriginalSize());
-        Assert::assertSame($optimizedSize, $metaDataValueObject->getOptimizedSize());
+        self::assertSame($originalSize, $metaDataValueObject->getOriginalSize());
+        self::assertSame($optimizedSize, $metaDataValueObject->getOptimizedSize());
     }
 
     /**

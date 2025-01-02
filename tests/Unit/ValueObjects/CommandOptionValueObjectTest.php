@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObjects;
 
 use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -30,12 +29,12 @@ final class CommandOptionValueObjectTest extends TestCase
 
     public function testGetTitle(): void
     {
-        Assert::assertSame(self::TITLE, $this->commandOptionValueObject->getTitle());
+        self::assertSame(self::TITLE, $this->commandOptionValueObject->getTitle());
     }
 
     public function testGetDescription(): void
     {
-        Assert::assertSame(self::DESCRIPTION, $this->commandOptionValueObject->getDescription());
+        self::assertSame(self::DESCRIPTION, $this->commandOptionValueObject->getDescription());
     }
 
     #[\Override]

@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObjects;
 
 use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -34,22 +33,22 @@ final class MetaDataValueObjectTest extends TestCase
 
     public function testGetOriginalSize(): void
     {
-        Assert::assertSame(self::ORIGINAL_SIZE, $this->metaDataValueObject->getOriginalSize());
+        self::assertSame(self::ORIGINAL_SIZE, $this->metaDataValueObject->getOriginalSize());
     }
 
     public function testGetOptimizedSize(): void
     {
-        Assert::assertSame(self::OPTIMIZED_SIZE, $this->metaDataValueObject->getOptimizedSize());
+        self::assertSame(self::OPTIMIZED_SIZE, $this->metaDataValueObject->getOptimizedSize());
     }
 
     public function testGetSavedBytes(): void
     {
-        Assert::assertSame(self::SAVED_BYTES, $this->metaDataValueObject->getSavedBytes());
+        self::assertSame(self::SAVED_BYTES, $this->metaDataValueObject->getSavedBytes());
     }
 
     public function testGetSavedPercentage(): void
     {
-        Assert::assertEqualsWithDelta(self::SAVED_PERCENTAGE, $this->metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+        self::assertEqualsWithDelta(self::SAVED_PERCENTAGE, $this->metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
     #[\Override]

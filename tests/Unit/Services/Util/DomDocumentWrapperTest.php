@@ -13,7 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Util;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -35,7 +34,7 @@ final class DomDocumentWrapperTest extends TestCase
 
         $result = $this->domDocumentWrapper->saveToString($domDocument);
 
-        Assert::assertStringContainsString('<root><child>Test</child></root>', $result);
+        self::assertStringContainsString('<root><child>Test</child></root>', $result);
     }
 
     /**
@@ -48,9 +47,9 @@ final class DomDocumentWrapperTest extends TestCase
 
         $result = $this->domDocumentWrapper->saveToString($domDocument);
 
-        Assert::assertStringNotContainsString("\n", $result);
-        Assert::assertStringNotContainsString("\t", $result);
-        Assert::assertStringContainsString('<root><child>Test</child></root>', $result);
+        self::assertStringNotContainsString("\n", $result);
+        self::assertStringNotContainsString("\t", $result);
+        self::assertStringContainsString('<root><child>Test</child></root>', $result);
     }
 
     /**
@@ -66,8 +65,8 @@ final class DomDocumentWrapperTest extends TestCase
 
             $xmlString = $domDocument->saveXML();
 
-            Assert::assertNotFalse($xmlString, 'saveXML() returned false');
-            Assert::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
+            self::assertNotFalse($xmlString, 'saveXML() returned false');
+            self::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
         } finally {
             unlink($filePath);
         }
@@ -83,8 +82,8 @@ final class DomDocumentWrapperTest extends TestCase
 
         $xmlString = $domDocument->saveXML();
 
-        Assert::assertNotFalse($xmlString, 'saveXML() returned false');
-        Assert::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
+        self::assertNotFalse($xmlString, 'saveXML() returned false');
+        self::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
     }
 
     /**
@@ -97,9 +96,9 @@ final class DomDocumentWrapperTest extends TestCase
 
         $xmlString = $this->domDocumentWrapper->saveToString($domDocument);
 
-        Assert::assertStringNotContainsString("\n", $xmlString, 'Newline characters were not removed.');
-        Assert::assertStringNotContainsString("\t", $xmlString, 'Tab characters were not removed.');
-        Assert::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
+        self::assertStringNotContainsString("\n", $xmlString, 'Newline characters were not removed.');
+        self::assertStringNotContainsString("\t", $xmlString, 'Tab characters were not removed.');
+        self::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
     }
 
     #[\Override]

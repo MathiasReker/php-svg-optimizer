@@ -18,7 +18,6 @@ use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
@@ -43,8 +42,8 @@ final class FileProviderTest extends TestCase
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
         $content = $fileProvider->getInputContent();
 
-        Assert::assertStringContainsString('<svg', $content);
-        Assert::assertStringContainsString('</svg>', $content);
+        self::assertStringContainsString('<svg', $content);
+        self::assertStringContainsString('</svg>', $content);
     }
 
     /**
@@ -61,8 +60,8 @@ final class FileProviderTest extends TestCase
         $fileProvider->optimize($domDocument);
 
         $outputContent = $fileProvider->getOutputContent();
-        Assert::assertStringContainsString('<svg', $outputContent);
-        Assert::assertStringContainsString('</svg>', $outputContent);
+        self::assertStringContainsString('<svg', $outputContent);
+        self::assertStringContainsString('</svg>', $outputContent);
     }
 
     /**
@@ -82,7 +81,7 @@ final class FileProviderTest extends TestCase
 
         $metaDataValueObject = $fileProvider->getMetaData();
 
-        Assert::assertSame(filesize(self::TEST_INPUT_FILE), $metaDataValueObject->getOriginalSize());
+        self::assertSame(filesize(self::TEST_INPUT_FILE), $metaDataValueObject->getOriginalSize());
     }
 
     /**

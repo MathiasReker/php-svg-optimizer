@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObjects;
 
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ExampleCommandValueObject;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -28,7 +27,7 @@ final class ExampleCommandValueObjectTest extends TestCase
 
     public function testGetCommand(): void
     {
-        Assert::assertSame(self::EXAMPLE_COMMAND, $this->exampleCommandValueObject->getCommand());
+        self::assertSame(self::EXAMPLE_COMMAND, $this->exampleCommandValueObject->getCommand());
     }
 
     #[\Override]

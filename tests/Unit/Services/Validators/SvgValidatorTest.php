@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Validators;
 
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -27,53 +26,53 @@ final class SvgValidatorTest extends TestCase
     public function testIsValidWithValidSvg(): void
     {
         $validSvg = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>';
-        Assert::assertTrue($this->svgValidator->isValid($validSvg));
+        self::assertTrue($this->svgValidator->isValid($validSvg));
     }
 
     public function testIsValidWithInvalidSvg(): void
     {
         $invalidSvg = '<div>Not an SVG</div>';
-        Assert::assertFalse($this->svgValidator->isValid($invalidSvg));
+        self::assertFalse($this->svgValidator->isValid($invalidSvg));
     }
 
     public function testIsValidWithEmptyString(): void
     {
-        Assert::assertFalse($this->svgValidator->isValid(''));
+        self::assertFalse($this->svgValidator->isValid(''));
     }
 
     public function testIsValidWithWhitespace(): void
     {
-        Assert::assertFalse($this->svgValidator->isValid('    '));
+        self::assertFalse($this->svgValidator->isValid('    '));
     }
 
     public function testIsValidWithMalformedSvg(): void
     {
         $malformedSvg = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"></svg>';
-        Assert::assertTrue($this->svgValidator->isValid($malformedSvg));
+        self::assertTrue($this->svgValidator->isValid($malformedSvg));
     }
 
     public function testIsValidWithXmlDeclaration(): void
     {
         $svgWithXmlDeclaration = '<?xml version="1.0" encoding="UTF-8"?> <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>';
-        Assert::assertTrue($this->svgValidator->isValid($svgWithXmlDeclaration));
+        self::assertTrue($this->svgValidator->isValid($svgWithXmlDeclaration));
     }
 
     public function testIsValidWithSvgElementOnly(): void
     {
         $svgElementOnly = '<svg xmlns="http://www.w3.org/2000/svg"/>';
-        Assert::assertTrue($this->svgValidator->isValid($svgElementOnly));
+        self::assertTrue($this->svgValidator->isValid($svgElementOnly));
     }
 
     public function testIsValidWithComment(): void
     {
         $svgComment = '<svg xmlns="http://www.w3.org/2000/svg"><!-- comment -->';
-        Assert::assertTrue($this->svgValidator->isValid($svgComment));
+        self::assertTrue($this->svgValidator->isValid($svgComment));
     }
 
     public function testIsValidWithCommentInFrontOfSvg(): void
     {
         $svgComment = '<!-- comment --><svg xmlns="http://www.w3.org/2000/svg">';
-        Assert::assertTrue($this->svgValidator->isValid($svgComment));
+        self::assertTrue($this->svgValidator->isValid($svgComment));
     }
 
     #[\Override]

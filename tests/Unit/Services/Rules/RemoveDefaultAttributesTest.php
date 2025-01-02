@@ -17,7 +17,6 @@ use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDefaultAttributes;
 use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -122,6 +121,6 @@ final class RemoveDefaultAttributesTest extends TestCase
         $svgOptimizer->addRule(new RemoveDefaultAttributes());
 
         $actual = $svgOptimizer->optimize()->getContent();
-        Assert::assertSame($expected, $actual);
+        self::assertSame($expected, $actual);
     }
 }

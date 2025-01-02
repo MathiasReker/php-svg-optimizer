@@ -18,7 +18,6 @@ use MathiasReker\PhpSvgOptimizer\Services\Util\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ExampleCommandValueObject;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -41,19 +40,19 @@ final class ArgumentParserTest extends TestCase
     public function testHasOptionReturnsFalseIfOptionDoesNotExist(): void
     {
         $hasDryRunOption = $this->argumentParser->hasOption(Option::DRY_RUN);
-        Assert::assertFalse($hasDryRunOption);
+        self::assertFalse($hasDryRunOption);
     }
 
     public function testGetOptionReturnsCorrectValue(): void
     {
         $configOptionValue = $this->argumentParser->getOption(Option::CONFIG);
-        Assert::assertSame('config.json', $configOptionValue);
+        self::assertSame('config.json', $configOptionValue);
     }
 
     public function testGetOptionReturnsNullIfOptionDoesNotExist(): void
     {
         $dryRunOptionValue = $this->argumentParser->getOption(Option::DRY_RUN);
-        Assert::assertNull($dryRunOptionValue);
+        self::assertNull($dryRunOptionValue);
     }
 
     /**
@@ -62,7 +61,7 @@ final class ArgumentParserTest extends TestCase
     public function testGetNextPositionalArgumentIndexReturnsCorrectIndex(): void
     {
         $index = $this->argumentParser->getNextPositionalArgumentIndex();
-        Assert::assertSame(2, $index);
+        self::assertSame(2, $index);
     }
 
     #[\Override]

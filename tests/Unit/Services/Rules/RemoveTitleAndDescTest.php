@@ -17,7 +17,6 @@ use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -236,6 +235,6 @@ final class RemoveTitleAndDescTest extends TestCase
         $svgOptimizer->addRule(new RemoveTitleAndDesc());
 
         $actual = $svgOptimizer->optimize()->getContent();
-        Assert::assertSame($expected, $actual);
+        self::assertSame($expected, $actual);
     }
 }

@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObjects;
 
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -32,17 +31,17 @@ final class ArgumentOptionValueObjectTest extends TestCase
 
     public function testGetShorthand(): void
     {
-        Assert::assertSame(self::SHORTHAND, $this->argumentOptionValueObject->getShorthand());
+        self::assertSame(self::SHORTHAND, $this->argumentOptionValueObject->getShorthand());
     }
 
     public function testGetFull(): void
     {
-        Assert::assertSame(self::FULL, $this->argumentOptionValueObject->getFull());
+        self::assertSame(self::FULL, $this->argumentOptionValueObject->getFull());
     }
 
     public function testGetDescription(): void
     {
-        Assert::assertSame(self::DESCRIPTION, $this->argumentOptionValueObject->getDescription());
+        self::assertSame(self::DESCRIPTION, $this->argumentOptionValueObject->getDescription());
     }
 
     #[\Override]
