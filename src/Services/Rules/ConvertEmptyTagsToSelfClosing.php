@@ -25,6 +25,13 @@ final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleIn
      */
     private const string EMPTY_TAG_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*?)\s*><\/\1>/';
 
+    /**
+     * Regex pattern for removing space before the slash in self-closing tags.
+     *
+     * This regex matches self-closing tags with a space before the slash and removes the space.
+     */
+    private const string SELF_CLOSING_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*?)\s*\/>/';
+
     private XmlProcessor $xmlProcessor;
 
     public function __construct()
@@ -45,10 +52,11 @@ final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleIn
     }
 
     /**
-     * Convert empty tags to self-closing tags.
+     * Convert empty tags to self-closing tags and remove spaces before slashes in self-closing tags.
      *
      * This method processes the SVG content and converts tags with no content or child nodes
-     * into self-closing tags (e.g., <rect/> instead of <rect></rect>).
+     * into self-closing tags (e.g., <rect/> instead of <rect></rect>) and ensures there's no space
+     * before the slash in self-closing tags (e.g., <rect/> instead of <rect />).
      *
      * @param string $content The SVG content to process
      *
@@ -56,6 +64,8 @@ final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleIn
      */
     private function convertEmptyTagsToSelfClosing(string $content): string
     {
-        return (string) preg_replace(self::EMPTY_TAG_REGEX, '<$1$2/>', $content);
+        $content = preg_replace(self::EMPTY_TAG_REGEX, '<$1$2/>', $content) ?? $content;
+
+        return preg_replace(self::SELF_CLOSING_REGEX, '<$1$2/>', $content) ?? $content;
     }
 }
