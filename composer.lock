@@ -4092,33 +4092,33 @@
         },
         {
             "name": "shipmonk/phpstan-rules",
-            "version": "4.1.0",
+            "version": "4.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/shipmonk-rnd/phpstan-rules.git",
-                "reference": "2f645b715c0ab81f17e4f502cbf39605bd05d73b"
+                "reference": "bf6c46320f1c1405fa715fcec462f0a6da417703"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shipmonk-rnd/phpstan-rules/zipball/2f645b715c0ab81f17e4f502cbf39605bd05d73b",
-                "reference": "2f645b715c0ab81f17e4f502cbf39605bd05d73b",
+                "url": "https://api.github.com/repos/shipmonk-rnd/phpstan-rules/zipball/bf6c46320f1c1405fa715fcec462f0a6da417703",
+                "reference": "bf6c46320f1c1405fa715fcec462f0a6da417703",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.4 || ^8.0",
-                "phpstan/phpstan": "^2.0"
+                "phpstan/phpstan": "^2.1.8"
             },
             "require-dev": {
                 "editorconfig-checker/editorconfig-checker": "^10.6.0",
-                "ergebnis/composer-normalize": "^2.44",
-                "phpstan/phpstan-deprecation-rules": "^2.0.0",
-                "phpstan/phpstan-phpunit": "^2.0.0",
-                "phpstan/phpstan-strict-rules": "^2.0.0",
-                "phpunit/phpunit": "^9.6.21",
-                "shipmonk/composer-dependency-analyser": "^1.7.0",
-                "shipmonk/dead-code-detector": "^0.6.0",
+                "ergebnis/composer-normalize": "^2.45.0",
+                "phpstan/phpstan-deprecation-rules": "^2.0.1",
+                "phpstan/phpstan-phpunit": "^2.0.4",
+                "phpstan/phpstan-strict-rules": "^2.0.3",
+                "phpunit/phpunit": "^9.6.22",
+                "shipmonk/composer-dependency-analyser": "^1.8.1",
+                "shipmonk/dead-code-detector": "^0.9.0",
                 "shipmonk/name-collision-detector": "^2.1.1",
-                "slevomat/coding-standard": "^8.15.0"
+                "slevomat/coding-standard": "^8.16.0"
             },
             "type": "phpstan-extension",
             "extra": {
@@ -4144,9 +4144,9 @@
             ],
             "support": {
                 "issues": "https://github.com/shipmonk-rnd/phpstan-rules/issues",
-                "source": "https://github.com/shipmonk-rnd/phpstan-rules/tree/4.1.0"
+                "source": "https://github.com/shipmonk-rnd/phpstan-rules/tree/4.1.1"
             },
-            "time": "2024-12-03T12:29:13+00:00"
+            "time": "2025-03-12T08:22:29+00:00"
         },
         {
             "name": "slam/phpstan-extensions",
