@@ -5518,16 +5518,16 @@
         },
         {
             "name": "symplify/phpstan-rules",
-            "version": "14.4.3",
+            "version": "14.4.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symplify/phpstan-rules.git",
-                "reference": "20ab23688fc44e9e3910f09cc05fa1559456c7fa"
+                "reference": "9db51a19fc6d393d2c2b9785a095bc9280b24f38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/20ab23688fc44e9e3910f09cc05fa1559456c7fa",
-                "reference": "20ab23688fc44e9e3910f09cc05fa1559456c7fa",
+                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/9db51a19fc6d393d2c2b9785a095bc9280b24f38",
+                "reference": "9db51a19fc6d393d2c2b9785a095bc9280b24f38",
                 "shasum": ""
             },
             "require": {
@@ -5559,7 +5559,7 @@
             "description": "Set of Symplify rules for PHPStan",
             "support": {
                 "issues": "https://github.com/symplify/phpstan-rules/issues",
-                "source": "https://github.com/symplify/phpstan-rules/tree/14.4.3"
+                "source": "https://github.com/symplify/phpstan-rules/tree/14.4.6"
             },
             "funding": [
                 {
@@ -5571,7 +5571,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-03-19T21:07:48+00:00"
+            "time": "2025-03-20T14:55:37+00:00"
         },
         {
             "name": "theseer/tokenizer",
