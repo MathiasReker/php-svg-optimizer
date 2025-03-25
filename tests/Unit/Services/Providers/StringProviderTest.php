@@ -17,7 +17,6 @@ use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -74,7 +73,6 @@ final class StringProviderTest extends TestCase
 
     /**
      * @throws XmlProcessingException
-     * @throws Exception
      */
     public function testOptimizeThrowsExceptionIfSaveXMLFails(): void
     {

@@ -51,10 +51,10 @@ final class XmlProcessorTest extends TestCase
             ->getMock();
 
         $this->xmlProcessor->method('process')->willReturnCallback(
-            /*
-              * @throws XmlProcessingException
+            /**
+             * @throws XmlProcessingException
              */
-            callback: function (\DOMDocument $domDocument, callable $callback) use ($svgContent): string {
+            function (\DOMDocument $domDocument, callable $callback) use ($svgContent): string {
                 $svgContent = $domDocument->saveXML();
                 $svgContent = $callback($svgContent);
 
@@ -103,10 +103,10 @@ final class XmlProcessorTest extends TestCase
             ->getMock();
 
         $this->xmlProcessor->method('process')->willReturnCallback(
-            /*
+            /**
              * @throws XmlProcessingException
              */
-            callback: function (\DOMDocument $domDocument, callable $callback) use ($svgContent): string {
+            function (\DOMDocument $domDocument, callable $callback) use ($svgContent): string {
                 /**
                  * @var string $svgContent
                  */
@@ -183,10 +183,10 @@ final class XmlProcessorTest extends TestCase
             ->getMock();
 
         $this->xmlProcessor->method('process')->willReturnCallback(
-            /*
+            /**
              * @throws XmlProcessingException
              */
-            callback: static function (\DOMDocument $domDocument, callable $callback): string {
+            static function (\DOMDocument $domDocument, callable $callback): string {
                 /**
                  * @var string $svgContent
                  */

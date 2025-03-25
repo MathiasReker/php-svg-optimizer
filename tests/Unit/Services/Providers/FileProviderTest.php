@@ -19,7 +19,6 @@ use MathiasReker\PhpSvgOptimizer\Services\Providers\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -97,7 +96,6 @@ final class FileProviderTest extends TestCase
     }
 
     /**
-     * @throws Exception
      * @throws XmlProcessingException
      * @throws FileNotFoundException
      * @throws IOException
