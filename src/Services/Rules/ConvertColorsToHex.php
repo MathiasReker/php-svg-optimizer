@@ -112,7 +112,7 @@ final class ConvertColorsToHex implements SvgOptimizerRuleInterface
 
             $styleValue = preg_replace_callback(
                 self::HEX_REGEX,
-                static fn (array $matches) => mb_strtolower($matches[0]),
+                static fn (array $matches): string => mb_strtolower((string) $matches[0]),
                 $styleValue
             );
 
