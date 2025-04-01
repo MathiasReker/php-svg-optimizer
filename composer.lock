@@ -1222,16 +1222,16 @@
         },
         {
             "name": "nette/utils",
-            "version": "v4.0.5",
+            "version": "v4.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/utils.git",
-                "reference": "736c567e257dbe0fcf6ce81b4d6dbe05c6899f96"
+                "reference": "ce708655043c7050eb050df361c5e313cf708309"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/utils/zipball/736c567e257dbe0fcf6ce81b4d6dbe05c6899f96",
-                "reference": "736c567e257dbe0fcf6ce81b4d6dbe05c6899f96",
+                "url": "https://api.github.com/repos/nette/utils/zipball/ce708655043c7050eb050df361c5e313cf708309",
+                "reference": "ce708655043c7050eb050df361c5e313cf708309",
                 "shasum": ""
             },
             "require": {
@@ -1302,9 +1302,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/utils/issues",
-                "source": "https://github.com/nette/utils/tree/v4.0.5"
+                "source": "https://github.com/nette/utils/tree/v4.0.6"
             },
-            "time": "2024-08-07T15:39:19+00:00"
+            "time": "2025-03-30T21:06:30+00:00"
         },
         {
             "name": "nikic/php-parser",
@@ -5345,16 +5345,16 @@
         },
         {
             "name": "symplify/phpstan-rules",
-            "version": "14.5.1",
+            "version": "14.5.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symplify/phpstan-rules.git",
-                "reference": "056aa2241ddbfeda8459786ec0e4b9ab72ce5a38"
+                "reference": "658898bd6d2a372391843feb43eae88c307df844"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/056aa2241ddbfeda8459786ec0e4b9ab72ce5a38",
-                "reference": "056aa2241ddbfeda8459786ec0e4b9ab72ce5a38",
+                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/658898bd6d2a372391843feb43eae88c307df844",
+                "reference": "658898bd6d2a372391843feb43eae88c307df844",
                 "shasum": ""
             },
             "require": {
@@ -5386,7 +5386,7 @@
             "description": "Set of Symplify rules for PHPStan",
             "support": {
                 "issues": "https://github.com/symplify/phpstan-rules/issues",
-                "source": "https://github.com/symplify/phpstan-rules/tree/14.5.1"
+                "source": "https://github.com/symplify/phpstan-rules/tree/14.5.3"
             },
             "funding": [
                 {
@@ -5398,7 +5398,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-03-26T14:14:30+00:00"
+            "time": "2025-03-31T10:42:38+00:00"
         },
         {
             "name": "theseer/tokenizer",
