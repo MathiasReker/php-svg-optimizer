@@ -68,7 +68,6 @@ final class FileProviderTest extends TestCase
      * @throws FileNotFoundException
      * @throws \InvalidArgumentException
      * @throws IOException
-     * @throws \DivisionByZeroError
      */
     public function testGetMetaData(): void
     {

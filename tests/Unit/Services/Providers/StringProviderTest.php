@@ -53,7 +53,6 @@ final class StringProviderTest extends TestCase
     /**
      * @throws XmlProcessingException
      * @throws \InvalidArgumentException
-     * @throws \DivisionByZeroError
      */
     public function testGetMetaData(): void
     {

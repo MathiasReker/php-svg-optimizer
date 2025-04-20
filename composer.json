@@ -3,7 +3,7 @@
   "description": "php-svg-optimizer is a PHP library designed to optimize SVG files by applying various transformations and cleanup operations.",
   "license": "MIT",
   "type": "library",
-  "version": "5.2.6",
+  "version": "5.2.7",
   "keywords": [
     "optimize",
     "svg",
@@ -25,19 +25,19 @@
     "ext-libxml": "*"
   },
   "require-dev": {
-    "ergebnis/composer-normalize": "^2.45.0",
-    "friendsofphp/php-cs-fixer": "^3.73.1",
+    "ergebnis/composer-normalize": "^2.47.0",
+    "friendsofphp/php-cs-fixer": "^3.75.0",
     "phpstan/extension-installer": "^1.4.3",
-    "phpstan/phpstan": "^2.1.11",
+    "phpstan/phpstan": "^2.1.12",
     "phpstan/phpstan-deprecation-rules": "^2.0.1",
-    "phpstan/phpstan-phpunit": "^2.0.5",
+    "phpstan/phpstan-phpunit": "^2.0.6",
     "phpstan/phpstan-strict-rules": "^2.0.4",
-    "phpunit/phpunit": "^12.0.10",
+    "phpunit/phpunit": "^12.1.2",
     "povils/phpmnd": "^3.6.0",
-    "rector/rector": "^2.0.10",
+    "rector/rector": "^2.0.11",
     "slam/phpstan-extensions": "^6.6.0",
-    "squizlabs/php_codesniffer": "^4.0.x-dev",
-    "symplify/phpstan-rules": "^14.4.9",
+    "squizlabs/php_codesniffer": "3.12.2",
+    "symplify/phpstan-rules": "^14.6.3",
     "tomasvotruba/cognitive-complexity": "^1.0.0"
   },
   "autoload": {

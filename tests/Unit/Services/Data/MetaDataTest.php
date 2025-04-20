@@ -46,7 +46,6 @@ final class MetaDataTest extends TestCase
 
     /**
      * @throws \InvalidArgumentException
-     * @throws \DivisionByZeroError
      */
     public function testToValueObject(): void
     {
