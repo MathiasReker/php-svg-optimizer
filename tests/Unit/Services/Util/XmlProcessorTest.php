@@ -26,7 +26,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 final class XmlProcessorTest extends TestCase
 {
-    private XmlProcessor $xmlProcessor;
+    private ?MockObject $xmlProcessor = null;
 
     private MockObject $mockObject;
 

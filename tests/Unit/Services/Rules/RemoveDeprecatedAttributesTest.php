@@ -178,6 +178,15 @@ final class RemoveDeprecatedAttributesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><use href="#icon"/></svg>
                 XML,
         ];
+
+        yield 'Adobe Illustrator tiny base profile example' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="500" height="180" baseProfile="tiny" version="1.2"><switch><foreignObject width="1" height="1" x="0" y="0" requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"/><g><g fill="#3AB879"><path d=""/></g></g></switch></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="500" height="180"><switch><foreignObject width="1" height="1" x="0" y="0" requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"/><g><g fill="#3AB879"><path d=""/></g></g></switch></svg>
+                XML,
+        ];
     }
 
     /**
