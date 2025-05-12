@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a98be1096090d5a07756dce437082063",
+    "content-hash": "6024bcae8bd8450f384eefe0345c996d",
     "packages": [],
     "packages-dev": [
         {
@@ -3010,16 +3010,16 @@
         },
         {
             "name": "rector/rector",
-            "version": "2.0.15",
+            "version": "2.0.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "abbbf32474a67e242d26bffc098a712a05b3d32a"
+                "reference": "f1366d1f8c7490541c8f7af6e5c7cef7cca1b5a2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/abbbf32474a67e242d26bffc098a712a05b3d32a",
-                "reference": "abbbf32474a67e242d26bffc098a712a05b3d32a",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/f1366d1f8c7490541c8f7af6e5c7cef7cca1b5a2",
+                "reference": "f1366d1f8c7490541c8f7af6e5c7cef7cca1b5a2",
                 "shasum": ""
             },
             "require": {
@@ -3057,7 +3057,7 @@
             ],
             "support": {
                 "issues": "https://github.com/rectorphp/rector/issues",
-                "source": "https://github.com/rectorphp/rector/tree/2.0.15"
+                "source": "https://github.com/rectorphp/rector/tree/2.0.16"
             },
             "funding": [
                 {
@@ -3065,7 +3065,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-05-05T10:00:41+00:00"
+            "time": "2025-05-12T16:37:16+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -5584,7 +5584,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
@@ -5592,6 +5592,6 @@
         "ext-dom": "*",
         "ext-libxml": "*"
     },
-    "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
 }
