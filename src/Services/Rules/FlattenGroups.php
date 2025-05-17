@@ -38,10 +38,7 @@ final class FlattenGroups implements SvgOptimizerRuleInterface
         $groups = $domXPath->query('//svg:g');
 
         foreach ($groups as $group) {
-            if ($group->hasAttributes()) {
-                $this->applyGroupAttributesToChildren($group);
-            }
-
+            $this->applyGroupAttributesToChildren($group);
             $this->flattenGroup($group);
         }
     }
