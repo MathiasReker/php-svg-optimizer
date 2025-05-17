@@ -65,7 +65,7 @@ $config->setRiskyAllowed(true)
         'concat_space' => ['spacing' => 'one'],
 
         // Disable rule causing issues
-        'multiline_whitespace_before_semicolons' => false,
+        'multiline_whitespace_before_semicolons' => true,
     ])
     ->setFinder($finder)
     ->setLineEnding(PHP_EOL);

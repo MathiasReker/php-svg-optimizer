@@ -29,10 +29,12 @@ use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDeprecatedAttributes;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveDoctype;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveEmptyAttributes;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveEnableBackgroundAttribute;
+use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveInkscapeFootprints;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveInvisibleCharacters;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnnecessaryWhitespace;
+use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnusedNamespaces;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
 
@@ -146,6 +148,8 @@ final readonly class SvgOptimizerService
         bool $sortAttributes = true,
         bool $convertEmptyTagsToSelfClosing = true,
         bool $removeUnnecessaryWhitespace = true,
+        bool $removeUnusedNamespaces = true,
+        bool $removeInkscapeFootprints = true,
     ): self {
         $rules = [
             ConvertColorsToHex::class => $convertColorsToHex,
@@ -164,6 +168,8 @@ final readonly class SvgOptimizerService
             SortAttributes::class => $sortAttributes,
             ConvertEmptyTagsToSelfClosing::class => $convertEmptyTagsToSelfClosing,
             RemoveUnnecessaryWhitespace::class => $removeUnnecessaryWhitespace,
+            RemoveUnusedNamespaces::class => $removeUnusedNamespaces,
+            RemoveInkscapeFootprints::class => $removeInkscapeFootprints,
         ];
 
         foreach (array_keys(array_filter($rules)) as $ruleClass) {

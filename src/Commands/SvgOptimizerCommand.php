@@ -271,7 +271,9 @@ final class SvgOptimizerCommand
                 removeTitleAndDesc: $rules[Rule::REMOVE_TITLE_AND_DESC->value],
                 sortAttributes: $rules[Rule::SORT_ATTRIBUTES->value],
                 convertEmptyTagsToSelfClosing: $rules[Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->value],
-                removeUnnecessaryWhitespace: $rules[Rule::REMOVE_UNNECESSARY_WHITESPACE->value]
+                removeUnnecessaryWhitespace: $rules[Rule::REMOVE_UNNECESSARY_WHITESPACE->value],
+                removeUnusedNamespaces: $rules[Rule::REMOVE_UNUSED_NAMESPACES->value],
+                removeInkscapeFootprints: $rules[Rule::REMOVE_INKSCAPE_FOOTPRINTS->value],
             );
 
             $svgOptimizer->optimize();

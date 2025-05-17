@@ -121,17 +121,6 @@ final class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Move all children of the group up to the parent node.
-     */
-    private function moveChildrenUp(\DOMElement $domElement, \DOMElement $parentNode): void
-    {
-        $children = iterator_to_array($domElement->childNodes, false);
-        foreach ($children as $child) {
-            $parentNode->insertBefore($child, $domElement);
-        }
-    }
-
-    /**
      * Combine two transform strings, returning the concatenated result only if necessary.
      */
     private function combineTransforms(?string $transform1, ?string $transform2): string
@@ -153,5 +142,16 @@ final class FlattenGroups implements SvgOptimizerRuleInterface
         }
 
         return \sprintf('%s %s', $transform1, $transform2);
+    }
+
+    /**
+     * Move all children of the group up to the parent node.
+     */
+    private function moveChildrenUp(\DOMElement $domElement, \DOMElement $parentNode): void
+    {
+        $children = iterator_to_array($domElement->childNodes, false);
+        foreach ($children as $child) {
+            $parentNode->insertBefore($child, $domElement);
+        }
     }
 }

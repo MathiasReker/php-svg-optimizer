@@ -20,7 +20,7 @@ performance.
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^5.2    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^5.3    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
@@ -90,7 +90,9 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
   "removeTitleAndDesc": true,
   "sortAttributes": true,
   "convertEmptyTagsToSelfClosing": true,
-  "removeUnnecessaryWhitespace": true
+  "removeUnnecessaryWhitespace": true,
+  "removeUnusedNamespaces": true,
+  "removeInkscapeFootprints": true
 }
 ```
 
@@ -116,6 +118,7 @@ try {
     $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
         ->withRules(
             convertColorsToHex: true,
+            convertEmptyTagsToSelfClosing: true,
             flattenGroups: true,
             minifySvgCoordinates: true,
             minifyTransformations: true,
@@ -125,12 +128,13 @@ try {
             removeDoctype: true,
             removeEnableBackgroundAttribute: true,
             removeEmptyAttributes: true,
+            removeInkscapeFootprints: true,
             removeMetadata: true,
             removeTitleAndDesc: false,
-            sortAttributes: true,
-            convertEmptyTagsToSelfClosing: true,
             removeUnnecessaryWhitespace: true,
-         )
+            removeUnusedNamespaces: true,
+            sortAttributes: true,
+        )
         ->optimize()
         ->saveToFile('path/to/output.svg');
 } catch (\Exception $exception) {
@@ -339,25 +343,39 @@ Cleans up unnecessary whitespace in the SVG:
 $svgOptimizer->withRules(removeUnnecessaryWhitespace: true);
 ```
 
+Removes unused namespaces from the SVG:
+
+```php
+$svgOptimizer->withRules(removeUnusedNamespaces: true);
+```
+
+Removes Inkspace-specific footprints from the SVG:
+
+```php
+$svgOptimizer->withRules(removeInkscapeFootprints: true);
+```
+
 All options are set to true by default. You can configure them individually by passing the desired values to it:
 
 ```php
 $svgOptimizer->withRules(
-   convertColorsToHex: true,
-   flattenGroups: true,
-   minifySvgCoordinates: true,
-   minifyTransformations: true,
-   removeComments: true,
-   removeDefaultAttributes: true,
-   removeDeprecatedAttributes: true,
-   removeDoctype: true,
-   removeEmptyAttributes: true,
-   removeMetadata: true,
-   removeInvisibleCharacters: true,
-   removeTitleAndDesc: true,
-   sortAttributes: true,
-   convertEmptyTagsToSelfClosing: true,
-   removeUnnecessaryWhitespace: true,
+    convertColorsToHex: true,
+    convertEmptyTagsToSelfClosing: true,
+    flattenGroups: true,
+    minifySvgCoordinates: true,
+    minifyTransformations: true,
+    removeComments: true,
+    removeDefaultAttributes: true,
+    removeDeprecatedAttributes: true,
+    removeDoctype: true,
+    removeEmptyAttributes: true,
+    removeIncscapeFootprints: true,
+    removeInvisibleCharacters: true,
+    removeMetadata: true,
+    removeTitleAndDesc: true,
+    removeUnnecessaryWhitespace: true,
+    removeUnusedNamespaces: true,
+    sortAttributes: true,
 );
 ```
 

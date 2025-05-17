@@ -28,6 +28,8 @@ enum Rule: string
     case SORT_ATTRIBUTES = 'sortAttributes';
     case CONVERT_EMPTY_TAGS_TO_SELF_CLOSING = 'convertEmptyTagsToSelfClosing';
     case REMOVE_UNNECESSARY_WHITESPACE = 'removeUnnecessaryWhitespace';
+    case REMOVE_UNUSED_NAMESPACES = 'removeUnusedNamespaces';
+    case REMOVE_INKSCAPE_FOOTPRINTS = 'removeInkscapeFootprints';
 
     /**
      * Get the default value for each rule.
@@ -49,7 +51,9 @@ enum Rule: string
             self::REMOVE_TITLE_AND_DESC,
             self::SORT_ATTRIBUTES,
             self::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING,
-            self::REMOVE_UNNECESSARY_WHITESPACE => true,
+            self::REMOVE_UNNECESSARY_WHITESPACE,
+            self::REMOVE_UNUSED_NAMESPACES,
+            self::REMOVE_INKSCAPE_FOOTPRINTS => true,
         };
     }
 }

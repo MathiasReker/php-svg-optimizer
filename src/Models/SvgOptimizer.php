@@ -32,7 +32,7 @@ final class SvgOptimizer
      *
      * @var ?string The SVG content after optimization, or null if not yet optimized
      */
-    private ?string $domDocument = null;
+    private ?string $domDocumentContent = null;
 
     /**
      * The SVG validator used to check the validity of the SVG content.
@@ -79,7 +79,7 @@ final class SvgOptimizer
 
         $domDocument = $this->svgProvider->loadContent();
         $this->applyRules($domDocument);
-        $this->domDocument = $this->svgProvider->optimize($domDocument)->getOutputContent();
+        $this->domDocumentContent = $this->svgProvider->optimize($domDocument)->getOutputContent();
 
         return $this;
     }
@@ -113,7 +113,7 @@ final class SvgOptimizer
      */
     public function getContent(): string
     {
-        return $this->domDocument ?? '';
+        return $this->domDocumentContent ?? '';
     }
 
     /**
