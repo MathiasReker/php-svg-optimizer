@@ -56,6 +56,7 @@ final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleIn
      *
      * @throws XmlProcessingException When XML content cannot be saved or loaded
      */
+    #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
         $this->xmlProcessor->process($domDocument, fn (string $content): string => $this->convertEmptyTagsToSelfClosing($content));

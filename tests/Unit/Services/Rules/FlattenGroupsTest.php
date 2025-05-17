@@ -213,6 +213,46 @@ final class FlattenGroupsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="10000" height="10000"><rect x="100" y="100" width="3000" height="3000"/><circle cx="5000" cy="5000" r="2000"/><rect x="4000" y="4000" width="3000" height="3000"/><circle cx="8000" cy="8000" r="2000"/></svg>
                 XML,
         ];
+
+        yield 'Group with Transformations' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="translate(10, 10)">
+                        <rect x="10" y="10" width="30" height="30"/>
+                    </g>
+                    <g transform="translate(20, 20)">
+                        <circle cx="50" cy="50" r="20"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" transform="translate(10, 10)"/><circle cx="50" cy="50" r="20" transform="translate(20, 20)"/></svg>
+                XML,
+        ];
+
+        yield 'Combine Transformations' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="translate(10, 10)">
+                        <g transform="translate(20, 20)">
+                            <rect x="10" y="10" width="30" height="30"/>
+                        </g>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" transform="translate(10, 10) translate(20, 20)"/></svg>
+                XML,
+        ];
+
+        yield 'Empty SVG with No Groups' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>
+                XML,
+        ];
     }
 
     /**

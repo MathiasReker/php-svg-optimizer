@@ -17,12 +17,11 @@ use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterf
 final class FlattenGroups implements SvgOptimizerRuleInterface
 {
     /**
-     * Flatten groups in the SVG document by applying their attributes to child elements
-     * and removing the group elements.
+     * Optimize the SVG document by flattening groups.
      *
-     * This method processes each `<svg:g>` element in the SVG document:
-     * - Applies the group's attributes to its child elements if they do not already have them.
-     * - Moves the child elements up to the group's parent and removes the group element.
+     * This method processes all group elements in the SVG document, applying their attributes
+     * to their child elements and removing the group elements. It also combines transforms
+     * from the group and its children.
      *
      * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
      */
@@ -44,10 +43,7 @@ final class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Apply the attributes of a group element to its child elements.
-     *
-     * This method iterates over each child of the group and sets attributes from the group
-     * to the child elements, but only if the child does not already have those attributes.
+     * Apply attributes from the group to its child elements.
      *
      * @param \DOMElement $domElement The group element whose attributes will be applied to its children
      */
@@ -61,13 +57,10 @@ final class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Apply the attributes of a parent element to a child element.
+     * Apply attributes from the parent group to the child element.
      *
-     * This method iterates over the attributes of the parent element and sets them on the child element,
-     * but only if the child does not already have that attribute.
-     *
-     * @param \DOMElement $parent The parent element whose attributes will be applied to the child
-     * @param \DOMElement $child  The child element to which the parent's attributes will be applied
+     * @param \DOMElement $parent The parent group element
+     * @param \DOMElement $child  The child element to which attributes will be applied
      */
     private function applyAttributesToChild(\DOMElement $parent, \DOMElement $child): void
     {
@@ -80,12 +73,10 @@ final class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Set an attribute on an element if it does not already exist.
+     * Set an attribute on the child element if it does not already exist.
      *
-     * This method sets an attribute on an element if the element does not already have that attribute.
-     *
-     * @param \DOMElement $domElement The element to which the attribute will be applied
-     * @param \DOMAttr    $domAttr    The attribute to be applied to the element
+     * @param \DOMElement $domElement The child element to set the attribute on
+     * @param \DOMAttr    $domAttr    The attribute to set
      */
     private function setAttributeIfNotExists(\DOMElement $domElement, \DOMAttr $domAttr): void
     {
@@ -95,10 +86,7 @@ final class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Flatten a group element by moving its child elements up and removing the group.
-     *
-     * This method moves each child of the group element to the group's parent element
-     * and then removes the group element itself from the DOM.
+     * Flatten the group by moving its children to the parent node and removing the group.
      *
      * @param \DOMElement $domElement The group element to be flattened
      */
@@ -107,13 +95,63 @@ final class FlattenGroups implements SvgOptimizerRuleInterface
         $parentNode = $domElement->parentNode;
 
         if ($parentNode instanceof \DOMElement) {
-            $children = iterator_to_array($domElement->childNodes, false);
+            $transform = $domElement->getAttribute('transform');
 
-            foreach ($children as $child) {
-                $parentNode->insertBefore($child, $domElement);
-            }
-
+            $this->applyTransformsToChildren($domElement, $transform);
+            $this->moveChildrenUp($domElement, $parentNode);
             $parentNode->removeChild($domElement);
         }
+    }
+
+    /**
+     * Apply the combined transform from the group to each child element.
+     */
+    private function applyTransformsToChildren(\DOMElement $domElement, ?string $transform): void
+    {
+        foreach ($domElement->childNodes as $child) {
+            if ($child instanceof \DOMElement) {
+                $childTransform = $child->getAttribute('transform');
+                $newTransform = $this->combineTransforms($transform, $childTransform);
+
+                if ('' !== $newTransform) {
+                    $child->setAttribute('transform', $newTransform);
+                }
+            }
+        }
+    }
+
+    /**
+     * Move all children of the group up to the parent node.
+     */
+    private function moveChildrenUp(\DOMElement $domElement, \DOMElement $parentNode): void
+    {
+        $children = iterator_to_array($domElement->childNodes, false);
+        foreach ($children as $child) {
+            $parentNode->insertBefore($child, $domElement);
+        }
+    }
+
+    /**
+     * Combine two transform strings, returning the concatenated result only if necessary.
+     */
+    private function combineTransforms(?string $transform1, ?string $transform2): string
+    {
+        if (null === $transform1 && null === $transform2) {
+            return '';
+        }
+
+        if (null === $transform1) {
+            return $transform2;
+        }
+
+        if (null === $transform2) {
+            return $transform1;
+        }
+
+        if ($transform1 === $transform2) {
+            return $transform1;
+        }
+
+        return \sprintf('%s %s', $transform1, $transform2);
     }
 }
