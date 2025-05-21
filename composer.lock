@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "922c8230957e3474975bb6bbef6d3aba",
+    "content-hash": "d0215d150f12b0441d5be5a4b7639e00",
     "packages": [],
     "packages-dev": [
         {
@@ -1633,16 +1633,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.1.16",
+            "version": "2.1.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "b8c1cf533cba0c305d91c6ccd23f3dd0566ba5f9"
+                "reference": "89b5ef665716fa2a52ecd2633f21007a6a349053"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/b8c1cf533cba0c305d91c6ccd23f3dd0566ba5f9",
-                "reference": "b8c1cf533cba0c305d91c6ccd23f3dd0566ba5f9",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/89b5ef665716fa2a52ecd2633f21007a6a349053",
+                "reference": "89b5ef665716fa2a52ecd2633f21007a6a349053",
                 "shasum": ""
             },
             "require": {
@@ -1687,7 +1687,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-05-16T09:40:10+00:00"
+            "time": "2025-05-21T20:55:28+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -5596,7 +5596,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
@@ -5604,6 +5604,6 @@
         "ext-dom": "*",
         "ext-libxml": "*"
     },
-    "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
 }
