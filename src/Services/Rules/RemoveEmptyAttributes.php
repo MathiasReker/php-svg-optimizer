@@ -42,7 +42,7 @@ final class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
     private function removeEmptyAttributes(\DOMDocument $domDocument): void
     {
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
-            foreach (iterator_to_array($domNodeList->attributes, true) as $attrName => $attrNode) {
+            foreach (iterator_to_array($domNodeList->attributes) as $attrName => $attrNode) {
                 if ('' === preg_replace('/\s+/', '', $attrNode->value)) {
                     $domNodeList->removeAttribute($attrName);
                 }

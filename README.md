@@ -76,6 +76,7 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
 ```json
 {
   "convertColorsToHex": true,
+  "convertEmptyTagsToSelfClosing": true,
   "flattenGroups": true,
   "minifySvgCoordinates": true,
   "minifyTransformations": true,
@@ -83,16 +84,15 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
   "removeDefaultAttributes": true,
   "removeDeprecatedAttributes": true,
   "removeDoctype": true,
-  "removeEnableBackgroundAttribute": true,
   "removeEmptyAttributes": true,
-  "removeMetadata": true,
+  "removeEnableBackgroundAttribute": true,
+  "removeInkscapeFootprints": true,
   "removeInvisibleCharacters": true,
+  "removeMetadata": true,
   "removeTitleAndDesc": true,
-  "sortAttributes": true,
-  "convertEmptyTagsToSelfClosing": true,
   "removeUnnecessaryWhitespace": true,
   "removeUnusedNamespaces": true,
-  "removeInkscapeFootprints": true
+  "sortAttributes": true
 }
 ```
 
@@ -126,11 +126,11 @@ try {
             removeDefaultAttributes: true,
             removeDeprecatedAttributes: true,
             removeDoctype: true,
-            removeEnableBackgroundAttribute: true,
             removeEmptyAttributes: true,
+            removeEnableBackgroundAttribute: true,
             removeInkscapeFootprints: true,
             removeMetadata: true,
-            removeTitleAndDesc: false,
+            removeTitleAndDesc: true,
             removeUnnecessaryWhitespace: true,
             removeUnusedNamespaces: true,
             sortAttributes: true,
@@ -369,8 +369,8 @@ $svgOptimizer->withRules(
     removeDeprecatedAttributes: true,
     removeDoctype: true,
     removeEmptyAttributes: true,
-    removeIncscapeFootprints: true,
-    removeInvisibleCharacters: true,
+    removeEnableBackgroundAttribute: true,
+    removeInkscapeFootprints: true,
     removeMetadata: true,
     removeTitleAndDesc: true,
     removeUnnecessaryWhitespace: true,

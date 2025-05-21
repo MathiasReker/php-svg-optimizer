@@ -31,6 +31,16 @@ final class SvgOptimizerCommand
     private const int DEFAULT_PRECISION = 2;
 
     /**
+     * The exit code for a successful operation.
+     */
+    private const int EXIT_CODE_SUCCESS = 0;
+
+    /**
+     * The exit code for an error during the operation.
+     */
+    private const int EXIT_CODE_ERROR = 1;
+
+    /**
      * The total original size of the SVG files.
      */
     private int $totalOriginalSize = 0;
@@ -76,8 +86,7 @@ final class SvgOptimizerCommand
         foreach ($paths as $path) {
             if (!is_dir($path) && !is_file($path)) {
                 fprintf(\STDERR, 'Error: "%s" is not a valid directory or file.', $path);
-
-                exit(1);
+                exit(self::EXIT_CODE_ERROR);
             }
         }
 
@@ -88,8 +97,7 @@ final class SvgOptimizerCommand
                 $this->config = ConfigLoader::loadConfig($configPath);
             } catch (\InvalidArgumentException $exception) {
                 fprintf(\STDERR, '%s', $exception->getMessage());
-
-                exit(1);
+                exit(self::EXIT_CODE_ERROR);
             }
         }
     }
@@ -107,28 +115,24 @@ final class SvgOptimizerCommand
 
         if ($argumentParser->hasOption(Option::HELP) || 1 === \count($args)) {
             self::printHelp();
-
-            exit(0);
+            exit(self::EXIT_CODE_SUCCESS);
         }
 
         if ($argumentParser->hasOption(Option::VERSION)) {
             self::printVersion();
-
-            exit(0);
+            exit(self::EXIT_CODE_SUCCESS);
         }
 
         try {
             $paths = \array_slice($args, $argumentParser->getNextPositionalArgumentIndex() + 1);
         } catch (\InvalidArgumentException $invalidArgumentException) {
             fprintf(\STDERR, "%s\n", $invalidArgumentException->getMessage());
-
-            exit(1);
+            exit(self::EXIT_CODE_ERROR);
         }
 
         if ([] === $paths) {
             self::printHelp();
-
-            exit(0);
+            exit(self::EXIT_CODE_SUCCESS);
         }
 
         $command = new self($paths, $argumentParser->getOption(Option::CONFIG));
@@ -173,7 +177,6 @@ final class SvgOptimizerCommand
     private static function printVersion(): void
     {
         $version = self::getVersionFromPackageJson();
-
         printf('PHP SVG Optimizer v%s%s', $version, \PHP_EOL);
     }
 
@@ -251,30 +254,9 @@ final class SvgOptimizerCommand
         try {
             $svgOptimizer = SvgOptimizerService::fromFile($filePath);
 
-            $rules = [];
-            foreach (Rule::cases() as $rule) {
-                $rules[$rule->value] = $this->config[$rule->value] ?? $rule->defaultValue();
-            }
+            $rules = $this->getOptimizationRules();
 
-            $svgOptimizer = $svgOptimizer->withRules(
-                convertColorsToHex: $rules[Rule::CONVERT_COLORS_TO_HEX->value],
-                flattenGroups: $rules[Rule::FLATTEN_GROUPS->value],
-                minifySvgCoordinates: $rules[Rule::MINIFY_SVG_COORDINATES->value],
-                minifyTransformations: $rules[Rule::MINIFY_TRANSFORMATIONS->value],
-                removeComments: $rules[Rule::REMOVE_COMMENTS->value],
-                removeDefaultAttributes: $rules[Rule::REMOVE_DEFAULT_ATTRIBUTES->value],
-                removeDeprecatedAttributes: $rules[Rule::REMOVE_DEPRECATED_ATTRIBUTES->value],
-                removeDoctype: $rules[Rule::REMOVE_DOCTYPE->value],
-                removeEmptyAttributes: $rules[Rule::REMOVE_EMPTY_ATTRIBUTES->value],
-                removeInvisibleCharacters: $rules[Rule::REMOVE_INVISIBLE_CHARACTERS->value],
-                removeMetadata: $rules[Rule::REMOVE_METADATA->value],
-                removeTitleAndDesc: $rules[Rule::REMOVE_TITLE_AND_DESC->value],
-                sortAttributes: $rules[Rule::SORT_ATTRIBUTES->value],
-                convertEmptyTagsToSelfClosing: $rules[Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->value],
-                removeUnnecessaryWhitespace: $rules[Rule::REMOVE_UNNECESSARY_WHITESPACE->value],
-                removeUnusedNamespaces: $rules[Rule::REMOVE_UNUSED_NAMESPACES->value],
-                removeInkscapeFootprints: $rules[Rule::REMOVE_INKSCAPE_FOOTPRINTS->value],
-            );
+            $svgOptimizer = $svgOptimizer->withRules(...$rules);
 
             $svgOptimizer->optimize();
 
@@ -286,10 +268,12 @@ final class SvgOptimizerCommand
             $this->totalOriginalSize += $metaData->getOriginalSize();
             $this->totalOptimizedSize += $metaData->getOptimizedSize();
             ++$this->optimizedFiles;
+
             $reduction = $metaData->getOriginalSize() - $metaData->getOptimizedSize();
             $reductionPercentage = $metaData->getOriginalSize() > 0
                 ? ($reduction / $metaData->getOriginalSize()) * self::PERCENTAGE_FACTOR
                 : 0;
+
             if (!$this->quiet) {
                 printf('%s (%s%%)%s', $filePath, number_format($reductionPercentage, self::DEFAULT_PRECISION), \PHP_EOL);
             }
@@ -298,6 +282,39 @@ final class SvgOptimizerCommand
                 fprintf(\STDERR, 'Error: Failed processing "%s": %s%s', $filePath, $exception->getMessage(), \PHP_EOL);
             }
         }
+    }
+
+    /**
+     * Retrieves the optimization rules based on the provided configuration.
+     *
+     * @return array<int, bool> The optimization rules to be applied
+     */
+    private function getOptimizationRules(): array
+    {
+        $rules = [];
+        foreach (Rule::cases() as $rule) {
+            $rules[$rule->value] = $this->config[$rule->value] ?? $rule->defaultValue();
+        }
+
+        return [
+            $rules[Rule::CONVERT_COLORS_TO_HEX->value],
+            $rules[Rule::FLATTEN_GROUPS->value],
+            $rules[Rule::MINIFY_SVG_COORDINATES->value],
+            $rules[Rule::MINIFY_TRANSFORMATIONS->value],
+            $rules[Rule::REMOVE_COMMENTS->value],
+            $rules[Rule::REMOVE_DEFAULT_ATTRIBUTES->value],
+            $rules[Rule::REMOVE_DEPRECATED_ATTRIBUTES->value],
+            $rules[Rule::REMOVE_DOCTYPE->value],
+            $rules[Rule::REMOVE_EMPTY_ATTRIBUTES->value],
+            $rules[Rule::REMOVE_INVISIBLE_CHARACTERS->value],
+            $rules[Rule::REMOVE_METADATA->value],
+            $rules[Rule::REMOVE_TITLE_AND_DESC->value],
+            $rules[Rule::SORT_ATTRIBUTES->value],
+            $rules[Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->value],
+            $rules[Rule::REMOVE_UNNECESSARY_WHITESPACE->value],
+            $rules[Rule::REMOVE_UNUSED_NAMESPACES->value],
+            $rules[Rule::REMOVE_INKSCAPE_FOOTPRINTS->value],
+        ];
     }
 
     /**

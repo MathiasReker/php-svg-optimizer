@@ -30,12 +30,24 @@ final class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
      */
     private const array ATTRIBUTES_TO_REMOVE = [
         'baseProfile',
+        'contentScriptType',
+        'contentStyleType',
+        'cursor',
+        'currentView',
+        'externalResourcesRequired',
         'requiredFeatures',
+        'useCurrentView',
         'version',
+        'viewTarget',
+        'viewport',
         'xlink:arcrole',
         'xlink:show',
         'xlink:type',
+        'xml:base',
         'zoomAndPan',
+        'suspendRedraw',
+        'unsuspendRedraw',
+        'unsuspendRedrawAll',
     ];
 
     /**
