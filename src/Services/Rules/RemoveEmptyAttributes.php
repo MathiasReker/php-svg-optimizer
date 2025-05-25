@@ -15,7 +15,7 @@ use DOMDocument;
 use DOMElement;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-final class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
+final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
 {
     /**
      * Optimizes the provided DOMDocument by removing empty or whitespace-only attributes.

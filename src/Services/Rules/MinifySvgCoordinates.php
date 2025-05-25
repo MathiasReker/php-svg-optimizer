@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-final class MinifySvgCoordinates implements SvgOptimizerRuleInterface
+final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
 {
     /**
      * Regular expression pattern to remove unnecessary trailing zeroes in decimal numbers.

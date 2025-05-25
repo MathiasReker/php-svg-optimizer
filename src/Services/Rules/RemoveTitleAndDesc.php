@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-final class RemoveTitleAndDesc implements SvgOptimizerRuleInterface
+final readonly class RemoveTitleAndDesc implements SvgOptimizerRuleInterface
 {
     /**
      * Remove the `<title>` and `<desc>` elements from the SVG document.

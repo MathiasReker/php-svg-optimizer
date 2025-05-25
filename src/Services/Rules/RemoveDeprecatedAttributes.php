@@ -15,7 +15,7 @@ use DOMDocument;
 use DOMXPath;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-final class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
+final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
 {
     /**
      * The XML namespace attribute for the `xlink` namespace.

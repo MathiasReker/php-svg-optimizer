@@ -17,7 +17,7 @@ use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ExampleCommandValueObject;
 
-final class ArgumentData
+final readonly class ArgumentData
 {
     /**
      * The path to the binary.

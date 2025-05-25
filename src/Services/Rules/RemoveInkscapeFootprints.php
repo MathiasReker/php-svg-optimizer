@@ -15,7 +15,7 @@ use DOMDocument;
 use DOMXPath;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-final class RemoveInkscapeFootprints implements SvgOptimizerRuleInterface
+final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterface
 {
     /**
      * The XML namespace attributes to remove from the SVG document.

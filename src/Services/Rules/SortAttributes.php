@@ -15,7 +15,7 @@ use DOMDocument;
 use DOMElement;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-final class SortAttributes implements SvgOptimizerRuleInterface
+final readonly class SortAttributes implements SvgOptimizerRuleInterface
 {
     /**
      * Default order for attributes to be sorted.

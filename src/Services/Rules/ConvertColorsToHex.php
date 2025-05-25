@@ -15,7 +15,7 @@ use DOMDocument;
 use DOMNodeList;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-final class ConvertColorsToHex implements SvgOptimizerRuleInterface
+final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
 {
     /**
      * Regex pattern for RGB color values.

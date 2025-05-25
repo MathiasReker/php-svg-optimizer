@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-final class FlattenGroups implements SvgOptimizerRuleInterface
+final readonly class FlattenGroups implements SvgOptimizerRuleInterface
 {
     /**
      * Optimize the SVG document by flattening groups.

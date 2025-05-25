@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Util;
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
-final class DomDocumentWrapper
+final readonly class DomDocumentWrapper
 {
     /**
      * Default XML version used when saving the DOMDocument.

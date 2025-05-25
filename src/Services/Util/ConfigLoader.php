@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Util;
 
-final class ConfigLoader
+final readonly class ConfigLoader
 {
     /**
      * Loads a configuration file or JSON string and returns it as an array.

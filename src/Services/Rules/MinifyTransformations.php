@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-final class MinifyTransformations implements SvgOptimizerRuleInterface
+final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
 {
     /**
      * Constant for the percentage factor used in calculations.

@@ -15,7 +15,7 @@ use DOMDocument;
 use DOMXPath;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
-final class RemoveEnableBackgroundAttribute implements SvgOptimizerRuleInterface
+final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRuleInterface
 {
     /**
      * Regular expression to match the "enable-background" value format.
