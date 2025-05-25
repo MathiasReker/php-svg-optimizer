@@ -74,8 +74,10 @@ final class SortAttributes implements SvgOptimizerRuleInterface
         $attributes = $this->extractAttributes($domElement);
         $sortedAttributes = $this->sortAttributes($attributes);
 
-        foreach (iterator_to_array($domElement->attributes, false) as $attribute) {
-            $domElement->removeAttribute($attribute->name);
+        if ($domElement->attributes instanceof \Traversable) {
+            foreach (iterator_to_array($domElement->attributes, false) as $attribute) {
+                $domElement->removeAttribute($attribute->name);
+            }
         }
 
         foreach ($sortedAttributes as $name => $value) {
@@ -97,6 +99,11 @@ final class SortAttributes implements SvgOptimizerRuleInterface
     private function extractAttributes(\DOMElement $domElement): array
     {
         $attributes = [];
+
+        if (!$domElement->attributes instanceof \Traversable) {
+            return $attributes;
+        }
+
         foreach ($domElement->attributes as $attribute) {
             $key = $attribute->localName ?? $attribute->name;
             $attributes[$key] = $attribute->value;

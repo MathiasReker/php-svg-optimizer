@@ -81,6 +81,10 @@ final class MinifySvgCoordinates implements SvgOptimizerRuleInterface
          */
         $coordinateElements = $domXPath->query('//svg:rect | //svg:circle | //svg:ellipse | //svg:line | //svg:polyline | //svg:polygon');
         foreach ($coordinateElements as $coordinateElement) {
+            if (!$coordinateElement->attributes instanceof \Traversable) {
+                return;
+            }
+
             foreach ($coordinateElement->attributes as $attribute) {
                 /**
                  * @var \DOMAttr $attribute

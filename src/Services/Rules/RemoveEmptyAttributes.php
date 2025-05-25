@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use DOMDocument;
+use DOMElement;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
 final class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
@@ -32,21 +33,53 @@ final class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Removes attributes from the given DOMDocument that are empty or contain only whitespace.
+     * Removes empty or whitespace-only attributes from all elements in the DOMDocument.
      *
-     * This method modifies the DOMDocument by iterating through all elements and removing
-     * attributes that either have an empty value or contain only whitespace characters.
+     * This method traverses all elements in the DOMDocument and removes attributes that are
+     * either empty or consist solely of whitespace characters.
      *
-     * @param \DOMDocument $domDocument The DOMDocument object containing the SVG elements
+     * @param \DOMDocument $domDocument The DOMDocument object to process
      */
     private function removeEmptyAttributes(\DOMDocument $domDocument): void
     {
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
-            foreach (iterator_to_array($domNodeList->attributes) as $attrName => $attrNode) {
-                if ('' === preg_replace('/\s+/', '', $attrNode->value)) {
-                    $domNodeList->removeAttribute($attrName);
-                }
+            $this->removeEmptyAttributesFromElement($domNodeList);
+        }
+    }
+
+    /**
+     * Removes empty or whitespace-only attributes from a specific DOMElement.
+     *
+     * This method checks each attribute of the given element and removes it if its value is
+     * empty or contains only whitespace characters.
+     *
+     * @param \DOMElement $domElement The DOMElement from which to remove empty attributes
+     */
+    private function removeEmptyAttributesFromElement(\DOMElement $domElement): void
+    {
+        if (!$domElement->attributes instanceof \Traversable) {
+            return;
+        }
+
+        foreach (iterator_to_array($domElement->attributes) as $attrName => $domAttr) {
+            if ($this->isEmptyOrWhitespace($domAttr->value)) {
+                $domElement->removeAttribute($attrName);
             }
         }
+    }
+
+    /**
+     * Checks if a string is empty or contains only whitespace characters.
+     *
+     * This method uses a regular expression to determine if the provided string is empty
+     * or consists solely of whitespace characters (spaces, tabs, newlines, etc.).
+     *
+     * @param string $value The string to check
+     *
+     * @return bool True if the string is empty or contains only whitespace, false otherwise
+     */
+    private function isEmptyOrWhitespace(string $value): bool
+    {
+        return '' === preg_replace('/\s+/', '', $value);
     }
 }
