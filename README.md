@@ -454,7 +454,8 @@ The library implements the Strategy Pattern, where strategies are encapsulated a
 
 ### 1. **Create the Rule**
 
-Create a new **final readonly class** in the `/src/Services/Rules` directory and implement the `SvgOptimizerRuleInterface`. This
+Create a new **final readonly class** in the `/src/Services/Rules` directory and implement
+the `SvgOptimizerRuleInterface`. This
 interface will define the logic for your rule.
 
 ### 2. **Write Tests**
