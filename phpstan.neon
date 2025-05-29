@@ -17,8 +17,23 @@ parameters:
       missingCheckedExceptionInThrows: true
       tooWideThrowType: true
     implicitThrows: false
+  type_coverage:
+    return: 100
+    param: 100
+    property: 100
+    constant: 100
+  ergebnis:
+    final:
+      enabled: false
+    noExtends:
+      enabled: false
+    noNullableReturnTypeDeclaration:
+      enabled: false
+    noParameterWithNullableTypeDeclaration:
+      enabled: false
 includes:
+    - phar://phpstan.phar/conf/bleedingEdge.neon
     - vendor/symplify/phpstan-rules/config/code-complexity-rules.neon
     - vendor/symplify/phpstan-rules/config/naming-rules.neon
     - vendor/symplify/phpstan-rules/config/static-rules.neon
-    - phar://phpstan.phar/conf/bleedingEdge.neon
+    - vendor/odan/phpstan-rules/rules.neon

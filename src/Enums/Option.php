@@ -24,12 +24,12 @@ enum Option: string
      */
     public function getShorthand(): string
     {
-        return match ($this) {
-            self::HELP => '-h',
-            self::CONFIG => '-c',
-            self::DRY_RUN => '-d',
-            self::QUIET => '-q',
-            self::VERSION => '-v',
+        return match ($this->value) {
+            self::HELP->value => '-h',
+            self::CONFIG->value => '-c',
+            self::DRY_RUN->value => '-d',
+            self::QUIET->value => '-q',
+            self::VERSION->value => '-v',
         };
     }
 
@@ -38,12 +38,12 @@ enum Option: string
      */
     public function getFull(): string
     {
-        return match ($this) {
-            self::HELP => '--help',
-            self::CONFIG => '--config',
-            self::DRY_RUN => '--dry-run',
-            self::QUIET => '--quiet',
-            self::VERSION => '--version',
+        return match ($this->value) {
+            self::HELP->value => '--help',
+            self::CONFIG->value => '--config',
+            self::DRY_RUN->value => '--dry-run',
+            self::QUIET->value => '--quiet',
+            self::VERSION->value => '--version',
         };
     }
 
@@ -52,12 +52,12 @@ enum Option: string
      */
     public function getDescription(): string
     {
-        return match ($this) {
-            self::HELP => 'Display help for the command.',
-            self::CONFIG => 'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.',
-            self::DRY_RUN => 'Only calculate potential savings without modifying the files.',
-            self::QUIET => 'Suppress all output except errors.',
-            self::VERSION => 'Display the version of the library.',
+        return match ($this->value) {
+            self::HELP->value => 'Display help for the command.',
+            self::CONFIG->value => 'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.',
+            self::DRY_RUN->value => 'Only calculate potential savings without modifying the files.',
+            self::QUIET->value => 'Suppress all output except errors.',
+            self::VERSION->value => 'Display the version of the library.',
         };
     }
 }

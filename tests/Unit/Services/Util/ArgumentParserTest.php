@@ -33,6 +33,11 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Command::class)]
 final class ArgumentParserTest extends TestCase
 {
+    /**
+     * The index of the next positional argument.
+     */
+    private const int EXPECTED_POSITIONAL_ARGUMENT_INDEX = 2;
+
     private const array EXAMPLE_ARGS = ['vendor/bin/svg-optimizer', '--config=config.json', 'process', '/path/to/file.svg'];
 
     private ArgumentParser $argumentParser;
@@ -61,7 +66,7 @@ final class ArgumentParserTest extends TestCase
     public function testGetNextPositionalArgumentIndexReturnsCorrectIndex(): void
     {
         $index = $this->argumentParser->getNextPositionalArgumentIndex();
-        self::assertSame(2, $index);
+        self::assertSame(self::EXPECTED_POSITIONAL_ARGUMENT_INDEX, $index);
     }
 
     #[\Override]

@@ -30,6 +30,10 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class FileProviderTest extends TestCase
 {
+    /**
+     * The path to the test input SVG file.
+     * This file is used for testing the FileProvider's methods.
+     */
     private const string TEST_INPUT_FILE = 'input.svg';
 
     /**

@@ -21,12 +21,28 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MetaDataValueObject::class)]
 final class MetaDataValueObjectTest extends TestCase
 {
+    /**
+     * The original size of the SVG file in bytes.
+     * This is used to test the MetaDataValueObject's methods.
+     */
     private const int ORIGINAL_SIZE = 1_000;
 
+    /**
+     * The optimized size of the SVG file in bytes.
+     * This is used to test the MetaDataValueObject's methods.
+     */
     private const int OPTIMIZED_SIZE = 800;
 
+    /**
+     * The number of bytes saved after optimization.
+     * This is used to test the MetaDataValueObject's methods.
+     */
     private const int SAVED_BYTES = 200;
 
+    /**
+     * The percentage of size saved after optimization.
+     * This is used to test the MetaDataValueObject's methods.
+     */
     private const float SAVED_PERCENTAGE = 20.0;
 
     private MetaDataValueObject $metaDataValueObject;

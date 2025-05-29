@@ -31,6 +31,15 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Option::class)]
 final class ArgumentDataTest extends TestCase
 {
+    /**
+     * The expected number of examples in the argument data.
+     */
+    private const int EXPECTED_EXAMPLES_COUNT = 3;
+
+    /**
+     * An example command that should be present in the argument data.
+     * This is used to verify that the example commands are correctly set up.
+     */
     private const string EXAMPLE_COMMAND = 'vendor/bin/svg-optimizer --dry-run process /path/to/svgs';
 
     private ArgumentData $argumentData;
@@ -72,7 +81,7 @@ final class ArgumentDataTest extends TestCase
     {
         $examples = $this->argumentData->getExamples();
 
-        self::assertCount(3, $examples);
+        self::assertCount(self::EXPECTED_EXAMPLES_COUNT, $examples);
         $example = $examples[0];
 
         self::assertSame(self::EXAMPLE_COMMAND, $example->getCommand());

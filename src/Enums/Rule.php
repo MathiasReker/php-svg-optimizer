@@ -36,24 +36,24 @@ enum Rule: string
      */
     public function defaultValue(): bool
     {
-        return match ($this) {
-            self::CONVERT_COLORS_TO_HEX,
-            self::MINIFY_TRANSFORMATIONS,
-            self::FLATTEN_GROUPS,
-            self::MINIFY_SVG_COORDINATES,
-            self::REMOVE_COMMENTS,
-            self::REMOVE_DEFAULT_ATTRIBUTES,
-            self::REMOVE_DEPRECATED_ATTRIBUTES,
-            self::REMOVE_DOCTYPE,
-            self::REMOVE_EMPTY_ATTRIBUTES,
-            self::REMOVE_INVISIBLE_CHARACTERS,
-            self::REMOVE_METADATA,
-            self::REMOVE_TITLE_AND_DESC,
-            self::SORT_ATTRIBUTES,
-            self::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING,
-            self::REMOVE_UNNECESSARY_WHITESPACE,
-            self::REMOVE_UNUSED_NAMESPACES,
-            self::REMOVE_INKSCAPE_FOOTPRINTS => true,
+        return match ($this->value) {
+            self::CONVERT_COLORS_TO_HEX->value,
+            self::MINIFY_TRANSFORMATIONS->value,
+            self::FLATTEN_GROUPS->value,
+            self::MINIFY_SVG_COORDINATES->value,
+            self::REMOVE_COMMENTS->value,
+            self::REMOVE_DEFAULT_ATTRIBUTES->value,
+            self::REMOVE_DEPRECATED_ATTRIBUTES->value,
+            self::REMOVE_DOCTYPE->value,
+            self::REMOVE_EMPTY_ATTRIBUTES->value,
+            self::REMOVE_INVISIBLE_CHARACTERS->value,
+            self::REMOVE_METADATA->value,
+            self::REMOVE_TITLE_AND_DESC->value,
+            self::SORT_ATTRIBUTES->value,
+            self::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->value,
+            self::REMOVE_UNNECESSARY_WHITESPACE->value,
+            self::REMOVE_UNUSED_NAMESPACES->value,
+            self::REMOVE_INKSCAPE_FOOTPRINTS->value => true,
         };
     }
 }

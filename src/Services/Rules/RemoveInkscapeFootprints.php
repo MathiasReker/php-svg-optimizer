@@ -11,18 +11,30 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
-use DOMXPath;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
 final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterface
 {
     /**
-     * The XML namespace attributes to remove from the SVG document.
+     * The number of optimization loops to perform.
+     */
+    private const int OPTIMIZATION_LOOP_COUNT = 2;
+
+    /**
+     * The XPath query to select all nodes in the SVG document.
      *
-     * These attributes are typically used for metadata and are not essential
-     * for rendering the SVG image. They are removed to reduce file size and
-     * improve performance.
+     * This query is used to select all elements in the SVG document for
+     * processing, such as removing unwanted elements and attributes.
+     */
+    private const string ALL_NODES_XPATH_QUERY = '//*';
+
+    /**
+     * The limit for the number of times to explode the SVG document.
+     */
+    private const int EXPLODE_LIMIT = 2;
+
+    /**
+     * The XML namespace attributes to remove from the SVG document.
      *
      * @var string[]
      */
@@ -91,7 +103,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
             $domXPath->registerNamespace($prefix, $uri);
         }
 
-        for ($i = 0; $i < 2; ++$i) {
+        for ($i = 0; $i < self::OPTIMIZATION_LOOP_COUNT; ++$i) {
             $this->removeNamespacesFromSvgTags($domDocument);
             $this->removeElements($domXPath);
             $this->removeAttributes($domXPath);
@@ -132,7 +144,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     private function removeElements(\DOMXPath $domxPath): void
     {
         foreach (self::TAGS_TO_REMOVE as $pattern) {
-            [$prefix] = explode(':', $pattern, 2);
+            [$prefix] = explode(':', $pattern, self::EXPLODE_LIMIT);
 
             $query = \sprintf('//%s:*', $prefix);
             $nodes = $domxPath->query($query);
@@ -141,7 +153,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
                 continue;
             }
 
-            foreach (iterator_to_array($nodes) as $node) {
+            foreach (iterator_to_array($nodes, true) as $node) {
                 if (!($node instanceof \DOMElement)) {
                     continue;
                 }
@@ -167,7 +179,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     private function removeAttributes(\DOMXPath $domxPath): void
     {
         foreach (self::ATTRIBUTES_TO_REMOVE as $pattern) {
-            [$prefix] = explode(':', $pattern, 2);
+            [$prefix] = explode(':', $pattern, self::EXPLODE_LIMIT);
             $namespaceUri = self::NAMESPACE_URIS[$prefix] ?? null;
 
             if (null === $namespaceUri) {
@@ -183,12 +195,12 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      */
     private function processNodes(\DOMXPath $domxPath, string $namespaceUri): void
     {
-        $nodes = $domxPath->query('//*');
+        $nodes = $domxPath->query(self::ALL_NODES_XPATH_QUERY);
         if (!($nodes instanceof \DOMNodeList)) {
             return;
         }
 
-        foreach (iterator_to_array($nodes) as $domNode) {
+        foreach (iterator_to_array($nodes, true) as $domNode) {
             if ($domNode instanceof \DOMElement) {
                 $this->removeNodeAttributes($domNode, $namespaceUri);
             }
@@ -210,7 +222,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     /**
      * Get the attributes to remove from the node based on the given namespace URI.
      *
-     * @return string[]
+     * @return list<string>
      */
     private function getAttributesToRemove(\DOMElement $domElement, string $namespaceUri): array
     {

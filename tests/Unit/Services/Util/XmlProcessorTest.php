@@ -59,6 +59,7 @@ final class XmlProcessorTest extends TestCase
                 $svgContent = $callback($svgContent);
 
                 if (!\is_string($svgContent)) {
+                    // @phpstan-ignore-next-line
                     throw new XmlProcessingException('Callback must return a string.');
                 }
 
@@ -67,6 +68,7 @@ final class XmlProcessorTest extends TestCase
                  */
                 $mockObject = $this->mockObject;
                 if (!$mockObject->isValid($svgContent)) {
+                    // @phpstan-ignore-next-line
                     throw new XmlProcessingException('Optimized SVG content is not valid.');
                 }
 
@@ -117,6 +119,7 @@ final class XmlProcessorTest extends TestCase
                  */
                 $mockObject = $this->mockObject;
                 if (!$mockObject->isValid($svgContent)) {
+                    // @phpstan-ignore-next-line
                     throw new XmlProcessingException('Optimized SVG content is not valid.');
                 }
 
@@ -154,6 +157,7 @@ final class XmlProcessorTest extends TestCase
                 $svgContent = $callback($svgContent);
 
                 if (!\is_string($svgContent)) {
+                    // @phpstan-ignore-next-line
                     throw new XmlProcessingException('Callback must return a string.');
                 }
 
@@ -193,6 +197,7 @@ final class XmlProcessorTest extends TestCase
                 $svgContent = $callback($domDocument->saveXML());
 
                 if (!$domDocument->loadXML($svgContent)) {
+                    // @phpstan-ignore-next-line
                     throw new XmlProcessingException('Failed to load optimized XML content.');
                 }
 

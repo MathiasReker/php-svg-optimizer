@@ -32,12 +32,12 @@ final readonly class ArgumentData
     /**
      * @var array<string, CommandOptionValueObject>
      */
-    private readonly array $commands;
+    private array $commands;
 
     /**
-     * @var array<ExampleCommandValueObject>
+     * @var list<ExampleCommandValueObject>
      */
-    private readonly array $examples;
+    private array $examples;
 
     /**
      * Constructor for the ArgumentData class.
@@ -158,7 +158,7 @@ final readonly class ArgumentData
     /**
      * Returns the detailed commands as an array of command names with their values.
      *
-     * @return array<ExampleCommandValueObject>
+     * @return list<ExampleCommandValueObject>
      */
     public function getExamples(): array
     {

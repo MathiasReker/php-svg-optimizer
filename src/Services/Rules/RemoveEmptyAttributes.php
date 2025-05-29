@@ -61,7 +61,7 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
             return;
         }
 
-        foreach (iterator_to_array($domElement->attributes) as $attrName => $domAttr) {
+        foreach (iterator_to_array($domElement->attributes, true) as $attrName => $domAttr) {
             if ($this->isEmptyOrWhitespace($domAttr->value)) {
                 $domElement->removeAttribute($attrName);
             }

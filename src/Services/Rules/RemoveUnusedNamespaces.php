@@ -89,7 +89,8 @@ final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
 
         $namespacePattern = self::NAMESPACE_PATTERN;
 
-        if (preg_match_all($namespacePattern, $svgContent, $matches) > 0) {
+        $result = preg_match_all($namespacePattern, $svgContent, $matches);
+        if (false !== $result && $result > 0) {
             foreach ($matches[1] as $prefix) {
                 $namespaceKey = 'xmlns:' . $prefix;
                 $elementPattern = \sprintf(self::ELEMENT_PATTERN_TEMPLATE, preg_quote($prefix, '/'));

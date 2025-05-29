@@ -21,8 +21,16 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(CommandOptionValueObject::class)]
 final class CommandOptionValueObjectTest extends TestCase
 {
+    /**
+     * The title of the command option.
+     * This is used to test the CommandOptionValueObject's methods.
+     */
     private const string TITLE = 'process';
 
+    /**
+     * The description of the command option.
+     * This is used to test the CommandOptionValueObject's methods.
+     */
     private const string DESCRIPTION = 'Process SVG files for optimization.';
 
     private CommandOptionValueObject $commandOptionValueObject;

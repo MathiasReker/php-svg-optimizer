@@ -40,6 +40,8 @@ readonly class XmlProcessor
      * @param \DOMDocument $domDocument the DOMDocument containing the SVG content to be processed
      * @param callable     $callback    a callable function that will be applied to optimize the SVG content
      *
+     * @param-immediately-invoked-callable $callback
+     *
      * @return string the optimized SVG content
      *
      * @throws XmlProcessingException if any error occurs while processing, validating, or loading the XML content

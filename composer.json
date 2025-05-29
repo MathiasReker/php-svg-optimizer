@@ -25,20 +25,30 @@
     "ext-libxml": "*"
   },
   "require-dev": {
+    "brainbits/phpstan-rules": "^4.0",
     "ergebnis/composer-normalize": "^2.47.0",
+    "ergebnis/phpstan-rules": "^2.8",
     "friendsofphp/php-cs-fixer": "^3.75.0",
+    "hiperdk/phpstan-rules": "^1.0",
+    "marc-mabe/php-enum-phpstan": "^3.0",
+    "odan/phpstan-rules": "^0.2.0",
     "phpstan/extension-installer": "^1.4.3",
     "phpstan/phpstan": "^2.1.17",
     "phpstan/phpstan-deprecation-rules": "^2.0.3",
+    "phpstan/phpstan-mockery": "^2.0",
     "phpstan/phpstan-phpunit": "^2.0.6",
     "phpstan/phpstan-strict-rules": "^2.0.4",
     "phpunit/phpunit": "^12.1.6",
     "povils/phpmnd": "^3.6.0",
     "rector/rector": "^2.0.16",
+    "shipmonk/phpstan-rules": "^4.1",
     "slam/phpstan-extensions": "^6.6.0",
+    "spaze/phpstan-disallowed-calls": "^4.5",
     "squizlabs/php_codesniffer": "^3.13.0",
     "symplify/phpstan-rules": "^14.6.9",
-    "tomasvotruba/cognitive-complexity": "^1.0.0"
+    "tomasvotruba/cognitive-complexity": "^1.0.0",
+    "tomasvotruba/type-coverage": "^2.0",
+    "voku/phpstan-rules": "^3.6"
   },
   "autoload": {
     "psr-4": {

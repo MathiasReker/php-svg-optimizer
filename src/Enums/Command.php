@@ -16,22 +16,22 @@ enum Command: string
     case PROCESS = 'process';
 
     /**
-     * Get the title for the option.
+     * Get the title for the command.
      */
     public function getTitle(): string
     {
-        return match ($this) {
-            self::PROCESS => 'Process',
+        return match ($this->value) {
+            self::PROCESS->value => 'Process',
         };
     }
 
     /**
-     * Get the description for the option.
+     * Get the description for the command.
      */
     public function getDescription(): string
     {
-        return match ($this) {
-            self::PROCESS => 'Provide a list of directories or files to process.',
+        return match ($this->value) {
+            self::PROCESS->value => 'Provide a list of directories or files to process.',
         };
     }
 }
