@@ -73,11 +73,11 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
          * @var \DOMNodeList<\DOMElement> $nodeList
          */
         $nodeList = $domXPath->query(
-            expression: \sprintf(
+            \sprintf(
                 '//*[%s]',
                 implode(
                     ' or ',
-                    array: array_map(
+                    array_map(
                         static fn (string $attribute): string => \sprintf('contains(@style, "%s")', $attribute),
                         self::COLOR_ATTRIBUTES
                     )

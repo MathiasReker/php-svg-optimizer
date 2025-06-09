@@ -35,6 +35,7 @@ final class RuleTest extends TestCase
         yield [Rule::REMOVE_DEFAULT_ATTRIBUTES, true];
         yield [Rule::REMOVE_DEPRECATED_ATTRIBUTES, true];
         yield [Rule::REMOVE_DOCTYPE, true];
+        yield [Rule::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE, true];
         yield [Rule::REMOVE_EMPTY_ATTRIBUTES, true];
         yield [Rule::REMOVE_METADATA, true];
         yield [Rule::REMOVE_TITLE_AND_DESC, true];
@@ -55,6 +56,7 @@ final class RuleTest extends TestCase
         yield [Rule::REMOVE_DEFAULT_ATTRIBUTES, 'removeDefaultAttributes'];
         yield [Rule::REMOVE_DEPRECATED_ATTRIBUTES, 'removeDeprecatedAttributes'];
         yield [Rule::REMOVE_DOCTYPE, 'removeDoctype'];
+        yield [Rule::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE, 'removeEnableBackgroundAttribute'];
         yield [Rule::REMOVE_EMPTY_ATTRIBUTES, 'removeEmptyAttributes'];
         yield [Rule::REMOVE_METADATA, 'removeMetadata'];
         yield [Rule::REMOVE_TITLE_AND_DESC, 'removeTitleAndDesc'];

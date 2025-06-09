@@ -260,6 +260,7 @@ final class SvgOptimizerCommand
                 $rules[$rule->value] = $this->config[$rule->value] ?? $rule->defaultValue();
             }
 
+            /** @phpstan-ignore-next-line */
             $svgOptimizer = $svgOptimizer->withRules(
                 convertColorsToHex: $rules[Rule::CONVERT_COLORS_TO_HEX->value],
                 flattenGroups: $rules[Rule::FLATTEN_GROUPS->value],
@@ -269,6 +270,7 @@ final class SvgOptimizerCommand
                 removeDefaultAttributes: $rules[Rule::REMOVE_DEFAULT_ATTRIBUTES->value],
                 removeDeprecatedAttributes: $rules[Rule::REMOVE_DEPRECATED_ATTRIBUTES->value],
                 removeDoctype: $rules[Rule::REMOVE_DOCTYPE->value],
+                removeEnableBackgroundAttribute: $rules[Rule::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE->value],
                 removeEmptyAttributes: $rules[Rule::REMOVE_EMPTY_ATTRIBUTES->value],
                 removeInvisibleCharacters: $rules[Rule::REMOVE_INVISIBLE_CHARACTERS->value],
                 removeMetadata: $rules[Rule::REMOVE_METADATA->value],

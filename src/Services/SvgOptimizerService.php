@@ -115,19 +115,24 @@ final readonly class SvgOptimizerService
      *
      * Each rule can be enabled or disabled via the respective parameters.
      *
-     * @param bool $convertColorsToHex            Whether to convert colors to hexadecimal format
-     * @param bool $flattenGroups                 Whether to flatten nested group elements
-     * @param bool $minifySvgCoordinates          Whether to minify coordinate values within the SVG
-     * @param bool $minifyTransformations         Whether to minify transformation attributes
-     * @param bool $removeComments                Whether to remove XML comments from the SVG
-     * @param bool $removeDefaultAttributes       Whether to remove default attributes from elements
-     * @param bool $removeDeprecatedAttributes    Whether to remove the xlink namespace
-     * @param bool $removeInvisibleCharacters     Whether to remove invisible characters
-     * @param bool $removeMetadata                Whether to remove metadata elements from the SVG
-     * @param bool $removeTitleAndDesc            Whether to remove the <title> and <desc> elements
-     * @param bool $sortAttributes                Whether to sort attributes
-     * @param bool $convertEmptyTagsToSelfClosing Whether to convert empty tags to self-closing tags
-     * @param bool $removeUnnecessaryWhitespace   Whether to remove unnecessary whitespace
+     * @param bool $convertColorsToHex              Whether to convert colors to hexadecimal format
+     * @param bool $flattenGroups                   Whether to flatten nested group elements
+     * @param bool $minifySvgCoordinates            Whether to minify coordinate values within the SVG
+     * @param bool $minifyTransformations           Whether to minify transformation attributes
+     * @param bool $removeComments                  Whether to remove XML comments from the SVG
+     * @param bool $removeDefaultAttributes         Whether to remove default attributes from elements
+     * @param bool $removeDeprecatedAttributes      Whether to remove the xlink namespace
+     * @param bool $removeDoctype                   Whether to remove the DOCTYPE declaration
+     * @param bool $removeEnableBackgroundAttribute Whether to remove the enable-background attribute
+     * @param bool $removeEmptyAttributes           Whether to remove empty attributes from elements
+     * @param bool $removeInvisibleCharacters       Whether to remove invisible characters
+     * @param bool $removeMetadata                  Whether to remove metadata elements from the SVG
+     * @param bool $removeTitleAndDesc              Whether to remove the <title> and <desc> elements
+     * @param bool $sortAttributes                  Whether to sort attributes
+     * @param bool $convertEmptyTagsToSelfClosing   Whether to convert empty tags to self-closing tags
+     * @param bool $removeUnnecessaryWhitespace     Whether to remove unnecessary whitespace
+     * @param bool $removeUnusedNamespaces          Whether to remove unused namespaces
+     * @param bool $removeInkscapeFootprints        Whether to remove Inkscape-specific footprints
      *
      * @return $this The SvgOptimizerService instance
      */

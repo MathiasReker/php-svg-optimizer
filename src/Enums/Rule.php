@@ -21,6 +21,7 @@ enum Rule: string
     case REMOVE_DEFAULT_ATTRIBUTES = 'removeDefaultAttributes';
     case REMOVE_DEPRECATED_ATTRIBUTES = 'removeDeprecatedAttributes';
     case REMOVE_DOCTYPE = 'removeDoctype';
+    case REMOVE_ENABLE_BACKGROUND_ATTRIBUTE = 'removeEnableBackgroundAttribute';
     case REMOVE_EMPTY_ATTRIBUTES = 'removeEmptyAttributes';
     case REMOVE_INVISIBLE_CHARACTERS = 'removeInvisibleCharacters';
     case REMOVE_METADATA = 'removeMetadata';
@@ -45,6 +46,7 @@ enum Rule: string
             self::REMOVE_DEFAULT_ATTRIBUTES->value,
             self::REMOVE_DEPRECATED_ATTRIBUTES->value,
             self::REMOVE_DOCTYPE->value,
+            self::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE->value,
             self::REMOVE_EMPTY_ATTRIBUTES->value,
             self::REMOVE_INVISIBLE_CHARACTERS->value,
             self::REMOVE_METADATA->value,
