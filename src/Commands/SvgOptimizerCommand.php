@@ -158,8 +158,7 @@ final class SvgOptimizerCommand
             printf('  %-3s, %-20s %s' . \PHP_EOL, $shorthand, $full, $description);
         }
 
-        echo \PHP_EOL;
-        printf('Commands:%s', \PHP_EOL);
+        printf('%sCommands:%s', \PHP_EOL, \PHP_EOL);
         foreach ($argumentData->getCommands() as $commandOptionValueObject) {
             printf('  %-25s %-3s' . \PHP_EOL, $commandOptionValueObject->getTitle(), $commandOptionValueObject->getDescription());
         }
@@ -316,8 +315,7 @@ final class SvgOptimizerCommand
             ? ($reduction / $this->totalOriginalSize) * self::PERCENTAGE_FACTOR
             : 0;
 
-        echo \PHP_EOL;
-        printf('Total files processed: %d%s', $this->optimizedFiles, \PHP_EOL);
+        printf('%sTotal files processed: %d%s', \PHP_EOL, $this->optimizedFiles, \PHP_EOL);
         printf('Total size reduction: %d bytes%s', $reduction, \PHP_EOL);
         printf('Total reduction percentage: %s%%%s', number_format($reductionPercentage, self::DEFAULT_PRECISION), \PHP_EOL);
     }
