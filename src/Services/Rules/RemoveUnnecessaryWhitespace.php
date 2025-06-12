@@ -11,11 +11,13 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
 {
     /**
@@ -60,9 +62,9 @@ final readonly class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInte
      *
      * This method saves the current SVG content, processes it to remove
      * unnecessary whitespace, and then reloads the optimized content back
-     * into the DOMDocument.
+     * into the \DOMDocument.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      *
      * @throws XmlProcessingException When XML content cannot be saved or loaded
      */

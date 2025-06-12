@@ -11,11 +11,13 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
 {
     /**
@@ -40,9 +42,9 @@ final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Optimize the given DOMDocument by removing unused namespaces.
+     * Optimize the given \DOMDocument by removing unused namespaces.
      *
-     * @param \DOMDocument $domDocument The DOMDocument to optimize
+     * @param \DOMDocument $domDocument The \DOMDocument to optimize
      *
      * @throws XmlProcessingException When XML content cannot be saved or loaded
      */
@@ -55,7 +57,7 @@ final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
     /**
      * Optimize the SVG content by removing unused namespaces.
      *
-     * @param \DOMDocument $domDocument The DOMDocument to optimize
+     * @param \DOMDocument $domDocument The \DOMDocument to optimize
      *
      * @return string The optimized SVG content with unused namespaces removed
      *
@@ -81,7 +83,7 @@ final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
      *
      * @param string $svgContent The raw SVG content as a string
      *
-     * @return array<string,int> An associative array where keys are namespace prefixes and values are counts of elements
+     * @return array<string, int> An associative array where keys are namespace prefixes and values are counts of elements
      */
     private function countNamespaceElementsWithRegex(string $svgContent): array
     {
@@ -105,7 +107,7 @@ final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
     /**
      * Remove the specified namespace attribute from the SVG tags.
      *
-     * @param \DOMDocument $domDocument        The DOMDocument instance representing the SVG to be optimized
+     * @param \DOMDocument $domDocument        The \DOMDocument instance representing the SVG to be optimized
      * @param string       $namespaceAttribute The namespace attribute to remove
      */
     private function removeNamespaceFromSvgTags(\DOMDocument $domDocument, string $namespaceAttribute): void

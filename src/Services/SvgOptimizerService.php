@@ -45,12 +45,12 @@ use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
  * build the final SVG optimizer object that can then be used to optimize SVG content.
  *
  * @see https://github.com/MathiasReker/php-svg-optimizer
+ *
+ * @no-named-arguments
  */
 final readonly class SvgOptimizerService
 {
-    /**
-     * @var SvgOptimizer The instance responsible for performing SVG optimizations
-     */
+    /** @var SvgOptimizer The instance responsible for performing SVG optimizations */
     private SvgOptimizer $svgOptimizer;
 
     /**

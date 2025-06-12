@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\ValueObjects;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class CommandOptionValueObject
 {
     /**
@@ -19,9 +22,10 @@ final readonly class CommandOptionValueObject
      * @param string $title       The title of the command line argument option
      * @param string $description The description of the command line argument option
      */
-    public function __construct(private string $title, private string $description)
-    {
-    }
+    public function __construct(
+        private string $title,
+        private string $description,
+    ) {}
 
     /**
      * Get the title of the command line argument option.

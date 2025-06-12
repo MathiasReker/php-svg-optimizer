@@ -11,9 +11,11 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class RemoveMetadata implements SvgOptimizerRuleInterface
 {
     /**
@@ -23,7 +25,7 @@ final readonly class RemoveMetadata implements SvgOptimizerRuleInterface
      * document. Metadata elements typically contain information that is not
      * essential for rendering the SVG image.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -32,13 +34,13 @@ final readonly class RemoveMetadata implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove all elements with the given tag name from the DOMDocument.
+     * Remove all elements with the given tag name from the \DOMDocument.
      *
      * This method removes all elements with the specified tag name from the
-     * DOMDocument. It repeatedly removes elements until none with the given tag
+     * \DOMDocument. It repeatedly removes elements until none with the given tag
      * name remain.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      * @param string       $tagName     The tag name of the elements to be removed
      */
     private function removeElementsByTagName(\DOMDocument $domDocument, string $tagName): void
@@ -46,9 +48,6 @@ final readonly class RemoveMetadata implements SvgOptimizerRuleInterface
         $domNodeList = $domDocument->getElementsByTagName($tagName);
 
         while ($domNodeList->length > 0) {
-            /**
-             * @var \DOMElement|null $element
-             */
             $element = $domNodeList->item(0);
 
             if ($element instanceof \DOMElement && $element->parentNode instanceof \DOMNode) {

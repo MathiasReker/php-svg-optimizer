@@ -13,6 +13,9 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterface
 {
     /**
@@ -35,8 +38,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
 
     /**
      * The XML namespace attributes to remove from the SVG document.
-     *
-     * @var string[]
      */
     private const array XMLNS_ATTRIBUTES = [
         'xmlns:sodipodi',
@@ -49,8 +50,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      * These tags are typically used for metadata and are not essential for
      * rendering the SVG image. They are removed to reduce file size and
      * improve performance.
-     *
-     * @var string[]
      */
     private const array TAGS_TO_REMOVE = [
         'sodipodi:*',
@@ -63,8 +62,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      * These attributes are typically used for metadata and are not essential
      * for rendering the SVG image. They are removed to reduce file size and
      * improve performance.
-     *
-     * @var string[]
      */
     private const array ATTRIBUTES_TO_REMOVE = [
         'sodipodi:*',
@@ -76,8 +73,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      *
      * These URIs are used to identify the namespaces in the SVG document and
      * are used to remove elements and attributes related to these namespaces.
-     *
-     * @var array<string, string>
      */
     private const array NAMESPACE_URIS = [
         'sodipodi' => 'http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd',
@@ -92,7 +87,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      * attributes are typically used for metadata and are not essential for
      * rendering the SVG image.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -113,11 +108,11 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     /**
      * Remove the XML namespace attributes from all SVG tags.
      *
-     * This method iterates through all elements in the DOMDocument and removes
+     * This method iterates through all elements in the \DOMDocument and removes
      * any XML namespace attributes that are defined in the XMLNS_ATTRIBUTES
      * constant.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
     private function removeNamespacesFromSvgTags(\DOMDocument $domDocument): void
     {
@@ -135,11 +130,11 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     /**
      * Remove elements from the SVG document based on the specified tags.
      *
-     * This method iterates through all elements in the DOMXPath and removes
+     * This method iterates through all elements in the \DOMXPath and removes
      * any elements that match the specified tags in the TAGS_TO_REMOVE
      * constant.
      *
-     * @param \DOMXPath $domxPath The DOMXPath instance representing the SVG file to be optimized
+     * @param \DOMXPath $domxPath The \DOMXPath instance representing the SVG file to be optimized
      */
     private function removeElements(\DOMXPath $domxPath): void
     {
@@ -170,11 +165,11 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     /**
      * Remove attributes from the SVG document based on the specified attributes.
      *
-     * This method iterates through all elements in the DOMXPath and removes
+     * This method iterates through all elements in the \DOMXPath and removes
      * any attributes that match the specified attributes in the ATTRIBUTES_TO_REMOVE
      * constant.
      *
-     * @param \DOMXPath $domxPath The DOMXPath instance representing the SVG file to be optimized
+     * @param \DOMXPath $domxPath The \DOMXPath instance representing the SVG file to be optimized
      */
     private function removeAttributes(\DOMXPath $domxPath): void
     {
@@ -191,7 +186,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     }
 
     /**
-     * Process all nodes in the DOMXPath and remove attributes that match the given namespace URI.
+     * Process all nodes in the \DOMXPath and remove attributes that match the given namespace URI.
      */
     private function processNodes(\DOMXPath $domxPath, string $namespaceUri): void
     {

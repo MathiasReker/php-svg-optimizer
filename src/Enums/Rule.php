@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Enums;
 
+/**
+ * @no-named-arguments
+ */
 enum Rule: string
 {
     case CONVERT_COLORS_TO_HEX = 'convertColorsToHex';

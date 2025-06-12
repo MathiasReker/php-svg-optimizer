@@ -11,20 +11,21 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
-use DOMElement;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
 {
     /**
-     * Optimizes the provided DOMDocument by removing empty or whitespace-only attributes.
+     * Optimizes the provided \DOMDocument by removing empty or whitespace-only attributes.
      *
-     * This method iterates through all elements in the DOMDocument and removes any attributes
+     * This method iterates through all elements in the \DOMDocument and removes any attributes
      * that are empty or contain only whitespace. The modified content is then saved back into the
-     * provided DOMDocument object.
+     * provided \DOMDocument object.
      *
-     * @param \DOMDocument $domDocument The DOMDocument object to optimize
+     * @param \DOMDocument $domDocument The \DOMDocument object to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -33,12 +34,12 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Removes empty or whitespace-only attributes from all elements in the DOMDocument.
+     * Removes empty or whitespace-only attributes from all elements in the \DOMDocument.
      *
-     * This method traverses all elements in the DOMDocument and removes attributes that are
+     * This method traverses all elements in the \DOMDocument and removes attributes that are
      * either empty or consist solely of whitespace characters.
      *
-     * @param \DOMDocument $domDocument The DOMDocument object to process
+     * @param \DOMDocument $domDocument The \DOMDocument object to process
      */
     private function removeEmptyAttributes(\DOMDocument $domDocument): void
     {
@@ -48,12 +49,12 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Removes empty or whitespace-only attributes from a specific DOMElement.
+     * Removes empty or whitespace-only attributes from a specific \DOMElement.
      *
      * This method checks each attribute of the given element and removes it if its value is
      * empty or contains only whitespace characters.
      *
-     * @param \DOMElement $domElement The DOMElement from which to remove empty attributes
+     * @param \DOMElement $domElement The \DOMElement from which to remove empty attributes
      */
     private function removeEmptyAttributesFromElement(\DOMElement $domElement): void
     {

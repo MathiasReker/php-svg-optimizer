@@ -156,11 +156,6 @@ final class RemoveInkscapeFootprintsTest extends TestCase
     }
 
     /**
-     * Test the optimize method of RemoveInkscapeFootprints class.
-     *
-     * @param string $svgContent The SVG content to be optimized
-     * @param string $expected   The expected optimized SVG content
-     *
      * @throws SvgValidationException
      */
     #[DataProvider('svgProvider')]

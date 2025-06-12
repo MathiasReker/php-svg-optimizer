@@ -11,10 +11,11 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
-use DOMXPath;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
 {
     /**
@@ -25,8 +26,6 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     /**
      * List of deprecated SVG attributes that should be removed from the document.
      * These attributes are no longer recommended for use in modern SVGs.
-     *
-     * @var string[] An array of deprecated attribute names
      */
     private const array ATTRIBUTES_TO_REMOVE = [
         'baseProfile',
@@ -53,9 +52,6 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     /**
      * List of attributes that need to be replaced with new names in the SVG document.
      * This ensures compatibility with newer SVG standards.
-     *
-     * @var array<string, string> An associative array where the key is the old attribute name
-     *                            and the value is the new attribute name to replace it with
      */
     private const array ATTRIBUTES_TO_REPLACE = [
         'xlink:href' => 'href',
@@ -70,7 +66,7 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
      * This method also removes the `xlink` namespace, which is no longer needed in recent
      * versions of SVG.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized.
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized.
      *                                  The SVG will be modified in-place.
      */
     #[\Override]
@@ -90,7 +86,7 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
      * and replaces them with the new names, but only if the new attribute's value is not
      * already set to the same value.
      *
-     * @param \DOMXPath             $domXPath   The DOMXPath instance used to query the SVG elements
+     * @param \DOMXPath             $domXPath   The \DOMXPath instance used to query the SVG elements
      * @param array<string, string> $attributes An associative array where the key is the old attribute
      *                                          and the value is the new attribute name
      */
@@ -124,7 +120,7 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
      * The `xlink` namespace is no longer required for modern SVGs, so this method
      * removes it if it exists in the document.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG to be optimized
      */
     private function removeNamespaceFromSvgTags(\DOMDocument $domDocument): void
     {
@@ -141,7 +137,7 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
      * This method removes the attributes listed in `ATTRIBUTES_TO_REMOVE` from all
      * SVG elements in the document.
      *
-     * @param \DOMXPath $domXPath The DOMXPath instance used to query the SVG elements
+     * @param \DOMXPath $domXPath The \DOMXPath instance used to query the SVG elements
      */
     private function removeAttributes(\DOMXPath $domXPath): void
     {

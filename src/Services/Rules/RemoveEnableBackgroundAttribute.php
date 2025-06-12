@@ -11,10 +11,11 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
-use DOMXPath;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRuleInterface
 {
     /**
@@ -28,7 +29,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
     /**
      * Optimizes the given SVG document by removing or cleaning up the `enable-background` attribute.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -40,7 +41,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
     /**
      * Processes the `enable-background` attribute on SVG, mask, and pattern elements.
      *
-     * @param \DOMXPath $domXPath The DOMXPath instance used to query the SVG elements
+     * @param \DOMXPath $domXPath The \DOMXPath instance used to query the SVG elements
      */
     private function processEnableBackgroundAttributes(\DOMXPath $domXPath): void
     {

@@ -11,10 +11,11 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
-use DOMNodeList;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
 {
     /**
@@ -47,8 +48,6 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
 
     /**
      * List of color attributes to process.
-     *
-     * @var string[]
      */
     private const array COLOR_ATTRIBUTES = ['fill', 'stroke', 'color'];
 
@@ -62,16 +61,14 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * This method processes the SVG document to find and convert RGB colors to HEX format.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
 
-        /**
-         * @var \DOMNodeList<\DOMElement> $nodeList
-         */
+        /** @var \DOMNodeList<\DOMElement> $nodeList */
         $nodeList = $domXPath->query(
             \sprintf(
                 '//*[%s]',
@@ -88,9 +85,7 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
         $this->processStyleAttributes($nodeList);
 
         foreach (self::COLOR_ATTRIBUTES as $attribute) {
-            /**
-             * @var \DOMNodeList<\DOMElement> $nodeList
-             */
+            /** @var \DOMNodeList<\DOMElement> $nodeList */
             $nodeList = $domXPath->query('//@' . $attribute);
 
             $this->processNodeList($nodeList);
@@ -100,9 +95,9 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     /**
      * Process style attributes containing color values.
      *
-     * This method processes the style attributes of the given DOMNodeList to find and convert RGB colors to HEX format.
+     * This method processes the style attributes of the given \DOMNodeList to find and convert RGB colors to HEX format.
      *
-     * @param \DOMNodeList<\DOMElement> $domNodeList The DOMNodeList instance containing the nodes to be processed
+     * @param \DOMNodeList<\DOMElement> $domNodeList The \DOMNodeList instance containing the nodes to be processed
      */
     private function processStyleAttributes(\DOMNodeList $domNodeList): void
     {
@@ -219,9 +214,9 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     /**
      * Process nodes containing color values.
      *
-     * This method processes the given DOMNodeList to find and convert RGB colors to HEX format.
+     * This method processes the given \DOMNodeList to find and convert RGB colors to HEX format.
      *
-     * @param \DOMNodeList<\DOMElement> $domNodeList The DOMNodeList instance containing the nodes to be processed
+     * @param \DOMNodeList<\DOMElement> $domNodeList The \DOMNodeList instance containing the nodes to be processed
      */
     private function processNodeList(\DOMNodeList $domNodeList): void
     {

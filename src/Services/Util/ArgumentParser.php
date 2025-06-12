@@ -15,6 +15,9 @@ use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class ArgumentParser
 {
     /**
@@ -30,10 +33,11 @@ final readonly class ArgumentParser
     /**
      * Constructor for the ArgumentParser class.
      *
-     * @param array<string> $args Command-line arguments passed to the script
+     * @param list<string> $args Command-line arguments passed to the script
      */
-    public function __construct(private array $args)
-    {
+    public function __construct(
+        private array $args,
+    ) {
         $this->argumentData = new ArgumentData();
     }
 

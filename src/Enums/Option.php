@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Enums;
 
+/**
+ * @no-named-arguments
+ */
 enum Option: string
 {
     case HELP = 'help';

@@ -40,7 +40,7 @@ final class StringProviderTest extends TestCase
 
         $stringProvider->optimize($domDocument);
 
-        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>', $stringProvider->getOutputContent());
+        self::assertSame(self::TEST_INPUT_STRING, $stringProvider->getOutputContent());
     }
 
     public function testGetInputContent(): void

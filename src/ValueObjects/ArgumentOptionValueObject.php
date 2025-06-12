@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\ValueObjects;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class ArgumentOptionValueObject
 {
     /**
@@ -20,9 +23,11 @@ final readonly class ArgumentOptionValueObject
      * @param string $full        The full name of the argument option
      * @param string $description The description of the argument option
      */
-    public function __construct(private string $shorthand, private string $full, private string $description)
-    {
-    }
+    public function __construct(
+        private string $shorthand,
+        private string $full,
+        private string $description,
+    ) {}
 
     /**
      * Get the shorthand name of the argument option.

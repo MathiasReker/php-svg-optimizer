@@ -63,11 +63,8 @@ final class XmlProcessorTest extends TestCase
                     throw new XmlProcessingException('Callback must return a string.');
                 }
 
-                /**
-                 * @var SvgValidator|MockObject $mockObject
-                 */
-                $mockObject = $this->mockObject;
-                if (!$mockObject->isValid($svgContent)) {
+                // @phpstan-ignore-next-line
+                if (!$this->mockObject->isValid($svgContent)) {
                     // @phpstan-ignore-next-line
                     throw new XmlProcessingException('Optimized SVG content is not valid.');
                 }
@@ -109,16 +106,11 @@ final class XmlProcessorTest extends TestCase
              * @throws XmlProcessingException
              */
             function (\DOMDocument $domDocument, callable $callback) use ($svgContent): string {
-                /**
-                 * @var string $svgContent
-                 */
                 $svgContent = $callback($domDocument->saveXML());
+                \assert(\is_string($svgContent));
 
-                /**
-                 * @var SvgValidator|MockObject $mockObject
-                 */
-                $mockObject = $this->mockObject;
-                if (!$mockObject->isValid($svgContent)) {
+                // @phpstan-ignore-next-line
+                if (!$this->mockObject->isValid($svgContent)) {
                     // @phpstan-ignore-next-line
                     throw new XmlProcessingException('Optimized SVG content is not valid.');
                 }
@@ -191,10 +183,8 @@ final class XmlProcessorTest extends TestCase
              * @throws XmlProcessingException
              */
             static function (\DOMDocument $domDocument, callable $callback): string {
-                /**
-                 * @var string $svgContent
-                 */
                 $svgContent = $callback($domDocument->saveXML());
+                \assert(\is_string($svgContent));
 
                 if (!$domDocument->loadXML($svgContent)) {
                     // @phpstan-ignore-next-line

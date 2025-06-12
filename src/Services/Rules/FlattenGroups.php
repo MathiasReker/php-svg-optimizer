@@ -11,9 +11,11 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class FlattenGroups implements SvgOptimizerRuleInterface
 {
     /**
@@ -23,7 +25,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
      * to their child elements and removing the group elements. It also combines transforms
      * from the group and its children.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -31,9 +33,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         $domXPath = new \DOMXPath($domDocument);
         $domXPath->registerNamespace('svg', 'http://www.w3.org/2000/svg');
 
-        /**
-         * @var \DOMNodeList<\DOMElement> $groups
-         */
+        /** @var \DOMNodeList<\DOMElement> $groups */
         $groups = $domXPath->query('//svg:g');
 
         foreach ($groups as $group) {

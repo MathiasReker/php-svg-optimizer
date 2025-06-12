@@ -11,11 +11,13 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class RemoveDoctype implements SvgOptimizerRuleInterface
 {
     /**
@@ -42,9 +44,9 @@ final readonly class RemoveDoctype implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Optimizes the given DOMDocument by removing the DOCTYPE declaration.
+     * Optimizes the given \DOMDocument by removing the DOCTYPE declaration.
      *
-     * @param \DOMDocument $domDocument The DOMDocument to optimize
+     * @param \DOMDocument $domDocument The \DOMDocument to optimize
      *
      * @throws XmlProcessingException If an error occurs during processing
      */

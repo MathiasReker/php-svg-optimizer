@@ -11,9 +11,11 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
 {
     /**
@@ -86,16 +88,14 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
      * - Reduces multiple spaces to a single space.
      * - Removes redundant commas.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
 
-        /**
-         * @var \DOMNodeList<\DOMElement> $elements
-         */
+        /** @var \DOMNodeList<\DOMElement> $elements */
         $elements = $domXPath->query('//*[@transform]');
 
         foreach ($elements as $element) {

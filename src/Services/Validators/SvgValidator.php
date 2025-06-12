@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Validators;
 
+/**
+ * @no-named-arguments
+ */
 readonly class SvgValidator
 {
     /**

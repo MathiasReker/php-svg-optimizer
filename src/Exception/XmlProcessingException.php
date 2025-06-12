@@ -13,6 +13,8 @@ namespace MathiasReker\PhpSvgOptimizer\Exception;
 
 /**
  * Exception thrown when XML processing fails.
+ *
+ * @no-named-arguments
  */
 final class XmlProcessingException extends \RuntimeException
 {

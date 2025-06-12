@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\ValueObjects;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class ExampleCommandValueObject
 {
     /**
@@ -18,9 +21,9 @@ final readonly class ExampleCommandValueObject
      *
      * @param string $command The example command
      */
-    public function __construct(private string $command)
-    {
-    }
+    public function __construct(
+        private string $command,
+    ) {}
 
     /**
      * Get the example command.

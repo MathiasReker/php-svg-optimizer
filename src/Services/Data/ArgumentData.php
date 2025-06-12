@@ -17,6 +17,9 @@ use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ExampleCommandValueObject;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class ArgumentData
 {
     /**
@@ -24,19 +27,13 @@ final readonly class ArgumentData
      */
     private const string BINARY_PATH = 'vendor/bin/svg-optimizer';
 
-    /**
-     * @var array<string, ArgumentOptionValueObject>
-     */
+    /** @var array<string, ArgumentOptionValueObject> */
     private array $options;
 
-    /**
-     * @var array<string, CommandOptionValueObject>
-     */
+    /** @var array<string, CommandOptionValueObject> */
     private array $commands;
 
-    /**
-     * @var list<ExampleCommandValueObject>
-     */
+    /** @var list<ExampleCommandValueObject> */
     private array $examples;
 
     /**

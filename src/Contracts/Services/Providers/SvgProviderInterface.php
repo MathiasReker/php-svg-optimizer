@@ -11,34 +11,33 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
 
 /**
- * Interface SvgProviderInterface.
- *
  * Defines the contract for an SVG content provider, including loading, optimizing,
  * and retrieving SVG content and metadata.
+ *
+ * @no-named-arguments
  */
 interface SvgProviderInterface
 {
     /**
-     * Loads the SVG content into a DOMDocument instance.
+     * Loads the SVG content into a \DOMDocument instance.
      *
-     * This method should return a DOMDocument instance that represents the
+     * This method should return a \DOMDocument instance that represents the
      * SVG content to be processed.
      *
-     * @return \DOMDocument The DOMDocument instance representing the loaded SVG content
+     * @return \DOMDocument The \DOMDocument instance representing the loaded SVG content
      */
     public function loadContent(): \DOMDocument;
 
     /**
-     * Optimizes the provided DOMDocument instance.
+     * Optimizes the provided \DOMDocument instance.
      *
      * This method performs optimization on the SVG content represented by the
-     * given DOMDocument instance. It may modify the instance in place.
+     * given \DOMDocument instance. It may modify the instance in place.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG content to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG content to be optimized
      *
      * @return self Returns the current instance to allow method chaining
      */

@@ -11,9 +11,11 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Providers;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
+/**
+ * @no-named-arguments
+ */
 final class StringProvider extends AbstractProvider
 {
     /**
@@ -21,13 +23,14 @@ final class StringProvider extends AbstractProvider
      *
      * @param string $inputContent The SVG content as a string
      */
-    public function __construct(protected string $inputContent)
-    {
+    public function __construct(
+        protected string $inputContent,
+    ) {
         parent::__construct();
     }
 
     /**
-     * Load the input string into a DOMDocument instance.
+     * Load the input string into a \DOMDocument instance.
      *
      * @throws XmlProcessingException If the input content is not valid XML
      */

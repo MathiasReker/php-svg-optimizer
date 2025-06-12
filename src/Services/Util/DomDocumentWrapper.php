@@ -11,25 +11,27 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Util;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class DomDocumentWrapper
 {
     /**
-     * Default XML version used when saving the DOMDocument.
+     * Default XML version used when saving the \DOMDocument.
      */
     private const string DEFAULT_XML_VERSION = '1.0';
 
     /**
-     * Default encoding used when saving the DOMDocument.
+     * Default encoding used when saving the \DOMDocument.
      */
     private const string DEFAULT_ENCODING = 'UTF-8';
 
     /**
-     * Saves the current DOMDocument content as an XML string.
+     * Saves the current \DOMDocument content as an XML string.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance to be saved
+     * @param \DOMDocument $domDocument The \DOMDocument instance to be saved
      *
      * @return string Returns the XML content as a string
      *
@@ -62,11 +64,11 @@ final readonly class DomDocumentWrapper
     }
 
     /**
-     * Loads an XML file into a DOMDocument, suppressing errors.
+     * Loads an XML file into a \DOMDocument, suppressing errors.
      *
      * @param string $filePath The path to the XML file
      *
-     * @return \DOMDocument Returns the loaded DOMDocument
+     * @return \DOMDocument Returns the loaded \DOMDocument
      *
      * @throws XmlProcessingException If the XML file cannot be loaded
      */
@@ -76,13 +78,13 @@ final readonly class DomDocumentWrapper
     }
 
     /**
-     * Common method for loading a DOMDocument with error handling.
+     * Common method for loading a \DOMDocument with error handling.
      *
-     * @param callable $loader A callback that loads the DOMDocument (file or string)
+     * @param callable $loader A callback that loads the \DOMDocument (file or string)
      *
-     * @return \DOMDocument Returns the loaded DOMDocument
+     * @return \DOMDocument Returns the loaded \DOMDocument
      *
-     * @throws XmlProcessingException If the DOMDocument fails to load
+     * @throws XmlProcessingException If the \DOMDocument fails to load
      */
     private function loadDomDocument(callable $loader): \DOMDocument
     {
@@ -102,7 +104,7 @@ final readonly class DomDocumentWrapper
     }
 
     /**
-     * Creates and returns a new DOMDocument instance with default settings.
+     * Creates and returns a new \DOMDocument instance with default settings.
      */
     private function createDomDocument(): \DOMDocument
     {
@@ -116,11 +118,11 @@ final readonly class DomDocumentWrapper
     }
 
     /**
-     * Loads XML from a string into a DOMDocument.
+     * Loads XML from a string into a \DOMDocument.
      *
      * @param string $xmlContent The XML content as a string
      *
-     * @return \DOMDocument Returns the loaded DOMDocument
+     * @return \DOMDocument Returns the loaded \DOMDocument
      *
      * @throws XmlProcessingException If the XML content cannot be loaded
      */

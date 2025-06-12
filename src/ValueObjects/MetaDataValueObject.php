@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\ValueObjects;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class MetaDataValueObject
 {
     /**
@@ -26,8 +29,7 @@ final readonly class MetaDataValueObject
         private int $optimizedSize,
         private int $savedBytes,
         private float $savedPercentage,
-    ) {
-    }
+    ) {}
 
     /**
      * Get the original size of the SVG file.

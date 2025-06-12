@@ -11,19 +11,21 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Models;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
 
+/**
+ * @no-named-arguments
+ */
 final class SvgOptimizer
 {
     /**
      * Array of optimization rules to be applied to the SVG document.
      *
-     * @var SvgOptimizerRuleInterface[] Array of optimization strategies
+     * @var list<SvgOptimizerRuleInterface> Array of optimization strategies
      */
     private array $rules = [];
 
@@ -42,8 +44,6 @@ final class SvgOptimizer
     private readonly SvgValidator $svgValidator;
 
     /**
-     * SvgOptimizer constructor.
-     *
      * @param SvgProviderInterface $svgProvider The provider used to get and save SVG content
      */
     public function __construct(
@@ -85,9 +85,9 @@ final class SvgOptimizer
     }
 
     /**
-     * Apply all optimization rules to the provided DOMDocument.
+     * Apply all optimization rules to the provided \DOMDocument.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
     private function applyRules(\DOMDocument $domDocument): void
     {

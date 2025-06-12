@@ -19,8 +19,10 @@ $header = <<<'EOD'
 $finder = PhpCsFixer\Finder::create()
     ->ignoreDotFiles(false)
     ->in([__DIR__]);
-$config = new PhpCsFixer\Config();
-$config->setRiskyAllowed(true)
+
+return (new PhpCsFixer\Config())
+    ->registerCustomFixers(new PhpCsFixerCustomFixers\Fixers())
+    ->setRiskyAllowed(true)
     ->setRules([
         // Header
         'header_comment' => [
@@ -54,6 +56,9 @@ $config->setRiskyAllowed(true)
         'general_phpdoc_annotation_remove' => [
             'annotations' => ['expectedDeprecation'],
         ],
+        'phpdoc_array_type' => true,
+        'phpdoc_list_type' => true,
+        'general_attribute_remove' => true,
 
         // PHP-CS-Fixer Rules
         '@PhpCsFixer' => true,
@@ -66,8 +71,40 @@ $config->setRiskyAllowed(true)
 
         // Disable rule causing issues
         'multiline_whitespace_before_semicolons' => true,
+
+        // Custom Fixers
+        PhpCsFixerCustomFixers\Fixer\TrimKeyFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\StringableInterfaceFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\PhpdocVarAnnotationToAssertFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\PhpdocTypesTrimFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\PhpdocTypesCommaSpacesFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\PhpdocTagNoNamedArgumentsFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\PhpdocSingleLineVarFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\PhpdocSelfAccessorFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\PhpdocParamTypeFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\PhpdocNoSuperfluousParamFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\PhpdocNoIncorrectVarAnnotationFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\PhpUnitRequiresConstraintFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\PhpUnitDedicatedAssertFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\PhpUnitAssertArgumentsOrderFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\NoUselessWriteVisibilityFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\NoUselessStrlenFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\NoUselessParenthesisFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\NoUselessCommentFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\NoSuperfluousConcatenationFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\NoLeadingSlashInGlobalNamespaceFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\NoImportFromGlobalNamespaceFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\NoDuplicatedArrayKeyFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\NoCommentedOutCodeFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\MultilinePromotedPropertiesFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\MultilineCommentOpeningClosingAloneFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\IssetToArrayKeyExistsFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\ForeachUseValueFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\EmptyFunctionBodyFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\ConstructorEmptyBracesFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\CommentedOutFunctionFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\CommentSurroundedBySpacesFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\ClassConstantUsageFixer::name() => true,
     ])
     ->setFinder($finder)
     ->setLineEnding(PHP_EOL);
-
-return $config;

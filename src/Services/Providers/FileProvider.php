@@ -11,23 +11,24 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Providers;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
+/**
+ * @no-named-arguments
+ */
 final class FileProvider extends AbstractProvider
 {
     /**
-     * FileProvider constructor.
-     *
      * @param string $inputFile The path to the input SVG file
      *
      * @throws FileNotFoundException If the file does not exist
      * @throws IOException           If the file does not exist or cannot be read
      */
-    public function __construct(private readonly string $inputFile)
-    {
+    public function __construct(
+        private readonly string $inputFile,
+    ) {
         parent::__construct();
 
         // Load the input content immediately to have it as a reference for metadata.
@@ -56,7 +57,7 @@ final class FileProvider extends AbstractProvider
     }
 
     /**
-     * Load the input file into a DOMDocument instance.
+     * Load the input file into a \DOMDocument instance.
      *
      * @throws XmlProcessingException If the XML processing fails
      */

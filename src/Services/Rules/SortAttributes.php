@@ -11,10 +11,11 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
-use DOMElement;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class SortAttributes implements SvgOptimizerRuleInterface
 {
     /**
@@ -24,8 +25,6 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
      * This array defines the priority of attributes. Attributes listed here will
      * appear first when sorting, followed by the rest of the attributes sorted
      * alphabetically by their name.
-     *
-     * @var array<string>
      */
     private const array ATTRIBUTE_ORDER = [
         'xmlns',
@@ -40,7 +39,7 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
      * This method iterates through all elements of the SVG document and sorts
      * their attributes according to the predefined order.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -61,13 +60,13 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Sort attributes of a given DOMElement.
+     * Sort attributes of a given \DOMElement.
      *
-     * This method sorts the attributes of the DOMElement by first prioritizing
+     * This method sorts the attributes of the \DOMElement by first prioritizing
      * the attributes listed in `ATTRIBUTE_ORDER`, followed by sorting the
      * remaining attributes alphabetically.
      *
-     * @param \DOMElement $domElement The DOMElement whose attributes should be sorted
+     * @param \DOMElement $domElement The \DOMElement whose attributes should be sorted
      */
     private function sortElementAttributes(\DOMElement $domElement): void
     {
@@ -86,13 +85,13 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Extract attributes from a DOMElement.
+     * Extract attributes from a \DOMElement.
      *
-     * This method retrieves all attributes from the given DOMElement and returns
+     * This method retrieves all attributes from the given \DOMElement and returns
      * them as an associative array where the keys are attribute names (local names only)
      * and the values are the corresponding attribute values.
      *
-     * @param \DOMElement $domElement The DOMElement whose attributes are to be extracted
+     * @param \DOMElement $domElement The \DOMElement whose attributes are to be extracted
      *
      * @return array<string, string> The extracted attributes and their values
      */

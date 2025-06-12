@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Util;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class ConfigLoader
 {
     /**

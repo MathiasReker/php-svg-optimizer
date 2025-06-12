@@ -11,9 +11,11 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
 {
     /**
@@ -60,7 +62,7 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
      *
      * It removes unnecessary trailing zeroes, decimal points, and trailing decimal points in coordinates.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -68,17 +70,13 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         $domXPath = new \DOMXPath($domDocument);
         $domXPath->registerNamespace('svg', 'http://www.w3.org/2000/svg');
 
-        /**
-         * @var \DOMNodeList<\DOMAttr> $pathAttributes
-         */
+        /** @var \DOMNodeList<\DOMAttr> $pathAttributes */
         $pathAttributes = $domXPath->query('//svg:path/@d');
         foreach ($pathAttributes as $attribute) {
             $attribute->value = $this->minifyCoordinates($attribute->value);
         }
 
-        /**
-         * @var \DOMNodeList<\DOMElement> $coordinateElements
-         */
+        /** @var \DOMNodeList<\DOMElement> $coordinateElements */
         $coordinateElements = $domXPath->query('//svg:rect | //svg:circle | //svg:ellipse | //svg:line | //svg:polyline | //svg:polygon');
         foreach ($coordinateElements as $coordinateElement) {
             if (!$coordinateElement->attributes instanceof \Traversable) {
@@ -86,9 +84,7 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
             }
 
             foreach ($coordinateElement->attributes as $attribute) {
-                /**
-                 * @var \DOMAttr $attribute
-                 */
+                /** @var \DOMAttr $attribute */
                 if (\in_array($attribute->name, ['x', 'x1', 'x2', 'y', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'rx', 'ry', 'r', 'points', 'd'], true)) {
                     $attribute->value = $this->minifyCoordinates($attribute->value);
                 }

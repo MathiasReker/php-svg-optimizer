@@ -13,6 +13,9 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Data;
 
 use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class MetaData
 {
     /**

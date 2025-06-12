@@ -11,11 +11,13 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 
+/**
+ * @no-named-arguments
+ */
 final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleInterface
 {
     /**
@@ -52,7 +54,7 @@ final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleIn
     /**
      * Convert empty tags to self-closing tags in the SVG document.
      *
-     * @param \DOMDocument $domDocument The DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      *
      * @throws XmlProcessingException When XML content cannot be saved or loaded
      */
