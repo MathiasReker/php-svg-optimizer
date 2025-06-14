@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Commands;
 
+use MathiasReker\PhpSvgOptimizer\Commands\Helper\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Enums\Rule;
-use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
 use MathiasReker\PhpSvgOptimizer\Services\Util\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Services\Util\ConfigLoader;
@@ -78,24 +78,24 @@ final class SvgOptimizerCommand
      * Constructor for the SvgOptimizerCommand class.
      *
      * @param list<string> $paths      The paths to the SVG files or directories to process
-     * @param string|null  $configPath The path to the configuration file
+     * @param string       $configPath The path to the configuration file
      */
-    private function __construct(array $paths, ?string $configPath)
+    private function __construct(array $paths, string $configPath)
     {
         foreach ($paths as $path) {
             if (!is_dir($path) && !is_file($path)) {
-                fprintf(\STDERR, 'Error: "%s" is not a valid directory or file.', $path);
+                OutputHelper::printError(\sprintf('"%s" is not a valid directory or file.', $path));
                 exit(self::EXIT_CODE_ERROR);
             }
         }
 
         $this->paths = $paths;
 
-        if (null !== $configPath) {
+        if ('' !== trim($configPath)) {
             try {
                 $this->config = ConfigLoader::loadConfig($configPath);
             } catch (\InvalidArgumentException $exception) {
-                fprintf(\STDERR, '%s', $exception->getMessage());
+                OutputHelper::printError(\sprintf('Error loading configuration from "%s": %s', $configPath, $exception->getMessage()));
                 exit(self::EXIT_CODE_ERROR);
             }
         }
@@ -107,87 +107,54 @@ final class SvgOptimizerCommand
      * @param list<string> $args The command-line arguments passed to the script
      *
      * @return self The SvgOptimizerCommand instance
+     *
+     * @throws \UnexpectedValueException If the command-line arguments are invalid or if the configuration file cannot be loaded
      */
     public static function fromArgs(array $args): self
     {
         $argumentParser = new ArgumentParser($args);
 
         if ($argumentParser->hasOption(Option::HELP) || 1 === \count($args)) {
-            self::printHelp();
+            OutputHelper::printHelp();
             exit(self::EXIT_CODE_SUCCESS);
         }
 
         if ($argumentParser->hasOption(Option::VERSION)) {
-            self::printVersion();
+            OutputHelper::printVersion(self::getVersionFromPackageJson());
             exit(self::EXIT_CODE_SUCCESS);
         }
 
         try {
             $paths = \array_slice($args, $argumentParser->getNextPositionalArgumentIndex() + 1);
+
+            if ([] === $paths) {
+                OutputHelper::printHelp();
+                exit(self::EXIT_CODE_SUCCESS);
+            }
+
+            $command = new self($paths, $argumentParser->getOption(Option::CONFIG));
+            $command->dryRun = $argumentParser->hasOption(Option::DRY_RUN);
+            $command->quiet = $argumentParser->hasOption(Option::QUIET);
+
+            return $command;
         } catch (\InvalidArgumentException $invalidArgumentException) {
-            fprintf(\STDERR, "%s\n", $invalidArgumentException->getMessage());
+            OutputHelper::printError($invalidArgumentException->getMessage());
             exit(self::EXIT_CODE_ERROR);
         }
-
-        if ([] === $paths) {
-            self::printHelp();
-            exit(self::EXIT_CODE_SUCCESS);
-        }
-
-        $command = new self($paths, $argumentParser->getOption(Option::CONFIG));
-        $command->dryRun = $argumentParser->hasOption(Option::DRY_RUN);
-        $command->quiet = $argumentParser->hasOption(Option::QUIET);
-
-        return $command;
-    }
-
-    /**
-     * Prints the help message for the command.
-     */
-    private static function printHelp(): void
-    {
-        $argumentData = new ArgumentData();
-        printf('PHP SVG Optimizer%s%s', \PHP_EOL, \PHP_EOL);
-        printf('Usage:%s', \PHP_EOL);
-        printf('  %s%s%s', $argumentData->getFormat(), \PHP_EOL, \PHP_EOL);
-        printf('Options:%s', \PHP_EOL);
-        foreach ($argumentData->getOptions() as $argumentOptionValueObject) {
-            $shorthand = $argumentOptionValueObject->getShorthand();
-            $full = $argumentOptionValueObject->getFull();
-            $description = $argumentOptionValueObject->getDescription();
-            printf('  %-3s, %-20s %s' . \PHP_EOL, $shorthand, $full, $description);
-        }
-
-        printf('%sCommands:%s', \PHP_EOL, \PHP_EOL);
-        foreach ($argumentData->getCommands() as $commandOptionValueObject) {
-            printf('  %-25s %-3s' . \PHP_EOL, $commandOptionValueObject->getTitle(), $commandOptionValueObject->getDescription());
-        }
-
-        printf('%sExamples:%s', \PHP_EOL, \PHP_EOL);
-        foreach ($argumentData->getExamples() as $exampleCommandValueObject) {
-            printf('  %s%s', $exampleCommandValueObject->getCommand(), \PHP_EOL);
-        }
-    }
-
-    /**
-     * Prints the version of the library.
-     */
-    private static function printVersion(): void
-    {
-        $version = self::getVersionFromPackageJson();
-        printf('PHP SVG Optimizer v%s%s', $version, \PHP_EOL);
     }
 
     /**
      * Retrieves the version of the library from the package.json file.
+     *
+     * @throws \UnexpectedValueException If the package.json file does not exist or does not contain a valid version
      */
-    private static function getVersionFromPackageJson(): ?string
+    private static function getVersionFromPackageJson(): string
     {
         $packageJsonPath = __DIR__ . '/../../composer.json';
         if (file_exists($packageJsonPath)) {
             $packageJson = file_get_contents($packageJsonPath);
             if (false === $packageJson) {
-                return null;
+                throw new \UnexpectedValueException(\sprintf('Error reading package.json from "%s".', $packageJsonPath));
             }
 
             $data = json_decode($packageJson, true);
@@ -196,7 +163,7 @@ final class SvgOptimizerCommand
             }
         }
 
-        return null;
+        throw new \UnexpectedValueException(\sprintf('package.json not found or does not contain a valid version at "%s".', $packageJsonPath));
     }
 
     /**
@@ -212,7 +179,7 @@ final class SvgOptimizerCommand
             } elseif (is_file($path) && 'svg' === pathinfo($path, \PATHINFO_EXTENSION)) {
                 $this->optimizeSvg($path);
             } else {
-                printf('Error: "%s" is not a valid SVG file.', $path);
+                OutputHelper::printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
             }
         }
 
@@ -300,7 +267,7 @@ final class SvgOptimizerCommand
             }
         } catch (\Exception $exception) {
             if (!$this->quiet) {
-                fprintf(\STDERR, 'Error: Failed processing "%s": %s%s', $filePath, $exception->getMessage(), \PHP_EOL);
+                OutputHelper::printError(\sprintf('Error processing "%s": %s', $filePath, $exception->getMessage()));
             }
         }
     }

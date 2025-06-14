@@ -253,6 +253,19 @@ final class FlattenGroupsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>
                 XML,
         ];
+
+        yield 'Group with empty attributes' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g stroke="" stroke-width="2" fill="">
+                        <rect x="10" y="10" width="30" height="30"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" stroke="" stroke-width="2" fill=""/></svg>
+                XML,
+        ];
     }
 
     /**

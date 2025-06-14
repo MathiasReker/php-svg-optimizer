@@ -117,9 +117,11 @@ final readonly class ArgumentData
     /**
      * Retrieves a single option's details by its name.
      *
-     * @return ArgumentOptionValueObject|null Returns the option details or null if not found
+     * @return ArgumentOptionValueObject Returns the option details
+     *
+     * @throws \InvalidArgumentException If the option is not found
      */
-    public function getOptionByName(string $name): ?ArgumentOptionValueObject
+    public function getOptionByName(string $name): ArgumentOptionValueObject
     {
         foreach ($this->options as $option) {
             if ($option->getShorthand() === $name || $option->getFull() === $name) {
@@ -127,7 +129,7 @@ final readonly class ArgumentData
             }
         }
 
-        return null;
+        throw new \InvalidArgumentException(\sprintf('Option "%s" not found.', $name));
     }
 
     /**
@@ -145,11 +147,13 @@ final readonly class ArgumentData
      *
      * @param string $option The name of the option (e.g., 'help', 'config')
      *
-     * @return ArgumentOptionValueObject|null Returns the option details or null if not found
+     * @return ArgumentOptionValueObject Returns the option details
+     *
+     * @throws \InvalidArgumentException If the option is not found
      */
-    public function getOption(string $option): ?ArgumentOptionValueObject
+    public function getOption(string $option): ArgumentOptionValueObject
     {
-        return $this->options[$option] ?? null;
+        return $this->options[$option] ?? throw new \InvalidArgumentException(\sprintf('Option "%s" not found.', $option));
     }
 
     /**

@@ -28,7 +28,7 @@ return RectorConfig::configure()
         strictBooleans: true,
         rectorPreset: true,
         phpunitCodeQuality: true,
-        symfonyCodeQuality: true
+        symfonyCodeQuality: true,
     )
     ->withAttributesSets()
     ->withSkipPath(__DIR__ . '/vendor')

@@ -24,13 +24,15 @@ parameters:
     constant: 100
   ergebnis:
     final:
-      enabled: false
+      classesNotRequiredToBeAbstractOrFinal:
+        - MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor
+        - MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator
     noExtends:
-      enabled: false
-    noNullableReturnTypeDeclaration:
-      enabled: false
-    noParameterWithNullableTypeDeclaration:
-      enabled: false
+      classesAllowedToBeExtended:
+        - RuntimeException
+        - InvalidArgumentException
+        - RuntimeException
+        - MathiasReker\PhpSvgOptimizer\Services\Providers\AbstractProvider
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
     - vendor/symplify/phpstan-rules/config/code-complexity-rules.neon

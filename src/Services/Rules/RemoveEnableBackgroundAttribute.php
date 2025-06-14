@@ -60,7 +60,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
 
                 $cleanedValue = $this->cleanupEnableBackgroundValue($enableBackgroundValue, $width, $height);
 
-                if (null === $cleanedValue) {
+                if ('' === trim($cleanedValue)) {
                     $element->removeAttribute('enable-background');
                 } else {
                     $element->setAttribute('enable-background', $cleanedValue);
@@ -76,16 +76,16 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
      * @param string $width  The width of the element
      * @param string $height The height of the element
      *
-     * @return string|null The cleaned up value, or null if it is redundant
+     * @return string The cleaned up value, or empty if it is redundant
      */
-    private function cleanupEnableBackgroundValue(string $value, string $width, string $height): ?string
+    private function cleanupEnableBackgroundValue(string $value, string $width, string $height): string
     {
         if (\in_array(preg_match(self::ENABLE_BACKGROUND_REGEX, $value, $matches), [0, false], true)) {
             return $value;
         }
 
         if ($matches[1] === $width && $matches[3] === $height) {
-            return null;
+            return '';
         }
 
         return $value;

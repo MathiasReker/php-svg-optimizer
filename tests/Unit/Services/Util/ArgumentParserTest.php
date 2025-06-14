@@ -48,16 +48,22 @@ final class ArgumentParserTest extends TestCase
         self::assertFalse($hasDryRunOption);
     }
 
+    /**
+     * @throws \InvalidArgumentException
+     */
     public function testGetOptionReturnsCorrectValue(): void
     {
         $configOptionValue = $this->argumentParser->getOption(Option::CONFIG);
         self::assertSame('config.json', $configOptionValue);
     }
 
+    /**
+     * @throws \InvalidArgumentException
+     */
     public function testGetOptionReturnsNullIfOptionDoesNotExist(): void
     {
         $dryRunOptionValue = $this->argumentParser->getOption(Option::DRY_RUN);
-        self::assertNull($dryRunOptionValue);
+        self::assertEmpty($dryRunOptionValue);
     }
 
     /**

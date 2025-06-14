@@ -67,14 +67,16 @@ final class ArgumentDataTest extends TestCase
         self::assertSame(Command::PROCESS->getDescription(), $processCommand->getDescription());
     }
 
+    /**
+     * @throws \InvalidArgumentException If the option does not exist.
+     */
     public function testGetOption(): void
     {
-        $option = $this->argumentData->getOption(Option::HELP->value);
+        $argumentOptionValueObject = $this->argumentData->getOption(Option::HELP->value);
 
-        self::assertInstanceOf(ArgumentOptionValueObject::class, $option);
-        self::assertSame(Option::HELP->getShorthand(), $option->getShorthand());
-        self::assertSame(Option::HELP->getFull(), $option->getFull());
-        self::assertSame(Option::HELP->getDescription(), $option->getDescription());
+        self::assertSame(Option::HELP->getShorthand(), $argumentOptionValueObject->getShorthand());
+        self::assertSame(Option::HELP->getFull(), $argumentOptionValueObject->getFull());
+        self::assertSame(Option::HELP->getDescription(), $argumentOptionValueObject->getDescription());
     }
 
     public function testGetExamples(): void

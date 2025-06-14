@@ -48,16 +48,18 @@ final readonly class ArgumentParser
      */
     public function hasOption(Option $option): bool
     {
-        $argsObject = array_filter(
-            array_map(
-                fn (string $arg): ?ArgumentOptionValueObject => $this->isOption($arg)
+        try {
+            $argsObject = array_map(
+                fn (string $arg): ArgumentOptionValueObject => $this->isOption($arg)
                     ? $this->argumentData->getOptionByName($this->getOptionKey($arg))
-                    : null,
+                    : throw new \InvalidArgumentException(\sprintf('Error: Option "%s" is not recognized.', $arg)),
                 $this->args
-            )
-        );
+            );
 
-        return \in_array($this->argumentData->getOption($option->value), $argsObject, true);
+            return \in_array($this->argumentData->getOption($option->value), $argsObject, true);
+        } catch (\InvalidArgumentException) {
+            return false;
+        }
     }
 
     /**
@@ -87,9 +89,11 @@ final readonly class ArgumentParser
      *
      * @param Option $option The option to get the value of
      *
-     * @return string|null The value of the option, or null if the option is not present
+     * @return string The value of the option, or null if the option is not present
+     *
+     * @throws \InvalidArgumentException If the option is not found in the arguments
      */
-    public function getOption(Option $option): ?string
+    public function getOption(Option $option): string
     {
         foreach ($this->args as $arg) {
             if ($this->isOption($arg) && $this->argumentData->getOptionByName($this->getOptionKey($arg)) === $this->argumentData->getOption($option->value)) {
@@ -97,7 +101,7 @@ final readonly class ArgumentParser
             }
         }
 
-        return null;
+        throw new \InvalidArgumentException(\sprintf('Option "%s" not found in the command-line arguments.', $option->value));
     }
 
     /**

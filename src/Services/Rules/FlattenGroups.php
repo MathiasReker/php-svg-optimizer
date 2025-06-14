@@ -107,7 +107,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     /**
      * Apply the combined transform from the group to each child element.
      */
-    private function applyTransformsToChildren(\DOMElement $domElement, ?string $transform): void
+    private function applyTransformsToChildren(\DOMElement $domElement, string $transform): void
     {
         foreach ($domElement->childNodes as $child) {
             if ($child instanceof \DOMElement) {
@@ -124,20 +124,8 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     /**
      * Combine two transform strings, returning the concatenated result only if necessary.
      */
-    private function combineTransforms(?string $transform1, ?string $transform2): string
+    private function combineTransforms(string $transform1, string $transform2): string
     {
-        if (null === $transform1 && null === $transform2) {
-            return '';
-        }
-
-        if (null === $transform1) {
-            return $transform2;
-        }
-
-        if (null === $transform2) {
-            return $transform1;
-        }
-
         if ($transform1 === $transform2) {
             return $transform1;
         }

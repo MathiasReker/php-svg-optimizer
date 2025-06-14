@@ -1,0 +1,70 @@
+<?php
+
+/**
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace MathiasReker\PhpSvgOptimizer\Commands\Helper;
+
+use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
+
+/**
+ * @no-named-arguments
+ */
+final class OutputHelper
+{
+    private const int DEFAULT_PRECISION = 2;
+
+    public static function printError(string $message): void
+    {
+        fprintf(\STDERR, 'Error: %s%s', $message, \PHP_EOL);
+    }
+
+    public static function printHelp(): void
+    {
+        $argumentData = new ArgumentData();
+        printf('PHP SVG Optimizer%s%s', \PHP_EOL, \PHP_EOL);
+        printf('Usage:%s', \PHP_EOL);
+        printf('  %s%s%s', $argumentData->getFormat(), \PHP_EOL, \PHP_EOL);
+        printf('Options:%s', \PHP_EOL);
+
+        foreach ($argumentData->getOptions() as $argumentOptionValueObject) {
+            printf('  %-3s, %-20s %s' . \PHP_EOL, $argumentOptionValueObject->getShorthand(), $argumentOptionValueObject->getFull(), $argumentOptionValueObject->getDescription());
+        }
+
+        printf('%sCommands:%s', \PHP_EOL, \PHP_EOL);
+        foreach ($argumentData->getCommands() as $commandOptionValueObject) {
+            printf('  %-25s %-3s' . \PHP_EOL, $commandOptionValueObject->getTitle(), $commandOptionValueObject->getDescription());
+        }
+
+        printf('%sExamples:%s', \PHP_EOL, \PHP_EOL);
+        foreach ($argumentData->getExamples() as $example) {
+            printf('  %s%s', $example->getCommand(), \PHP_EOL);
+        }
+    }
+
+    public static function printVersion(string $version): void
+    {
+        printf('PHP SVG Optimizer v%s%s', $version, \PHP_EOL);
+    }
+
+    public static function printOptimizationResult(string $filePath, float $reductionPercentage): void
+    {
+        printf('%s (%s%%%s)%s', $filePath, number_format($reductionPercentage, self::DEFAULT_PRECISION), '', \PHP_EOL);
+    }
+
+    public static function printSummary(int $fileCount, int $originalSize, int $optimizedSize): void
+    {
+        $reduction = $originalSize - $optimizedSize;
+        $percentage = $originalSize > 0 ? ($reduction / $originalSize) * 100 : 0;
+
+        printf('%sTotal files processed: %d%s', \PHP_EOL, $fileCount, \PHP_EOL);
+        printf('Total size reduction: %d bytes%s', $reduction, \PHP_EOL);
+        printf('Total reduction percentage: %s%%%s', number_format($percentage, self::DEFAULT_PRECISION), \PHP_EOL);
+    }
+}
