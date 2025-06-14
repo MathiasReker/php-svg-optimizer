@@ -28,24 +28,19 @@ final readonly class ConfigLoader
      * @return array<string, bool> The configuration as an associative array
      *
      * @throws \InvalidArgumentException If the file cannot be read or the JSON is invalid
+     * @throws \JsonException            If the JSON decoding fails
      */
     public static function loadConfig(string $config): array
     {
-        $configContent = file_exists($config) ? file_get_contents($config) : $config;
+        $configContent = file_exists($config)
+            ? file_get_contents($config)
+            : $config;
 
         if (false === $configContent) {
             throw new \InvalidArgumentException('Error: Failed to read configuration content.');
         }
 
-        if (!json_validate($configContent)) {
-            throw new \InvalidArgumentException('Error: Invalid JSON configuration.');
-        }
-
-        $decodedConfig = json_decode($configContent, true);
-
-        if (null === $decodedConfig) {
-            throw new \InvalidArgumentException('Error: Failed to decode configuration JSON.');
-        }
+        $decodedConfig = json_decode($configContent, true, 512, \JSON_THROW_ON_ERROR);
 
         if (!\is_array($decodedConfig)) {
             throw new \InvalidArgumentException('Error: Configuration must be an associative array.');

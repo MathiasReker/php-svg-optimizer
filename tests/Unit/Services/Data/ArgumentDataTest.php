@@ -68,7 +68,7 @@ final class ArgumentDataTest extends TestCase
     }
 
     /**
-     * @throws \InvalidArgumentException If the option does not exist.
+     * @throws \InvalidArgumentException If the option does not exist
      */
     public function testGetOption(): void
     {

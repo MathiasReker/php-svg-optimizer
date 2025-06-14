@@ -38,7 +38,12 @@ final class ArgumentParserTest extends TestCase
      */
     private const int EXPECTED_POSITIONAL_ARGUMENT_INDEX = 2;
 
-    private const array EXAMPLE_ARGS = ['vendor/bin/svg-optimizer', '--config=config.json', 'process', '/path/to/file.svg'];
+    private const array EXAMPLE_ARGS = [
+        'vendor/bin/svg-optimizer',
+        '--config=config.json',
+        'process',
+        '/path/to/file.svg',
+    ];
 
     private ArgumentParser $argumentParser;
 
@@ -57,13 +62,12 @@ final class ArgumentParserTest extends TestCase
         self::assertSame('config.json', $configOptionValue);
     }
 
-    /**
-     * @throws \InvalidArgumentException
-     */
-    public function testGetOptionReturnsNullIfOptionDoesNotExist(): void
+    public function testGetOptionThrowsExceptionIfOptionDoesNotExist(): void
     {
-        $dryRunOptionValue = $this->argumentParser->getOption(Option::DRY_RUN);
-        self::assertEmpty($dryRunOptionValue);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Option "dry-run" not found in the command-line arguments.');
+
+        $this->argumentParser->getOption(Option::DRY_RUN);
     }
 
     /**

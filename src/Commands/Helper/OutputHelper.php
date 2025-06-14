@@ -61,7 +61,9 @@ final class OutputHelper
     public static function printSummary(int $fileCount, int $originalSize, int $optimizedSize): void
     {
         $reduction = $originalSize - $optimizedSize;
-        $percentage = $originalSize > 0 ? ($reduction / $originalSize) * 100 : 0;
+        $percentage = $originalSize > 0
+            ? ($reduction / $originalSize) * 100
+            : 0;
 
         printf('%sTotal files processed: %d%s', \PHP_EOL, $fileCount, \PHP_EOL);
         printf('Total size reduction: %d bytes%s', $reduction, \PHP_EOL);
