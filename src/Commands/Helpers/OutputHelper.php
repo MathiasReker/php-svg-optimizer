@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Commands\Helper;
+namespace MathiasReker\PhpSvgOptimizer\Commands\Helpers;
 
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 
@@ -18,13 +18,24 @@ use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
  */
 final class OutputHelper
 {
+    /**
+     * The default precision used for percentage formatting.
+     */
     private const int DEFAULT_PRECISION = 2;
 
+    /**
+     * Print an error message to STDERR.
+     *
+     * @param string $message The error message to display
+     */
     public static function printError(string $message): void
     {
         fprintf(\STDERR, 'Error: %s%s', $message, \PHP_EOL);
     }
 
+    /**
+     * Print the help screen, including usage, options, commands, and examples.
+     */
     public static function printHelp(): void
     {
         $argumentData = new ArgumentData();
@@ -34,12 +45,21 @@ final class OutputHelper
         printf('Options:%s', \PHP_EOL);
 
         foreach ($argumentData->getOptions() as $argumentOptionValueObject) {
-            printf('  %-3s, %-20s %s' . \PHP_EOL, $argumentOptionValueObject->getShorthand(), $argumentOptionValueObject->getFull(), $argumentOptionValueObject->getDescription());
+            printf(
+                '  %-3s, %-20s %s' . \PHP_EOL,
+                $argumentOptionValueObject->getShorthand(),
+                $argumentOptionValueObject->getFull(),
+                $argumentOptionValueObject->getDescription()
+            );
         }
 
         printf('%sCommands:%s', \PHP_EOL, \PHP_EOL);
         foreach ($argumentData->getCommands() as $commandOptionValueObject) {
-            printf('  %-25s %-3s' . \PHP_EOL, $commandOptionValueObject->getTitle(), $commandOptionValueObject->getDescription());
+            printf(
+                '  %-25s %-3s' . \PHP_EOL,
+                $commandOptionValueObject->getTitle(),
+                $commandOptionValueObject->getDescription()
+            );
         }
 
         printf('%sExamples:%s', \PHP_EOL, \PHP_EOL);
@@ -48,16 +68,40 @@ final class OutputHelper
         }
     }
 
+    /**
+     * Print the current version of the application.
+     *
+     * @param string $version The version string to print
+     */
     public static function printVersion(string $version): void
     {
         printf('PHP SVG Optimizer v%s%s', $version, \PHP_EOL);
     }
 
+    /**
+     * Print the optimization result for a single file.
+     *
+     * @param string $filePath            The path to the file
+     * @param float  $reductionPercentage The percentage of size reduction
+     */
     public static function printOptimizationResult(string $filePath, float $reductionPercentage): void
     {
-        printf('%s (%s%%%s)%s', $filePath, number_format($reductionPercentage, self::DEFAULT_PRECISION), '', \PHP_EOL);
+        printf(
+            '%s (%s%%%s)%s',
+            $filePath,
+            number_format($reductionPercentage, self::DEFAULT_PRECISION),
+            '',
+            \PHP_EOL
+        );
     }
 
+    /**
+     * Print a summary of all optimized files.
+     *
+     * @param int $fileCount     Number of processed files
+     * @param int $originalSize  Total size before optimization (bytes)
+     * @param int $optimizedSize Total size after optimization (bytes)
+     */
     public static function printSummary(int $fileCount, int $originalSize, int $optimizedSize): void
     {
         $reduction = $originalSize - $optimizedSize;

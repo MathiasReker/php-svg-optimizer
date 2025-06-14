@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Commands;
 
-use MathiasReker\PhpSvgOptimizer\Commands\Helper\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Commands\Helpers\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Enums\Rule;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
@@ -27,11 +27,6 @@ final class SvgOptimizerCommand
      * The factor to convert a decimal to a percentage.
      */
     private const int PERCENTAGE_FACTOR = 100;
-
-    /**
-     * The default precision for percentage values.
-     */
-    private const int DEFAULT_PRECISION = 2;
 
     /**
      * The exit code for a successful operation.
@@ -84,6 +79,8 @@ final class SvgOptimizerCommand
      *
      * @param list<string> $paths      The paths to the SVG files or directories to process
      * @param string       $configPath The path to the configuration file
+     *
+     * @throws \JsonException
      */
     private function __construct(array $paths, string $configPath)
     {
@@ -189,7 +186,7 @@ final class SvgOptimizerCommand
         }
 
         if (!$this->quiet) {
-            $this->printSummary();
+            OutputHelper::printSummary($this->optimizedFiles, $this->totalOriginalSize, $this->totalOptimizedSize);
         }
     }
 
@@ -268,27 +265,12 @@ final class SvgOptimizerCommand
                 : 0;
 
             if (!$this->quiet) {
-                printf('%s (%s%%)%s', $filePath, number_format($reductionPercentage, self::DEFAULT_PRECISION), \PHP_EOL);
+                OutputHelper::printOptimizationResult($filePath, $reductionPercentage);
             }
         } catch (\Exception $exception) {
             if (!$this->quiet) {
                 OutputHelper::printError(\sprintf('Error processing "%s": %s', $filePath, $exception->getMessage()));
             }
         }
-    }
-
-    /**
-     * Prints a summary of the SVG optimization process.
-     */
-    private function printSummary(): void
-    {
-        $reduction = $this->totalOriginalSize - $this->totalOptimizedSize;
-        $reductionPercentage = $this->totalOriginalSize > 0
-            ? ($reduction / $this->totalOriginalSize) * self::PERCENTAGE_FACTOR
-            : 0;
-
-        printf('%sTotal files processed: %d%s', \PHP_EOL, $this->optimizedFiles, \PHP_EOL);
-        printf('Total size reduction: %d bytes%s', $reduction, \PHP_EOL);
-        printf('Total reduction percentage: %s%%%s', number_format($reductionPercentage, self::DEFAULT_PRECISION), \PHP_EOL);
     }
 }
