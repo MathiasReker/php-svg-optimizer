@@ -64,11 +64,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
      */
     private function applyAttributesToChild(\DOMElement $parent, \DOMElement $child): void
     {
-        if (!$parent->attributes instanceof \Traversable) {
-            return;
-        }
-
-        foreach ($parent->attributes as $attribute) {
+        foreach ($parent->attributes ?? [] as $attribute) {
             $this->setAttributeIfNotExists($child, $attribute);
         }
     }

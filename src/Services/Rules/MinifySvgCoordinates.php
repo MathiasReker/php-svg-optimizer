@@ -79,11 +79,7 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         /** @var \DOMNodeList<\DOMElement> $coordinateElements */
         $coordinateElements = $domXPath->query('//svg:rect | //svg:circle | //svg:ellipse | //svg:line | //svg:polyline | //svg:polygon');
         foreach ($coordinateElements as $coordinateElement) {
-            if (!$coordinateElement->attributes instanceof \Traversable) {
-                return;
-            }
-
-            foreach ($coordinateElement->attributes as $attribute) {
+            foreach ($coordinateElement->attributes ?? [] as $attribute) {
                 /** @var \DOMAttr $attribute */
                 if (\in_array($attribute->name, ['x', 'x1', 'x2', 'y', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'rx', 'ry', 'r', 'points', 'd'], true)) {
                     $attribute->value = $this->minifyCoordinates($attribute->value);

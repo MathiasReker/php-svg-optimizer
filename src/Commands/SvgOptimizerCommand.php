@@ -44,6 +44,11 @@ final class SvgOptimizerCommand
     private const int EXIT_CODE_ERROR = 1;
 
     /**
+     * The file extension for SVG files.
+     */
+    private const string SVG_EXTENSION = 'svg';
+
+    /**
      * The total original size of the SVG files.
      */
     private int $totalOriginalSize = 0;
@@ -58,8 +63,8 @@ final class SvgOptimizerCommand
      */
     private int $optimizedFiles = 0;
 
-    /** @var array<string, bool>|null */
-    private ?array $config = null;
+    /** @var array<string, bool> */
+    private array $config = [];
 
     /**
      * Whether to run the command in dry-run mode.
@@ -176,7 +181,7 @@ final class SvgOptimizerCommand
         foreach ($this->paths as $path) {
             if (is_dir($path)) {
                 $this->processDirectory($path);
-            } elseif (is_file($path) && 'svg' === pathinfo($path, \PATHINFO_EXTENSION)) {
+            } elseif (is_file($path) && self::SVG_EXTENSION === pathinfo($path, \PATHINFO_EXTENSION)) {
                 $this->optimizeSvg($path);
             } else {
                 OutputHelper::printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
@@ -203,7 +208,7 @@ final class SvgOptimizerCommand
         );
 
         foreach ($iterator as $fileInfo) {
-            if ($fileInfo instanceof \SplFileInfo && $fileInfo->isFile() && 'svg' === $fileInfo->getExtension()) {
+            if ($fileInfo instanceof \SplFileInfo && $fileInfo->isFile() && self::SVG_EXTENSION === $fileInfo->getExtension()) {
                 $this->optimizeSvg($fileInfo->getPathname());
             }
         }
