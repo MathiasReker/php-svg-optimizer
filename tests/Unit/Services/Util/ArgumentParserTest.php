@@ -62,6 +62,9 @@ final class ArgumentParserTest extends TestCase
         self::assertSame('config.json', $configOptionValue);
     }
 
+    /**
+     * @throws \InvalidArgumentException
+     */
     public function testGetOptionThrowsExceptionIfOptionDoesNotExist(): void
     {
         $this->expectException(\InvalidArgumentException::class);

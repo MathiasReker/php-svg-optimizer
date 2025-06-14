@@ -32,7 +32,7 @@ final class SvgOptimizer
     /**
      * The optimized SVG content.
      *
-     * @var string The SVG content after optimization, or null if not yet optimized
+     * @var string The SVG content after optimization
      */
     private string $domDocumentContent = '';
 

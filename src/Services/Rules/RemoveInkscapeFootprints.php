@@ -174,14 +174,21 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     private function removeAttributes(\DOMXPath $domxPath): void
     {
         foreach (self::ATTRIBUTES_TO_REMOVE as $pattern) {
-            [$prefix] = explode(':', $pattern, self::EXPLODE_LIMIT);
-            $namespaceUri = self::NAMESPACE_URIS[$prefix] ?? null;
-
-            if (null === $namespaceUri) {
+            if (!str_contains($pattern, ':')) {
                 continue;
             }
 
-            $this->processNodes($domxPath, $namespaceUri);
+            $prefix = mb_strstr($pattern, ':', true);
+
+            if (false === $prefix) {
+                continue;
+            }
+
+            if (!\array_key_exists($prefix, self::NAMESPACE_URIS)) {
+                continue;
+            }
+
+            $this->processNodes($domxPath, self::NAMESPACE_URIS[$prefix]);
         }
     }
 

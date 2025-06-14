@@ -89,7 +89,7 @@ final readonly class ArgumentParser
      *
      * @param Option $option The option to get the value of
      *
-     * @return string The value of the option, or null if the option is not present
+     * @return string The value of the option
      *
      * @throws \InvalidArgumentException If the option is not found in the arguments
      */

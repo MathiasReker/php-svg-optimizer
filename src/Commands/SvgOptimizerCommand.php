@@ -111,6 +111,7 @@ final class SvgOptimizerCommand
      * @return self The SvgOptimizerCommand instance
      *
      * @throws \UnexpectedValueException If the command-line arguments are invalid or if the configuration file cannot be loaded
+     * @throws \JsonException            If the configuration file contains invalid JSON
      */
     public static function fromArgs(array $args): self
     {
