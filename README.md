@@ -75,24 +75,24 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
 
 ```json
 {
-  "convertColorsToHex": true,
-  "convertEmptyTagsToSelfClosing": true,
-  "flattenGroups": true,
-  "minifySvgCoordinates": true,
-  "minifyTransformations": true,
-  "removeComments": true,
-  "removeDefaultAttributes": true,
-  "removeDeprecatedAttributes": true,
-  "removeDoctype": true,
-  "removeEmptyAttributes": true,
-  "removeEnableBackgroundAttribute": true,
-  "removeInkscapeFootprints": true,
-  "removeInvisibleCharacters": true,
-  "removeMetadata": true,
-  "removeTitleAndDesc": true,
-  "removeUnnecessaryWhitespace": true,
-  "removeUnusedNamespaces": true,
-  "sortAttributes": true
+    "convertColorsToHex": true,
+    "convertEmptyTagsToSelfClosing": true,
+    "flattenGroups": true,
+    "minifySvgCoordinates": true,
+    "minifyTransformations": true,
+    "removeComments": true,
+    "removeDefaultAttributes": true,
+    "removeDeprecatedAttributes": true,
+    "removeDoctype": true,
+    "removeEmptyAttributes": true,
+    "removeEnableBackgroundAttribute": true,
+    "removeInkscapeFootprints": true,
+    "removeInvisibleCharacters": true,
+    "removeMetadata": true,
+    "removeTitleAndDesc": true,
+    "removeUnnecessaryWhitespace": true,
+    "removeUnusedNamespaces": true,
+    "sortAttributes": true
 }
 ```
 
@@ -186,7 +186,7 @@ try {
         ->optimize();
 
     echo sprintf('Get content: ', $svgOptimizer->getContent(), \PHP_EOL);
-     
+
     $metaData = $svgOptimizer->getMetaData();
 
     echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
@@ -247,58 +247,22 @@ rules should be enabled or disabled.
 
 ##### Parameters:
 
-Removes `<title>` and `<desc>` tags from the SVG:
+Converts `rgb()` color values to hexadecimal format:
 
 ```php
-$svgOptimizer->withRules(removeTitleAndDesc: true);
+$svgOptimizer->withRules(convertColorsToHex: true);
 ```
 
-Removes all comments from the SVG:
+Converts empty tags to self-closing tags:
 
 ```php
-$svgOptimizer->withRules(removeComments: true);
-```
-
-Sorts attributes within each element:
-
-```php
-$svgOptimizer->withRules(sortAttributes: true);
-```
-
-Removes default attribute values that match common defaults:
-
-```php
-$svgOptimizer->withRules(removeDefaultAttributes: true);
-```
-
-Removes deprecated attributes from the SVG:
-
-```php
-$svgOptimizer->withRules(removeDeprecatedAttributes: true);
-```
-
-Removes `<metadata>` tags from the SVG:
-
-```php
-$svgOptimizer->withRules(removeMetadata: true);
-```
-
-Removes invisible characters from the SVG:
-
-```php
-$svgOptimizer->withRules(removeInvisibleCharacters: true);
+$svgOptimizer->withRules(convertEmptyTagsToSelfClosing: true);
 ```
 
 Flattens nested `<g>` elements, moving their child elements up to the parent node:
 
 ```php
 $svgOptimizer->withRules(flattenGroups: true);
-```
-
-Converts `rgb()` color values to hexadecimal format:
-
-```php
-$svgOptimizer->withRules(convertColorsToHex: true);
 ```
 
 Minifies coordinate values by removing unnecessary precision:
@@ -313,16 +277,28 @@ Minifies transformation attributes by removing redundant values:
 $svgOptimizer->withRules(minifyTransformations: true);
 ```
 
+Removes all comments from the SVG:
+
+```php
+$svgOptimizer->withRules(removeComments: true);
+```
+
+Removes default attribute values that match common defaults:
+
+```php
+$svgOptimizer->withRules(removeDefaultAttributes: true);
+```
+
+Removes deprecated attributes from the SVG:
+
+```php
+$svgOptimizer->withRules(removeDeprecatedAttributes: true);
+```
+
 Removes the SVG doctype declaration:
 
 ```php
 $svgOptimizer->withRules(removeDoctype: true);
-```
-
-Removes the `enable-background` attribute from the SVG:
-
-```php
-$svgOptimizer->withRules(removeEnableBackgroundAttribute: true);
 ```
 
 Removes empty attributes from the SVG:
@@ -331,10 +307,34 @@ Removes empty attributes from the SVG:
 $svgOptimizer->withRules(removeEmptyAttributes: true);
 ```
 
-Converts empty tags to self-closing tags:
+Removes the `enable-background` attribute from the SVG:
 
 ```php
-$svgOptimizer->withRules(convertEmptyTagsToSelfClosing: true);
+$svgOptimizer->withRules(removeEnableBackgroundAttribute: true);
+```
+
+Removes Inkspace-specific footprints from the SVG:
+
+```php
+$svgOptimizer->withRules(removeInkscapeFootprints: true);
+```
+
+Removes invisible characters from the SVG:
+
+```php
+$svgOptimizer->withRules(removeInvisibleCharacters: true);
+```
+
+Removes `<metadata>` tags from the SVG:
+
+```php
+$svgOptimizer->withRules(removeMetadata: true);
+```
+
+Removes `<title>` and `<desc>` tags from the SVG:
+
+```php
+$svgOptimizer->withRules(removeTitleAndDesc: true);
 ```
 
 Cleans up unnecessary whitespace in the SVG:
@@ -349,10 +349,10 @@ Removes unused namespaces from the SVG:
 $svgOptimizer->withRules(removeUnusedNamespaces: true);
 ```
 
-Removes Inkspace-specific footprints from the SVG:
+Sorts attributes within each element:
 
 ```php
-$svgOptimizer->withRules(removeInkscapeFootprints: true);
+$svgOptimizer->withRules(sortAttributes: true);
 ```
 
 All options are set to true by default. You can configure them individually by passing the desired values to it:
