@@ -153,7 +153,7 @@ final class SvgOptimizerCommand
      */
     private static function getVersionFromPackageJson(): string
     {
-        $packageJsonPath = __DIR__ . '/../../composer.json';
+        $packageJsonPath = __DIR__ . '/../../version.json';
         if (file_exists($packageJsonPath)) {
             $packageJson = file_get_contents($packageJsonPath);
             if (false === $packageJson) {

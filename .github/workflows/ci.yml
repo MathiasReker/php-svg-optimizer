@@ -38,6 +38,9 @@ jobs:
         run: composer install --optimize-autoloader
 
       - name: Validate Composer Configuration
+        run: composer validate
+
+      - name: Check platform requirements for packages
         run: composer check
 
       - name: Lint PHP Files
