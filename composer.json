@@ -1,96 +1,96 @@
 {
-  "name": "mathiasreker/php-svg-optimizer",
-  "description": "php-svg-optimizer is a PHP library designed to optimize SVG files by applying various transformations and cleanup operations.",
-  "license": "MIT",
-  "type": "library",
-  "version": "5.3.5",
-  "keywords": [
-    "optimize",
-    "svg",
-    "minify",
-    "compress",
-    "clean",
-    "minifier"
-  ],
-  "authors": [
-    {
-      "name": "Mathias Reker",
-      "role": "Developer"
-    }
-  ],
-  "homepage": "https://github.com/mathiasreker/php-svg-optimizer",
-  "require": {
-    "php": ">=8.3",
-    "ext-dom": "*",
-    "ext-libxml": "*"
-  },
-  "require-dev": {
-    "brainbits/phpstan-rules": "^4.0",
-    "ergebnis/composer-normalize": "^2.47.0",
-    "ergebnis/phpstan-rules": "^2.10.4",
-    "friendsofphp/php-cs-fixer": "^3.75.0",
-    "hiperdk/phpstan-rules": "^1.0",
-    "kubawerlos/php-cs-fixer-custom-fixers": "^3.27",
-    "marc-mabe/php-enum-phpstan": "^3.0",
-    "odan/phpstan-rules": "^0.2.0",
-    "phpstan/extension-installer": "^1.4.3",
-    "phpstan/phpstan": "^2.1.17",
-    "phpstan/phpstan-deprecation-rules": "^2.0.3",
-    "phpstan/phpstan-mockery": "^2.0",
-    "phpstan/phpstan-phpunit": "^2.0.6",
-    "phpstan/phpstan-strict-rules": "^2.0.4",
-    "phpunit/phpunit": "^12.2.2",
-    "povils/phpmnd": "^3.6.0",
-    "rector/rector": "^2.0.18",
-    "shipmonk/phpstan-rules": "^4.1.4",
-    "slam/phpstan-extensions": "^6.6.0",
-    "spaze/phpstan-disallowed-calls": "^4.5",
-    "squizlabs/php_codesniffer": "^3.13.1",
-    "symplify/phpstan-rules": "^14.6.9",
-    "tomasvotruba/cognitive-complexity": "^1.0.0",
-    "tomasvotruba/type-coverage": "^2.0",
-    "voku/phpstan-rules": "^3.6"
-  },
-  "autoload": {
-    "psr-4": {
-      "MathiasReker\\PhpSvgOptimizer\\": "src/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "MathiasReker\\PhpSvgOptimizer\\Tests\\": "tests/"
-    }
-  },
-  "bin": [
-    "bin/svg-optimizer"
-  ],
-  "config": {
-    "allow-plugins": {
-      "ergebnis/composer-normalize": true,
-      "phpstan/extension-installer": true,
-      "phpunit/phpunit": true
+    "name": "mathiasreker/php-svg-optimizer",
+    "description": "php-svg-optimizer is a PHP library designed to optimize SVG files by applying various transformations and cleanup operations.",
+    "license": "MIT",
+    "type": "library",
+    "version": "5.3.5",
+    "keywords": [
+        "optimize",
+        "svg",
+        "minify",
+        "compress",
+        "clean",
+        "minifier"
+    ],
+    "authors": [
+        {
+            "name": "Mathias Reker",
+            "role": "Developer"
+        }
+    ],
+    "homepage": "https://github.com/mathiasreker/php-svg-optimizer",
+    "require": {
+        "php": ">=8.3",
+        "ext-dom": "*",
+        "ext-libxml": "*"
     },
-    "preferred-install": "dist",
-    "sort-packages": true
-  },
-  "extra": {
-    "phpstan": {
-      "includes": [
-        "extension.neon"
-      ]
+    "require-dev": {
+        "brainbits/phpstan-rules": "^4.0",
+        "ergebnis/composer-normalize": "^2.47.0",
+        "ergebnis/phpstan-rules": "^2.10.4",
+        "friendsofphp/php-cs-fixer": "^3.75.0",
+        "hiperdk/phpstan-rules": "^1.0",
+        "kubawerlos/php-cs-fixer-custom-fixers": "^3.27",
+        "marc-mabe/php-enum-phpstan": "^3.0",
+        "odan/phpstan-rules": "^0.2.0",
+        "phpstan/extension-installer": "^1.4.3",
+        "phpstan/phpstan": "^2.1.17",
+        "phpstan/phpstan-deprecation-rules": "^2.0.3",
+        "phpstan/phpstan-mockery": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0.6",
+        "phpstan/phpstan-strict-rules": "^2.0.4",
+        "phpunit/phpunit": "^12.2.2",
+        "povils/phpmnd": "^3.6.0",
+        "rector/rector": "^2.0.18",
+        "shipmonk/phpstan-rules": "^4.1.4",
+        "slam/phpstan-extensions": "^6.6.0",
+        "spaze/phpstan-disallowed-calls": "^4.5",
+        "squizlabs/php_codesniffer": "^3.13.1",
+        "symplify/phpstan-rules": "^14.6.9",
+        "tomasvotruba/cognitive-complexity": "^1.0.0",
+        "tomasvotruba/type-coverage": "^2.0",
+        "voku/phpstan-rules": "^3.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "MathiasReker\\PhpSvgOptimizer\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MathiasReker\\PhpSvgOptimizer\\Tests\\": "tests/"
+        }
+    },
+    "bin": [
+        "bin/svg-optimizer"
+    ],
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true,
+            "phpstan/extension-installer": true,
+            "phpunit/phpunit": true
+        },
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "extra": {
+        "phpstan": {
+            "includes": [
+                "extension.neon"
+            ]
+        }
+    },
+    "scripts": {
+        "cs-check": "php vendor/bin/php-cs-fixer --config=.php-cs-fixer.dist.php fix . --dry-run --diff",
+        "cs-fix": "php vendor/bin/php-cs-fixer --config=.php-cs-fixer.dist.php fix .",
+        "format": "composer normalize && composer phpcbf-fix & composer rector-fix && composer cs-fix",
+        "phpcbf-fix": "vendor/bin/phpcbf --standard=PEAR,PSR1,PSR2,PSR12 -d memory_limit=512M src tests bin",
+        "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon",
+        "rector-check": "vendor/bin/rector process --dry-run",
+        "rector-fix": "vendor/bin/rector process",
+        "test": "vendor/bin/phpunit --bootstrap vendor/autoload.php --colors=always tests/"
+    },
+    "platform": {
+        "php": "8.3"
     }
-  },
-  "scripts": {
-    "cs-check": "php vendor/bin/php-cs-fixer --config=.php-cs-fixer.dist.php fix . --dry-run --diff",
-    "cs-fix": "php vendor/bin/php-cs-fixer --config=.php-cs-fixer.dist.php fix .",
-    "format": "composer normalize && composer phpcbf-fix & composer rector-fix && composer cs-fix",
-    "phpcbf-fix": "vendor/bin/phpcbf --standard=PEAR,PSR1,PSR2,PSR12 -d memory_limit=512M src tests bin",
-    "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon",
-    "rector-check": "vendor/bin/rector process --dry-run",
-    "rector-fix": "vendor/bin/rector process",
-    "test": "vendor/bin/phpunit --bootstrap vendor/autoload.php --colors=always tests/"
-  },
-  "platform": {
-    "php": "8.3"
-  }
 }

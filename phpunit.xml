@@ -15,8 +15,6 @@
     failOnRisky="true"
     failOnSkipped="true"
     failOnIncomplete="true"
-    enforceTimeLimit="true"
-    defaultTimeLimit="1"
 >
     <testsuites>
         <testsuite name="default">

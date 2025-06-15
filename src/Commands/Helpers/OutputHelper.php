@@ -16,7 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 /**
  * @no-named-arguments
  */
-final class OutputHelper
+final readonly class OutputHelper
 {
     /**
      * The default precision used for percentage formatting.
@@ -24,13 +24,13 @@ final class OutputHelper
     private const int DEFAULT_PRECISION = 2;
 
     /**
-     * Print an error message to STDERR.
+     * Print an error message to the console.
      *
      * @param string $message The error message to display
      */
     public static function printError(string $message): void
     {
-        fprintf(\STDERR, 'Error: %s%s', $message, \PHP_EOL);
+        printf('Error: %s%s', $message, \PHP_EOL);
     }
 
     /**

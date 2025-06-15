@@ -183,6 +183,7 @@ final class SvgOptimizerCommand
                 $this->optimizeSvg($path);
             } else {
                 OutputHelper::printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
+                exit(self::EXIT_CODE_ERROR);
             }
         }
 
@@ -271,6 +272,7 @@ final class SvgOptimizerCommand
         } catch (\Exception $exception) {
             if (!$this->quiet) {
                 OutputHelper::printError(\sprintf('Error processing "%s": %s', $filePath, $exception->getMessage()));
+                exit(self::EXIT_CODE_ERROR);
             }
         }
     }
