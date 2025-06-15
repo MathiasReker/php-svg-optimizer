@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Commands\Helpers;
 
 use MathiasReker\PhpSvgOptimizer\Commands\Helpers\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Enums\Command;
+use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
@@ -29,6 +30,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ArgumentOptionValueObject::class)]
 #[CoversClass(CommandOptionValueObject::class)]
 #[CoversClass(ExampleCommandValueObject::class)]
+#[CoversClass(Option::class)]
 final class OutputHelperTest extends TestCase
 {
     public function testPrintError(): void
