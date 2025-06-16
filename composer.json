@@ -91,5 +91,8 @@
         "rector-check": "vendor/bin/rector process --dry-run",
         "rector-fix": "vendor/bin/rector process",
         "test": "vendor/bin/phpunit --bootstrap vendor/autoload.php --colors=always tests/"
-    }
+    },
+    "exclude-from-classmap": [
+        "/tests/"
+    ]
 }
