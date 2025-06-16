@@ -24,11 +24,11 @@
         "ext-libxml": "*"
     },
     "require-dev": {
-        "brainbits/phpstan-rules": "^4.0",
+        "brainbits/phpstan-rules": "^4.0.0",
         "ergebnis/composer-normalize": "^2.47.0",
         "ergebnis/phpstan-rules": "^2.10.4",
         "friendsofphp/php-cs-fixer": "^3.75.0",
-        "hiperdk/phpstan-rules": "^1.0",
+        "hiperdk/phpstan-rules": "^1.0.0",
         "kubawerlos/php-cs-fixer-custom-fixers": "^3.27",
         "marc-mabe/php-enum-phpstan": "^3.0",
         "odan/phpstan-rules": "^0.2.0",
@@ -43,12 +43,12 @@
         "rector/rector": "^2.0.18",
         "shipmonk/phpstan-rules": "^4.1.4",
         "slam/phpstan-extensions": "^6.6.0",
-        "spaze/phpstan-disallowed-calls": "^4.5",
-        "squizlabs/php_codesniffer": "^3.13.1",
+        "spaze/phpstan-disallowed-calls": "^4.5.0",
+        "squizlabs/php_codesniffer": "^3.13.2",
         "symplify/phpstan-rules": "^14.6.9",
         "tomasvotruba/cognitive-complexity": "^1.0.0",
-        "tomasvotruba/type-coverage": "^2.0",
-        "voku/phpstan-rules": "^3.6"
+        "tomasvotruba/type-coverage": "^2.0.2",
+        "voku/phpstan-rules": "^3.6.0"
     },
     "autoload": {
         "psr-4": {
