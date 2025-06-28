@@ -104,6 +104,6 @@
         "phpstan": "@php vendor/bin/phpstan analyse -c phpstan.neon",
         "rector-check": "@php vendor/bin/rector process --dry-run",
         "rector-fix": "@php vendor/bin/rector process",
-        "test": "@php vendor/bin/phpunit --bootstrap vendor/autoload.php --colors=always tests/"
+        "test": "@php vendor/bin/phpunit tests/"
     }
 }
