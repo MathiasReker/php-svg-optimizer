@@ -21,7 +21,8 @@
     "require": {
         "php": ">=8.3",
         "ext-dom": "*",
-        "ext-libxml": "*"
+        "ext-libxml": "*",
+        "ext-mbstring": "*"
     },
     "require-dev": {
         "brainbits/phpstan-rules": "^4.0.0",
@@ -41,6 +42,7 @@
         "phpunit/phpunit": "^12.2.5",
         "povils/phpmnd": "^3.6.0",
         "rector/rector": "^2.1.0",
+        "shipmonk/composer-dependency-analyser": "^1.8",
         "shipmonk/phpstan-rules": "^4.1.4",
         "slam/phpstan-extensions": "^6.6.0",
         "spaze/phpstan-disallowed-calls": "^4.5.0",
@@ -83,13 +85,24 @@
         }
     },
     "scripts": {
-        "cs-check": "php vendor/bin/php-cs-fixer --config=.php-cs-fixer.dist.php fix . --dry-run --diff",
-        "cs-fix": "php vendor/bin/php-cs-fixer --config=.php-cs-fixer.dist.php fix .",
-        "format": "composer normalize && composer phpcbf-fix & composer rector-fix && composer cs-fix",
-        "phpcbf-fix": "vendor/bin/phpcbf --standard=PEAR,PSR1,PSR2,PSR12 -d memory_limit=512M src tests bin",
-        "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon",
-        "rector-check": "vendor/bin/rector process --dry-run",
-        "rector-fix": "vendor/bin/rector process",
-        "test": "vendor/bin/phpunit --bootstrap vendor/autoload.php --colors=always tests/"
+        "analyze": [
+            "@php vendor/bin/phpstan analyse -c phpstan.neon",
+            "@php vendor/bin/composer-dependency-analyser",
+            "@composer validate --strict"
+        ],
+        "composer-dependency-analyser": "@php vendor/bin/composer-dependency-analyser",
+        "cs-check": "@php vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php --dry-run --diff",
+        "cs-fix": "@php vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php",
+        "format": [
+            "@composer normalize",
+            "@composer phpcbf-fix",
+            "@composer rector-fix",
+            "@composer cs-fix"
+        ],
+        "phpcbf-fix": "@php vendor/bin/phpcbf --standard=PEAR,PSR1,PSR2,PSR12 -d memory_limit=512M src tests bin",
+        "phpstan": "@php vendor/bin/phpstan analyse -c phpstan.neon",
+        "rector-check": "@php vendor/bin/rector process --dry-run",
+        "rector-fix": "@php vendor/bin/rector process",
+        "test": "@php vendor/bin/phpunit --bootstrap vendor/autoload.php --colors=always tests/"
     }
 }

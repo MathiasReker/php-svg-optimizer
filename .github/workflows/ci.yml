@@ -38,10 +38,13 @@ jobs:
         run: composer install --optimize-autoloader
 
       - name: Validate Composer Configuration
-        run: composer validate
+        run: composer validate --strict
 
       - name: Check platform requirements for packages
         run: composer check
+
+      - name: Analyze Composer Dependencies
+        run: composer composer-dependency-analyser
 
       - name: Lint PHP Files
         run: |

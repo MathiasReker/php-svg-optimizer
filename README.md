@@ -26,6 +26,7 @@ performance.
 
 - `ext-dom`: Required PHP extension for XML handling.
 - `ext-libxml`: Required PHP extension for XML error handling.
+- `ext-mbstring`: Required PHP extension for multibyte string handling.
 
 ### Installation
 
@@ -495,10 +496,10 @@ docker exec -it php-svg-optimizer bash
 
 #### Tools
 
-Run PHPStan:
+Run analysis tools:
 
 ```bash
-composer phpstan
+composer analyze
 ```
 
 Run tests:
