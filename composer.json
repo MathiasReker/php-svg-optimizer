@@ -90,7 +90,12 @@
         "analyze": [
             "@composer phpstan",
             "@composer composer-dependency-analyser",
-            "@composer validate --strict"
+            "@composer validate --strict",
+            "@composer check",
+            "@composer cs-check",
+            "@composer analyze",
+            "@composer test",
+            "@composer infection"
         ],
         "composer-dependency-analyser": "@php vendor/bin/composer-dependency-analyser",
         "cs-check": "@php vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php --dry-run --diff",
