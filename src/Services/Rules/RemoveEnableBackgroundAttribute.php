@@ -26,6 +26,8 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
      */
     private const string ENABLE_BACKGROUND_REGEX = '/^new\s0\s0\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)$/';
 
+    private const string ENABLE_BACKGROUND_ATTRIBUTE = 'enable-background';
+
     /**
      * Optimizes the given SVG document by removing or cleaning up the `enable-background` attribute.
      *
@@ -53,7 +55,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
 
         foreach ($elements as $element) {
             if ($element instanceof \DOMElement) {
-                $enableBackgroundValue = $element->getAttribute('enable-background');
+                $enableBackgroundValue = $element->getAttribute(self::ENABLE_BACKGROUND_ATTRIBUTE);
 
                 $width = $element->getAttribute('width');
                 $height = $element->getAttribute('height');
@@ -61,9 +63,9 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
                 $cleanedValue = $this->cleanupEnableBackgroundValue($enableBackgroundValue, $width, $height);
 
                 if ('' === trim($cleanedValue)) {
-                    $element->removeAttribute('enable-background');
+                    $element->removeAttribute(self::ENABLE_BACKGROUND_ATTRIBUTE);
                 } else {
-                    $element->setAttribute('enable-background', $cleanedValue);
+                    $element->setAttribute(self::ENABLE_BACKGROUND_ATTRIBUTE, $cleanedValue);
                 }
             }
         }

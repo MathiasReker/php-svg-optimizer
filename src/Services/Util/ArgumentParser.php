@@ -23,7 +23,12 @@ final readonly class ArgumentParser
     /**
      * Index of the first positional argument.
      */
-    private const int FIRST_POSITIONAL_ARGUMENT_INDEX = 0;
+    private const int OPTION_KEY_INDEX = 0;
+
+    /**
+     * Index of the second positional argument.
+     */
+    private const int OPTION_VALUE_INDEX = 1;
 
     /**
      * The ArgumentData instance.
@@ -81,7 +86,7 @@ final readonly class ArgumentParser
      */
     private function getOptionKey(string $option): string
     {
-        return explode('=', $option)[0];
+        return explode('=', $option)[self::OPTION_KEY_INDEX];
     }
 
     /**
@@ -113,7 +118,7 @@ final readonly class ArgumentParser
      */
     private function getOptionValue(string $option): string
     {
-        return explode('=', $option)[1];
+        return explode('=', $option)[self::OPTION_VALUE_INDEX];
     }
 
     /**
@@ -126,7 +131,7 @@ final readonly class ArgumentParser
     public function getNextPositionalArgumentIndex(): int
     {
         foreach ($this->args as $index => $arg) {
-            if (!str_starts_with($arg, '-') && self::FIRST_POSITIONAL_ARGUMENT_INDEX !== $index) {
+            if (!str_starts_with($arg, '-') && self::OPTION_KEY_INDEX !== $index) {
                 return $index;
             }
         }

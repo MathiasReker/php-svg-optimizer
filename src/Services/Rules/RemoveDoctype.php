@@ -13,12 +13,11 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 
 /**
  * @no-named-arguments
  */
-final readonly class RemoveDoctype implements SvgOptimizerRuleInterface
+final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
     /**
      * Regular expression to match the DOCTYPE declaration.
@@ -29,19 +28,6 @@ final readonly class RemoveDoctype implements SvgOptimizerRuleInterface
      * @see https://regex101.com/r/DIe4La/1
      */
     private const string DOCTYPE_REGEX = '/<!DOCTYPE[^>]*>/i';
-
-    /**
-     * The XmlProcessor instance.
-     */
-    private XmlProcessor $xmlProcessor;
-
-    /**
-     * Constructor for RemoveDoctype.
-     */
-    public function __construct()
-    {
-        $this->xmlProcessor = new XmlProcessor();
-    }
 
     /**
      * Optimizes the given \DOMDocument by removing the DOCTYPE declaration.

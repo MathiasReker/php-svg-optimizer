@@ -41,6 +41,7 @@ final class RuleTest extends TestCase
         yield [Rule::REMOVE_TITLE_AND_DESC, true];
         yield [Rule::REMOVE_UNNECESSARY_WHITESPACE, true];
         yield [Rule::SORT_ATTRIBUTES, true];
+        yield [Rule::REMOVE_UNSAFE_ELEMENTS, false];
     }
 
     /**
@@ -62,6 +63,7 @@ final class RuleTest extends TestCase
         yield [Rule::REMOVE_TITLE_AND_DESC, 'removeTitleAndDesc'];
         yield [Rule::REMOVE_UNNECESSARY_WHITESPACE, 'removeUnnecessaryWhitespace'];
         yield [Rule::SORT_ATTRIBUTES, 'sortAttributes'];
+        yield [Rule::REMOVE_UNSAFE_ELEMENTS, 'removeUnsafeElements'];
     }
 
     #[DataProvider('provideDefaultValueCases')]

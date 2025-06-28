@@ -76,7 +76,7 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
         $domXPath->registerNamespace('xlink', 'http://www.w3.org/1999/xlink');
         $this->replaceAttributes($domXPath, self::ATTRIBUTES_TO_REPLACE);
         $this->removeNamespaceFromSvgTags($domDocument);
-        $this->removeAttributes($domXPath);
+        $this->removeAttributes($domXPath, self::ATTRIBUTES_TO_REMOVE);
     }
 
     /**
@@ -137,11 +137,12 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
      * This method removes the attributes listed in `ATTRIBUTES_TO_REMOVE` from all
      * SVG elements in the document.
      *
-     * @param \DOMXPath $domXPath The \DOMXPath instance used to query the SVG elements
+     * @param \DOMXPath    $domXPath   The \DOMXPath instance used to query the SVG elements
+     * @param list<string> $attributes An associative array where the key is the attribute
      */
-    private function removeAttributes(\DOMXPath $domXPath): void
+    private function removeAttributes(\DOMXPath $domXPath, array $attributes): void
     {
-        foreach (self::ATTRIBUTES_TO_REMOVE as $attribute) {
+        foreach ($attributes as $attribute) {
             $nodes = $domXPath->query(\sprintf('//*[@%s]', $attribute));
             if (!$nodes instanceof \DOMNodeList) {
                 continue;

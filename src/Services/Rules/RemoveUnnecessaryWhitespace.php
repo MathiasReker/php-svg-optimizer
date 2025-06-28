@@ -13,12 +13,11 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 
 /**
  * @no-named-arguments
  */
-final readonly class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
+final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
     /**
      * Regex pattern for matching attribute values.
@@ -50,13 +49,6 @@ final readonly class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInte
      */
     private const string WHITESPACE_REGEX = '/\s+/';
 
-    private XmlProcessor $xmlProcessor;
-
-    public function __construct()
-    {
-        $this->xmlProcessor = new XmlProcessor();
-    }
-
     /**
      * Remove unnecessary whitespace from the SVG document.
      *
@@ -73,25 +65,8 @@ final readonly class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInte
     {
         $this->xmlProcessor->process(
             $domDocument,
-            fn (string $content): string => $this->removeWhitespaceBetweenTags(
-                $this->removeStyleAttributeWhitespace($this->removeAttributeValueWhitespace($content))
-            )
+            fn (string $content): string => $this->removeStyleAttributeWhitespace($this->removeAttributeValueWhitespace($content))
         );
-    }
-
-    /**
-     * Remove whitespace between tags in the SVG content.
-     *
-     * This method processes the SVG content to remove all whitespace between
-     * tags, which helps to compact the SVG file.
-     *
-     * @param string $content The SVG content to process
-     *
-     * @return string The processed SVG content with whitespace removed between tags
-     */
-    private function removeWhitespaceBetweenTags(string $content): string
-    {
-        return (string) preg_replace('/>\s+</', '><', $content);
     }
 
     /**

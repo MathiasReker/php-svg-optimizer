@@ -51,6 +51,7 @@ readonly class XmlProcessor
     public function process(\DOMDocument $domDocument, callable $callback): string
     {
         $svgContent = $domDocument->saveXML();
+
         if (false === $svgContent) {
             throw new XmlProcessingException('Failed to save SVG XML content.');
         }

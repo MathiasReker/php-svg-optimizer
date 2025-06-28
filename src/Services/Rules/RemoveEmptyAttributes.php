@@ -19,6 +19,13 @@ use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterf
 final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
 {
     /**
+     * Regex pattern to match multiple consecutive spaces.
+     *
+     * @see https://regex101.com/r/OuyK7V/1
+     */
+    private const string MULTIPLE_SPACES_REGEX = '/\s+/';
+
+    /**
      * Optimizes the provided \DOMDocument by removing empty or whitespace-only attributes.
      *
      * This method iterates through all elements in the \DOMDocument and removes any attributes
@@ -77,6 +84,6 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
      */
     private function isEmptyOrWhitespace(string $value): bool
     {
-        return '' === preg_replace('/\s+/', '', $value);
+        return '' === preg_replace(self::MULTIPLE_SPACES_REGEX, '', $value);
     }
 }

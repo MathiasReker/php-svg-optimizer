@@ -13,12 +13,11 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 
 /**
  * @no-named-arguments
  */
-final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleInterface
+final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
     /**
      * Regex pattern for converting empty tags to self-closing tags without space before the slash.
@@ -37,19 +36,6 @@ final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleIn
      * @see https://regex101.com/r/Le1XFu/1
      */
     private const string SELF_CLOSING_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*?)\s*\/>/';
-
-    /**
-     * The XmlProcessor instance.
-     */
-    private XmlProcessor $xmlProcessor;
-
-    /**
-     * Constructor for ConvertEmptyTagsToSelfClosing.
-     */
-    public function __construct()
-    {
-        $this->xmlProcessor = new XmlProcessor();
-    }
 
     /**
      * Convert empty tags to self-closing tags in the SVG document.

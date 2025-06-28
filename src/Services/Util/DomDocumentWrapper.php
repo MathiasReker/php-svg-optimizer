@@ -29,6 +29,17 @@ final readonly class DomDocumentWrapper
     private const string DEFAULT_ENCODING = 'UTF-8';
 
     /**
+     * Regex pattern to match whitespace between XML tags.
+     *
+     * This pattern matches any whitespace (spaces, tabs, newlines) that appears
+     * between closing and opening tags, allowing for removal of unnecessary
+     * whitespace in the final XML output.
+     *
+     * @see https://regex101.com/r/lyKDnR/1
+     */
+    private const string WHITESPACE_BETWEEN_TAGS_REGEX = '/>\s+</';
+
+    /**
      * Saves the current \DOMDocument content as an XML string.
      *
      * @param \DOMDocument $domDocument The \DOMDocument instance to be saved
@@ -45,7 +56,9 @@ final readonly class DomDocumentWrapper
             throw new XmlProcessingException('Failed to save XML content.');
         }
 
-        return $this->removeLineFeedsAndTabs($saveXML);
+        $clean = $this->removeLineFeedsAndTabs($saveXML);
+
+        return $this->removeWhitespaceBetweenTags($clean);
     }
 
     /**
@@ -61,6 +74,20 @@ final readonly class DomDocumentWrapper
     private function removeLineFeedsAndTabs(string $content): string
     {
         return str_replace(["\r", "\n", "\t"], '', $content);
+    }
+
+    /**
+     * Removes unnecessary whitespace (spaces, tabs, newlines) between XML tags.
+     *
+     * Converts patterns like `>   <` into `><` to compact the XML output.
+     *
+     * @param string $content The XML content with potential inter-tag whitespace
+     *
+     * @return string The XML content with collapsed inter-tag whitespace
+     */
+    private function removeWhitespaceBetweenTags(string $content): string
+    {
+        return (string) preg_replace(self::WHITESPACE_BETWEEN_TAGS_REGEX, '><', $content);
     }
 
     /**
@@ -108,11 +135,13 @@ final readonly class DomDocumentWrapper
      */
     private function createDomDocument(): \DOMDocument
     {
-        $domDocument = new \DOMDocument();
+        $domDocument = new \DOMDocument(self::DEFAULT_XML_VERSION, self::DEFAULT_ENCODING);
         $domDocument->formatOutput = false;
         $domDocument->preserveWhiteSpace = false;
-        $domDocument->encoding = self::DEFAULT_ENCODING;
-        $domDocument->xmlVersion = self::DEFAULT_XML_VERSION;
+
+        // Security: Prevent XXE
+        $domDocument->resolveExternals = false;
+        $domDocument->substituteEntities = false;
 
         return $domDocument;
     }
@@ -128,6 +157,6 @@ final readonly class DomDocumentWrapper
      */
     public function loadFromString(string $xmlContent): \DOMDocument
     {
-        return $this->loadDomDocument(static fn (\DOMDocument $domDocument): bool => $domDocument->loadXML($xmlContent));
+        return $this->loadDomDocument(static fn (\DOMDocument $domDocument): bool => $domDocument->loadXML($xmlContent, \LIBXML_NONET | \LIBXML_NOCDATA | \LIBXML_NOEMPTYTAG));
     }
 }

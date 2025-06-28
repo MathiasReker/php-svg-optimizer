@@ -24,11 +24,6 @@ use MathiasReker\PhpSvgOptimizer\Services\Util\ConfigLoader;
 final class SvgOptimizerCommand
 {
     /**
-     * The factor to convert a decimal to a percentage.
-     */
-    private const int PERCENTAGE_FACTOR = 100;
-
-    /**
      * The exit code for a successful operation.
      */
     private const int EXIT_CODE_SUCCESS = 0;
@@ -109,9 +104,6 @@ final class SvgOptimizerCommand
      * @param list<string> $args The command-line arguments passed to the script
      *
      * @return self The SvgOptimizerCommand instance
-     *
-     * @throws \UnexpectedValueException If the command-line arguments are invalid or if the configuration file cannot be loaded
-     * @throws \JsonException            If the configuration file contains invalid JSON
      */
     public static function fromArgs(array $args): self
     {
@@ -123,8 +115,13 @@ final class SvgOptimizerCommand
         }
 
         if ($argumentParser->hasOption(Option::VERSION)) {
-            OutputHelper::printVersion(self::getVersionFromPackageJson());
-            exit(self::EXIT_CODE_SUCCESS);
+            try {
+                OutputHelper::printVersion(self::getVersionFromPackageJson());
+                exit(self::EXIT_CODE_SUCCESS);
+            } catch (\UnexpectedValueException $unexpectedValueException) {
+                OutputHelper::printError($unexpectedValueException->getMessage());
+                exit(self::EXIT_CODE_ERROR);
+            }
         }
 
         try {
@@ -142,6 +139,9 @@ final class SvgOptimizerCommand
             return $command;
         } catch (\InvalidArgumentException $invalidArgumentException) {
             OutputHelper::printError($invalidArgumentException->getMessage());
+            exit(self::EXIT_CODE_ERROR);
+        } catch (\JsonException $jsonException) {
+            OutputHelper::printError($jsonException->getMessage());
             exit(self::EXIT_CODE_ERROR);
         }
     }
@@ -186,10 +186,6 @@ final class SvgOptimizerCommand
                 exit(self::EXIT_CODE_ERROR);
             }
         }
-
-        if (!$this->quiet) {
-            OutputHelper::printSummary($this->optimizedFiles, $this->totalOriginalSize, $this->totalOptimizedSize);
-        }
     }
 
     /**
@@ -207,7 +203,9 @@ final class SvgOptimizerCommand
         );
 
         foreach ($iterator as $fileInfo) {
-            if ($fileInfo instanceof \SplFileInfo && $fileInfo->isFile() && self::SVG_EXTENSION === $fileInfo->getExtension()) {
+            if ($fileInfo instanceof \SplFileInfo
+                && $fileInfo->isFile()
+                && self::SVG_EXTENSION === $fileInfo->getExtension()) {
                 $this->optimizeSvg($fileInfo->getPathname());
             }
         }
@@ -221,15 +219,13 @@ final class SvgOptimizerCommand
     private function optimizeSvg(string $filePath): void
     {
         try {
-            $svgOptimizer = SvgOptimizerService::fromFile($filePath);
-
             $rules = [];
 
             foreach (Rule::cases() as $rule) {
                 $rules[$rule->value] = $this->config[$rule->value] ?? $rule->defaultValue();
             }
 
-            $svgOptimizer = $svgOptimizer->withRules(
+            $svgOptimizer = SvgOptimizerService::fromFile($filePath)->withRules(
                 $rules[Rule::CONVERT_COLORS_TO_HEX->value],
                 $rules[Rule::FLATTEN_GROUPS->value],
                 $rules[Rule::MINIFY_SVG_COORDINATES->value],
@@ -261,13 +257,8 @@ final class SvgOptimizerCommand
             $this->totalOptimizedSize += $metaData->getOptimizedSize();
             ++$this->optimizedFiles;
 
-            $reduction = $metaData->getOriginalSize() - $metaData->getOptimizedSize();
-            $reductionPercentage = $metaData->getOriginalSize() > 0
-                ? ($reduction / $metaData->getOriginalSize()) * self::PERCENTAGE_FACTOR
-                : 0;
-
             if (!$this->quiet) {
-                OutputHelper::printOptimizationResult($filePath, $reductionPercentage);
+                OutputHelper::printOptimizationResult($filePath, $metaData->getSavedPercentage());
             }
         } catch (\Exception $exception) {
             if (!$this->quiet) {

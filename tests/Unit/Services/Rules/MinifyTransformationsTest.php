@@ -85,6 +85,19 @@ final class MinifyTransformationsTest extends TestCase
                 XML,
         ];
 
+        yield 'Removes Empty Transform Attribute when 0' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="translate(0)">
+                        <rect x="10" y="10" width="30" height="30"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><rect x="10" y="10" width="30" height="30"/></g></svg>
+                XML,
+        ];
+
         yield 'Removes Multiple Identity Transform Steps' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">

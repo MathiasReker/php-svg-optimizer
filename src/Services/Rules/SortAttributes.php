@@ -29,8 +29,8 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     private const array ATTRIBUTE_ORDER = [
         'xmlns',
         'id',
-        'width',
         'height',
+        'width',
     ];
 
     /**

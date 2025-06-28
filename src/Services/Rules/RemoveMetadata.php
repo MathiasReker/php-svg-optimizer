@@ -12,12 +12,15 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Services\Rules\Traits\RemoveElementsByTagNameTrait;
 
 /**
  * @no-named-arguments
  */
 final readonly class RemoveMetadata implements SvgOptimizerRuleInterface
 {
+    use RemoveElementsByTagNameTrait;
+
     /**
      * Remove the metadata elements from the SVG document.
      *
@@ -31,28 +34,5 @@ final readonly class RemoveMetadata implements SvgOptimizerRuleInterface
     public function optimize(\DOMDocument $domDocument): void
     {
         $this->removeElementsByTagName($domDocument, 'metadata');
-    }
-
-    /**
-     * Remove all elements with the given tag name from the \DOMDocument.
-     *
-     * This method removes all elements with the specified tag name from the
-     * \DOMDocument. It repeatedly removes elements until none with the given tag
-     * name remain.
-     *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
-     * @param string       $tagName     The tag name of the elements to be removed
-     */
-    private function removeElementsByTagName(\DOMDocument $domDocument, string $tagName): void
-    {
-        $domNodeList = $domDocument->getElementsByTagName($tagName);
-
-        while ($domNodeList->length > 0) {
-            $element = $domNodeList->item(0);
-
-            if ($element instanceof \DOMElement && $element->parentNode instanceof \DOMNode) {
-                $element->parentNode->removeChild($element);
-            }
-        }
     }
 }

@@ -272,7 +272,7 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><script><![CDATA[        console.log("This is a script");    ]]></script></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><script>        console.log("This is a script");    </script></svg>
                 XML,
         ];
 

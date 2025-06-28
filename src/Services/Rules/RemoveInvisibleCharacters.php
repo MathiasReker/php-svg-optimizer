@@ -13,12 +13,11 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 
 /**
  * @no-named-arguments
  */
-final readonly class RemoveInvisibleCharacters implements SvgOptimizerRuleInterface
+final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
     /**
      * Regex pattern for removing invisible characters in HTML entity format.
@@ -29,19 +28,6 @@ final readonly class RemoveInvisibleCharacters implements SvgOptimizerRuleInterf
      * @see https://regex101.com/r/7HAFNv/1
      */
     private const string INVISIBLE_CHARACTERS_REGEX = '/&#x(?:200B|200C|200D|2028|2029|AD|0A|0D|09|D);/u';
-
-    /**
-     * The XmlProcessor instance.
-     */
-    private XmlProcessor $xmlProcessor;
-
-    /**
-     * Constructor for RemoveInvisibleCharacters.
-     */
-    public function __construct()
-    {
-        $this->xmlProcessor = new XmlProcessor();
-    }
 
     /**
      * Remove invisible characters from the SVG document.

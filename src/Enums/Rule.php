@@ -34,6 +34,7 @@ enum Rule: string
     case REMOVE_UNNECESSARY_WHITESPACE = 'removeUnnecessaryWhitespace';
     case REMOVE_UNUSED_NAMESPACES = 'removeUnusedNamespaces';
     case REMOVE_INKSCAPE_FOOTPRINTS = 'removeInkscapeFootprints';
+    case REMOVE_UNSAFE_ELEMENTS = 'removeUnsafeElements';
 
     /**
      * Get the default value for each rule.
@@ -59,6 +60,7 @@ enum Rule: string
             self::REMOVE_UNNECESSARY_WHITESPACE->value,
             self::REMOVE_UNUSED_NAMESPACES->value,
             self::REMOVE_INKSCAPE_FOOTPRINTS->value => true,
+            self::REMOVE_UNSAFE_ELEMENTS->value => false,
         };
     }
 }

@@ -13,12 +13,11 @@ namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
 use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
 
 /**
  * @no-named-arguments
  */
-final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
+final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
     /**
      * Regex pattern for matching XML namespaces.
@@ -33,13 +32,6 @@ final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
      * @see https://regex101.com/r/pxqIJN/1
      */
     private const string ELEMENT_PATTERN_TEMPLATE = '/%s:[a-zA-Z0-9\-]+/';
-
-    private XmlProcessor $xmlProcessor;
-
-    public function __construct()
-    {
-        $this->xmlProcessor = new XmlProcessor();
-    }
 
     /**
      * Optimize the given \DOMDocument by removing unused namespaces.
@@ -94,7 +86,7 @@ final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
         $result = preg_match_all($namespacePattern, $svgContent, $matches);
         if (false !== $result && $result > 0) {
             foreach ($matches[1] as $prefix) {
-                $namespaceKey = 'xmlns:' . $prefix;
+                $namespaceKey = \sprintf('xmlns:%s', $prefix);
                 $elementPattern = \sprintf(self::ELEMENT_PATTERN_TEMPLATE, preg_quote($prefix, '/'));
                 preg_match_all($elementPattern, $svgContent, $elementMatches);
                 $namespaceCounts[$namespaceKey] = \count($elementMatches[0]);

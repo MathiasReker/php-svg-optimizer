@@ -177,8 +177,8 @@ final readonly class SvgOptimizerService
             RemoveInkscapeFootprints::class => $removeInkscapeFootprints,
         ];
 
-        foreach (array_keys(array_filter($rules)) as $ruleClass) {
-            $this->svgOptimizer->addRule(new $ruleClass());
+        foreach (array_keys(array_filter($rules)) as $class) {
+            $this->svgOptimizer->addRule(new $class());
         }
 
         return $this;

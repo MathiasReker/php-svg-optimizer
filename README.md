@@ -92,7 +92,8 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
     "removeTitleAndDesc": true,
     "removeUnnecessaryWhitespace": true,
     "removeUnusedNamespaces": true,
-    "sortAttributes": true
+    "sortAttributes": true,
+    "RemoveUnsafeElements": true
 }
 ```
 
@@ -134,6 +135,7 @@ try {
             removeUnnecessaryWhitespace: true,
             removeUnusedNamespaces: true,
             sortAttributes: true,
+            RemoveUnsafeElements: true,
         )
         ->optimize()
         ->saveToFile('path/to/output.svg');
@@ -355,6 +357,8 @@ Sorts attributes within each element:
 $svgOptimizer->withRules(sortAttributes: true);
 ```
 
+// TODO: RemoveUnsafeElements
+
 All options are set to true by default. You can configure them individually by passing the desired values to it:
 
 ```php
@@ -376,6 +380,7 @@ $svgOptimizer->withRules(
     removeUnnecessaryWhitespace: true,
     removeUnusedNamespaces: true,
     sortAttributes: true,
+    removeUnsafeElements: true,
 );
 ```
 

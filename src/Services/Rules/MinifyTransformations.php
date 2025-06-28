@@ -80,15 +80,9 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     private const string REDUNDANT_COMMAS_REGEX = '/\s*,\s*/';
 
     /**
-     * Optimize the SVG document by minifying transformations.
+     * Optimize the SVG document by minifying all transform attributes.
      *
-     * This method processes the `transform` attribute of all elements in the SVG document and performs the following optimizations:
-     * - Converts percentage values to decimal numbers.
-     * - Removes identity transformations such as `translate(0, 0)`, `scale(1, 1)`, `rotate(0)`, `skewX(0)`, and `skewY(0)`.
-     * - Reduces multiple spaces to a single space.
-     * - Removes redundant commas.
-     *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The SVG document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -102,31 +96,11 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
             $transform = $element->getAttribute('transform');
 
             $transform = $this->convertPercentagesToNumbers($transform);
-            $transform = preg_replace(
-                [
-                    self::TRANSLATE_REGEX,
-                    self::SCALE_REGEX,
-                    self::ROTATE_REGEX,
-                    self::SKEW_X_REGEX,
-                    self::SKEW_Y_REGEX,
-                    self::MULTIPLE_SPACES_REGEX,
-                    self::REDUNDANT_COMMAS_REGEX,
-                ],
-                [
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    ' ',
-                    ',',
-                ],
-                $transform
-            ) ?? '';
-
+            $transform = $this->removeIdentityTransforms($transform);
+            $transform = $this->normalizeSpacesAndCommas($transform);
             $transform = trim($transform);
 
-            if ('' === $transform || '0' === $transform) {
+            if ($this->isEmptyTransform($transform)) {
                 $element->removeAttribute('transform');
             } else {
                 $element->setAttribute('transform', $transform);
@@ -135,13 +109,11 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Convert percentage values in transformations to decimal numbers.
+     * Convert percentage values in the transform attribute to decimal numbers.
      *
-     * This method replaces percentage values in the transform attribute with their decimal equivalents.
+     * @param string $transform The transform attribute string
      *
-     * @param string $transform The transform attribute value to be processed
-     *
-     * @return string The transformed value with percentages converted to decimals
+     * @return string The transform string with percentages converted
      */
     private function convertPercentagesToNumbers(string $transform): string
     {
@@ -150,5 +122,53 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
             static fn (array $matches): string => (string) ((float) $matches[1] / self::PERCENTAGE_FACTOR),
             $transform
         ) ?? $transform;
+    }
+
+    /**
+     * Remove identity transformations such as translate(0), scale(1), rotate(0), skewX(0), skewY(0).
+     *
+     * @param string $transform The transform attribute string
+     *
+     * @return string The transform string without identity transformations
+     */
+    private function removeIdentityTransforms(string $transform): string
+    {
+        return preg_replace(
+            [
+                self::TRANSLATE_REGEX,
+                self::SCALE_REGEX,
+                self::ROTATE_REGEX,
+                self::SKEW_X_REGEX,
+                self::SKEW_Y_REGEX,
+            ],
+            '',
+            $transform
+        ) ?? $transform;
+    }
+
+    /**
+     * Normalize whitespace and commas by collapsing multiple spaces and removing redundant commas.
+     *
+     * @param string $transform The transform attribute string
+     *
+     * @return string The normalized transform string
+     */
+    private function normalizeSpacesAndCommas(string $transform): string
+    {
+        $transform = preg_replace(self::MULTIPLE_SPACES_REGEX, ' ', $transform) ?? $transform;
+
+        return preg_replace(self::REDUNDANT_COMMAS_REGEX, ',', $transform) ?? $transform;
+    }
+
+    /**
+     * Determine whether the transform string is empty or equivalent to zero.
+     *
+     * @param string $transform The transform attribute string
+     *
+     * @return bool True if the transform should be considered empty and removed
+     */
+    private function isEmptyTransform(string $transform): bool
+    {
+        return '' === $transform || '0' === $transform;
     }
 }

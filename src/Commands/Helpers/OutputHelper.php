@@ -39,6 +39,7 @@ final readonly class OutputHelper
     public static function printHelp(): void
     {
         $argumentData = new ArgumentData();
+
         printf('PHP SVG Optimizer%s%s', \PHP_EOL, \PHP_EOL);
         printf('Usage:%s', \PHP_EOL);
         printf('  %s%s%s', $argumentData->getFormat(), \PHP_EOL, \PHP_EOL);
@@ -93,24 +94,5 @@ final readonly class OutputHelper
             '',
             \PHP_EOL
         );
-    }
-
-    /**
-     * Print a summary of all optimized files.
-     *
-     * @param int $fileCount     Number of processed files
-     * @param int $originalSize  Total size before optimization (bytes)
-     * @param int $optimizedSize Total size after optimization (bytes)
-     */
-    public static function printSummary(int $fileCount, int $originalSize, int $optimizedSize): void
-    {
-        $reduction = $originalSize - $optimizedSize;
-        $percentage = $originalSize > 0
-            ? ($reduction / $originalSize) * 100
-            : 0;
-
-        printf('%sTotal files processed: %d%s', \PHP_EOL, $fileCount, \PHP_EOL);
-        printf('Total size reduction: %d bytes%s', $reduction, \PHP_EOL);
-        printf('Total reduction percentage: %s%%%s', number_format($percentage, self::DEFAULT_PRECISION), \PHP_EOL);
     }
 }

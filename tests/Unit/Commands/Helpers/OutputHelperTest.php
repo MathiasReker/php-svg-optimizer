@@ -63,29 +63,6 @@ final class OutputHelperTest extends TestCase
         self::assertSame('file.svg (42.57%)' . \PHP_EOL, $output);
     }
 
-    public function testPrintSummary(): void
-    {
-        ob_start();
-        OutputHelper::printSummary(3, 1_000, 700);
-        $output = ob_get_clean();
-
-        self::assertNotFalse($output);
-        self::assertStringContainsString('Total files processed: 3', $output);
-        self::assertStringContainsString('Total size reduction: 300 bytes', $output);
-        self::assertStringContainsString('Total reduction percentage: 30.00%', $output);
-    }
-
-    public function testPrintSummaryWithZeroOriginalSize(): void
-    {
-        ob_start();
-        OutputHelper::printSummary(1, 0, 0);
-        $output = ob_get_clean();
-
-        self::assertNotFalse($output);
-        self::assertStringContainsString('Total size reduction: 0 bytes', $output);
-        self::assertStringContainsString('Total reduction percentage: 0.00%', $output);
-    }
-
     public function testPrintHelp(): void
     {
         ob_start();

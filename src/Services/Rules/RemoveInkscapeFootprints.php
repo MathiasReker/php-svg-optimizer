@@ -19,6 +19,11 @@ use MathiasReker\PhpSvgOptimizer\Contracts\Services\Rules\SvgOptimizerRuleInterf
 final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterface
 {
     /**
+     * The limit for the number of times to explode the SVG document.
+     */
+    private const int EXPLODE_LIMIT = 2;
+
+    /**
      * The number of optimization loops to perform.
      */
     private const int OPTIMIZATION_LOOP_COUNT = 2;
@@ -30,11 +35,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      * processing, such as removing unwanted elements and attributes.
      */
     private const string ALL_NODES_XPATH_QUERY = '//*';
-
-    /**
-     * The limit for the number of times to explode the SVG document.
-     */
-    private const int EXPLODE_LIMIT = 2;
 
     /**
      * The XML namespace attributes to remove from the SVG document.
@@ -99,9 +99,9 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
         }
 
         for ($i = 0; $i < self::OPTIMIZATION_LOOP_COUNT; ++$i) {
-            $this->removeNamespacesFromSvgTags($domDocument);
-            $this->removeElements($domXPath);
-            $this->removeAttributes($domXPath);
+            $this->removeNamespaceDeclarations($domDocument);
+            $this->removeTags($domXPath, self::TAGS_TO_REMOVE);
+            $this->removeNamespacedAttributes($domXPath);
         }
     }
 
@@ -114,7 +114,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
-    private function removeNamespacesFromSvgTags(\DOMDocument $domDocument): void
+    private function removeNamespaceDeclarations(\DOMDocument $domDocument): void
     {
         $domNodeList = $domDocument->getElementsByTagName('*');
 
@@ -134,15 +134,16 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      * any elements that match the specified tags in the TAGS_TO_REMOVE
      * constant.
      *
-     * @param \DOMXPath $domxPath The \DOMXPath instance representing the SVG file to be optimized
+     * @param \DOMXPath    $domXPath     The \DOMXPath instance representing the SVG file to be optimized
+     * @param list<string> $tagsToRemove
      */
-    private function removeElements(\DOMXPath $domxPath): void
+    private function removeTags(\DOMXPath $domXPath, array $tagsToRemove): void
     {
-        foreach (self::TAGS_TO_REMOVE as $pattern) {
-            [$prefix] = explode(':', $pattern, self::EXPLODE_LIMIT);
+        foreach ($tagsToRemove as $tagToRemove) {
+            [$prefix] = explode(':', $tagToRemove, self::EXPLODE_LIMIT);
 
             $query = \sprintf('//%s:*', $prefix);
-            $nodes = $domxPath->query($query);
+            $nodes = $domXPath->query($query);
 
             if (!($nodes instanceof \DOMNodeList)) {
                 continue;
@@ -169,9 +170,9 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      * any attributes that match the specified attributes in the ATTRIBUTES_TO_REMOVE
      * constant.
      *
-     * @param \DOMXPath $domxPath The \DOMXPath instance representing the SVG file to be optimized
+     * @param \DOMXPath $domXPath The \DOMXPath instance representing the SVG file to be optimized
      */
-    private function removeAttributes(\DOMXPath $domxPath): void
+    private function removeNamespacedAttributes(\DOMXPath $domXPath): void
     {
         foreach (self::ATTRIBUTES_TO_REMOVE as $pattern) {
             if (!str_contains($pattern, ':')) {
@@ -188,16 +189,16 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
                 continue;
             }
 
-            $this->processNodes($domxPath, self::NAMESPACE_URIS[$prefix]);
+            $this->processNodes($domXPath, self::NAMESPACE_URIS[$prefix]);
         }
     }
 
     /**
      * Process all nodes in the \DOMXPath and remove attributes that match the given namespace URI.
      */
-    private function processNodes(\DOMXPath $domxPath, string $namespaceUri): void
+    private function processNodes(\DOMXPath $domXPath, string $namespaceUri): void
     {
-        $nodes = $domxPath->query(self::ALL_NODES_XPATH_QUERY);
+        $nodes = $domXPath->query(self::ALL_NODES_XPATH_QUERY);
         if (!($nodes instanceof \DOMNodeList)) {
             return;
         }

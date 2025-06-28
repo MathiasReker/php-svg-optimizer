@@ -33,6 +33,7 @@ parameters:
         - InvalidArgumentException
         - RuntimeException
         - MathiasReker\PhpSvgOptimizer\Services\Providers\AbstractProvider
+        - MathiasReker\PhpSvgOptimizer\Services\Rules\AbstractXmlProcessor
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
     - vendor/symplify/phpstan-rules/config/code-complexity-rules.neon
