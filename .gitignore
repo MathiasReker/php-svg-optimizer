@@ -4,3 +4,5 @@ vendor/
 .DS_Store
 Thumbs.db
 .phpunit.cache/
+infection.log
+infection/

@@ -1,0 +1,40 @@
+{
+    "source": {
+        "directories": [
+            "src"
+        ],
+        "excludes": [
+            "assets",
+            "scripts",
+        ]
+    },
+    "timeout": 10,
+    "logs": {
+        "text": "infection.log"
+    },
+    "tmpDir": ".",
+    "phpUnit": {
+        "configDir": ".",
+    },
+    "mutators": {
+        "global-ignore": [
+            "FooClass::__construct"
+        ],
+        "global-ignoreSourceCodeByRegex": [
+            "Assert::.*"
+        ],
+        "@default": true,
+        "@function_signature": false,
+        "TrueValue": {
+            "ignore": [
+                "NameSpace\\*\\Class::method"
+            ],
+            "ignoreSourceCodeByRegex": [
+                "\\$this->logger.*"
+            ]
+        }
+    },
+    "testFramework": "phpunit",
+    "testFrameworkOptions": "--filter=Unit",
+    "initialTestsPhpOptions": "-d zend_extension=xdebug -d memory_limit=-1"
+}

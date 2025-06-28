@@ -30,6 +30,7 @@
         "ergebnis/phpstan-rules": "^2.10.5",
         "friendsofphp/php-cs-fixer": "^3.75.0",
         "hiperdk/phpstan-rules": "^1.0.0",
+        "infection/infection": "^0.29.14",
         "kubawerlos/php-cs-fixer-custom-fixers": "^3.27.2",
         "marc-mabe/php-enum-phpstan": "^3.0.0",
         "odan/phpstan-rules": "^0.2.0",
@@ -68,6 +69,7 @@
     "config": {
         "allow-plugins": {
             "ergebnis/composer-normalize": true,
+            "infection/extension-installer": true,
             "phpstan/extension-installer": true,
             "phpunit/phpunit": true
         },
@@ -86,8 +88,8 @@
     },
     "scripts": {
         "analyze": [
-            "@php vendor/bin/phpstan analyse -c phpstan.neon",
-            "@php vendor/bin/composer-dependency-analyser",
+            "@composer phpstan",
+            "@composer composer-dependency-analyser",
             "@composer validate --strict"
         ],
         "composer-dependency-analyser": "@php vendor/bin/composer-dependency-analyser",
@@ -95,10 +97,9 @@
         "cs-fix": "@php vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php",
         "format": [
             "@composer normalize",
-            "@composer phpcbf-fix",
-            "@composer rector-fix",
-            "@composer cs-fix"
+            "@composer phpcbf-fix & @composer cs-fix && @composer cs-check"
         ],
+        "infection": "@php vendor/bin/infection --threads=10 --only-covered",
         "phpcbf-fix": "@php vendor/bin/phpcbf --standard=PEAR,PSR1,PSR2,PSR12 -d memory_limit=512M src tests bin",
         "phpstan": "@php vendor/bin/phpstan analyse -c phpstan.neon",
         "rector-check": "@php vendor/bin/rector process --dry-run",
