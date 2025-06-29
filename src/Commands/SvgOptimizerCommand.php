@@ -149,6 +149,11 @@ final class SvgOptimizerCommand
      */
     public function run(): void
     {
+        if (!$this->isRunningInCli()) {
+            OutputHelper::printError('This command can only be run from the command line.');
+            exit(self::EXIT_CODE_ERROR);
+        }
+
         foreach ($this->paths as $path) {
             if (is_dir($path)) {
                 $this->processDirectory($path);
@@ -159,6 +164,11 @@ final class SvgOptimizerCommand
                 exit(self::EXIT_CODE_ERROR);
             }
         }
+    }
+
+    private function isRunningInCli(): bool
+    {
+        return \PHP_SAPI === 'cli';
     }
 
     /**
