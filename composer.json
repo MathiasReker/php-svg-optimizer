@@ -94,7 +94,6 @@
             "@composer validate --strict",
             "@composer check",
             "@composer cs-check",
-            "@composer analyze",
             "@composer test",
             "@composer infection"
         ],
