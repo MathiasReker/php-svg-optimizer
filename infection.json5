@@ -17,22 +17,11 @@
         "configDir": ".",
     },
     "mutators": {
-        "global-ignore": [
-            "FooClass::__construct"
-        ],
         "global-ignoreSourceCodeByRegex": [
             "Assert::.*"
         ],
         "@default": true,
         "@function_signature": false,
-        "TrueValue": {
-            "ignore": [
-                "NameSpace\\*\\Class::method"
-            ],
-            "ignoreSourceCodeByRegex": [
-                "\\$this->logger.*"
-            ]
-        }
     },
     "testFramework": "phpunit",
     "testFrameworkOptions": "--filter=Unit",

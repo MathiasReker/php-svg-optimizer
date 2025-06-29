@@ -48,7 +48,7 @@
         "slam/phpstan-extensions": "^6.6.0",
         "spaze/phpstan-disallowed-calls": "^4.5.0",
         "squizlabs/php_codesniffer": "^3.13.2",
-        "symfony/var-dumper": "^7.3",
+        "symfony/var-dumper": "^7.3.1",
         "symplify/phpstan-rules": "^14.6.9",
         "tomasvotruba/cognitive-complexity": "^1.0.0",
         "tomasvotruba/type-coverage": "^2.0.2",
