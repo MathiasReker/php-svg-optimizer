@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Commands;
 
 use MathiasReker\PhpSvgOptimizer\Commands\Helpers\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Enums\Application;
 use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Enums\Rule;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
@@ -115,13 +116,8 @@ final class SvgOptimizerCommand
         }
 
         if ($argumentParser->hasOption(Option::VERSION)) {
-            try {
-                OutputHelper::printVersion(self::getVersionFromPackageJson());
-                exit(self::EXIT_CODE_SUCCESS);
-            } catch (\UnexpectedValueException $unexpectedValueException) {
-                OutputHelper::printError($unexpectedValueException->getMessage());
-                exit(self::EXIT_CODE_ERROR);
-            }
+            OutputHelper::printVersion(Application::VERSION->value);
+            exit(self::EXIT_CODE_SUCCESS);
         }
 
         try {
@@ -144,29 +140,6 @@ final class SvgOptimizerCommand
             OutputHelper::printError($jsonException->getMessage());
             exit(self::EXIT_CODE_ERROR);
         }
-    }
-
-    /**
-     * Retrieves the version of the library from the package.json file.
-     *
-     * @throws \UnexpectedValueException If the package.json file does not exist or does not contain a valid version
-     */
-    private static function getVersionFromPackageJson(): string
-    {
-        $packageJsonPath = __DIR__ . '/../../version.json';
-        if (file_exists($packageJsonPath)) {
-            $packageJson = file_get_contents($packageJsonPath);
-            if (false === $packageJson) {
-                throw new \UnexpectedValueException(\sprintf('Error reading package.json from "%s".', $packageJsonPath));
-            }
-
-            $data = json_decode($packageJson, true);
-            if (\is_array($data) && \array_key_exists('version', $data) && \is_string($data['version'])) {
-                return $data['version'];
-            }
-        }
-
-        throw new \UnexpectedValueException(\sprintf('package.json not found or does not contain a valid version at "%s".', $packageJsonPath));
     }
 
     /**

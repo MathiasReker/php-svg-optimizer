@@ -70,6 +70,7 @@ final class OutputHelperTest extends TestCase
         $output = ob_get_clean();
 
         self::assertNotFalse($output);
+        self::assertStringContainsString('PHP SVG Optimizer', $output);
         self::assertStringContainsString('Usage:', $output);
         self::assertStringContainsString('Options:', $output);
         self::assertStringContainsString('Commands:', $output);
