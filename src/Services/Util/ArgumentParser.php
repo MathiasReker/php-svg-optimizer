@@ -117,6 +117,8 @@ final readonly class ArgumentParser
      * @param string $option The option to get the value of
      *
      * @return string The value of the option
+     *
+     * @throws \InvalidArgumentException If the option is missing a value
      */
     private function getOptionValue(string $option): string
     {

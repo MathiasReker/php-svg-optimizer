@@ -82,9 +82,6 @@ final class ArgumentParserTest extends TestCase
         self::assertSame(self::EXPECTED_POSITIONAL_ARGUMENT_INDEX, $index);
     }
 
-    /**
-     * @throws \InvalidArgumentException
-     */
     public function testHasOptionReturnsTrueForVersionOption(): void
     {
         $args = [

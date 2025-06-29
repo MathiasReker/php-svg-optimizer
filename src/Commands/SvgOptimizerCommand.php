@@ -90,10 +90,15 @@ final class SvgOptimizerCommand
         $this->paths = $paths;
 
         if ('' !== trim($configPath)) {
+            if (!is_file($configPath)) {
+                OutputHelper::printError(\sprintf('The configuration file "%s" does not exist.', $configPath));
+                exit(self::EXIT_CODE_ERROR);
+            }
+
             try {
                 $this->config = ConfigLoader::loadConfig($configPath);
             } catch (\InvalidArgumentException $exception) {
-                OutputHelper::printError(\sprintf('Failed to load the configuration from "%s": %s', $configPath, $exception->getMessage()));
+                OutputHelper::printError(\sprintf('Failed to load the configuration from "%s": %s.', $configPath, $exception->getMessage()));
                 exit(self::EXIT_CODE_ERROR);
             }
         }
@@ -138,7 +143,7 @@ final class SvgOptimizerCommand
             OutputHelper::printError($invalidArgumentException->getMessage());
             exit(self::EXIT_CODE_ERROR);
         } catch (\JsonException $jsonException) {
-            OutputHelper::printError($jsonException->getMessage());
+            OutputHelper::printError(\sprintf('The configuration file in invalid. %s', $jsonException->getMessage()));
             exit(self::EXIT_CODE_ERROR);
         }
     }
