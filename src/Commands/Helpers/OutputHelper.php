@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Commands\Helpers;
 
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
+use MathiasReker\PhpSvgOptimizer\Services\Util\Formatter;
 
 /**
  * @no-named-arguments
@@ -19,14 +20,9 @@ use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
 final readonly class OutputHelper
 {
     /**
-     * The default precision used for percentage formatting.
-     */
-    private const int DEFAULT_PRECISION = 2;
-
-    /**
      * Print an error message to the console.
      *
-     * @param string $message The error message to display
+     * @param string $message The error message to print
      */
     public static function printError(string $message): void
     {
@@ -34,7 +30,7 @@ final readonly class OutputHelper
     }
 
     /**
-     * Print the help screen, including usage, options, commands, and examples.
+     * Print the help information for the application.
      */
     public static function printHelp(): void
     {
@@ -43,36 +39,29 @@ final readonly class OutputHelper
         printf('PHP SVG Optimizer%s%s', \PHP_EOL, \PHP_EOL);
         printf('Usage:%s', \PHP_EOL);
         printf('  %s%s%s', $argumentData->getFormat(), \PHP_EOL, \PHP_EOL);
+
         printf('Options:%s', \PHP_EOL);
-
-        foreach ($argumentData->getOptions() as $argumentOptionValueObject) {
-            printf(
-                '  %-3s, %-20s %s' . \PHP_EOL,
-                $argumentOptionValueObject->getShorthand(),
-                $argumentOptionValueObject->getFull(),
-                $argumentOptionValueObject->getDescription()
-            );
+        foreach ($argumentData->getOptions() as $opt) {
+            printf('  %-3s  %-20s %s%s', $opt->getShorthand(), $opt->getFull(), $opt->getDescription(), \PHP_EOL);
         }
 
-        printf('%sCommands:%s', \PHP_EOL, \PHP_EOL);
-        foreach ($argumentData->getCommands() as $commandOptionValueObject) {
-            printf(
-                '  %-25s %-3s' . \PHP_EOL,
-                $commandOptionValueObject->getTitle(),
-                $commandOptionValueObject->getDescription()
-            );
+        printf('%sCommands:%s%s', \PHP_EOL, \PHP_EOL, \PHP_EOL);
+        foreach ($argumentData->getCommands() as $cmd) {
+            printf('  %-25s %s%s', $cmd->getTitle(), $cmd->getDescription(), \PHP_EOL);
         }
 
-        printf('%sExamples:%s', \PHP_EOL, \PHP_EOL);
+        printf('%sExamples:%s%s', \PHP_EOL, \PHP_EOL, \PHP_EOL);
         foreach ($argumentData->getExamples() as $example) {
             printf('  %s%s', $example->getCommand(), \PHP_EOL);
         }
     }
 
     /**
-     * Print the current version of the application.
+     * Print the version information of the application.
      *
-     * @param string $version The version string to print
+     * @param string $name    Name of the application
+     * @param string $version Version of the application
+     * @param string $author  Author of the application
      */
     public static function printVersion(string $name, string $version, string $author): void
     {
@@ -88,17 +77,40 @@ final readonly class OutputHelper
     }
 
     /**
-     * Print the optimization result for a single file.
+     * Print the result of an SVG optimization.
      *
-     * @param string $filePath            The path to the file
-     * @param float  $reductionPercentage The percentage of size reduction
+     * @param string $filePath            Path to the SVG file
+     * @param float  $reductionPercentage Percentage of size reduction
      */
     public static function printOptimizationResult(string $filePath, float $reductionPercentage): void
     {
+        printf('%s (%.2f%%%s)%s', $filePath, $reductionPercentage, '', \PHP_EOL);
+    }
+
+    /**
+     * Print a summary of the optimization results.
+     *
+     * @param int   $fileCount       Number of files optimized
+     * @param int   $originalSize    Total original size in bytes
+     * @param int   $optimizedSize   Total optimized size in bytes
+     * @param int   $savedBytes      Total bytes saved
+     * @param float $savedPercentage Percentage of space saved
+     */
+    public static function printTotalSummary(
+        int $fileCount,
+        int $originalSize,
+        int $optimizedSize,
+        int $savedBytes,
+        float $savedPercentage,
+    ): void {
+        printf('%sSummary:%s', \PHP_EOL, \PHP_EOL);
+        printf('  Files optimized:     %d%s', $fileCount, \PHP_EOL);
+        printf('  Original total size: %s%s', Formatter::formatBytes($originalSize), \PHP_EOL);
+        printf('  Optimized total size:%s%s', Formatter::formatBytes($optimizedSize), \PHP_EOL);
         printf(
-            '%s (%s%%%s)%s',
-            $filePath,
-            number_format($reductionPercentage, self::DEFAULT_PRECISION),
+            '  Space saved:         %s (%.2f%%%s)%s',
+            Formatter::formatBytes($savedBytes),
+            $savedPercentage,
             '',
             \PHP_EOL
         );

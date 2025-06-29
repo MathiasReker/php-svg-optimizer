@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Commands\Helpers\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Enums\Command;
 use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
+use MathiasReker\PhpSvgOptimizer\Services\Util\Formatter;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ExampleCommandValueObject;
@@ -31,6 +32,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(CommandOptionValueObject::class)]
 #[CoversClass(ExampleCommandValueObject::class)]
 #[CoversClass(Option::class)]
+#[CoversClass(Formatter::class)]
 final class OutputHelperTest extends TestCase
 {
     public function testPrintError(): void
@@ -79,5 +81,26 @@ final class OutputHelperTest extends TestCase
         self::assertStringContainsString('Options:', $output);
         self::assertStringContainsString('Commands:', $output);
         self::assertStringContainsString('Examples:', $output);
+    }
+
+    public function testPrintTotalSummary(): void
+    {
+        ob_start();
+        OutputHelper::printTotalSummary(
+            3,
+            10_240,
+            5_120,
+            5_120,
+            50.0
+        );
+        $output = ob_get_clean();
+
+        self::assertNotFalse($output);
+        self::assertStringContainsString('Summary:', $output);
+        self::assertStringContainsString('Files optimized:     3', $output);
+        self::assertStringContainsString('Original total size:', $output);
+        self::assertStringContainsString('Optimized total size:', $output);
+        self::assertStringContainsString('Space saved:', $output);
+        self::assertStringContainsString('(50.00%)', $output);
     }
 }

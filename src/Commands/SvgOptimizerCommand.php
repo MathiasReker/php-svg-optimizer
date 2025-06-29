@@ -25,6 +25,16 @@ use MathiasReker\PhpSvgOptimizer\Services\Util\ConfigLoader;
 final class SvgOptimizerCommand
 {
     /**
+     * Constant for the percentage factor used in calculations.
+     */
+    private const int PERCENTAGE_FACTOR = 100;
+
+    /**
+     * The default precision used for percentage formatting.
+     */
+    private const int DEFAULT_PRECISION = 2;
+
+    /**
      * The exit code for a successful operation.
      */
     private const int EXIT_CODE_SUCCESS = 0;
@@ -151,35 +161,69 @@ final class SvgOptimizerCommand
     /**
      * Runs the SVG optimization process.
      *
-     * @throws \UnexpectedValueException
+     * @throws \RuntimeException If the command is not run from the command line
      */
     public function run(): void
     {
-        if (!$this->isRunningInCli()) {
-            OutputHelper::printError('This command can only be run from the command line.');
-            exit(self::EXIT_CODE_ERROR);
-        }
+        $this->ensureCli();
 
         foreach ($this->paths as $path) {
-            if (is_dir($path)) {
-                $this->processDirectory($path);
-            } elseif (is_file($path) && self::SVG_EXTENSION === pathinfo($path, \PATHINFO_EXTENSION)) {
-                $this->optimizeSvg($path);
-            } else {
-                OutputHelper::printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
-                exit(self::EXIT_CODE_ERROR);
-            }
+            $this->processPath($path);
+        }
+
+        if (!$this->quiet && $this->optimizedFiles > 0) {
+            $this->printSummary();
         }
     }
 
     /**
-     * Checks if the command is running in a CLI environment.
-     *
-     * @return bool True if running in CLI, false otherwise
+     * Ensures that the command is being run in a CLI environment.
      */
-    private function isRunningInCli(): bool
+    private function ensureCli(): void
     {
-        return \PHP_SAPI === 'cli';
+        if (\PHP_SAPI !== 'cli') {
+            OutputHelper::printError('This command can only be run from the command line.');
+            exit(self::EXIT_CODE_ERROR);
+        }
+    }
+
+    /**
+     * Processes a single path, which can be a file or a directory.
+     *
+     * @param string $path The path to process
+     *
+     * @throws \UnexpectedValueException If the path is not a valid SVG file or directory
+     */
+    private function processPath(string $path): void
+    {
+        if (is_dir($path)) {
+            $this->processDirectory($path);
+        } elseif (is_file($path) && self::SVG_EXTENSION === pathinfo($path, \PATHINFO_EXTENSION)) {
+            $this->optimizeSvg($path);
+        } else {
+            OutputHelper::printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
+            exit(self::EXIT_CODE_ERROR);
+        }
+    }
+
+    /**
+     * Prints a summary of the optimization results.
+     */
+    private function printSummary(): void
+    {
+        $savedBytes = $this->totalOriginalSize - $this->totalOptimizedSize;
+
+        $savedPercentage = $this->totalOriginalSize > 0
+            ? round(($savedBytes / $this->totalOriginalSize) * self::PERCENTAGE_FACTOR, self::DEFAULT_PRECISION)
+            : 0.0;
+
+        OutputHelper::printTotalSummary(
+            $this->optimizedFiles,
+            $this->totalOriginalSize,
+            $this->totalOptimizedSize,
+            $savedBytes,
+            $savedPercentage
+        );
     }
 
     /**
