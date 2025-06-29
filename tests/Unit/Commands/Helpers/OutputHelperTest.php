@@ -46,11 +46,15 @@ final class OutputHelperTest extends TestCase
     public function testPrintVersion(): void
     {
         ob_start();
-        OutputHelper::printVersion('1.2.3');
+        OutputHelper::printVersion('PHP SVG Optimizer', '1.2.3', 'Mathias Reker');
         $output = ob_get_clean();
 
         self::assertNotFalse($output);
-        self::assertSame('PHP SVG Optimizer v1.2.3' . \PHP_EOL, $output);
+        self::assertSame(
+            'PHP SVG Optimizer v1.2.3 by Mathias Reker and contributors' . \PHP_EOL .
+            'PHP runtime: ' . \PHP_VERSION . \PHP_EOL,
+            $output
+        );
     }
 
     public function testPrintOptimizationResult(): void

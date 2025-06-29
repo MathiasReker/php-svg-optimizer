@@ -37,13 +37,13 @@ final readonly class ConfigLoader
             : $config;
 
         if (false === $configContent) {
-            throw new \InvalidArgumentException('Error: Failed to read configuration content.');
+            throw new \InvalidArgumentException('Failed to read configuration content.');
         }
 
         $decodedConfig = json_decode($configContent, true, 512, \JSON_THROW_ON_ERROR);
 
         if (!\is_array($decodedConfig)) {
-            throw new \InvalidArgumentException('Error: Configuration must be an associative array.');
+            throw new \InvalidArgumentException('Configuration must be an associative array.');
         }
 
         return array_combine(

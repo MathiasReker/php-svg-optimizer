@@ -74,9 +74,17 @@ final readonly class OutputHelper
      *
      * @param string $version The version string to print
      */
-    public static function printVersion(string $version): void
+    public static function printVersion(string $name, string $version, string $author): void
     {
-        printf('PHP SVG Optimizer v%s%s', $version, \PHP_EOL);
+        printf(
+            '%s v%s by %s and contributors%sPHP runtime: %s%s',
+            $name,
+            $version,
+            $author,
+            \PHP_EOL,
+            \PHP_VERSION,
+            \PHP_EOL
+        );
     }
 
     /**

@@ -93,7 +93,7 @@ final class SvgOptimizerCommand
             try {
                 $this->config = ConfigLoader::loadConfig($configPath);
             } catch (\InvalidArgumentException $exception) {
-                OutputHelper::printError(\sprintf('Error loading configuration from "%s": %s', $configPath, $exception->getMessage()));
+                OutputHelper::printError(\sprintf('Failed to load the configuration from "%s": %s', $configPath, $exception->getMessage()));
                 exit(self::EXIT_CODE_ERROR);
             }
         }
@@ -116,7 +116,7 @@ final class SvgOptimizerCommand
         }
 
         if ($argumentParser->hasOption(Option::VERSION)) {
-            OutputHelper::printVersion(Application::VERSION->value);
+            OutputHelper::printVersion(Application::NAME->value, Application::VERSION->value, Application::AUTHOR->value);
             exit(self::EXIT_CODE_SUCCESS);
         }
 
@@ -128,7 +128,8 @@ final class SvgOptimizerCommand
                 exit(self::EXIT_CODE_SUCCESS);
             }
 
-            $command = new self($paths, $argumentParser->getOption(Option::CONFIG));
+            $configPath = $argumentParser->hasOption(Option::CONFIG) ? $argumentParser->getOption(Option::CONFIG) : '';
+            $command = new self($paths, $configPath);
             $command->dryRun = $argumentParser->hasOption(Option::DRY_RUN);
             $command->quiet = $argumentParser->hasOption(Option::QUIET);
 
@@ -166,6 +167,11 @@ final class SvgOptimizerCommand
         }
     }
 
+    /**
+     * Checks if the command is running in a CLI environment.
+     *
+     * @return bool True if running in CLI, false otherwise
+     */
     private function isRunningInCli(): bool
     {
         return \PHP_SAPI === 'cli';
@@ -227,6 +233,7 @@ final class SvgOptimizerCommand
                 $rules[Rule::REMOVE_UNNECESSARY_WHITESPACE->value],
                 $rules[Rule::REMOVE_UNUSED_NAMESPACES->value],
                 $rules[Rule::REMOVE_INKSCAPE_FOOTPRINTS->value],
+                $rules[Rule::REMOVE_UNSAFE_ELEMENTS->value],
             );
 
             $svgOptimizer->optimize();

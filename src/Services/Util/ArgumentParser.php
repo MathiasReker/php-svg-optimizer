@@ -55,11 +55,13 @@ final readonly class ArgumentParser
     {
         try {
             $argsObject = array_map(
-                fn (string $arg): ArgumentOptionValueObject => $this->isOption($arg)
+                fn (string $arg): ?ArgumentOptionValueObject => $this->isOption($arg)
                     ? $this->argumentData->getOptionByName($this->getOptionKey($arg))
-                    : throw new \InvalidArgumentException(\sprintf('Error: Option "%s" is not recognized.', $arg)),
+                    : null,
                 $this->args
             );
+
+            $argsObject = array_filter($argsObject);
 
             return \in_array($this->argumentData->getOption($option->value), $argsObject, true);
         } catch (\InvalidArgumentException) {
@@ -118,7 +120,12 @@ final readonly class ArgumentParser
      */
     private function getOptionValue(string $option): string
     {
-        return explode('=', $option)[self::OPTION_VALUE_INDEX];
+        $parts = explode('=', $option, 2);
+        if (\count($parts) < 2) {
+            throw new \InvalidArgumentException(\sprintf('Option "%s" requires a value.', $parts[self::OPTION_KEY_INDEX]));
+        }
+
+        return $parts[self::OPTION_VALUE_INDEX];
     }
 
     /**
@@ -136,6 +143,6 @@ final readonly class ArgumentParser
             }
         }
 
-        throw new \InvalidArgumentException(\sprintf('Error: Please follow the following format: %s', $this->argumentData->getFormat()));
+        throw new \InvalidArgumentException(\sprintf('Please follow the following format: %s', $this->argumentData->getFormat()));
     }
 }

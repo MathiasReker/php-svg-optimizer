@@ -50,6 +50,7 @@ final class RuleTest extends TestCase
     public static function provideEnumValuesCases(): iterable
     {
         yield [Rule::CONVERT_COLORS_TO_HEX, 'convertColorsToHex'];
+        yield [Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING, 'convertEmptyTagsToSelfClosing'];
         yield [Rule::FLATTEN_GROUPS, 'flattenGroups'];
         yield [Rule::MINIFY_SVG_COORDINATES, 'minifySvgCoordinates'];
         yield [Rule::MINIFY_TRANSFORMATIONS, 'minifyTransformations'];
@@ -59,11 +60,14 @@ final class RuleTest extends TestCase
         yield [Rule::REMOVE_DOCTYPE, 'removeDoctype'];
         yield [Rule::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE, 'removeEnableBackgroundAttribute'];
         yield [Rule::REMOVE_EMPTY_ATTRIBUTES, 'removeEmptyAttributes'];
+        yield [Rule::REMOVE_INKSCAPE_FOOTPRINTS, 'removeInkscapeFootprints'];
+        yield [Rule::REMOVE_INVISIBLE_CHARACTERS, 'removeInvisibleCharacters'];
         yield [Rule::REMOVE_METADATA, 'removeMetadata'];
         yield [Rule::REMOVE_TITLE_AND_DESC, 'removeTitleAndDesc'];
         yield [Rule::REMOVE_UNNECESSARY_WHITESPACE, 'removeUnnecessaryWhitespace'];
-        yield [Rule::SORT_ATTRIBUTES, 'sortAttributes'];
         yield [Rule::REMOVE_UNSAFE_ELEMENTS, 'removeUnsafeElements'];
+        yield [Rule::REMOVE_UNUSED_NAMESPACES, 'removeUnusedNamespaces'];
+        yield [Rule::SORT_ATTRIBUTES, 'sortAttributes'];
     }
 
     #[DataProvider('provideDefaultValueCases')]

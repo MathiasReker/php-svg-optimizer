@@ -34,6 +34,7 @@ use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveInvisibleCharacters;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnnecessaryWhitespace;
+use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnsafeElements;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\RemoveUnusedNamespaces;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
@@ -116,6 +117,7 @@ final readonly class SvgOptimizerService
      * Each rule can be enabled or disabled via the respective parameters.
      *
      * @param bool $convertColorsToHex              Whether to convert colors to hexadecimal format
+     * @param bool $convertEmptyTagsToSelfClosing   Whether to convert empty tags to self-closing tags
      * @param bool $flattenGroups                   Whether to flatten nested group elements
      * @param bool $minifySvgCoordinates            Whether to minify coordinate values within the SVG
      * @param bool $minifyTransformations           Whether to minify transformation attributes
@@ -123,21 +125,22 @@ final readonly class SvgOptimizerService
      * @param bool $removeDefaultAttributes         Whether to remove default attributes from elements
      * @param bool $removeDeprecatedAttributes      Whether to remove the xlink namespace
      * @param bool $removeDoctype                   Whether to remove the DOCTYPE declaration
-     * @param bool $removeEnableBackgroundAttribute Whether to remove the enable-background attribute
      * @param bool $removeEmptyAttributes           Whether to remove empty attributes from elements
+     * @param bool $removeEnableBackgroundAttribute Whether to remove the enable-background attribute
+     * @param bool $removeInkscapeFootprints        Whether to remove Inkscape-specific footprints
      * @param bool $removeInvisibleCharacters       Whether to remove invisible characters
      * @param bool $removeMetadata                  Whether to remove metadata elements from the SVG
      * @param bool $removeTitleAndDesc              Whether to remove the <title> and <desc> elements
-     * @param bool $sortAttributes                  Whether to sort attributes
-     * @param bool $convertEmptyTagsToSelfClosing   Whether to convert empty tags to self-closing tags
      * @param bool $removeUnnecessaryWhitespace     Whether to remove unnecessary whitespace
+     * @param bool $removeUnsafeElements            Whether to remove unsafe elements
      * @param bool $removeUnusedNamespaces          Whether to remove unused namespaces
-     * @param bool $removeInkscapeFootprints        Whether to remove Inkscape-specific footprints
+     * @param bool $sortAttributes                  Whether to sort attributes
      *
      * @return $this The SvgOptimizerService instance
      */
     public function withRules(
         bool $convertColorsToHex = true,
+        bool $convertEmptyTagsToSelfClosing = true,
         bool $flattenGroups = true,
         bool $minifySvgCoordinates = true,
         bool $minifyTransformations = true,
@@ -145,19 +148,20 @@ final readonly class SvgOptimizerService
         bool $removeDefaultAttributes = true,
         bool $removeDeprecatedAttributes = true,
         bool $removeDoctype = true,
-        bool $removeEnableBackgroundAttribute = true,
         bool $removeEmptyAttributes = true,
+        bool $removeEnableBackgroundAttribute = true,
+        bool $removeInkscapeFootprints = true,
         bool $removeInvisibleCharacters = true,
         bool $removeMetadata = true,
         bool $removeTitleAndDesc = true,
-        bool $sortAttributes = true,
-        bool $convertEmptyTagsToSelfClosing = true,
         bool $removeUnnecessaryWhitespace = true,
+        bool $removeUnsafeElements = false,
         bool $removeUnusedNamespaces = true,
-        bool $removeInkscapeFootprints = true,
+        bool $sortAttributes = true,
     ): self {
         $rules = [
             ConvertColorsToHex::class => $convertColorsToHex,
+            ConvertEmptyTagsToSelfClosing::class => $convertEmptyTagsToSelfClosing,
             FlattenGroups::class => $flattenGroups,
             MinifySvgCoordinates::class => $minifySvgCoordinates,
             MinifyTransformations::class => $minifyTransformations,
@@ -165,20 +169,22 @@ final readonly class SvgOptimizerService
             RemoveDefaultAttributes::class => $removeDefaultAttributes,
             RemoveDeprecatedAttributes::class => $removeDeprecatedAttributes,
             RemoveDoctype::class => $removeDoctype,
-            RemoveEnableBackgroundAttribute::class => $removeEnableBackgroundAttribute,
             RemoveEmptyAttributes::class => $removeEmptyAttributes,
+            RemoveEnableBackgroundAttribute::class => $removeEnableBackgroundAttribute,
+            RemoveInkscapeFootprints::class => $removeInkscapeFootprints,
             RemoveInvisibleCharacters::class => $removeInvisibleCharacters,
             RemoveMetadata::class => $removeMetadata,
             RemoveTitleAndDesc::class => $removeTitleAndDesc,
-            SortAttributes::class => $sortAttributes,
-            ConvertEmptyTagsToSelfClosing::class => $convertEmptyTagsToSelfClosing,
             RemoveUnnecessaryWhitespace::class => $removeUnnecessaryWhitespace,
+            RemoveUnsafeElements::class => $removeUnsafeElements,
             RemoveUnusedNamespaces::class => $removeUnusedNamespaces,
-            RemoveInkscapeFootprints::class => $removeInkscapeFootprints,
+            SortAttributes::class => $sortAttributes,
         ];
 
-        foreach (array_keys(array_filter($rules)) as $class) {
-            $this->svgOptimizer->addRule(new $class());
+        foreach ($rules as $class => $enabled) {
+            if (true === $enabled) {
+                $this->svgOptimizer->addRule(new $class());
+            }
         }
 
         return $this;

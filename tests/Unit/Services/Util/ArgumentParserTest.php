@@ -82,6 +82,22 @@ final class ArgumentParserTest extends TestCase
         self::assertSame(self::EXPECTED_POSITIONAL_ARGUMENT_INDEX, $index);
     }
 
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testHasOptionReturnsTrueForVersionOption(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            '-v',
+        ];
+
+        $parser = new ArgumentParser($args);
+
+        $hasVersionOption = $parser->hasOption(Option::VERSION);
+        self::assertTrue($hasVersionOption);
+    }
+
     #[\Override]
     protected function setUp(): void
     {

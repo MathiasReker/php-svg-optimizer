@@ -85,16 +85,16 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
     "removeDefaultAttributes": true,
     "removeDeprecatedAttributes": true,
     "removeDoctype": true,
-    "removeEmptyAttributes": true,
     "removeEnableBackgroundAttribute": true,
+    "removeEmptyAttributes": true,
     "removeInkscapeFootprints": true,
     "removeInvisibleCharacters": true,
     "removeMetadata": true,
     "removeTitleAndDesc": true,
     "removeUnnecessaryWhitespace": true,
+    "removeUnsafeElements": false,
     "removeUnusedNamespaces": true,
-    "sortAttributes": true,
-    "RemoveUnsafeElements": true
+    "sortAttributes": true
 }
 ```
 
@@ -134,9 +134,9 @@ try {
             removeMetadata: true,
             removeTitleAndDesc: true,
             removeUnnecessaryWhitespace: true,
+            removeUnsafeElements: false,
             removeUnusedNamespaces: true,
             sortAttributes: true,
-            RemoveUnsafeElements: true,
         )
         ->optimize()
         ->saveToFile('path/to/output.svg');
@@ -352,13 +352,17 @@ Removes unused namespaces from the SVG:
 $svgOptimizer->withRules(removeUnusedNamespaces: true);
 ```
 
+Removes unsafe elements from the SVG, such as `<script>` tags:
+
+```php
+$svgOptimizer->withRules(removeUnsafeElements: true);
+```
+
 Sorts attributes within each element:
 
 ```php
 $svgOptimizer->withRules(sortAttributes: true);
 ```
-
-// TODO: RemoveUnsafeElements
 
 All options are set to true by default. You can configure them individually by passing the desired values to it:
 
@@ -379,9 +383,9 @@ $svgOptimizer->withRules(
     removeMetadata: true,
     removeTitleAndDesc: true,
     removeUnnecessaryWhitespace: true,
+    removeUnsafeElements: false,
     removeUnusedNamespaces: true,
     sortAttributes: true,
-    removeUnsafeElements: true,
 );
 ```
 
