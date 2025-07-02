@@ -101,7 +101,6 @@ return (new PhpCsFixer\Config())
         PhpCsFixerCustomFixers\Fixer\NoDuplicatedArrayKeyFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\NoDoctrineMigrationsGeneratedCommentFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\NoCommentedOutCodeFixer::name() => true,
-        PhpCsFixerCustomFixers\Fixer\MultilinePromotedPropertiesFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\MultilineCommentOpeningClosingAloneFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\IssetToArrayKeyExistsFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\ForeachUseValueFixer::name() => true,
@@ -112,4 +111,4 @@ return (new PhpCsFixer\Config())
         PhpCsFixerCustomFixers\Fixer\ClassConstantUsageFixer::name() => true,
     ])
     ->setFinder($finder)
-    ->setLineEnding(PHP_EOL);
+    ->setLineEnding(\PHP_EOL);
