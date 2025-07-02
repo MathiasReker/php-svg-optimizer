@@ -30,7 +30,7 @@
         "ergebnis/phpstan-rules": "^2.10.5",
         "friendsofphp/php-cs-fixer": "^3.76.0",
         "hiperdk/phpstan-rules": "^1.0.0",
-        "infection/infection": "^0.29.14",
+        "infection/infection": "^0.29.14 || ^0.30.0",
         "kubawerlos/php-cs-fixer-custom-fixers": "^3.28.0",
         "marc-mabe/php-enum-phpstan": "^3.0.0",
         "odan/phpstan-rules": "^0.2.0",
