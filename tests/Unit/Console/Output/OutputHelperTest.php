@@ -9,9 +9,9 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Helper;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output;
 
-use MathiasReker\PhpSvgOptimizer\Console\Helper\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;

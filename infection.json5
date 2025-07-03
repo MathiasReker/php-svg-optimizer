@@ -4,8 +4,7 @@
             "src"
         ],
         "excludes": [
-            "assets",
-            "scripts",
+            "dev"
         ]
     },
     "timeout": 10,

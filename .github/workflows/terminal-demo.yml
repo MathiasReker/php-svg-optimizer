@@ -5,7 +5,7 @@ on:
     branches:
       - develop
     paths:
-      - 'scripts/demo.sh'
+      - 'dev/resources/demo.sh'
     tags:
       - '*'
 
@@ -39,11 +39,11 @@ jobs:
 
       - name: Make the script executable
         run: |
-          chmod +x ./scripts/demo.sh
+          chmod +x ./dev/resources/demo.sh
 
       - name: Record the script execution
         run: |
-          asciinema rec --command="./scripts/demo.sh" --quiet --overwrite demo.cast
+          asciinema rec --command="./dev/resources/demo.sh" --quiet --overwrite demo.cast
 
       - name: Download the prebuilt `agg` binary for Ubuntu (x86_64)
         run: |
@@ -55,7 +55,7 @@ jobs:
         run: |
           agg --theme dracula --font-size 20 demo.cast demo.gif
 
-      - name: Move demo.gif to assets folder and commit
+      - name: Move demo.gif to dev/resources folder and commit
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -66,9 +66,9 @@ jobs:
           git checkout develop
           git reset --hard origin/develop
 
-          DEMO_GIF_PATH="assets/demo.gif"
+          DEMO_GIF_PATH="dev/resources/demo.gif"
 
-          mkdir -p assets
+          mkdir -p dev/resources
           if [ -f "$DEMO_GIF_PATH" ]; then
             rm "$DEMO_GIF_PATH"
           fi

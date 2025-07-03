@@ -16,6 +16,5 @@
 /rector.php export-ignore
 /tests export-ignore
 /.github export-ignore
-/scripts export-ignore
-/assets export-ignore
+/dev export-ignore
 /infection.json5 export-ignore

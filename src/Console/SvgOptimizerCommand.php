@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Command;
 
-use MathiasReker\PhpSvgOptimizer\Console\Helper\OutputHelper;
-use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
 use MathiasReker\PhpSvgOptimizer\Type\Application;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;

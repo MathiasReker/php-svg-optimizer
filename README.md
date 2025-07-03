@@ -46,7 +46,7 @@ You can use this library either as a **command-line tool (CLI)** or as a **stand
 
 #### Usage
 
-![Demo GIF](assets/demo.gif)
+![Demo GIF](dev/resources/demo.gif)
 
 ```bash
 vendor/bin/svg-optimizer [options] process <path1> <path2> ...
@@ -113,7 +113,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
 
 try {
     $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
@@ -153,7 +153,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
 
 try {
     $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
@@ -181,7 +181,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
 
 try {
     $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
@@ -209,7 +209,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
 
 try {
     $svgOptimizer = SvgOptimizerService::fromString('<svg>...</svg>')
@@ -474,7 +474,7 @@ various scenarios to verify the correct behavior and edge cases for your rule.
 
 ### 3. **Integrate the Rule**
 
-- **Register the rule** in the SVG optimizer builder located at `/src/Service/SvgOptimizerService.php`.
+- **Register the rule** in the SVG optimizer builder located at `/src/Service/Svg/SvgOptimizerService.php`.
 - **Add your rule to the rule enum** in `/src/Type/Rule.php`.
 - **Include the rule in the CLI tool** by updating `/src/Command/SvgOptimizerCommand.php`.
 
