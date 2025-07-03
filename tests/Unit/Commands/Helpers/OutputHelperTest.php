@@ -15,7 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Commands\Helpers\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Enums\Command;
 use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
-use MathiasReker\PhpSvgOptimizer\Services\Util\Formatter;
+use MathiasReker\PhpSvgOptimizer\Util\Formatter;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ExampleCommandValueObject;
@@ -97,7 +97,7 @@ final class OutputHelperTest extends TestCase
 
         self::assertNotFalse($output);
         self::assertStringContainsString('Summary:', $output);
-        self::assertStringContainsString('Files optimized:     3', $output);
+        self::assertStringContainsString('Files optimized:      3', $output);
         self::assertStringContainsString('Original total size:', $output);
         self::assertStringContainsString('Optimized total size:', $output);
         self::assertStringContainsString('Space saved:', $output);

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Services\Util;
+namespace MathiasReker\PhpSvgOptimizer\Util;
 
 /**
  * @no-named-arguments

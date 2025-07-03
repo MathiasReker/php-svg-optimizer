@@ -9,10 +9,10 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Util;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Util;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
+use MathiasReker\PhpSvgOptimizer\Util\XmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;

@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Commands\Helpers;
 
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
-use MathiasReker\PhpSvgOptimizer\Services\Util\Formatter;
+use MathiasReker\PhpSvgOptimizer\Util\Formatter;
 
 /**
  * @no-named-arguments
@@ -104,11 +104,11 @@ final readonly class OutputHelper
         float $savedPercentage,
     ): void {
         printf('%sSummary:%s', \PHP_EOL, \PHP_EOL);
-        printf('  Files optimized:     %d%s', $fileCount, \PHP_EOL);
-        printf('  Original total size: %s%s', Formatter::formatBytes($originalSize), \PHP_EOL);
-        printf('  Optimized total size:%s%s', Formatter::formatBytes($optimizedSize), \PHP_EOL);
+        printf('  Files optimized:      %d%s', $fileCount, \PHP_EOL);
+        printf('  Original total size:  %s%s', Formatter::formatBytes($originalSize), \PHP_EOL);
+        printf('  Optimized total size: %s%s', Formatter::formatBytes($optimizedSize), \PHP_EOL);
         printf(
-            '  Space saved:         %s (%.2f%%%s)%s',
+            '  Space saved:          %s (%.2f%%%s)%s',
             Formatter::formatBytes($savedBytes),
             $savedPercentage,
             '',

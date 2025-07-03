@@ -16,8 +16,8 @@ use MathiasReker\PhpSvgOptimizer\Enums\Application;
 use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Enums\Rule;
 use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
-use MathiasReker\PhpSvgOptimizer\Services\Util\ArgumentParser;
-use MathiasReker\PhpSvgOptimizer\Services\Util\ConfigLoader;
+use MathiasReker\PhpSvgOptimizer\Util\ArgumentParser;
+use MathiasReker\PhpSvgOptimizer\Util\ConfigLoader;
 
 /**
  * @no-named-arguments

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Services\Rules;
 
-use MathiasReker\PhpSvgOptimizer\Services\Util\XmlProcessor;
+use MathiasReker\PhpSvgOptimizer\Util\XmlProcessor;
 
 /**
  * @no-named-arguments

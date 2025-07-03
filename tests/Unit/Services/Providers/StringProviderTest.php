@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Providers;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
-use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Util\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;

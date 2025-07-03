@@ -15,7 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Models\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Services\Providers\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Services\Rules\FlattenGroups;
-use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Util\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;

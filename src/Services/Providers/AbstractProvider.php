@@ -15,7 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Contracts\Services\Providers\SvgProviderInterfa
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Services\Data\MetaData;
-use MathiasReker\PhpSvgOptimizer\Services\Util\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Util\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\MetaDataValueObject;
 
 /**

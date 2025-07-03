@@ -9,12 +9,12 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Util;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Util;
 
 use MathiasReker\PhpSvgOptimizer\Enums\Command;
 use MathiasReker\PhpSvgOptimizer\Enums\Option;
 use MathiasReker\PhpSvgOptimizer\Services\Data\ArgumentData;
-use MathiasReker\PhpSvgOptimizer\Services\Util\ArgumentParser;
+use MathiasReker\PhpSvgOptimizer\Util\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\CommandOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObjects\ExampleCommandValueObject;

@@ -9,9 +9,9 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Services\Util;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Util;
 
-use MathiasReker\PhpSvgOptimizer\Services\Util\Formatter;
+use MathiasReker\PhpSvgOptimizer\Util\Formatter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

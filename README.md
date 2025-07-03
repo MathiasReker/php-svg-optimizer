@@ -102,8 +102,7 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
 
 > To ensure robustness when using the library, it's crucial to handle exceptions, as invalid or malformed SVG files
 > could lead to runtime errors. Catching these exceptions will allow you to manage potential issues gracefully and
-> prevent
-> your application from crashing.
+> prevent your application from crashing.
 
 ### Example specifying rules
 
