@@ -13,8 +13,8 @@ LABEL org.opencontainers.image.description="php-svg-optimizer is a PHP library d
 # Install system dependencies and clean up
 RUN apt update && \
     apt -y upgrade && \
-    apt -y install --no-install-recommends \
-    && apt clean
+    apt -y install --no-install-recommends && \
+    apt clean
 
 # Set working directory
 WORKDIR /app
