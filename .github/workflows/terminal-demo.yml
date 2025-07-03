@@ -55,7 +55,7 @@ jobs:
         run: |
           agg --theme dracula --font-size 20 demo.cast demo.gif
 
-      - name: Move demo.gif to dev/resources folder and commit
+      - name: Move demo.gif to dev/artifacts folder and commit
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -66,9 +66,9 @@ jobs:
           git checkout develop
           git reset --hard origin/develop
 
-          DEMO_GIF_PATH="dev/resources/demo.gif"
+          DEMO_GIF_PATH="dev/artifacts/demo.gif"
 
-          mkdir -p dev/resources
+          mkdir -p dev/artifacts
           if [ -f "$DEMO_GIF_PATH" ]; then
             rm "$DEMO_GIF_PATH"
           fi

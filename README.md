@@ -46,7 +46,7 @@ You can use this library either as a **command-line tool (CLI)** or as a **stand
 
 #### Usage
 
-![Demo GIF](dev/resources/demo.gif)
+![Demo GIF](dev/artifacts/demo.gif)
 
 ```bash
 vendor/bin/svg-optimizer [options] process <path1> <path2> ...
