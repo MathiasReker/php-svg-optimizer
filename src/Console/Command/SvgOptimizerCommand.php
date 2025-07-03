@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
 use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
-use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 use MathiasReker\PhpSvgOptimizer\Type\Application;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;

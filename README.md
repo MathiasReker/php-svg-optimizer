@@ -20,7 +20,7 @@ performance.
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^5.3    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^6.0    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
@@ -113,7 +113,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizer;
 
 try {
     $svgOptimizer = SvgOptimizer::fromFile('path/to/source.svg')
@@ -153,7 +153,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 
 try {
     $svgOptimizer = SvgOptimizer::fromFile('path/to/source.svg')
@@ -181,7 +181,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 
 try {
     $svgOptimizer = SvgOptimizer::fromFile('path/to/source.svg')
@@ -209,7 +209,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 
 try {
     $svgOptimizer = SvgOptimizer::fromString('<svg>...</svg>')
