@@ -11,14 +11,14 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObject;
 
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[CoversClass(CommandOptionValueObject::class)]
+#[CoversClass(OptionValueObject::class)]
 final class CommandOptionValueObjectTest extends TestCase
 {
     /**
@@ -33,7 +33,7 @@ final class CommandOptionValueObjectTest extends TestCase
      */
     private const string DESCRIPTION = 'Process SVG files for optimization.';
 
-    private CommandOptionValueObject $commandOptionValueObject;
+    private OptionValueObject $commandOptionValueObject;
 
     public function testGetTitle(): void
     {
@@ -48,7 +48,7 @@ final class CommandOptionValueObjectTest extends TestCase
     #[\Override]
     protected function setUp(): void
     {
-        $this->commandOptionValueObject = new CommandOptionValueObject(
+        $this->commandOptionValueObject = new OptionValueObject(
             self::TITLE,
             self::DESCRIPTION
         );

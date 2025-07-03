@@ -17,6 +17,7 @@ use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -29,6 +30,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ExampleCommandValueObject::class)]
 #[CoversClass(ArgumentData::class)]
 #[CoversClass(Command::class)]
+#[CoversClass(OptionValueObject::class)]
 final class ArgumentParserTest extends TestCase
 {
     /**

@@ -18,6 +18,7 @@ use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -31,6 +32,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Option::class)]
 #[CoversClass(ExampleCommandValueObject::class)]
 #[CoversClass(Formatter::class)]
+#[CoversClass(OptionValueObject::class)]
 final class OutputHelperTest extends TestCase
 {
     public function testPrintError(): void

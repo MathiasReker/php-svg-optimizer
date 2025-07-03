@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Data;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
 
 /**
@@ -30,7 +30,7 @@ final readonly class ArgumentData
     /** @var array<string, ArgumentOptionValueObject> */
     private array $options;
 
-    /** @var array<string, CommandOptionValueObject> */
+    /** @var array<string, OptionValueObject> */
     private array $commands;
 
     /** @var list<ExampleCommandValueObject> */
@@ -70,7 +70,7 @@ final readonly class ArgumentData
         ];
 
         $this->commands = [
-            Command::PROCESS->value => new CommandOptionValueObject(
+            Command::PROCESS->value => new OptionValueObject(
                 Command::PROCESS->getTitle(),
                 Command::PROCESS->getDescription()
             ),
@@ -135,7 +135,7 @@ final readonly class ArgumentData
     /**
      * Returns the detailed commands as an array of command names with their values.
      *
-     * @return array<string, CommandOptionValueObject>
+     * @return array<string, OptionValueObject>
      */
     public function getCommands(): array
     {
