@@ -1,0 +1,420 @@
+<?php
+
+/**
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
+
+use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
+use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
+use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
+use MathiasReker\PhpSvgOptimizer\Utility\DomDocumentWrapper;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * @internal
+ */
+#[CoversClass(RemoveUnsafeElements::class)]
+#[CoversClass(SvgOptimizer::class)]
+#[CoversClass(StringProvider::class)]
+#[CoversClass(DomDocumentWrapper::class)]
+#[CoversClass(SvgValidator::class)]
+final class RemoveUnsafeElementsTest extends TestCase
+{
+    public static function svgUnsafeElementsProvider(): \Iterator
+    {
+        yield 'Removes script and iframe elements' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <script>alert('xss')</script>
+                    <iframe src="evil.html"></iframe>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes foreignObject and embed elements' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <foreignObject>bad</foreignObject>
+                    <embed src="evil.swf"/>
+                    <circle cx="5" cy="5" r="3"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="3"/></svg>
+                XML,
+        ];
+
+        yield 'Removes use and image elements' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <use xlink:href="#dangerous"/>
+                    <image href="http://evil.com/img.svg"/>
+                    <line x1="0" y1="0" x2="10" y2="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="10" y2="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes event handler attributes (on*)' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect onclick="alert('xss')" width="10" height="10"/>
+                    <circle onload="evil()" cx="5" cy="5" r="3"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/><circle cx="5" cy="5" r="3"/></svg>
+                XML,
+        ];
+
+        yield 'Removes capitalized or mixed-case event attributes' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect OnClick="alert('xss')" OnLoad="bad()" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes href and xlink:href with javascript:' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <a xlink:href="javascript:alert('xss')">link</a>
+                    <circle href=" JAVASCRIPT:evil()" cx="5" cy="5" r="3"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a>link</a><circle cx="5" cy="5" r="3"/></svg>
+                XML,
+        ];
+
+        yield 'Preserves safe href/xlink:href attributes' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <a xlink:href="#section1">link</a>
+                    <circle href="/path/to/resource.svg" cx="5" cy="5" r="3"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:href="#section1">link</a><circle href="/path/to/resource.svg" cx="5" cy="5" r="3"/></svg>
+                XML,
+        ];
+
+        yield 'Removes multiple dangerous attributes from one element' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect onclick="evil()" href="javascript:bad()" xlink:href="javascript:more()" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes script inside SVG' => [
+            <<<'XML'
+                <svg>
+                  <polygon id="triangle" points="0,0 0,50 50,0" fill="#009900" stroke="#004400"/>
+                  <script type="text/javascript">alert("xss");</script>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg><polygon id="triangle" points="0,0 0,50 50,0" fill="#009900" stroke="#004400"/></svg>
+                XML,
+        ];
+
+        yield 'Removes script inside SVG two' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 124 124" fill="none">
+                <rect width="124" height="124" rx="24" fill="#000000"/>
+                   <script type="text/javascript">
+                        alert(0x539);
+                   </script>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 124 124" fill="none"><rect width="124" height="124" rx="24" fill="#000000"/></svg>
+                XML,
+        ];
+
+        yield 'External image href' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <image xlink:href="https://example.com/image.jpg" height="200" width="200"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"/>
+                XML,
+        ];
+
+        yield 'External use href' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <use xlink:href="https://example.com/file2.svg#foo"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"/>
+                XML,
+        ];
+
+        yield 'CSS via link' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="http://example.com/style.css" type="text/css"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'CSS via @import' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>@import url(http://example.com/style.css);</style>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'CSS via xml-stylesheet' => [
+            <<<'XML'
+                <?xml-stylesheet href="http://example.com/style.css"?>
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'XSLT via xml-stylesheet' => [
+            <<<'XML'
+                <?xml-stylesheet href="http://example.com/style.xsl" type="text/xsl" ?>
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Inline script tag' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <script>alert("xss")</script>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'External script src' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <script src="http://example.com/script.js" type="text/javascript"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'onload attribute injection' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <image xlink:href="http://example.com/image.jpg" onload="alert(1)"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"/>
+                XML,
+        ];
+
+        yield 'foreignObject with iframe' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <foreignObject width="500" height="500">
+                        <iframe xmlns="http://www.w3.org/1999/xhtml" src="http://example.com/"/>
+                    </foreignObject>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"/>
+                XML,
+        ];
+
+        yield 'External tref' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <text><tref xlink:href="http://example.com#text"/></text>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><text/></svg>
+                XML,
+        ];
+
+        yield 'youtube-style CSS injection via style tag with CDATA' => [
+            <<<'XML'
+                <svg width="128px" height="128px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1">
+                    <style type="text/css">
+                        <![CDATA[
+                            s {
+                                background : "<textarea></textarea><iframe/srcdoc=&lt;script/src=data:,try{parent.document.write(&#x27;\x3cb\x3eLocation:\x3c/b\x3e&#x27;+parent.location+&#x27;\x3cbr\x3e\x3cb\x3eUserAgent:\x3c/b\x3e&#x27;+navigator.userAgent+&#x27;\x3cbr\x3e\x3cb\x3eCookie:\x3c/b\x3e&#x27;+document.cookie+&#x27;\x3cbr\x3e\x3cb\x3eLocalStorage:\x3c/b\x3e&#x27;+JSON.stringify(localStorage)+&#x27;\x3cbr\x3e&#x27;)}catch(e){parent.document.write(e.message)}&gt;&lt;/script&gt;321></iframe>";
+                            }
+                        ]]>
+                    </style>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="128px" height="128px" version="1.1"/>
+                XML,
+        ];
+
+        yield 'Removes fill with http URL in url()' => [
+            <<<'XML'
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+                        <rect fill="url('http://example.com/benis.svg')" x="0" y="0" width="1000" height="1000"></rect>
+                    </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"><rect x="0" y="0" width="1000" height="1000"/></svg>
+                XML,
+        ];
+
+        yield 'Removes fill with https URL in url()' => [
+            <<<'XML'
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+                        <rect fill="url('https://example.com/benis.svg')" x="0" y="0" width="1000" height="1000"></rect>
+                    </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"><rect x="0" y="0" width="1000" height="1000"/></svg>
+                XML,
+        ];
+
+        yield 'Removes fill with spaced https URL in url()' => [
+            <<<'XML'
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+                        <rect fill="  url(  ' https://example.com/benis.svg '  ) " x="0" y="0" width="1000" height="1000"></rect>
+                    </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"><rect x="0" y="0" width="1000" height="1000"/></svg>
+                XML,
+        ];
+
+        yield 'Removes fill with ftp URL in url()' => [
+            <<<'XML'
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+                        <rect fill="url('ftp://192.168.2.1/benis.svg')" x="0" y="0" width="1000" height="1000"></rect>
+                    </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"><rect x="0" y="0" width="1000" height="1000"/></svg>
+                XML,
+        ];
+
+        yield 'Removes fill with protocol-relative URL in url()' => [
+            <<<'XML'
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+                        <rect fill="url('//example.com/benis.svg')" x="0" y="0" width="1000" height="1000"></rect>
+                    </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"><rect x="0" y="0" width="1000" height="1000"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps fill with relative path in url()' => [
+            <<<'XML'
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+                        <rect fill="url('/benis.svg')" x="0" y="0" width="1000" height="1000"></rect>
+                    </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"><rect x="0" y="0" width="1000" height="1000"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps fill with fragment URL in url()' => [
+            <<<'XML'
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+                        <rect fill="url('#benis.svg')" x="0" y="0" width="1000" height="1000"></rect>
+                    </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"><rect x="0" y="0" width="1000" height="1000"/></svg>
+                XML,
+        ];
+
+        yield 'Removes dangerous javascript: in form action and onclick' => [
+            <<<'XML'
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+                    <form action="javascript:alert('1')">
+                        <input type="submit" onclick="javascript:alert('1')"/>
+                    </form>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"></svg>
+                XML,
+        ];
+
+        yield 'Removes script, onload attributes, namespaced script' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <test></test>
+                    <image onload="alert(1)"></image>
+                    <svg onload="alert(2)"></svg>
+                    <script>alert(3)</script>
+                    <defs onload="alert(4)"></defs>
+                    <g onload="alert(5)">
+                        <circle onload="alert(6)" />
+                        <text onload="alert(7)"></text>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><test/><svg/><defs/><g><circle/><text/></g></svg>
+                XML,
+        ];
+    }
+
+    /**
+     * @throws SvgValidationException
+     */
+    #[DataProvider('svgUnsafeElementsProvider')]
+    public function testOptimize(string $inputSvg, string $expectedSvg): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($inputSvg));
+        $svgOptimizer->addRule(new RemoveUnsafeElements());
+
+        $actual = $svgOptimizer->optimize()->getContent();
+
+        self::assertSame($expectedSvg, $actual);
+    }
+}

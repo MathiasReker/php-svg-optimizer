@@ -1,0 +1,150 @@
+<?php
+
+/**
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace MathiasReker\PhpSvgOptimizer\Utility;
+
+use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
+use MathiasReker\PhpSvgOptimizer\Type\Option;
+use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
+
+/**
+ * @no-named-arguments
+ */
+final readonly class ArgumentParser
+{
+    /**
+     * Index of the first positional argument.
+     */
+    private const int OPTION_KEY_INDEX = 0;
+
+    /**
+     * Index of the second positional argument.
+     */
+    private const int OPTION_VALUE_INDEX = 1;
+
+    /**
+     * The ArgumentData instance.
+     */
+    private ArgumentData $argumentData;
+
+    /**
+     * Constructor for the ArgumentParser class.
+     *
+     * @param list<string> $args Command-line arguments passed to the script
+     */
+    public function __construct(
+        private array $args,
+    ) {
+        $this->argumentData = new ArgumentData();
+    }
+
+    /**
+     * Check if the given option is present in the command-line arguments.
+     *
+     * @return bool True if the option is present, false otherwise
+     */
+    public function hasOption(Option $option): bool
+    {
+        try {
+            $argsObject = array_map(
+                fn (string $arg): ?ArgumentOptionValueObject => $this->isOption($arg)
+                    ? $this->argumentData->getOptionByName($this->getOptionKey($arg))
+                    : null,
+                $this->args
+            );
+
+            $argsObject = array_filter($argsObject);
+
+            return \in_array($this->argumentData->getOption($option->value), $argsObject, true);
+        } catch (\InvalidArgumentException) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if the given argument is an option.
+     *
+     * @return bool True if the argument is an option, false otherwise
+     */
+    private function isOption(string $option): bool
+    {
+        return str_starts_with($option, '-');
+    }
+
+    /**
+     * Get the key of the given option from the command-line arguments.
+     *
+     * @param string $option The option to get the key of
+     *
+     * @return string The key of the option
+     */
+    private function getOptionKey(string $option): string
+    {
+        return explode('=', $option)[self::OPTION_KEY_INDEX];
+    }
+
+    /**
+     * Get the value of the given option from the command-line arguments.
+     *
+     * @param Option $option The option to get the value of
+     *
+     * @return string The value of the option
+     *
+     * @throws \InvalidArgumentException If the option is not found in the arguments
+     */
+    public function getOption(Option $option): string
+    {
+        foreach ($this->args as $arg) {
+            if ($this->isOption($arg) && $this->argumentData->getOptionByName($this->getOptionKey($arg)) === $this->argumentData->getOption($option->value)) {
+                return $this->getOptionValue($arg);
+            }
+        }
+
+        throw new \InvalidArgumentException(\sprintf('Option "%s" not found in the command-line arguments.', $option->value));
+    }
+
+    /**
+     * Get the value of the given option from the command-line arguments.
+     *
+     * @param string $option The option to get the value of
+     *
+     * @return string The value of the option
+     *
+     * @throws \InvalidArgumentException If the option is missing a value
+     */
+    private function getOptionValue(string $option): string
+    {
+        $parts = explode('=', $option, 2);
+        if (\count($parts) < 2) {
+            throw new \InvalidArgumentException(\sprintf('Option "%s" requires a value.', $parts[self::OPTION_KEY_INDEX]));
+        }
+
+        return $parts[self::OPTION_VALUE_INDEX];
+    }
+
+    /**
+     * Get the index of the next positional argument after options/subcommands.
+     *
+     * @return int The index of the first positional argument
+     *
+     * @throws \InvalidArgumentException If no positional argument is found
+     */
+    public function getNextPositionalArgumentIndex(): int
+    {
+        foreach ($this->args as $index => $arg) {
+            if (!str_starts_with($arg, '-') && self::OPTION_KEY_INDEX !== $index) {
+                return $index;
+            }
+        }
+
+        throw new \InvalidArgumentException(\sprintf('Please follow the following format: %s', $this->argumentData->getFormat()));
+    }
+}

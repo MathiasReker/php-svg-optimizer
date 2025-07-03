@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-use MathiasReker\PhpSvgOptimizer\Commands\SvgOptimizerCommand;
+use MathiasReker\PhpSvgOptimizer\Console\SvgOptimizerCommand;
 
 ini_set('memory_limit', '-1');
 error_reporting(E_ALL);

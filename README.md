@@ -113,7 +113,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 
 try {
     $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
@@ -153,7 +153,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 
 try {
     $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
@@ -181,7 +181,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 
 try {
     $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
@@ -209,7 +209,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Services\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 
 try {
     $svgOptimizer = SvgOptimizerService::fromString('<svg>...</svg>')
@@ -463,20 +463,20 @@ The library implements the Strategy Pattern, where strategies are encapsulated a
 
 ### 1. **Create the Rule**
 
-Create a new **final readonly class** in the `/src/Services/Rules` directory and implement
+Create a new **final readonly class** in the `/src/Service/Rule` directory and implement
 the `SvgOptimizerRuleInterface`. This
 interface will define the logic for your rule.
 
 ### 2. **Write Tests**
 
-Write comprehensive **unit tests** for your rule in the `/tests/Unit/Services/Rules` directory. Ensure the tests cover
+Write comprehensive **unit tests** for your rule in the `/tests/Unit/Service/Rule` directory. Ensure the tests cover
 various scenarios to verify the correct behavior and edge cases for your rule.
 
 ### 3. **Integrate the Rule**
 
-- **Register the rule** in the SVG optimizer builder located at `/src/Services/SvgOptimizerService.php`.
-- **Add your rule to the rule enum** in `/src/Enums/Rule.php`.
-- **Include the rule in the CLI tool** by updating `/src/Commands/SvgOptimizerCommand.php`.
+- **Register the rule** in the SVG optimizer builder located at `/src/Service/SvgOptimizerService.php`.
+- **Add your rule to the rule enum** in `/src/Type/Rule.php`.
+- **Include the rule in the CLI tool** by updating `/src/Command/SvgOptimizerCommand.php`.
 
 ### 4. **Update Documentation**
 

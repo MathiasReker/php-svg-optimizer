@@ -25,15 +25,15 @@ parameters:
   ergebnis:
     final:
       classesNotRequiredToBeAbstractOrFinal:
-        - MathiasReker\PhpSvgOptimizer\Util\XmlProcessor
-        - MathiasReker\PhpSvgOptimizer\Services\Validators\SvgValidator
+        - MathiasReker\PhpSvgOptimizer\Utility\XmlProcessor
+        - MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator
     noExtends:
       classesAllowedToBeExtended:
         - RuntimeException
         - InvalidArgumentException
         - RuntimeException
-        - MathiasReker\PhpSvgOptimizer\Services\Providers\AbstractProvider
-        - MathiasReker\PhpSvgOptimizer\Services\Rules\AbstractXmlProcessor
+        - MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider
+        - MathiasReker\PhpSvgOptimizer\Service\Rule\AbstractXmlProcessor
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
     - vendor/symplify/phpstan-rules/config/code-complexity-rules.neon
