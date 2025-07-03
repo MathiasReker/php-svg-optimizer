@@ -9,11 +9,11 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Command;
+namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 
-use MathiasReker\PhpSvgOptimizer\Service\Console\Input\ArgumentParser;
-use MathiasReker\PhpSvgOptimizer\Service\Console\Input\ConfigLoader;
-use MathiasReker\PhpSvgOptimizer\Service\Console\Output\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
+use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
+use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
 use MathiasReker\PhpSvgOptimizer\Type\Application;
 use MathiasReker\PhpSvgOptimizer\Type\Option;

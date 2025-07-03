@@ -13,8 +13,8 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Processing\DomDocumentWrapper;
-use MathiasReker\PhpSvgOptimizer\Processing\XmlProcessor;
+use MathiasReker\PhpSvgOptimizer\Service\Processing\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Service\Processing\XmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;

@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Providers;
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Processing\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Service\Processing\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;

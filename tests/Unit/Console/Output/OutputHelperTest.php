@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output;
 
-use MathiasReker\PhpSvgOptimizer\Service\Console\Output\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\Formatter;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
