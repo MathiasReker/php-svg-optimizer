@@ -113,10 +113,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 
 try {
-    $svgOptimizer = SvgOptimizer::fromFile('path/to/source.svg')
+    $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
         ->withRules(
             convertColorsToHex: true,
             convertEmptyTagsToSelfClosing: true,
@@ -156,7 +156,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 
 try {
-    $svgOptimizer = SvgOptimizer::fromFile('path/to/source.svg')
+    $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
         ->optimize()
         ->saveToFile('path/to/output.svg');
 
@@ -184,7 +184,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 
 try {
-    $svgOptimizer = SvgOptimizer::fromFile('path/to/source.svg')
+    $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
         ->optimize();
 
     echo sprintf('Get content: ', $svgOptimizer->getContent(), \PHP_EOL);
@@ -212,7 +212,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 
 try {
-    $svgOptimizer = SvgOptimizer::fromString('<svg>...</svg>')
+    $svgOptimizer = SvgOptimizerService::fromString('<svg>...</svg>')
         ->optimize();
 
     echo sprintf('Content: ', $svgOptimizer->getContent(), \PHP_EOL);
@@ -474,7 +474,7 @@ various scenarios to verify the correct behavior and edge cases for your rule.
 
 ### 3. **Integrate the Rule**
 
-- **Register the rule** in the SVG optimizer builder located at `/src/Service/Svg/SvgOptimizerService.php`.
+- **Register the rule** in the SVG optimizer builder located at `/src/Service/SvgOptimizerService.php`.
 - **Add your rule to the rule enum** in `/src/Type/Rule.php`.
 - **Include the rule in the CLI tool** by updating `/src/Command/SvgOptimizerCommand.php`.
 
