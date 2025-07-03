@@ -113,10 +113,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 
 try {
-    $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
+    $svgOptimizer = SvgOptimizer::fromFile('path/to/source.svg')
         ->withRules(
             convertColorsToHex: true,
             convertEmptyTagsToSelfClosing: true,
@@ -156,7 +156,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
 
 try {
-    $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
+    $svgOptimizer = SvgOptimizer::fromFile('path/to/source.svg')
         ->optimize()
         ->saveToFile('path/to/output.svg');
 
@@ -184,7 +184,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
 
 try {
-    $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
+    $svgOptimizer = SvgOptimizer::fromFile('path/to/source.svg')
         ->optimize();
 
     echo sprintf('Get content: ', $svgOptimizer->getContent(), \PHP_EOL);
@@ -212,7 +212,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
 
 try {
-    $svgOptimizer = SvgOptimizerService::fromString('<svg>...</svg>')
+    $svgOptimizer = SvgOptimizer::fromString('<svg>...</svg>')
         ->optimize();
 
     echo sprintf('Content: ', $svgOptimizer->getContent(), \PHP_EOL);

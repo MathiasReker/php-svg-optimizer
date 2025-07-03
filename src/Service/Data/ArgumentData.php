@@ -14,8 +14,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Data;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 
 /**
  * @no-named-arguments

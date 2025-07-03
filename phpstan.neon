@@ -25,7 +25,7 @@ parameters:
   ergebnis:
     final:
       classesNotRequiredToBeAbstractOrFinal:
-        - MathiasReker\PhpSvgOptimizer\Service\Processing\XmlProcessor
+        - MathiasReker\PhpSvgOptimizer\Service\Processor\XmlProcessor
         - MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator
     noExtends:
       classesAllowedToBeExtended:
