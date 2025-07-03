@@ -11,13 +11,12 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output;
 
-use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Service\Console\Output\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
+use MathiasReker\PhpSvgOptimizer\Service\Formatter\Formatter;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
-use MathiasReker\PhpSvgOptimizer\Utility\Formatter;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -29,9 +28,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Command::class)]
 #[CoversClass(ArgumentData::class)]
 #[CoversClass(ArgumentOptionValueObject::class)]
-#[CoversClass(CommandOptionValueObject::class)]
-#[CoversClass(ExampleCommandValueObject::class)]
 #[CoversClass(Option::class)]
+#[CoversClass(ExampleCommandValueObject::class)]
 #[CoversClass(Formatter::class)]
 final class OutputHelperTest extends TestCase
 {

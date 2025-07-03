@@ -9,10 +9,10 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Console\Output;
+namespace MathiasReker\PhpSvgOptimizer\Service\Console\Output;
 
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
-use MathiasReker\PhpSvgOptimizer\Utility\Formatter;
+use MathiasReker\PhpSvgOptimizer\Service\Formatter\Formatter;
 
 /**
  * @no-named-arguments

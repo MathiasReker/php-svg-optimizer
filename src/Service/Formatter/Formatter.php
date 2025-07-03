@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Utility;
+namespace MathiasReker\PhpSvgOptimizer\Service\Formatter;
 
 /**
  * @no-named-arguments
@@ -26,7 +26,7 @@ final readonly class Formatter
     public static function formatBytes(int $bytes): string
     {
         if ($bytes < 1_024) {
-            return "$bytes B";
+            return "{$bytes} B";
         }
 
         $units = ['KB', 'MB', 'GB', 'TB'];

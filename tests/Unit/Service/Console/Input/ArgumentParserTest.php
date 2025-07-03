@@ -9,14 +9,13 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Utility;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 
+use MathiasReker\PhpSvgOptimizer\Service\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
-use MathiasReker\PhpSvgOptimizer\Utility\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -26,10 +25,9 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(ArgumentParser::class)]
 #[CoversClass(ArgumentOptionValueObject::class)]
-#[CoversClass(CommandOptionValueObject::class)]
+#[CoversClass(Option::class)]
 #[CoversClass(ExampleCommandValueObject::class)]
 #[CoversClass(ArgumentData::class)]
-#[CoversClass(Option::class)]
 #[CoversClass(Command::class)]
 final class ArgumentParserTest extends TestCase
 {

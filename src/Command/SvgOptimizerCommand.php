@@ -11,13 +11,13 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Command;
 
-use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Service\Console\Input\ArgumentParser;
+use MathiasReker\PhpSvgOptimizer\Service\Console\Input\ConfigLoader;
+use MathiasReker\PhpSvgOptimizer\Service\Console\Output\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Service\Svg\SvgOptimizerService;
 use MathiasReker\PhpSvgOptimizer\Type\Application;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
-use MathiasReker\PhpSvgOptimizer\Utility\ArgumentParser;
-use MathiasReker\PhpSvgOptimizer\Utility\ConfigLoader;
 
 /**
  * @no-named-arguments

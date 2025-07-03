@@ -12,9 +12,9 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Providers;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Processing\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
-use MathiasReker\PhpSvgOptimizer\Utility\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -23,8 +23,8 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(StringProvider::class)]
-#[CoversClass(MetaData::class)]
 #[CoversClass(MetaDataValueObject::class)]
+#[CoversClass(MetaData::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 final class StringProviderTest extends TestCase
 {

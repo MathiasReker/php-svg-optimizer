@@ -9,10 +9,10 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Utility;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Processing;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Utility\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Processing\DomDocumentWrapper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

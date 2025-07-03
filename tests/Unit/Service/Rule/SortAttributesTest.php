@@ -13,10 +13,10 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Processing\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
-use MathiasReker\PhpSvgOptimizer\Utility\DomDocumentWrapper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Utility;
+namespace MathiasReker\PhpSvgOptimizer\Processing;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 

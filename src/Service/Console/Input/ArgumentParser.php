@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Utility;
+namespace MathiasReker\PhpSvgOptimizer\Service\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
