@@ -363,7 +363,8 @@ Sorts attributes within each element:
 $svgOptimizer->withRules(sortAttributes: true);
 ```
 
-All options are set to true by default. You can configure them individually by passing the desired values to it:
+All options are set to `true` by default except `removeUnsafeElements`. You can configure them individually by passing
+the desired values to it:
 
 ```php
 $svgOptimizer->withRules(
@@ -457,7 +458,7 @@ request. You can also open an issue. If you find this project helpful, don’t f
 #### Library Structure and Contribution Guide
 
 The library implements the Strategy Pattern, where strategies are encapsulated as "rules" located in the
-`/src/Services/Rules` directory.
+`/src/Service/Rule` directory.
 
 ##### Adding a New Rule
 
