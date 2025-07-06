@@ -28,10 +28,10 @@
         "brainbits/phpstan-rules": "^4.0.0",
         "ergebnis/composer-normalize": "^2.47.0",
         "ergebnis/phpstan-rules": "^2.10.5",
-        "friendsofphp/php-cs-fixer": "^3.76.0",
+        "friendsofphp/php-cs-fixer": "^3.78.1",
         "hiperdk/phpstan-rules": "^1.0.0",
-        "infection/infection": "^0.30.0",
-        "kubawerlos/php-cs-fixer-custom-fixers": "^3.28.0",
+        "infection/infection": "^0.30.1",
+        "kubawerlos/php-cs-fixer-custom-fixers": "^3.29.1",
         "marc-mabe/php-enum-phpstan": "^3.0.0",
         "odan/phpstan-rules": "^0.2.0",
         "phpstan/extension-installer": "^1.4.3",
@@ -40,10 +40,11 @@
         "phpstan/phpstan-mockery": "^2.0.0",
         "phpstan/phpstan-phpunit": "^2.0.6",
         "phpstan/phpstan-strict-rules": "^2.0.4",
-        "phpunit/phpunit": "^12.2.5",
+        "phpunit/php-code-coverage": "^12.3.1",
+        "phpunit/phpunit": "^12.2.6",
         "povils/phpmnd": "^3.6.0",
         "rector/rector": "^2.1.0",
-        "shipmonk/composer-dependency-analyser": "^1.8",
+        "shipmonk/composer-dependency-analyser": "^1.8.3",
         "shipmonk/phpstan-rules": "^4.1.4",
         "slam/phpstan-extensions": "^6.6.0",
         "spaze/phpstan-disallowed-calls": "^4.5.0",
@@ -109,6 +110,7 @@
         "phpstan": "@php vendor/bin/phpstan analyse -c phpstan.neon",
         "rector-check": "@php vendor/bin/rector process --dry-run",
         "rector-fix": "@php vendor/bin/rector process",
-        "test": "@php vendor/bin/phpunit tests/"
+        "test": "@php vendor/bin/phpunit tests",
+        "test-coverage": "@php vendor/bin/phpunit tests --coverage-text"
     }
 }

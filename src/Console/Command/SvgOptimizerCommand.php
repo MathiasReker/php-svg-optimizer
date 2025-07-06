@@ -207,26 +207,6 @@ final class SvgOptimizerCommand
     }
 
     /**
-     * Prints a summary of the optimization results.
-     */
-    private function printSummary(): void
-    {
-        $savedBytes = $this->totalOriginalSize - $this->totalOptimizedSize;
-
-        $savedPercentage = $this->totalOriginalSize > 0
-            ? round(($savedBytes / $this->totalOriginalSize) * self::PERCENTAGE_FACTOR, self::DEFAULT_PRECISION)
-            : 0.0;
-
-        OutputHelper::printTotalSummary(
-            $this->optimizedFiles,
-            $this->totalOriginalSize,
-            $this->totalOptimizedSize,
-            $savedBytes,
-            $savedPercentage
-        );
-    }
-
-    /**
      * Processes all SVG files in a directory.
      *
      * @param string $directoryPath The path to the directory containing the SVG files
@@ -305,5 +285,25 @@ final class SvgOptimizerCommand
                 exit(self::EXIT_CODE_ERROR);
             }
         }
+    }
+
+    /**
+     * Prints a summary of the optimization results.
+     */
+    private function printSummary(): void
+    {
+        $savedBytes = $this->totalOriginalSize - $this->totalOptimizedSize;
+
+        $savedPercentage = $this->totalOriginalSize > 0
+            ? round(($savedBytes / $this->totalOriginalSize) * self::PERCENTAGE_FACTOR, self::DEFAULT_PRECISION)
+            : 0.0;
+
+        OutputHelper::printTotalSummary(
+            $this->optimizedFiles,
+            $this->totalOriginalSize,
+            $this->totalOptimizedSize,
+            $savedBytes,
+            $savedPercentage
+        );
     }
 }

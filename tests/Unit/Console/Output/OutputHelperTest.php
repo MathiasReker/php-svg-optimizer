@@ -81,6 +81,35 @@ final class OutputHelperTest extends TestCase
         self::assertStringContainsString('Options:', $output);
         self::assertStringContainsString('Commands:', $output);
         self::assertStringContainsString('Examples:', $output);
+        self::assertStringContainsString('--help', $output);
+        self::assertStringContainsString('--config', $output);
+        self::assertStringContainsString('--dry-run', $output);
+        self::assertStringContainsString('--quiet', $output);
+        self::assertStringContainsString('--version', $output);
+        self::assertStringContainsString('process', $output);
+        self::assertStringContainsString('vendor/bin/svg-optimizer', $output);
+    }
+
+    public function testPrintHelpIncludesOptions(): void
+    {
+        ob_start();
+        OutputHelper::printHelp();
+        $output = ob_get_clean();
+
+        self::assertNotFalse($output);
+        self::assertStringContainsString('Options:', $output);
+        self::assertMatchesRegularExpression('/\s+-h\s+--help\s+.+/', $output);
+    }
+
+    public function testPrintHelpIncludesCommands(): void
+    {
+        ob_start();
+        OutputHelper::printHelp();
+        $output = ob_get_clean();
+
+        self::assertNotFalse($output);
+        self::assertStringContainsString('Commands:', $output);
+        self::assertMatchesRegularExpression('/\s+process\s+.+/', $output);
     }
 
     public function testPrintTotalSummary(): void

@@ -101,6 +101,32 @@ final class DomDocumentWrapperTest extends TestCase
         self::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
     }
 
+    /**
+     * @throws XmlProcessingException
+     */
+    public function testSaveToStringRemovesCarriageReturns(): void
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML("<root>\r\n\t<child>\r\n\t\tTest\r\n\t</child>\r\n</root>");
+
+        $result = $this->domDocumentWrapper->saveToString($domDocument);
+
+        self::assertStringNotContainsString("\r", $result);
+        self::assertStringContainsString('<root><child>Test</child></root>', $result);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
+    public function testLoadFromStringInvalidThrowsException(): void
+    {
+        $this->expectException(XmlProcessingException::class);
+        $this->expectExceptionMessage('Failed to load DOMDocument.');
+
+        $invalidXml = '<root><unclosed></root>';
+        $this->domDocumentWrapper->loadFromString($invalidXml);
+    }
+
     #[\Override]
     protected function setUp(): void
     {

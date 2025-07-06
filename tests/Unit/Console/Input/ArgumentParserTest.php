@@ -95,6 +95,48 @@ final class ArgumentParserTest extends TestCase
         self::assertTrue($hasVersionOption);
     }
 
+    public function testHasOptionIgnoresNonOptionArguments(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            'process',
+            '/path/to/file.svg',
+        ];
+
+        $parser = new ArgumentParser($args);
+
+        self::assertFalse($parser->hasOption(Option::CONFIG));
+    }
+
+    public function testHasInvalidOptionArguments(): void
+    {
+        $args = [
+            'foo',
+            'bar',
+        ];
+
+        $parser = new ArgumentParser($args);
+
+        self::assertFalse($parser->hasOption(Option::CONFIG));
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testGetOptionHandlesEqualsInValue(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            '--config=foo=bar=baz',
+        ];
+
+        $parser = new ArgumentParser($args);
+
+        $value = $parser->getOption(Option::CONFIG);
+
+        self::assertSame('foo=bar=baz', $value);
+    }
+
     #[\Override]
     protected function setUp(): void
     {

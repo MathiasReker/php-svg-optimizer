@@ -134,6 +134,11 @@ abstract class AbstractProvider implements SvgProviderInterface
             return true;
         }
 
+        $parent = \dirname($directoryPath);
+        if (!is_dir($parent)) {
+            return false;
+        }
+
         return mkdir($directoryPath, self::DEFAULT_DIRECTORY_PERMISSION, true);
     }
 

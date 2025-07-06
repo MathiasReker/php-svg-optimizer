@@ -1,25 +1,25 @@
-# Use a specific version of Composer to ensure consistency
-FROM composer:latest AS composer
-
-# Use a specific PHP version for predictability
+# Use a specific PHP version
 FROM php:8.4-fpm
 
-# Copy Composer from the composer image
-COPY --from=composer /usr/bin/composer /usr/bin/composer
-
-# Set label for the image
-LABEL org.opencontainers.image.description="php-svg-optimizer is a PHP library designed to optimize SVG files by applying various transformations and cleanup operations."
-
-# Install system dependencies and clean up
+# Install system dependencies and tools (including Xdebug)
 RUN apt update && \
-    apt -y upgrade && \
-    apt -y install --no-install-recommends && \
-    apt clean
+    apt install -y git unzip curl libzip-dev && \
+    docker-php-ext-install zip && \
+    pecl install xdebug && \
+    docker-php-ext-enable xdebug
+
+# Configure Xdebug for code coverage
+RUN echo "zend_extension=xdebug.so" >> /usr/local/etc/php/php.ini && \
+    echo "xdebug.mode=coverage" >> /usr/local/etc/php/php.ini && \
+    echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/php.ini
+
+# Copy Composer from the official image
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /app
 
-# Copy application code to the container
+# Copy application code
 COPY . .
 
 # Install PHP dependencies

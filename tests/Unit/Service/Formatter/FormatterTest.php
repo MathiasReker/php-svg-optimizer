@@ -56,4 +56,13 @@ final class FormatterTest extends TestCase
         self::assertSame('1.95 KB', Formatter::formatBytes(2_000));
         self::assertSame('1.91 MB', Formatter::formatBytes(2_000_000));
     }
+
+    public function testFormatBytesDoesNotExceedDefinedUnits(): void
+    {
+        // 1024^5 = 1 PB (Petabyte) → just beyond TB (last in units list)
+        $bytes = 1_024 ** 5;
+
+        // Should still return formatted using 'TB' (the last available unit)
+        self::assertSame('1024.00 TB', Formatter::formatBytes($bytes));
+    }
 }

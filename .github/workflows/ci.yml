@@ -69,3 +69,32 @@ jobs:
 
       - name: Normalize Composer Configuration
         run: composer normalize --dry-run --no-check-lock
+
+      - name: Extract coverage percentage
+        id: extract
+        run: |
+          LINE=$(grep 'Lines:' coverage.xml || echo "")
+          if [ -z "$LINE" ]; then
+            echo "No coverage info found"
+            exit 1
+          fi
+          PERCENT=$(echo "$LINE" | awk '{print $3}' | tr -d '%')
+          echo "percent=$PERCENT" >> $GITHUB_OUTPUT
+
+      - name: Generate coverage badge
+        run: |
+          PERCENT=${{ steps.extract.outputs.percent }}
+          COLOR=red
+          if (( $(echo "$PERCENT >= 80" | bc -l) )); then COLOR=green;
+          elif (( $(echo "$PERCENT >= 50" | bc -l) )); then COLOR=yellow;
+          fi
+          curl -s -o coverage.svg "https://badgen.net/badge/coverage/${PERCENT}%25/${COLOR}"
+
+      - name: Commit and push coverage badge
+        if: github.ref == 'refs/heads/develop'  # only push badge on develop
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add coverage.svg
+          git commit -m "Update coverage badge to ${{ steps.extract.outputs.percent }}%" || echo "No changes"
+          git push

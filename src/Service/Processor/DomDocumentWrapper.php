@@ -157,6 +157,11 @@ final readonly class DomDocumentWrapper
      */
     public function loadFromString(string $xmlContent): \DOMDocument
     {
-        return $this->loadDomDocument(static fn (\DOMDocument $domDocument): bool => $domDocument->loadXML($xmlContent, \LIBXML_NONET | \LIBXML_NOCDATA | \LIBXML_NOEMPTYTAG));
+        return $this->loadDomDocument(
+            static fn (\DOMDocument $domDocument): bool => $domDocument->loadXML(
+                $xmlContent,
+                \LIBXML_NONET | \LIBXML_NOENT | \LIBXML_NOCDATA | \LIBXML_NOEMPTYTAG
+            )
+        );
     }
 }

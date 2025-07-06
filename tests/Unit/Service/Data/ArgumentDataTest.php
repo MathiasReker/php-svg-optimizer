@@ -96,6 +96,17 @@ final class ArgumentDataTest extends TestCase
         self::assertSame('vendor/bin/svg-optimizer [options] process <path1> <path2> ...', $format);
     }
 
+    /**
+     * @throws \InvalidArgumentException If the option does not exist
+     */
+    public function testGetOptionThrowsForUnknownOption(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Option "unknown" not found.');
+
+        $this->argumentData->getOption('unknown');
+    }
+
     #[\Override]
     protected function setUp(): void
     {

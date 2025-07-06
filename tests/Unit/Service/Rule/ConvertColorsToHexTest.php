@@ -349,6 +349,72 @@ final class ConvertColorsToHexTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#fbb040"/></svg>
                 XML,
         ];
+
+        yield 'Converts RGB to hex in style attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="fill:rgb(255, 0, 0);" />
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:#f00;"/></svg>
+                XML,
+        ];
+
+        yield 'Lowercases hex in style attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <circle style="stroke:#ABCDEF;" />
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><circle style="stroke:#abcdef;"/></svg>
+                XML,
+        ];
+
+        yield 'Handles RGB shorthand conversion (canBeShortened)' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <path style="fill:rgb(17, 34, 51);" />
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><path style="fill:#123;"/></svg>
+                XML,
+        ];
+
+        yield 'Preserves already-lowercase hex' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <ellipse style="fill:#abcdef;" />
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><ellipse style="fill:#abcdef;"/></svg>
+                XML,
+        ];
+
+        yield 'Don\'t normalizes hex in text node' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <text>#ABCDEF</text>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><text>#ABCDEF</text></svg>
+                XML,
+        ];
+
+        yield 'Don\'t convert RGB in text node' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <text>rgb(255,255,255)</text>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><text>rgb(255,255,255)</text></svg>
+                XML,
+        ];
     }
 
     /**
