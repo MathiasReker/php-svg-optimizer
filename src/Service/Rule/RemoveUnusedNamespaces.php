@@ -14,8 +14,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
-use function count;
-
 /**
  * @no-named-arguments
  */

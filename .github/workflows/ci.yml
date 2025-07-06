@@ -1,5 +1,8 @@
 name: CI
 
+permissions:
+  contents: write
+
 on:
   push:
     branches:
@@ -73,28 +76,30 @@ jobs:
       - name: Extract coverage percentage
         id: extract
         run: |
-          LINE=$(grep 'Lines:' coverage.xml || echo "")
-          if [ -z "$LINE" ]; then
-            echo "No coverage info found"
-            exit 1
-          fi
-          PERCENT=$(echo "$LINE" | awk '{print $3}' | tr -d '%')
-          echo "percent=$PERCENT" >> $GITHUB_OUTPUT
+          FRACTION=$(./vendor/bin/phpunit --coverage-text | grep 'Lines:' | head -1 | awk '{print $3}')
+          PERCENT=$(echo "scale=2; 100 * $FRACTION" | bc)
+          echo "percent=$(printf "%.0f" $PERCENT)" >> $GITHUB_OUTPUT
 
-      - name: Generate coverage badge
-        run: |
-          PERCENT=${{ steps.extract.outputs.percent }}
-          COLOR=red
-          if (( $(echo "$PERCENT >= 80" | bc -l) )); then COLOR=green;
-          elif (( $(echo "$PERCENT >= 50" | bc -l) )); then COLOR=yellow;
-          fi
-          curl -s -o coverage.svg "https://badgen.net/badge/coverage/${PERCENT}%25/${COLOR}"
-
-      - name: Commit and push coverage badge
-        if: github.ref == 'refs/heads/develop'  # only push badge on develop
+      - name: Generate and push coverage badge
+        if: github.ref == 'refs/heads/develop'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add coverage.svg
-          git commit -m "Update coverage badge to ${{ steps.extract.outputs.percent }}%" || echo "No changes"
-          git push
+
+          git fetch origin
+          git checkout develop
+          git reset --hard origin/develop
+
+          mkdir -p dev/artifacts
+
+          PERCENT=${{ steps.extract.outputs.percent }}
+          COLOR=red
+          if (( PERCENT >= 80 )); then COLOR=green;
+          elif (( PERCENT >= 50 )); then COLOR=yellow;
+          fi
+
+          curl -s -o dev/artifacts/coverage.svg "https://badgen.net/badge/coverage/${PERCENT}%25/${COLOR}"
+
+          git add dev/artifacts/coverage.svg
+          git commit -m "Update coverage badge to ${PERCENT}%" || echo "No changes"
+          git push origin develop

@@ -13,9 +13,11 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Provider;
 
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
+use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -23,7 +25,9 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(AbstractProvider::class)]
 #[CoversClass(IOException::class)]
-#[UsesClass(\DOMDocument::class)]
+#[CoversClass(MetaData::class)]
+#[CoversClass(MetaDataValueObject::class)]
+#[CoversClass(DomDocumentWrapper::class)]
 final class ConcreteProviderTest extends TestCase
 {
     private string $tmpFile = '';
