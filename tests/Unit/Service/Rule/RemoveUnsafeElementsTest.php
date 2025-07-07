@@ -45,6 +45,9 @@ final class RemoveUnsafeElementsTest extends TestCase
         self::assertSame($expectedSvg, $actual);
     }
 
+    /**
+     * @return iterable<array{string, string}>
+     */
     public static function provideOptimizeCases(): iterable
     {
         yield 'Removes script and iframe elements' => [

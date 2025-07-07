@@ -44,6 +44,9 @@ final class RemoveMetadataTest extends TestCase
         self::assertSame($expected, $actual);
     }
 
+    /**
+     * @return iterable<array{string, string}>
+     */
     public static function provideOptimizeCases(): iterable
     {
         yield 'Removes single <metadata> tag' => [

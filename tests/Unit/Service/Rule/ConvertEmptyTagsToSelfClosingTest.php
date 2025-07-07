@@ -48,6 +48,9 @@ final class ConvertEmptyTagsToSelfClosingTest extends TestCase
         self::assertSame($expected, $actual);
     }
 
+    /**
+     * @return iterable<array{string, string}>
+     */
     public static function provideOptimizeCases(): iterable
     {
         yield 'Convert Empty Rect Tag' => [

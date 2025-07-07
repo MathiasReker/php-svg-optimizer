@@ -44,6 +44,9 @@ final class MinifyTransformationsTest extends TestCase
         self::assertSame($expected, $actual);
     }
 
+    /**
+     * @return iterable<array{string, string}>
+     */
     public static function provideOptimizeCases(): iterable
     {
         yield 'Removes Identity Transforms' => [

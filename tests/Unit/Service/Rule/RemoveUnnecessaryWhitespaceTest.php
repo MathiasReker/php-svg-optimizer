@@ -46,6 +46,9 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
         self::assertSame($expected, $actual);
     }
 
+    /**
+     * @return iterable<array{string, string}>
+     */
     public static function provideOptimizeRemovesUnnecessaryWhitespaceCases(): iterable
     {
         yield 'Removes Unnecessary Whitespace' => [

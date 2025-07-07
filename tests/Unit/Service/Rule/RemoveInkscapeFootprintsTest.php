@@ -46,6 +46,9 @@ final class RemoveInkscapeFootprintsTest extends TestCase
         self::assertSame($expected, $actual);
     }
 
+    /**
+     * @return iterable<array{string, string}>
+     */
     public static function provideOptimizeCases(): iterable
     {
         yield 'Removes inkscape and sodipodi namespaces' => [

@@ -44,6 +44,9 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
         self::assertSame($expected, $actual);
     }
 
+    /**
+     * @return iterable<array{string, string}>
+     */
     public static function provideOptimizeCases(): iterable
     {
         yield 'Removes enable-background for svg with matching dimensions' => [

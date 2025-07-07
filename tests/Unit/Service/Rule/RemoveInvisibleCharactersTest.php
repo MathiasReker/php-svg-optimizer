@@ -46,6 +46,9 @@ final class RemoveInvisibleCharactersTest extends TestCase
         self::assertSame($expected, $actual);
     }
 
+    /**
+     * @return iterable<array{string, string}>
+     */
     public static function provideOptimizeCases(): iterable
     {
         yield 'Remove Invisible Soft Hyphen' => [
