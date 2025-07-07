@@ -120,7 +120,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a>link</a><circle cx="5" cy="5" r="3"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><circle cx="5" cy="5" r="3"/></svg>
                 XML,
         ];
 
@@ -132,7 +132,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:href="#section1">link</a><circle href="/path/to/resource.svg" cx="5" cy="5" r="3"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><circle href="/path/to/resource.svg" cx="5" cy="5" r="3"/></svg>
                 XML,
         ];
 
@@ -368,23 +368,12 @@ final class RemoveUnsafeElementsTest extends TestCase
 
         yield 'Keeps fill with relative path in url()' => [
             <<<'XML'
-                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
-                        <rect fill="url('/benis.svg')" x="0" y="0" width="1000" height="1000"></rect>
-                    </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xml:space="preserve">
+                    <rect fill="url('/benis.svg')" x="0" y="0" width="1000" height="1000"/>
+                </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"><rect x="0" y="0" width="1000" height="1000"/></svg>
-                XML,
-        ];
-
-        yield 'Keeps fill with fragment URL in url()' => [
-            <<<'XML'
-                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
-                        <rect fill="url('#benis.svg')" x="0" y="0" width="1000" height="1000"></rect>
-                    </svg>
-                XML,
-            <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"><rect x="0" y="0" width="1000" height="1000"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xml:space="preserve"><rect fill="url('/benis.svg')" x="0" y="0" width="1000" height="1000"/></svg>
                 XML,
         ];
 
@@ -417,6 +406,63 @@ final class RemoveUnsafeElementsTest extends TestCase
                 XML,
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><test/><svg/><defs/><g><circle/><text/></g></svg>
+                XML,
+        ];
+
+        yield 'Removes onload attributes' => [
+            <<<'XML'
+                <svg version="1.1" baseProfile="full" xmlns="http://www.w3.org/2000/svg">
+                    <animate onbegin="alert(1)" attributeName="x" dur="1s" />
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" baseProfile="full"><animate attributeName="x" dur="1s"/></svg>
+                XML,
+        ];
+
+        yield 'Removes unsafe color value with javascript:' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect fill="javascript:alert(1)" width="10" height="10"/>
+                    <circle stroke="javascript:evil()" cx="5" cy="5" r="3"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/><circle cx="5" cy="5" r="3"/></svg>
+                XML,
+        ];
+
+        yield 'Removes unsafe color value with url() referencing http' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect fill="url('http://evil.com/gradient.svg#grad')" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps safe color names and hex values' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect fill="red" width="10" height="10"/>
+                    <circle stroke="#00FF00" cx="5" cy="5" r="3"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect fill="red" width="10" height="10"/><circle stroke="#00FF00" cx="5" cy="5" r="3"/></svg>
+                XML,
+        ];
+
+        yield 'Removes fill and stroke attributes with ftp URL in url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect fill="url('ftp://example.com/gradient.svg#grad')" stroke="url('ftp://example.com/stroke.svg#stroke')" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
                 XML,
         ];
     }

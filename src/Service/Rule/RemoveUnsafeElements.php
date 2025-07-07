@@ -34,6 +34,26 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         'link',
         'tref',
         'form',
+        'a',
+        'color-profile',
+        'cursor',
+        'discard',
+        'fedropshadow',
+        'font-face',
+        'font-face-format',
+        'font-face-name',
+        'font-face-src',
+        'font-face-uri',
+        'hatch',
+        'hatchpath',
+        'mesh',
+        'meshgradient',
+        'meshpatch',
+        'meshrow',
+        'missing-glyph',
+        'set',
+        'solidcolor',
+        'unknown',
     ];
 
     /**
@@ -60,18 +80,9 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * These patterns are used to identify potentially dangerous content in attributes.
      *
-     * @see https://regex101.com/r/OCadvZ/1
+     * @see https://regex101.com/r/OCadvZ/1 // TODO
      */
-    private const string URI_PROTOCOL_REGEX = '/^\s*(javascript|data|vbscript):/i';
-
-    /**
-     * Regular expression for detecting fill URLs that are potentially unsafe.
-     *
-     * This pattern matches fill attributes that contain URLs, which may lead to security vulnerabilities.
-     *
-     * @see https://regex101.com/r/buQ6tP/1
-     */
-    private const string FILL_URL_REGEX = '/^url\(\s*[\'"]?.+[\'"]?\s*\)$/i';
+    private const string URI_PROTOCOL_REGEX = '~^[a-z][a-z0-9+.-]*:~i'; // matches scheme:
 
     /**
      * Regular expressions for detecting unsafe styles in SVG content.
@@ -90,6 +101,40 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      * @see https://regex101.com/r/hN9M9b/1
      */
     private const string STYLE_NODE_DANGEROUS_REGEX = '/@import\s+url\(|<\s*(script|iframe|object|textarea|embed|link|svg)/i';
+
+    /**
+     * Regular expression for detecting URLs in SVG content.
+     *
+     * This pattern matches the url() function in CSS styles, allowing for both quoted and unquoted URLs.
+     *
+     * @see https://regex101.com/r/WQHx9p/1
+     */
+    private const string URL_FUNCTION_REGEX = '/url\(\s*([\'"]?)(.*?)\1\s*\)/i';
+
+    /**
+     * Regular expression for detecting URLs that start with a protocol or are relative.
+     *
+     * This pattern matches URLs that start with a scheme (e.g., http:) or are protocol-relative (e.g., //example.com).
+     *
+     * @see https://regex101.com/r/Wpra41/1
+     */
+    private const string URL_PROTOCOL_OR_RELATIVE_REGEX = '~^(?:[a-z][a-z0-9+.-]*:|//)~i';
+
+    /**
+     * List of attributes that can contain URLs and should be checked for unsafe content.
+     *
+     * These attributes are commonly used in SVG files and may contain references to external resources.
+     */
+    private const array URL_ATTRIBUTES = [
+        'fill',
+        'stroke',
+        'filter',
+        'clip-path',
+        'mask',
+        'marker-start',
+        'marker-mid',
+        'marker-end',
+    ];
 
     /**
      * Optimize the SVG document by removing unsafe elements and attributes.
@@ -188,23 +233,82 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Check if an attribute is considered dangerous based on its name and value.
+     * Check if the attribute is dangerous based on its name and value.
      *
-     * This method checks if the attribute name starts with a dangerous prefix,
-     * or if it matches specific dangerous patterns defined in DANGEROUS_ATTRS_EXACT.
+     * This method checks if the attribute name starts with a dangerous prefix, matches an exact dangerous attribute,
+     * or contains unsafe content in its value.
      *
      * @param string $name  The name of the attribute to check
      * @param string $value The value of the attribute to check
      *
-     * @return bool True if the attribute is dangerous, false otherwise
+     * @return bool True if the attribute is considered dangerous, false otherwise
      */
     private function isDangerousAttribute(string $name, string $value): bool
     {
-        return $this->hasDangerousPrefix($name)
-            || (\in_array($name, self::DANGEROUS_ATTRS_EXACT, true) && $this->matchesPattern($value, self::URI_PROTOCOL_REGEX))
-            || ('fill' === $name && $this->matchesPattern($value, self::FILL_URL_REGEX))
-            || ('style' === $name && $this->matchesPattern($value, self::STYLE_DANGEROUS_REGEX))
-            || ('src' === $name && $this->matchesPattern($value, self::URI_PROTOCOL_REGEX));
+        $nameLower = mb_strtolower($name);
+
+        if ($this->hasDangerousPrefix($nameLower)) {
+            return true;
+        }
+
+        if ($this->isExactDangerousAttribute($nameLower, $value)) {
+            return true;
+        }
+
+        if ($this->isUrlAttributeDangerous($nameLower, $value)) {
+            return true;
+        }
+
+        if ('style' === $nameLower && $this->matchesPattern($value, self::STYLE_DANGEROUS_REGEX)) {
+            return true;
+        }
+
+        if ('src' === $nameLower && $this->matchesPattern($value, self::URI_PROTOCOL_REGEX)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the attribute is an exact dangerous attribute based on its name and value.
+     *
+     * This method checks if the attribute name is in DANGEROUS_ATTRS_EXACT and if the value matches a specific URI protocol pattern.
+     *
+     * @param string $name  The name of the attribute to check
+     * @param string $value The value of the attribute to check
+     *
+     * @return bool True if the attribute is an exact dangerous attribute, false otherwise
+     */
+    private function isExactDangerousAttribute(string $name, string $value): bool
+    {
+        return \in_array($name, self::DANGEROUS_ATTRS_EXACT, true)
+            && $this->matchesPattern($value, self::URI_PROTOCOL_REGEX);
+    }
+
+    /**
+     * Check if the attribute is a URL attribute that contains dangerous content.
+     *
+     * This method checks if the attribute name is in URL_ATTRIBUTES and if the value matches a specific URL pattern.
+     *
+     * @param string $name  The name of the attribute to check
+     * @param string $value The value of the attribute to check
+     *
+     * @return bool True if the attribute is a dangerous URL attribute, false otherwise
+     */
+    private function isUrlAttributeDangerous(string $name, string $value): bool
+    {
+        if (!\in_array($name, self::URL_ATTRIBUTES, true)) {
+            return false;
+        }
+
+        if ((bool) preg_match(self::URL_FUNCTION_REGEX, $value, $matches)) {
+            $urlInside = trim($matches[2]);
+
+            return 1 === preg_match(self::URL_PROTOCOL_OR_RELATIVE_REGEX, $urlInside);
+        }
+
+        return 1 === preg_match(self::URL_PROTOCOL_OR_RELATIVE_REGEX, trim($value));
     }
 
     /**
