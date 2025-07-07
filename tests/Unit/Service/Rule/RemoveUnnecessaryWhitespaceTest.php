@@ -33,7 +33,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(XmlProcessor::class)]
 final class RemoveUnnecessaryWhitespaceTest extends TestCase
 {
-    public static function svgWhitespaceProvider(): \Iterator
+    /**
+     * @throws SvgValidationException
+     */
+    #[DataProvider('provideOptimizeRemovesUnnecessaryWhitespaceCases')]
+    public function testOptimizeRemovesUnnecessaryWhitespace(string $svgContent, string $expected): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
+        $svgOptimizer->addRule(new RemoveUnnecessaryWhitespace());
+
+        $actual = $svgOptimizer->optimize()->getContent();
+        self::assertSame($expected, $actual);
+    }
+
+    public static function provideOptimizeRemovesUnnecessaryWhitespaceCases(): iterable
     {
         yield 'Removes Unnecessary Whitespace' => [
             <<<'XML'
@@ -400,18 +413,5 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="20"/><circle cx="50" cy="50" r="20"/></svg>
                 XML,
         ];
-    }
-
-    /**
-     * @throws SvgValidationException
-     */
-    #[DataProvider('svgWhitespaceProvider')]
-    public function testOptimizeRemovesUnnecessaryWhitespace(string $svgContent, string $expected): void
-    {
-        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
-        $svgOptimizer->addRule(new RemoveUnnecessaryWhitespace());
-
-        $actual = $svgOptimizer->optimize()->getContent();
-        self::assertSame($expected, $actual);
     }
 }

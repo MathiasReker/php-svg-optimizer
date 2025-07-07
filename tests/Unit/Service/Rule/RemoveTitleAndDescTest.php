@@ -31,7 +31,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class RemoveTitleAndDescTest extends TestCase
 {
-    public static function svgTitleDescProvider(): \Iterator
+    /**
+     * @throws SvgValidationException
+     */
+    #[DataProvider('provideOptimizeCases')]
+    public function testOptimize(string $svgContent, string $expected): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
+        $svgOptimizer->addRule(new RemoveTitleAndDesc());
+
+        $actual = $svgOptimizer->optimize()->getContent();
+        self::assertSame($expected, $actual);
+    }
+
+    public static function provideOptimizeCases(): iterable
     {
         yield 'Removes Title and Desc' => [
             <<<'XML'
@@ -223,18 +236,5 @@ final class RemoveTitleAndDescTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100"><use xlink:href="#some-id"/></svg>
                 XML,
         ];
-    }
-
-    /**
-     * @throws SvgValidationException
-     */
-    #[DataProvider('svgTitleDescProvider')]
-    public function testOptimize(string $svgContent, string $expected): void
-    {
-        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
-        $svgOptimizer->addRule(new RemoveTitleAndDesc());
-
-        $actual = $svgOptimizer->optimize()->getContent();
-        self::assertSame($expected, $actual);
     }
 }

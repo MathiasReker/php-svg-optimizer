@@ -33,7 +33,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(XmlProcessor::class)]
 final class RemoveInkscapeFootprintsTest extends TestCase
 {
-    public static function svgProvider(): \Iterator
+    /**
+     * @throws SvgValidationException
+     */
+    #[DataProvider('provideOptimizeCases')]
+    public function testOptimize(string $svgContent, string $expected): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
+        $svgOptimizer->addRule(new RemoveInkscapeFootprints());
+
+        $actual = $svgOptimizer->optimize()->getContent();
+        self::assertSame($expected, $actual);
+    }
+
+    public static function provideOptimizeCases(): iterable
     {
         yield 'Removes inkscape and sodipodi namespaces' => [
             <<<'XML'
@@ -153,18 +166,5 @@ final class RemoveInkscapeFootprintsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"/>
                 XML,
         ];
-    }
-
-    /**
-     * @throws SvgValidationException
-     */
-    #[DataProvider('svgProvider')]
-    public function testOptimize(string $svgContent, string $expected): void
-    {
-        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
-        $svgOptimizer->addRule(new RemoveInkscapeFootprints());
-
-        $actual = $svgOptimizer->optimize()->getContent();
-        self::assertSame($expected, $actual);
     }
 }

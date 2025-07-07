@@ -31,7 +31,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class RemoveEmptyAttributesTest extends TestCase
 {
-    public static function svgEmptyAttributesProvider(): \Iterator
+    /**
+     * @throws SvgValidationException
+     */
+    #[DataProvider('provideOptimizeCases')]
+    public function testOptimize(string $svgContent, string $expected): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
+        $svgOptimizer->addRule(new RemoveEmptyAttributes());
+
+        $actual = $svgOptimizer->optimize()->getContent();
+        self::assertSame($expected, $actual);
+    }
+
+    public static function provideOptimizeCases(): iterable
     {
         yield 'Removes empty attribute' => [
             <<<'XML'
@@ -103,18 +116,5 @@ final class RemoveEmptyAttributesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><circle fill="yellow"/><rect width="50" height="50"/></g></svg>
                 XML,
         ];
-    }
-
-    /**
-     * @throws SvgValidationException
-     */
-    #[DataProvider('svgEmptyAttributesProvider')]
-    public function testOptimize(string $svgContent, string $expected): void
-    {
-        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
-        $svgOptimizer->addRule(new RemoveEmptyAttributes());
-
-        $actual = $svgOptimizer->optimize()->getContent();
-        self::assertSame($expected, $actual);
     }
 }

@@ -33,7 +33,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 final class RemoveDeprecatedAttributesTest extends TestCase
 {
-    public static function svgXlinkProvider(): \Iterator
+    /**
+     * @throws SvgValidationException
+     */
+    #[DataProvider('provideOptimizeCases')]
+    public function testOptimize(string $svgContent, string $expected): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
+        $svgOptimizer->addRule(new RemoveDeprecatedAttributes());
+
+        $actual = $svgOptimizer->optimize()->getContent();
+        self::assertSame($expected, $actual);
+    }
+
+    public static function provideOptimizeCases(): iterable
     {
         yield 'Removes baseProfile attribute' => [
             <<<'XML'
@@ -187,18 +200,5 @@ final class RemoveDeprecatedAttributesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="500" height="180"><switch><foreignObject width="1" height="1" x="0" y="0" requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"/><g><g fill="#3AB879"><path d=""/></g></g></switch></svg>
                 XML,
         ];
-    }
-
-    /**
-     * @throws SvgValidationException
-     */
-    #[DataProvider('svgXlinkProvider')]
-    public function testOptimize(string $svgContent, string $expected): void
-    {
-        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
-        $svgOptimizer->addRule(new RemoveDeprecatedAttributes());
-
-        $actual = $svgOptimizer->optimize()->getContent();
-        self::assertSame($expected, $actual);
     }
 }

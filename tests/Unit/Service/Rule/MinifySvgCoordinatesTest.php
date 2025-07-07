@@ -31,7 +31,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class MinifySvgCoordinatesTest extends TestCase
 {
-    public static function svgCoordinatesProvider(): \Iterator
+    /**
+     * @throws SvgValidationException
+     */
+    #[DataProvider('provideOptimizeCases')]
+    public function testOptimize(string $svgContent, string $expected): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
+        $svgOptimizer->addRule(new MinifySvgCoordinates());
+
+        $actual = $svgOptimizer->optimize()->getContent();
+        self::assertSame($expected, $actual);
+    }
+
+    public static function provideOptimizeCases(): iterable
     {
         yield 'Optimize Path Coordinates' => [
             <<<'XML'
@@ -210,18 +223,5 @@ final class MinifySvgCoordinatesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="20" width="30" height="40"/><circle cx="50" cy="50" r="25"/><path d="M10 20 L30 40"/></svg>
                 XML,
         ];
-    }
-
-    /**
-     * @throws SvgValidationException
-     */
-    #[DataProvider('svgCoordinatesProvider')]
-    public function testOptimize(string $svgContent, string $expected): void
-    {
-        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
-        $svgOptimizer->addRule(new MinifySvgCoordinates());
-
-        $actual = $svgOptimizer->optimize()->getContent();
-        self::assertSame($expected, $actual);
     }
 }

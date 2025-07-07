@@ -31,7 +31,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class ConvertColorsToHexTest extends TestCase
 {
-    public static function svgContentProvider(): \Iterator
+    /**
+     * @throws SvgValidationException
+     */
+    #[DataProvider('provideOptimizeCases')]
+    public function testOptimize(string $svgContent, string $expected): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
+        $svgOptimizer->addRule(new ConvertColorsToHex());
+
+        $actual = $svgOptimizer->optimize()->getContent();
+        self::assertSame($expected, $actual);
+    }
+
+    public static function provideOptimizeCases(): iterable
     {
         yield 'Converts RGB colors to Hex' => [
             <<<'XML'
@@ -415,18 +428,5 @@ final class ConvertColorsToHexTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><text>rgb(255,255,255)</text></svg>
                 XML,
         ];
-    }
-
-    /**
-     * @throws SvgValidationException
-     */
-    #[DataProvider('svgContentProvider')]
-    public function testOptimize(string $svgContent, string $expected): void
-    {
-        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
-        $svgOptimizer->addRule(new ConvertColorsToHex());
-
-        $actual = $svgOptimizer->optimize()->getContent();
-        self::assertSame($expected, $actual);
     }
 }

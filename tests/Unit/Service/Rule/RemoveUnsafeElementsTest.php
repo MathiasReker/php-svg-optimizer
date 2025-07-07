@@ -31,7 +31,21 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 final class RemoveUnsafeElementsTest extends TestCase
 {
-    public static function svgUnsafeElementsProvider(): \Iterator
+    /**
+     * @throws SvgValidationException
+     */
+    #[DataProvider('provideOptimizeCases')]
+    public function testOptimize(string $inputSvg, string $expectedSvg): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($inputSvg));
+        $svgOptimizer->addRule(new RemoveUnsafeElements());
+
+        $actual = $svgOptimizer->optimize()->getContent();
+
+        self::assertSame($expectedSvg, $actual);
+    }
+
+    public static function provideOptimizeCases(): iterable
     {
         yield 'Removes script and iframe elements' => [
             <<<'XML'
@@ -402,19 +416,5 @@ final class RemoveUnsafeElementsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><test/><svg/><defs/><g><circle/><text/></g></svg>
                 XML,
         ];
-    }
-
-    /**
-     * @throws SvgValidationException
-     */
-    #[DataProvider('svgUnsafeElementsProvider')]
-    public function testOptimize(string $inputSvg, string $expectedSvg): void
-    {
-        $svgOptimizer = new SvgOptimizer(new StringProvider($inputSvg));
-        $svgOptimizer->addRule(new RemoveUnsafeElements());
-
-        $actual = $svgOptimizer->optimize()->getContent();
-
-        self::assertSame($expectedSvg, $actual);
     }
 }

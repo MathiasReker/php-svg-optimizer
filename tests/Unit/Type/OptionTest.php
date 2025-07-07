@@ -22,6 +22,12 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Option::class)]
 final class OptionTest extends TestCase
 {
+    #[DataProvider('provideGetShorthandCases')]
+    public function testGetShorthand(Option $option, string $shorthand): void
+    {
+        self::assertSame($shorthand, $option->getShorthand());
+    }
+
     /**
      * @return iterable<array{Option, string}>
      */
@@ -32,6 +38,12 @@ final class OptionTest extends TestCase
         yield [Option::DRY_RUN, '-d'];
         yield [Option::QUIET, '-q'];
         yield [Option::VERSION, '-v'];
+    }
+
+    #[DataProvider('provideGetFullCases')]
+    public function testGetFull(Option $option, string $full): void
+    {
+        self::assertSame($full, $option->getFull());
     }
 
     /**
@@ -46,6 +58,12 @@ final class OptionTest extends TestCase
         yield [Option::VERSION, '--version'];
     }
 
+    #[DataProvider('provideGetDescriptionCases')]
+    public function testGetDescription(Option $option, string $description): void
+    {
+        self::assertSame($description, $option->getDescription());
+    }
+
     /**
      * @return iterable<array{Option, string}>
      */
@@ -58,6 +76,12 @@ final class OptionTest extends TestCase
         yield [Option::VERSION, 'Display the version of the library.'];
     }
 
+    #[DataProvider('provideEnumValuesCases')]
+    public function testEnumValues(Option $option, string $value): void
+    {
+        self::assertSame($value, $option->value);
+    }
+
     /**
      * @return iterable<array{Option, string}>
      */
@@ -68,29 +92,5 @@ final class OptionTest extends TestCase
         yield [Option::DRY_RUN, 'dry-run'];
         yield [Option::QUIET, 'quiet'];
         yield [Option::VERSION, 'version'];
-    }
-
-    #[DataProvider('provideGetShorthandCases')]
-    public function testGetShorthand(Option $option, string $shorthand): void
-    {
-        self::assertSame($shorthand, $option->getShorthand());
-    }
-
-    #[DataProvider('provideGetFullCases')]
-    public function testGetFull(Option $option, string $full): void
-    {
-        self::assertSame($full, $option->getFull());
-    }
-
-    #[DataProvider('provideGetDescriptionCases')]
-    public function testGetDescription(Option $option, string $description): void
-    {
-        self::assertSame($description, $option->getDescription());
-    }
-
-    #[DataProvider('provideEnumValuesCases')]
-    public function testEnumValues(Option $option, string $value): void
-    {
-        self::assertSame($value, $option->value);
     }
 }

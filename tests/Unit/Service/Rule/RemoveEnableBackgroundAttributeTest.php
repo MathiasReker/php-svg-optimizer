@@ -31,7 +31,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class RemoveEnableBackgroundAttributeTest extends TestCase
 {
-    public static function svgRemoveEnableBackgroundProvider(): \Iterator
+    /**
+     * @throws SvgValidationException
+     */
+    #[DataProvider('provideOptimizeCases')]
+    public function testOptimize(string $svgContent, string $expected): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
+        $svgOptimizer->addRule(new RemoveEnableBackgroundAttribute());
+
+        $actual = $svgOptimizer->optimize()->getContent();
+        self::assertSame($expected, $actual);
+    }
+
+    public static function provideOptimizeCases(): iterable
     {
         yield 'Removes enable-background for svg with matching dimensions' => [
             <<<'XML'
@@ -115,18 +128,5 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background="new 0 0 200 100"><rect x="10" y="10" width="30" height="30"/></svg>
                 XML,
         ];
-    }
-
-    /**
-     * @throws SvgValidationException
-     */
-    #[DataProvider('svgRemoveEnableBackgroundProvider')]
-    public function testOptimize(string $svgContent, string $expected): void
-    {
-        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
-        $svgOptimizer->addRule(new RemoveEnableBackgroundAttribute());
-
-        $actual = $svgOptimizer->optimize()->getContent();
-        self::assertSame($expected, $actual);
     }
 }

@@ -33,7 +33,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(XmlProcessor::class)]
 final class RemoveInvisibleCharactersTest extends TestCase
 {
-    public static function svgInvisibleCharactersProvider(): \Iterator
+    /**
+     * @throws SvgValidationException
+     */
+    #[DataProvider('provideOptimizeCases')]
+    public function testOptimize(string $svgContent, string $expected): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
+        $svgOptimizer->addRule(new RemoveInvisibleCharacters());
+
+        $actual = $svgOptimizer->optimize()->getContent();
+        self::assertSame($expected, $actual);
+    }
+
+    public static function provideOptimizeCases(): iterable
     {
         yield 'Remove Invisible Soft Hyphen' => [
             <<<'XML'
@@ -115,18 +128,5 @@ final class RemoveInvisibleCharactersTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">Valid Content</svg>
                 XML,
         ];
-    }
-
-    /**
-     * @throws SvgValidationException
-     */
-    #[DataProvider('svgInvisibleCharactersProvider')]
-    public function testOptimize(string $svgContent, string $expected): void
-    {
-        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
-        $svgOptimizer->addRule(new RemoveInvisibleCharacters());
-
-        $actual = $svgOptimizer->optimize()->getContent();
-        self::assertSame($expected, $actual);
     }
 }

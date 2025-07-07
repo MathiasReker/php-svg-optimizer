@@ -22,6 +22,12 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Rule::class)]
 final class RuleTest extends TestCase
 {
+    #[DataProvider('provideDefaultValueCases')]
+    public function testDefaultValue(Rule $rule, bool $expected): void
+    {
+        self::assertSame($expected, $rule->defaultValue());
+    }
+
     /**
      * @return iterable<array{Rule, bool}>
      */
@@ -42,6 +48,12 @@ final class RuleTest extends TestCase
         yield [Rule::REMOVE_UNNECESSARY_WHITESPACE, true];
         yield [Rule::SORT_ATTRIBUTES, true];
         yield [Rule::REMOVE_UNSAFE_ELEMENTS, false];
+    }
+
+    #[DataProvider('provideEnumValuesCases')]
+    public function testEnumValues(Rule $rule, string $expectedValue): void
+    {
+        self::assertSame($expectedValue, $rule->value);
     }
 
     /**
@@ -68,17 +80,5 @@ final class RuleTest extends TestCase
         yield [Rule::REMOVE_UNSAFE_ELEMENTS, 'removeUnsafeElements'];
         yield [Rule::REMOVE_UNUSED_NAMESPACES, 'removeUnusedNamespaces'];
         yield [Rule::SORT_ATTRIBUTES, 'sortAttributes'];
-    }
-
-    #[DataProvider('provideDefaultValueCases')]
-    public function testDefaultValue(Rule $rule, bool $expected): void
-    {
-        self::assertSame($expected, $rule->defaultValue());
-    }
-
-    #[DataProvider('provideEnumValuesCases')]
-    public function testEnumValues(Rule $rule, string $expectedValue): void
-    {
-        self::assertSame($expectedValue, $rule->value);
     }
 }
