@@ -169,5 +169,88 @@ final class RemoveInkscapeFootprintsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"/>
                 XML,
         ];
+
+        yield 'Removes inkscape and sodipodi on nested elements' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd">
+                    <g inkscape:groupmode="layer" sodipodi:role="layer">
+                        <rect inkscape:label="Rect" sodipodi:abswidth="100" width="100" height="100" fill="blue"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><g><rect width="100" height="100" fill="blue"/></g></svg>
+                XML,
+        ];
+
+        yield 'Removes inkscape and sodipodi attributes on attributes with similar names' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd">
+                    <rect inkscapelabel="should-not-remove" sodipodiabswidth="should-not-remove" inkscape:label="remove-this" sodipodi:abswidth="remove-this" width="100" height="100"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect inkscapelabel="should-not-remove" sodipodiabswidth="should-not-remove" width="100" height="100"/></svg>
+                XML,
+        ];
+
+        yield 'Removes multiple namespaces but keeps default ones intact' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <use xlink:href="#someId" inkscape:label="label"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#someId"/></svg>
+                XML,
+        ];
+
+        yield 'Handles SVG with CDATA section inside elements' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                    <script><![CDATA[
+                        console.log("Hello Inkscape");
+                    ]]></script>
+                    <rect inkscape:label="rect" width="100" height="100"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><script>        console.log("Hello Inkscape");    </script><rect width="100" height="100"/></svg>
+                XML,
+        ];
+
+        yield 'Handles elements with multiple attributes including inkscape and sodipodi' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                    <ellipse inkscape:label="ellipse" sodipodi:cx="50" cx="50" cy="50" rx="40" ry="20" fill="pink"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="50" rx="40" ry="20" fill="pink"/></svg>
+                XML,
+        ];
+
+        yield 'Handles comments and whitespace preservation correctly' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                    <!-- This is a comment -->
+                    <rect inkscape:label="rect" width="100" height="100"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><!-- This is a comment --><rect width="100" height="100"/></svg>
+                XML,
+        ];
+
+        yield 'Handles self-closing tags with inkscape attributes' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                    <line inkscape:label="line1" x1="0" y1="0" x2="100" y2="100"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="100" y2="100"/></svg>
+                XML,
+        ];
     }
 }

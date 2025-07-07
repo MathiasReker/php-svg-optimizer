@@ -126,6 +126,31 @@ final class ConcreteProviderTest extends TestCase
         unlink($baseFile);
     }
 
+    /**
+     * @throws XmlProcessingException
+     * @throws IOException
+     */
+    public function testSaveToFileCreatesDirectory(): void
+    {
+        $input = '<svg>dir creation</svg>';
+        $provider = $this->getConcreteProvider($input);
+        $provider->optimize($provider->loadContent());
+
+        $tempDir = sys_get_temp_dir() . '/svgtest_' . uniqid();
+        $filePath = $tempDir . '/output.svg';
+
+        self::assertDirectoryDoesNotExist($tempDir);
+
+        $provider->saveToFile($filePath);
+
+        self::assertDirectoryExists($tempDir);
+        self::assertFileExists($filePath);
+        self::assertSame($provider->getOutputContent(), file_get_contents($filePath));
+
+        unlink($filePath);
+        rmdir($tempDir);
+    }
+
     protected function tearDown(): void
     {
         if (file_exists($this->tmpFile)) {

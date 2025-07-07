@@ -17,7 +17,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 /**
  * @no-named-arguments
  */
-readonly class XmlProcessor
+class XmlProcessor
 {
     /**
      * The SVG validator instance.

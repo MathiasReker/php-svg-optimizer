@@ -203,5 +203,98 @@ final class RemoveDeprecatedAttributesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="500" height="180"><switch><foreignObject width="1" height="1" x="0" y="0" requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"/><g><g fill="#3AB879"><path d=""/></g></g></switch></svg>
                 XML,
         ];
+
+        yield 'Leaves unrelated attributes intact' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle fill="red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle fill="red"/></svg>',
+        ];
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testReplaceAttributesSkipsNonDomElementNodes(): void
+    {
+        $dom = new \DOMDocument();
+        $dom->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>');
+        $xpath = new \DOMXPath($dom);
+        $xpath->registerNamespace('xlink', 'http://www.w3.org/1999/xlink');
+
+        $rule = new RemoveDeprecatedAttributes();
+
+        $method = new \ReflectionMethod($rule, 'replaceAttributes');
+        $method->setAccessible(true);
+
+        $attributes = ['xlink:href' => 'href'];
+
+        $method->invoke($rule, $xpath, $attributes);
+
+        $xmlString = $dom->saveXML($dom->documentElement);
+        self::assertNotFalse($xmlString, 'Failed to serialize XML');
+        self::assertXmlStringEqualsXmlString(
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>',
+            $xmlString
+        );
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testRemoveAttributesSkipsNonDomElementNodes(): void
+    {
+        $dom = new \DOMDocument();
+        $dom->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>');
+        $xpath = new \DOMXPath($dom);
+
+        $rule = new RemoveDeprecatedAttributes();
+        $method = new \ReflectionMethod($rule, 'removeAttributes');
+        $method->setAccessible(true);
+
+        $method->invoke($rule, $xpath, ['baseProfile']);
+
+        $xmlString = $dom->saveXML($dom->documentElement);
+        self::assertNotFalse($xmlString, 'Failed to serialize XML');
+        self::assertXmlStringEqualsXmlString(
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>',
+            $xmlString
+        );
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testRemoveNamespaceFromSvgTagsRemovesXlinkNamespace(): void
+    {
+        $dom = new \DOMDocument();
+        $dom->loadXML('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>');
+
+        $rule = new RemoveDeprecatedAttributes();
+        $method = new \ReflectionMethod($rule, 'removeNamespaceFromSvgTags');
+        $method->setAccessible(true);
+
+        $method->invoke($rule, $dom);
+
+        $root = $dom->documentElement;
+        self::assertNotNull($root);
+        self::assertFalse($root->hasAttribute('xmlns:xlink'));
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testRemoveNamespaceFromSvgTagsDoesNothingIfNoXlink(): void
+    {
+        $dom = new \DOMDocument();
+        $dom->loadXML('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $rule = new RemoveDeprecatedAttributes();
+        $method = new \ReflectionMethod($rule, 'removeNamespaceFromSvgTags');
+        $method->setAccessible(true);
+
+        $method->invoke($rule, $dom);
+
+        $root = $dom->documentElement;
+        self::assertNotNull($root);
+        self::assertFalse($root->hasAttribute('xmlns:xlink'));
     }
 }

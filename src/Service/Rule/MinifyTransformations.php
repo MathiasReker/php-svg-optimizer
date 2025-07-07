@@ -33,16 +33,16 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     /**
      * Regex pattern to match identity translate transformations.
      *
-     * @see https://regex101.com/r/WjV7Zr/1
+     * @see https://regex101.com/r/bHuCPE/1
      */
-    private const string TRANSLATE_REGEX = '/\btranslate\(\s*0\s*(,\s*0\s*)?\)/';
+    private const string TRANSLATE_REGEX = '/\btranslate\(\s*0(?:e[+-]?\d+)?\s*(,\s*0(?:e[+-]?\d+)?\s*)?\)/i';
 
     /**
      * Regex pattern to match identity scale transformations.
      *
-     * @see https://regex101.com/r/wZi4DL/1
+     * @see https://regex101.com/r/6R39n2/1
      */
-    private const string SCALE_REGEX = '/\bscale\(\s*1\s*(,\s*1\s*)?\)/';
+    private const string SCALE_REGEX = '/\bscale\(\s*1(?:e[+-]?\d+)?\s*(,\s*1(?:e[+-]?\d+)?\s*)?\)/i';
 
     /**
      * Regex pattern to match identity rotate transformations.
@@ -80,6 +80,24 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     private const string REDUNDANT_COMMAS_REGEX = '/\s*,\s*/';
 
     /**
+     * Regex pattern to match empty or whitespace-only transform attributes.
+     *
+     * This pattern matches strings that consist only of semicolons, commas, spaces, or are completely empty.
+     *
+     * @see https://regex101.com/r/LQt8ho/1
+     */
+    private const string EMPTY_TRANSFORM_REGEX = '/^[;, ]*$/';
+
+    /**
+     * Regex pattern to match identity matrix transformations.
+     *
+     * This pattern matches the identity matrix transformation in SVG, which is equivalent to no transformation.
+     *
+     * @see https://regex101.com/r/o39rvr/1
+     */
+    private const string MATRIX_IDENTITY_REGEX = '/\bmatrix\(\s*1(?:e[+-]?\d+)?\s+0(?:e[+-]?\d+)?\s+0(?:e[+-]?\d+)?\s+1(?:e[+-]?\d+)?\s+0(?:e[+-]?\d+)?\s+0(?:e[+-]?\d+)?\s*\)/i';
+
+    /**
      * Optimize the SVG document by minifying all transform attributes.
      *
      * @param \DOMDocument $domDocument The SVG document to optimize
@@ -98,6 +116,7 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
             $transform = $this->convertPercentagesToNumbers($transform);
             $transform = $this->removeIdentityTransforms($transform);
             $transform = $this->normalizeSpacesAndCommas($transform);
+
             $transform = trim($transform);
 
             if ($this->isEmptyTransform($transform)) {
@@ -140,6 +159,7 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
                 self::ROTATE_REGEX,
                 self::SKEW_X_REGEX,
                 self::SKEW_Y_REGEX,
+                self::MATRIX_IDENTITY_REGEX,
             ],
             '',
             $transform
@@ -169,6 +189,8 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
      */
     private function isEmptyTransform(string $transform): bool
     {
-        return '' === $transform || '0' === $transform;
+        return '' === $transform
+            || '0' === $transform
+            || (bool) preg_match(self::EMPTY_TRANSFORM_REGEX, $transform);
     }
 }

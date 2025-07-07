@@ -234,5 +234,109 @@ final class MinifyTransformationsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="rotate(45)"><rect x="10" y="10" width="30" height="30"/></g></svg>
                 XML,
         ];
+
+        yield 'Handles Whitespaces Between Transform Functions' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="  translate( 0 , 0 )    scale(  1 , 1 )  ">
+                        <rect x="10" y="10" width="30" height="30"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><rect x="10" y="10" width="30" height="30"/></g></svg>
+                XML,
+        ];
+
+        yield 'Handles Scientific Notation as Identity' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="translate(0e0,0e0) scale(1e0,1e0)">
+                        <circle cx="10" cy="10" r="5"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><circle cx="10" cy="10" r="5"/></g></svg>
+                XML,
+        ];
+
+        yield 'Keeps Rotation with Non-Zero Angle and Zero Center' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="rotate(90 0 0)">
+                        <circle cx="10" cy="10" r="5"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="rotate(90 0 0)"><circle cx="10" cy="10" r="5"/></g></svg>
+                XML,
+        ];
+
+        yield 'Removes Identity Matrix' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="matrix(1 0 0 1 0 0)">
+                        <circle cx="10" cy="10" r="5"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><circle cx="10" cy="10" r="5"/></g></svg>
+                XML,
+        ];
+
+        yield 'Keeps Non-Identity Matrix' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="matrix(1 0 0 1 10 20)">
+                        <circle cx="10" cy="10" r="5"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="matrix(1 0 0 1 10 20)"><circle cx="10" cy="10" r="5"/></g></svg>
+                XML,
+        ];
+
+        yield 'Handles Degenerate Matrix with Zeros' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="matrix(0 0 0 0 0 0)">
+                        <circle cx="10" cy="10" r="5"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="matrix(0 0 0 0 0 0)"><circle cx="10" cy="10" r="5"/></g></svg>
+                XML,
+        ];
+
+        yield 'Handles Missing Transform Attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g>
+                        <circle cx="10" cy="10" r="5"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><circle cx="10" cy="10" r="5"/></g></svg>
+                XML,
+        ];
+
+        yield 'Handles Transform Attribute with Extra Semicolons or Commas' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="translate(0,0); scale(1,1);">
+                        <circle cx="10" cy="10" r="5"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><circle cx="10" cy="10" r="5"/></g></svg>
+                XML,
+        ];
     }
 }

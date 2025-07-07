@@ -131,5 +131,16 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background="new 0 0 200 100"><rect x="10" y="10" width="30" height="30"/></svg>
                 XML,
         ];
+
+        yield 'Keeps enable-background when value does not match regex' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background="invalid value">
+                    <rect x="10" y="10" width="30" height="30"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background="invalid value"><rect x="10" y="10" width="30" height="30"/></svg>
+                XML,
+        ];
     }
 }

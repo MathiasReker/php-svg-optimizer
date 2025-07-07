@@ -198,6 +198,24 @@ final class XmlProcessorTest extends TestCase
         $this->xmlProcessor->process($domDocument, $callback);
     }
 
+    /**
+     * @throws XmlProcessingException
+     */
+    public function testProcessThrowsWhenSaveXmlFails(): void
+    {
+        $this->expectException(XmlProcessingException::class);
+        $this->expectExceptionMessage('Failed to save SVG XML content.');
+
+        $domDocument = $this->createMock(\DOMDocument::class);
+        $domDocument->method('saveXML')->willReturn(false);
+
+        $processor = new XmlProcessor();
+
+        $callback = static fn (string $svg): string => $svg;
+
+        $processor->process($domDocument, $callback);
+    }
+
     #[\Override]
     protected function setUp(): void
     {
