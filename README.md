@@ -353,7 +353,7 @@ Removes unused namespaces from the SVG:
 $svgOptimizer->withRules(removeUnusedNamespaces: true);
 ```
 
-Removes unsafe elements from the SVG, such as `<script>` tags:
+Removes unsafe elements from the SVG (**risky**):
 
 ```php
 $svgOptimizer->withRules(removeUnsafeElements: true);

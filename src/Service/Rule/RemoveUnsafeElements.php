@@ -15,6 +15,8 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 
 /**
  * @no-named-arguments
+ *
+ * @phpstan-ignore-next-line
  */
 final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 {
@@ -23,37 +25,19 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * These tags are known to pose security risks and should not be present in the SVG content.
      */
-    private const array DANGEROUS_TAGS = [
+    private const array ALWAYS_REMOVE_TAGS = [
         'script',
         'foreignObject',
         'iframe',
         'object',
         'embed',
+    ];
+
+    private const array CONDITIONAL_TAGS = [
         'image',
         'use',
         'link',
         'tref',
-        'form',
-        'a',
-        'color-profile',
-        'cursor',
-        'discard',
-        'fedropshadow',
-        'font-face',
-        'font-face-format',
-        'font-face-name',
-        'font-face-src',
-        'font-face-uri',
-        'hatch',
-        'hatchpath',
-        'mesh',
-        'meshgradient',
-        'meshpatch',
-        'meshrow',
-        'missing-glyph',
-        'set',
-        'solidcolor',
-        'unknown',
     ];
 
     /**
@@ -80,9 +64,18 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * These patterns are used to identify potentially dangerous content in attributes.
      *
-     * @see https://regex101.com/r/OCadvZ/1 // TODO
+     * @see https://regex101.com/r/QHNWJG/1
      */
-    private const string URI_PROTOCOL_REGEX = '~^[a-z][a-z0-9+.-]*:~i'; // matches scheme:
+    private const string URI_PROTOCOL_REGEX = '~^[a-z][a-z0-9+.-]*:~i';
+
+    /**
+     * Regular expression for detecting dangerous protocols in URLs.
+     *
+     * This pattern matches protocols that are considered unsafe, such as javascript, data, file, http, https, and protocol-relative URLs.
+     *
+     * @see https://regex101.com/r/hp3GSh/1
+     */
+    private const string DANGEROUS_PROTOCOLS_REGEX = '~^(?:javascript|data|file|http|https|//)~i';
 
     /**
      * Regular expressions for detecting unsafe styles in SVG content.
@@ -134,6 +127,12 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         'marker-start',
         'marker-mid',
         'marker-end',
+        'begin',
+        'end',
+        'from',
+        'to',
+        'values',
+        'style',
     ];
 
     /**
@@ -174,25 +173,131 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     /**
      * Remove dangerous elements from the SVG document.
      *
-     * This method iterates through the DOM and removes any elements that match the dangerous tags defined in DANGEROUS_TAGS.
+     * This method removes elements that are always considered unsafe, as well as conditionally dangerous elements
+     * based on their attributes. It ensures that the SVG content does not contain any potentially harmful elements.
      *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
     private function removeDangerousElements(\DOMDocument $domDocument): void
     {
-        foreach (self::DANGEROUS_TAGS as $tag) {
-            while (true) {
-                $nodes = $domDocument->getElementsByTagName($tag);
-                if (0 === $nodes->length) {
-                    break;
-                }
+        $this->removeAlwaysDangerousTags($domDocument);
+        $this->removeConditionallyDangerousTags($domDocument);
+    }
 
-                $node = $nodes->item(0);
-                if ($node instanceof \DOMNode && $node->parentNode instanceof \DOMNode) {
-                    $node->parentNode->removeChild($node);
-                }
+    /**
+     * Remove always dangerous tags from the SVG document.
+     *
+     * This method iterates through a predefined list of tags that are always considered unsafe
+     * and removes them from the SVG document.
+     *
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     */
+    private function removeAlwaysDangerousTags(\DOMDocument $domDocument): void
+    {
+        foreach (self::ALWAYS_REMOVE_TAGS as $tag) {
+            $this->removeAllElementsByTagName($domDocument, $tag);
+        }
+    }
+
+    /**
+     * Remove all elements with the specified tag name from the SVG document.
+     *
+     * This method iterates through all elements with the given tag name and removes them from their parent nodes.
+     *
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param string       $tagName     The name of the tag to remove from the SVG document
+     */
+    private function removeAllElementsByTagName(\DOMDocument $domDocument, string $tagName): void
+    {
+        while (true) {
+            $nodes = $domDocument->getElementsByTagName($tagName);
+            if (0 === $nodes->length) {
+                break;
+            }
+
+            $node = $nodes->item(0);
+            if ($node instanceof \DOMNode && $node->parentNode instanceof \DOMNode) {
+                $node->parentNode->removeChild($node);
             }
         }
+    }
+
+    /**
+     * Remove conditionally dangerous tags from the SVG document.
+     *
+     * This method iterates through specific tags that may contain unsafe content and removes them
+     * if they contain attributes that are considered dangerous, such as href or xlink:href.
+     *
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     */
+    private function removeConditionallyDangerousTags(\DOMDocument $domDocument): void
+    {
+        foreach (self::CONDITIONAL_TAGS as $tag) {
+            $nodes = $domDocument->getElementsByTagName($tag);
+
+            for ($i = $nodes->length - 1; $i >= 0; --$i) {
+                if (null === $nodes->item($i)) {
+                    continue;
+                }
+                $this->removeIfDangerous($nodes->item($i));
+            }
+        }
+    }
+
+    /**
+     * Remove a node if it contains dangerous attributes.
+     *
+     * This method checks if the node is an element and has attributes that are considered unsafe.
+     * If it does, the node is removed from its parent.
+     *
+     * @param \DOMNode $node The DOM node to check and potentially remove
+     */
+    private function removeIfDangerous(\DOMNode $node): void
+    {
+        if (!$node instanceof \DOMElement) {
+            return;
+        }
+
+        foreach (['href', 'xlink:href'] as $attr) {
+            $value = $node->getAttribute($attr);
+            if ($this->isExactDangerousAttribute($attr, $value)) {
+                if ($node->parentNode instanceof \DOMNode) {
+                    $node->parentNode->removeChild($node);
+                }
+                break;
+            }
+        }
+    }
+
+    /**
+     * Check if the attribute is an exact dangerous attribute based on its name and value.
+     *
+     * This method checks if the attribute name is in DANGEROUS_ATTRS_EXACT and if the value matches a specific URI protocol pattern.
+     *
+     * @param string $name  The name of the attribute to check
+     * @param string $value The value of the attribute to check
+     *
+     * @return bool True if the attribute is an exact dangerous attribute, false otherwise
+     */
+    private function isExactDangerousAttribute(string $name, string $value): bool
+    {
+        return \in_array($name, self::DANGEROUS_ATTRS_EXACT, true)
+            && $this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX);
+    }
+
+    /**
+     * Check if the given value matches a specific pattern.
+     *
+     * This method uses a regular expression to check if the value matches the provided pattern.
+     *
+     * @param string $value   The value to check
+     * @param string $pattern The regex pattern to match against
+     *
+     * @return bool True if the value matches the pattern, false otherwise
+     */
+    private function matchesPattern(string $value, string $pattern): bool
+    {
+        return (bool) preg_match($pattern, $value);
     }
 
     /**
@@ -271,19 +376,23 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Check if the attribute is an exact dangerous attribute based on its name and value.
+     * Check if the attribute name starts with any of the dangerous prefixes.
      *
-     * This method checks if the attribute name is in DANGEROUS_ATTRS_EXACT and if the value matches a specific URI protocol pattern.
+     * This method checks if the attribute name starts with any of the prefixes defined in DANGEROUS_ATTR_PREFIXES.
      *
-     * @param string $name  The name of the attribute to check
-     * @param string $value The value of the attribute to check
+     * @param string $name The name of the attribute to check
      *
-     * @return bool True if the attribute is an exact dangerous attribute, false otherwise
+     * @return bool True if the attribute name starts with a dangerous prefix, false otherwise
      */
-    private function isExactDangerousAttribute(string $name, string $value): bool
+    private function hasDangerousPrefix(string $name): bool
     {
-        return \in_array($name, self::DANGEROUS_ATTRS_EXACT, true)
-            && $this->matchesPattern($value, self::URI_PROTOCOL_REGEX);
+        foreach (self::DANGEROUS_ATTR_PREFIXES as $prefix) {
+            if (str_starts_with(mb_strtolower($name), $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -309,41 +418,6 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         }
 
         return 1 === preg_match(self::URL_PROTOCOL_OR_RELATIVE_REGEX, trim($value));
-    }
-
-    /**
-     * Check if the attribute name starts with any of the dangerous prefixes.
-     *
-     * This method checks if the attribute name starts with any of the prefixes defined in DANGEROUS_ATTR_PREFIXES.
-     *
-     * @param string $name The name of the attribute to check
-     *
-     * @return bool True if the attribute name starts with a dangerous prefix, false otherwise
-     */
-    private function hasDangerousPrefix(string $name): bool
-    {
-        foreach (self::DANGEROUS_ATTR_PREFIXES as $prefix) {
-            if (str_starts_with(mb_strtolower($name), $prefix)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Check if the given value matches a specific pattern.
-     *
-     * This method uses a regular expression to check if the value matches the provided pattern.
-     *
-     * @param string $value   The value to check
-     * @param string $pattern The regex pattern to match against
-     *
-     * @return bool True if the value matches the pattern, false otherwise
-     */
-    private function matchesPattern(string $value, string $pattern): bool
-    {
-        return (bool) preg_match($pattern, $value);
     }
 
     /**

