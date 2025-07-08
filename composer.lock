@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "73556fb563c5f258fe2305443200a898",
+    "content-hash": "4c43dedf2b9509d889447423f5ba666a",
     "packages": [],
     "packages-dev": [
         {
@@ -1082,16 +1082,16 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
-            "version": "v3.81.0",
+            "version": "v3.82.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer.git",
-                "reference": "e00a39c729aced6c3771b9530c6e58c2efa87592"
+                "reference": "240f67bbf812ab8ac097c3097e7e65d43f9a0079"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/e00a39c729aced6c3771b9530c6e58c2efa87592",
-                "reference": "e00a39c729aced6c3771b9530c6e58c2efa87592",
+                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/240f67bbf812ab8ac097c3097e7e65d43f9a0079",
+                "reference": "240f67bbf812ab8ac097c3097e7e65d43f9a0079",
                 "shasum": ""
             },
             "require": {
@@ -1175,7 +1175,7 @@
             ],
             "support": {
                 "issues": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues",
-                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.81.0"
+                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.82.1"
             },
             "funding": [
                 {
@@ -1183,7 +1183,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-07-07T15:27:54+00:00"
+            "time": "2025-07-08T10:18:50+00:00"
         },
         {
             "name": "hiperdk/phpstan-rules",
@@ -1681,22 +1681,22 @@
         },
         {
             "name": "kubawerlos/php-cs-fixer-custom-fixers",
-            "version": "v3.29.2",
+            "version": "v3.30.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers.git",
-                "reference": "0774fabfdf5e487c170bacfcc03f8e439a960f9a"
+                "reference": "0cf921cf9aee50ac3091839325f5cf38ab189b97"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kubawerlos/php-cs-fixer-custom-fixers/zipball/0774fabfdf5e487c170bacfcc03f8e439a960f9a",
-                "reference": "0774fabfdf5e487c170bacfcc03f8e439a960f9a",
+                "url": "https://api.github.com/repos/kubawerlos/php-cs-fixer-custom-fixers/zipball/0cf921cf9aee50ac3091839325f5cf38ab189b97",
+                "reference": "0cf921cf9aee50ac3091839325f5cf38ab189b97",
                 "shasum": ""
             },
             "require": {
                 "ext-filter": "*",
                 "ext-tokenizer": "*",
-                "friendsofphp/php-cs-fixer": "^3.77",
+                "friendsofphp/php-cs-fixer": "^3.82",
                 "php": "^7.4 || ^8.0"
             },
             "require-dev": {
@@ -1721,7 +1721,7 @@
             "description": "A set of custom fixers for PHP CS Fixer",
             "support": {
                 "issues": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers/issues",
-                "source": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers/tree/v3.29.2"
+                "source": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers/tree/v3.30.0"
             },
             "funding": [
                 {
@@ -1729,7 +1729,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-07-07T13:55:04+00:00"
+            "time": "2025-07-07T22:51:31+00:00"
         },
         {
             "name": "localheinz/diff",
