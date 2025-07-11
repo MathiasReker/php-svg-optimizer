@@ -9,11 +9,11 @@
 
 declare(strict_types=1);
 
-use MathiasReker\PhpSvgOptimizer\Console\Command\SvgOptimizerCommand;
+use MathiasReker\PhpSvgOptimizer\Console\Command\SvgOptimizerCommandFactory;
+use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\StdoutStream;
 
 ini_set('memory_limit', '-1');
 error_reporting(\E_ALL);
-ini_set('display_errors', 'stderr');
 
 $autoloadCandidates = [
     __DIR__ . '/../../../../vendor/autoload.php',
@@ -37,6 +37,8 @@ foreach ($autoloadCandidates as $path) {
  * For more information, please refer to the project repository:
  * @see https://github.com/MathiasReker/php-svg-optimizer
  *
- * @var string[] $argv
+ * @var array<int, string> $argv
  */
-SvgOptimizerCommand::fromArgs($argv)->run();
+$factory = new SvgOptimizerCommandFactory(new StdoutStream());
+$command = $factory->create($argv);
+$command->run();

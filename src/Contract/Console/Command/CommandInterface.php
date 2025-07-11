@@ -9,14 +9,15 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Type;
+namespace MathiasReker\PhpSvgOptimizer\Contract\Console\Command;
 
 /**
  * @no-named-arguments
  */
-enum Application: string
+interface CommandInterface
 {
-    case NAME = 'PHP SVG Optimizer';
-    case VERSION = '6.0.3';
-    case AUTHOR = 'Mathias Reker';
+    /**
+     * Execute the command.
+     */
+    public function run(): void;
 }

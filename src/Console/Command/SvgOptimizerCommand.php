@@ -11,38 +11,26 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 
-use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
 use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
 use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
-use MathiasReker\PhpSvgOptimizer\Type\Application;
-use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 
 /**
  * @no-named-arguments
  */
-final class SvgOptimizerCommand
+final class SvgOptimizerCommand implements CommandInterface
 {
     /**
-     * Constant for the percentage factor used in calculations.
+     * The factor used to calculate the percentage saved.
      */
     private const int PERCENTAGE_FACTOR = 100;
 
     /**
-     * The default precision used for percentage formatting.
+     * The default precision for percentage calculations.
      */
     private const int DEFAULT_PRECISION = 2;
-
-    /**
-     * The exit code for a successful operation.
-     */
-    private const int EXIT_CODE_SUCCESS = 0;
-
-    /**
-     * The exit code for an error during the operation.
-     */
-    private const int EXIT_CODE_ERROR = 1;
 
     /**
      * The file extension for SVG files.
@@ -50,17 +38,17 @@ final class SvgOptimizerCommand
     private const string SVG_EXTENSION = 'svg';
 
     /**
-     * The total original size of the SVG files.
+     * The total size of original SVG files before optimization.
      */
     private int $totalOriginalSize = 0;
 
     /**
-     * The total optimized size of the SVG files.
+     * The total size of optimized SVG files after optimization.
      */
     private int $totalOptimizedSize = 0;
 
     /**
-     * The number of files optimized.
+     * The number of SVG files that have been optimized.
      */
     private int $optimizedFiles = 0;
 
@@ -68,100 +56,74 @@ final class SvgOptimizerCommand
     private array $config = [];
 
     /**
-     * Whether to run the command in dry-run mode.
+     * Indicates whether the command should perform a dry run.
      */
-    private bool $dryRun = false;
+    private bool $dryRun;
 
     /**
-     * Whether to run the command in quiet mode.
+     * Indicates whether the command should run in quiet mode.
      */
-    private bool $quiet = false;
+    private bool $quiet;
 
     /** @var list<string> */
     private readonly array $paths;
 
     /**
-     * Constructor for the SvgOptimizerCommand class.
-     *
-     * @param list<string> $paths      The paths to the SVG files or directories to process
-     * @param string       $configPath The path to the configuration file
+     * @param list<string> $paths
+     */
+    private readonly OutputHelper $outputHelper;
+
+    /**
+     * @param list<string> $paths        The paths to SVG files or directories to be optimized
+     * @param string       $configPath   The path to the configuration file
+     * @param OutputHelper $outputHelper The output helper for printing messages
+     * @param bool         $dryRun       If true, performs a dry run without saving changes
+     * @param bool         $quiet        If true, suppresses output messages
      *
      * @throws \JsonException
      */
-    private function __construct(array $paths, string $configPath)
-    {
+    public function __construct(
+        array $paths,
+        string $configPath,
+        OutputHelper $outputHelper,
+        bool $dryRun,
+        bool $quiet,
+    ) {
+        $this->paths = $paths;
+        $this->outputHelper = $outputHelper;
+        $this->dryRun = $dryRun;
+        $this->quiet = $quiet;
+
+        if ([] === $paths) {
+            $this->outputHelper->printError('No SVG files or directories specified for optimization.');
+        }
+
         foreach ($paths as $path) {
             if (!is_dir($path) && !is_file($path)) {
-                OutputHelper::printError(\sprintf('"%s" is not a valid directory or file.', $path));
-                exit(self::EXIT_CODE_ERROR);
+                $this->outputHelper->printError(\sprintf('"%s" is not a valid directory or file.', $path));
             }
         }
 
-        $this->paths = $paths;
-
         if ('' !== trim($configPath)) {
             if (!is_file($configPath)) {
-                OutputHelper::printError(\sprintf('The configuration file "%s" does not exist.', $configPath));
-                exit(self::EXIT_CODE_ERROR);
+                $this->outputHelper->printError(\sprintf('The configuration file "%s" does not exist.', $configPath));
             }
 
             try {
                 $this->config = ConfigLoader::loadConfig($configPath);
-            } catch (\InvalidArgumentException $exception) {
-                OutputHelper::printError(\sprintf('Failed to load the configuration from "%s": %s.', $configPath, $exception->getMessage()));
-                exit(self::EXIT_CODE_ERROR);
+            } catch (\InvalidArgumentException $e) {
+                $this->outputHelper->printError(\sprintf('Failed to load the configuration from "%s": %s.', $configPath, $e->getMessage()));
             }
         }
     }
 
     /**
-     * Creates a new SvgOptimizerCommand instance from the command-line arguments.
+     * Executes the SVG optimization command.
      *
-     * @param list<string> $args The command-line arguments passed to the script
+     * This method processes each path provided, optimizing SVG files according to the specified rules
+     * It prints a summary of the optimization results if not in quiet mode.
      *
-     * @return self The SvgOptimizerCommand instance
-     */
-    public static function fromArgs(array $args): self
-    {
-        $argumentParser = new ArgumentParser($args);
-
-        if ($argumentParser->hasOption(Option::HELP) || 1 === \count($args)) {
-            OutputHelper::printHelp();
-            exit(self::EXIT_CODE_SUCCESS);
-        }
-
-        if ($argumentParser->hasOption(Option::VERSION)) {
-            OutputHelper::printVersion(Application::NAME->value, Application::VERSION->value, Application::AUTHOR->value);
-            exit(self::EXIT_CODE_SUCCESS);
-        }
-
-        try {
-            $paths = \array_slice($args, $argumentParser->getNextPositionalArgumentIndex() + 1);
-
-            if ([] === $paths) {
-                OutputHelper::printHelp();
-                exit(self::EXIT_CODE_SUCCESS);
-            }
-
-            $configPath = $argumentParser->hasOption(Option::CONFIG) ? $argumentParser->getOption(Option::CONFIG) : '';
-            $command = new self($paths, $configPath);
-            $command->dryRun = $argumentParser->hasOption(Option::DRY_RUN);
-            $command->quiet = $argumentParser->hasOption(Option::QUIET);
-
-            return $command;
-        } catch (\InvalidArgumentException $invalidArgumentException) {
-            OutputHelper::printError($invalidArgumentException->getMessage());
-            exit(self::EXIT_CODE_ERROR);
-        } catch (\JsonException $jsonException) {
-            OutputHelper::printError(\sprintf('The configuration file in invalid. %s', $jsonException->getMessage()));
-            exit(self::EXIT_CODE_ERROR);
-        }
-    }
-
-    /**
-     * Runs the SVG optimization process.
-     *
-     * @throws \RuntimeException If the command is not run from the command line
+     * @throws \RuntimeException if the command is not run from CLI or if an error occurs during processing
      */
     public function run(): void
     {
@@ -177,22 +139,19 @@ final class SvgOptimizerCommand
     }
 
     /**
-     * Ensures that the command is being run in a CLI environment.
+     * Ensures that the command is run from the command line interface (CLI).
+     *
+     * If the command is not run from CLI, it prints an error message and exits.
      */
     private function ensureCli(): void
     {
         if (\PHP_SAPI !== 'cli') {
-            OutputHelper::printError('This command can only be run from the command line.');
-            exit(self::EXIT_CODE_ERROR);
+            $this->outputHelper->printError('This command can only be run from the command line.');
         }
     }
 
     /**
-     * Processes a single path, which can be a file or a directory.
-     *
-     * @param string $path The path to process
-     *
-     * @throws \UnexpectedValueException If the path is not a valid SVG file or directory
+     * @throws \RuntimeException
      */
     private function processPath(string $path): void
     {
@@ -201,17 +160,12 @@ final class SvgOptimizerCommand
         } elseif (is_file($path) && self::SVG_EXTENSION === pathinfo($path, \PATHINFO_EXTENSION)) {
             $this->optimizeSvg($path);
         } else {
-            OutputHelper::printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
-            exit(self::EXIT_CODE_ERROR);
+            $this->outputHelper->printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
         }
     }
 
     /**
-     * Processes all SVG files in a directory.
-     *
-     * @param string $directoryPath The path to the directory containing the SVG files
-     *
-     * @throws \UnexpectedValueException If the directory path is invalid
+     * @throws \RuntimeException
      */
     private function processDirectory(string $directoryPath): void
     {
@@ -230,9 +184,12 @@ final class SvgOptimizerCommand
     }
 
     /**
-     * Optimizes an SVG file.
+     * Optimizes the SVG file at the given file path.
      *
-     * @param string $filePath The path to the SVG file
+     * This method applies various optimization rules to the SVG file and saves the optimized version.
+     * It also updates the total original and optimized sizes, and prints the result if not in quiet mode.
+     *
+     * @param string $filePath The path to the SVG file to be optimized
      */
     private function optimizeSvg(string $filePath): void
     {
@@ -277,18 +234,20 @@ final class SvgOptimizerCommand
             ++$this->optimizedFiles;
 
             if (!$this->quiet) {
-                OutputHelper::printOptimizationResult($filePath, $metaData->getSavedPercentage());
+                $this->outputHelper->printOptimizationResult($filePath, $metaData->getSavedPercentage());
             }
         } catch (\Exception $exception) {
             if (!$this->quiet) {
-                OutputHelper::printError(\sprintf('Error processing "%s": %s', $filePath, $exception->getMessage()));
-                exit(self::EXIT_CODE_ERROR);
+                $this->outputHelper->printError(\sprintf('Error processing "%s": %s', $filePath, $exception->getMessage()));
             }
         }
     }
 
     /**
      * Prints a summary of the optimization results.
+     *
+     * This method calculates the total bytes saved and the percentage of space saved,
+     * then prints the summary to the output.
      */
     private function printSummary(): void
     {
@@ -298,7 +257,7 @@ final class SvgOptimizerCommand
             ? round(($savedBytes / $this->totalOriginalSize) * self::PERCENTAGE_FACTOR, self::DEFAULT_PRECISION)
             : 0.0;
 
-        OutputHelper::printTotalSummary(
+        $this->outputHelper->printTotalSummary(
             $this->optimizedFiles,
             $this->totalOriginalSize,
             $this->totalOptimizedSize,

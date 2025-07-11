@@ -27,6 +27,8 @@ parameters:
       classesNotRequiredToBeAbstractOrFinal:
         - MathiasReker\PhpSvgOptimizer\Service\Processor\XmlProcessor
         - MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator
+        - MathiasReker\PhpSvgOptimizer\Console\Input\Stream\MemoryStream
+        - MathiasReker\PhpSvgOptimizer\Console\Input\Stream\StdoutStream
     noExtends:
       classesAllowedToBeExtended:
         - RuntimeException
@@ -34,6 +36,8 @@ parameters:
         - RuntimeException
         - MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider
         - MathiasReker\PhpSvgOptimizer\Service\Rule\AbstractXmlProcessor
+        - MathiasReker\PhpSvgOptimizer\Console\Input\Stream\AbstractStreamOutput
+        - MathiasReker\PhpSvgOptimizer\Console\Command\AbstractCommandFactory
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
     - vendor/symplify/phpstan-rules/config/code-complexity-rules.neon

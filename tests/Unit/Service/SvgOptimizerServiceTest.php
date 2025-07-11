@@ -78,11 +78,6 @@ final class SvgOptimizerServiceTest extends TestCase
 {
     private string $sampleSvg;
 
-    protected function setUp(): void
-    {
-        $this->sampleSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><title>Test</title></svg>';
-    }
-
     /**
      * @throws SvgValidationException
      */
@@ -127,5 +122,10 @@ final class SvgOptimizerServiceTest extends TestCase
     {
         $this->expectException(FileNotFoundException::class);
         SvgOptimizerService::fromFile('/nonexistent/path.svg');
+    }
+
+    protected function setUp(): void
+    {
+        $this->sampleSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><title>Test</title></svg>';
     }
 }
