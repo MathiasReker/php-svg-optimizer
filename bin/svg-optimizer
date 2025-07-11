@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+
 /**
  *     This file is part of the php-svg-optimizer package.
  *     (c) Mathias Reker <github@reker.dk>
@@ -9,8 +10,6 @@
 
 declare(strict_types=1);
 
-use MathiasReker\PhpSvgOptimizer\Console\Command\SvgOptimizerCommandFactory;
-use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\StdoutStream;
 use MathiasReker\PhpSvgOptimizer\Console\SvgOptimizerApplication;
 
 ini_set('memory_limit', '-1');
