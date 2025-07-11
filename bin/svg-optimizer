@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 use MathiasReker\PhpSvgOptimizer\Console\Command\SvgOptimizerCommandFactory;
 use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\StdoutStream;
+use MathiasReker\PhpSvgOptimizer\Console\SvgOptimizerApplication;
 
 ini_set('memory_limit', '-1');
 error_reporting(\E_ALL);
@@ -39,6 +40,4 @@ foreach ($autoloadCandidates as $path) {
  *
  * @var array<int, string> $argv
  */
-$factory = new SvgOptimizerCommandFactory(new StdoutStream());
-$command = $factory->create($argv);
-$command->run();
+SvgOptimizerApplication::fromArgs($argv)->run();
