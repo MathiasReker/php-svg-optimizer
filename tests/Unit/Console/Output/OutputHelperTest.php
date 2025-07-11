@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output;
 
+use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\AbstractStreamOutput;
+use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\Formatter;
@@ -26,56 +28,64 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(OutputHelper::class)]
-#[CoversClass(Command::class)]
-#[CoversClass(ArgumentData::class)]
-#[CoversClass(ArgumentOptionValueObject::class)]
-#[CoversClass(Option::class)]
-#[CoversClass(ExampleCommandValueObject::class)]
+#[CoversClass(AbstractStreamOutput::class)]
+#[CoversClass(MemoryStream::class)]
 #[CoversClass(Formatter::class)]
+#[CoversClass(ArgumentData::class)]
+#[CoversClass(Command::class)]
+#[CoversClass(Option::class)]
+#[CoversClass(ArgumentOptionValueObject::class)]
+#[CoversClass(ExampleCommandValueObject::class)]
 #[CoversClass(OptionValueObject::class)]
 final class OutputHelperTest extends TestCase
 {
+    private MemoryStream $memoryStream;
+    private OutputHelper $outputHelper;
+
+    /**
+     * @throws \RuntimeException
+     */
     public function testPrintError(): void
     {
-        ob_start();
-        OutputHelper::printError('Something went wrong');
-        $output = ob_get_clean();
+        $this->outputHelper->printError('Something went wrong');
+        $output = $this->memoryStream->getContents();
 
-        self::assertNotFalse($output);
         self::assertSame('Error: Something went wrong' . \PHP_EOL, $output);
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     public function testPrintVersion(): void
     {
-        ob_start();
-        OutputHelper::printVersion('PHP SVG Optimizer', '1.2.3', 'Mathias Reker');
-        $output = ob_get_clean();
+        $this->outputHelper->printVersion('PHP SVG Optimizer', '1.2.3', 'Mathias Reker');
+        $output = $this->memoryStream->getContents();
 
-        self::assertNotFalse($output);
-        self::assertSame(
-            'PHP SVG Optimizer v1.2.3 by Mathias Reker and contributors' . \PHP_EOL .
-            'PHP runtime: ' . \PHP_VERSION . \PHP_EOL,
-            $output
-        );
+        $expected = 'PHP SVG Optimizer v1.2.3 by Mathias Reker and contributors' . \PHP_EOL .
+            'PHP runtime: ' . \PHP_VERSION . \PHP_EOL;
+
+        self::assertSame($expected, $output);
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     public function testPrintOptimizationResult(): void
     {
-        ob_start();
-        OutputHelper::printOptimizationResult('file.svg', 42.567_89);
-        $output = ob_get_clean();
+        $this->outputHelper->printOptimizationResult('file.svg', 42.567_89);
+        $output = $this->memoryStream->getContents();
 
-        self::assertNotFalse($output);
         self::assertSame('file.svg (42.57%)' . \PHP_EOL, $output);
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     public function testPrintHelp(): void
     {
-        ob_start();
-        OutputHelper::printHelp();
-        $output = ob_get_clean();
+        $this->outputHelper->printHelp();
+        $output = $this->memoryStream->getContents();
 
-        self::assertNotFalse($output);
         self::assertStringContainsString('PHP SVG Optimizer', $output);
         self::assertStringContainsString('Usage:', $output);
         self::assertStringContainsString('Options:', $output);
@@ -90,46 +100,58 @@ final class OutputHelperTest extends TestCase
         self::assertStringContainsString('vendor/bin/svg-optimizer', $output);
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     public function testPrintHelpIncludesOptions(): void
     {
-        ob_start();
-        OutputHelper::printHelp();
-        $output = ob_get_clean();
+        $this->outputHelper->printHelp();
+        $output = $this->memoryStream->getContents();
 
-        self::assertNotFalse($output);
         self::assertStringContainsString('Options:', $output);
         self::assertMatchesRegularExpression('/\s+-h\s+--help\s+.+/', $output);
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     public function testPrintHelpIncludesCommands(): void
     {
-        ob_start();
-        OutputHelper::printHelp();
-        $output = ob_get_clean();
+        $this->outputHelper->printHelp();
+        $output = $this->memoryStream->getContents();
 
-        self::assertNotFalse($output);
         self::assertStringContainsString('Commands:', $output);
         self::assertMatchesRegularExpression('/\s+process\s+.+/', $output);
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     public function testPrintTotalSummary(): void
     {
-        ob_start();
-        OutputHelper::printTotalSummary(
+        $this->outputHelper->printTotalSummary(
             3,
             10_240,
             5_120,
             5_120,
             50.0
         );
-        $output = ob_get_clean();
+        $output = $this->memoryStream->getContents();
 
-        self::assertNotFalse($output);
         self::assertStringContainsString('Summary:', $output);
         self::assertStringContainsString('Files optimized:      3', $output);
         self::assertStringContainsString('Original total size:', $output);
         self::assertStringContainsString('Optimized total size:', $output);
         self::assertStringContainsString('Space saved:', $output);
         self::assertStringContainsString('(50.00%)', $output);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    protected function setUp(): void
+    {
+        $this->memoryStream = new MemoryStream();
+        $this->outputHelper = new OutputHelper($this->memoryStream);
     }
 }

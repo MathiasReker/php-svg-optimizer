@@ -38,7 +38,7 @@ final readonly class ArgumentParser
     /**
      * Constructor for the ArgumentParser class.
      *
-     * @param list<string> $args Command-line arguments passed to the script
+     * @param array<int, string> $args Command-line arguments passed to the script
      */
     public function __construct(
         private array $args,
@@ -103,7 +103,8 @@ final readonly class ArgumentParser
     public function getOption(Option $option): string
     {
         foreach ($this->args as $arg) {
-            if ($this->isOption($arg) && $this->argumentData->getOptionByName($this->getOptionKey($arg)) === $this->argumentData->getOption($option->value)) {
+            if ($this->isOption($arg)
+                && $this->argumentData->getOptionByName($this->getOptionKey($arg)) === $this->argumentData->getOption($option->value)) {
                 return $this->getOptionValue($arg);
             }
         }
@@ -128,6 +129,28 @@ final readonly class ArgumentParser
         }
 
         return $parts[self::OPTION_VALUE_INDEX];
+    }
+
+    /**
+     * Check if the argument list is empty.
+     *
+     * @return bool True if the argument list is empty, false otherwise
+     */
+    public function isEmpty(): bool
+    {
+        return \count($this->args) < 2;
+    }
+
+    /**
+     * Get the index of the next positional argument after options/subcommands.
+     *
+     * @return int The index of the first positional argument
+     *
+     * @throws \InvalidArgumentException If no positional argument is found
+     */
+    public function getNextPositionalArgumentStartIndex(): int
+    {
+        return $this->getNextPositionalArgumentIndex() + 1;
     }
 
     /**

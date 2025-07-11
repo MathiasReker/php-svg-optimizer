@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Output;
 
+use MathiasReker\PhpSvgOptimizer\Contract\Console\Input\Stream\StreamInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\Formatter;
 
@@ -19,40 +20,51 @@ use MathiasReker\PhpSvgOptimizer\Service\Formatter\Formatter;
  */
 final readonly class OutputHelper
 {
+    public function __construct(private StreamInterface $stream) {}
+
     /**
-     * Print an error message to the console.
+     * Print a message to the output stream.
      *
-     * @param string $message The error message to print
+     * @param string $message The message to print
      */
-    public static function printError(string $message): void
+    public function printError(string $message): void
     {
-        printf('Error: %s%s', $message, \PHP_EOL);
+        $this->stream->writeln('Error: ' . $message);
     }
 
     /**
-     * Print the help information for the application.
+     * Print help information for the application.
+     *
+     * This method outputs the usage instructions, available options, commands,
+     * and examples for using the PHP SVG Optimizer.
      */
-    public static function printHelp(): void
+    public function printHelp(): void
     {
-        $argumentData = new ArgumentData();
+        $arg = new ArgumentData();
 
-        printf('PHP SVG Optimizer%s%s', \PHP_EOL, \PHP_EOL);
-        printf('Usage:%s', \PHP_EOL);
-        printf('  %s%s%s', $argumentData->getFormat(), \PHP_EOL, \PHP_EOL);
+        $this->stream->writeln('PHP SVG Optimizer');
+        $this->stream->writeln('');
+        $this->stream->writeln('Usage:');
+        $this->stream->writeln('  ' . $arg->getFormat());
+        $this->stream->writeln('');
 
-        printf('Options:%s', \PHP_EOL);
-        foreach ($argumentData->getOptions() as $opt) {
-            printf('  %-3s  %-20s %s%s', $opt->getShorthand(), $opt->getFull(), $opt->getDescription(), \PHP_EOL);
+        $this->stream->writeln('Options:');
+        foreach ($arg->getOptions() as $opt) {
+            $this->stream->writeln(\sprintf('  %-3s  %-20s %s', $opt->getShorthand(), $opt->getFull(), $opt->getDescription()));
         }
 
-        printf('%sCommands:%s%s', \PHP_EOL, \PHP_EOL, \PHP_EOL);
-        foreach ($argumentData->getCommands() as $cmd) {
-            printf('  %-25s %s%s', $cmd->getTitle(), $cmd->getDescription(), \PHP_EOL);
+        $this->stream->writeln('');
+        $this->stream->writeln('Commands:');
+        $this->stream->writeln('');
+        foreach ($arg->getCommands() as $cmd) {
+            $this->stream->writeln(\sprintf('  %-25s %s', $cmd->getTitle(), $cmd->getDescription()));
         }
 
-        printf('%sExamples:%s%s', \PHP_EOL, \PHP_EOL, \PHP_EOL);
-        foreach ($argumentData->getExamples() as $example) {
-            printf('  %s%s', $example->getCommand(), \PHP_EOL);
+        $this->stream->writeln('');
+        $this->stream->writeln('Examples:');
+        $this->stream->writeln('');
+        foreach ($arg->getExamples() as $example) {
+            $this->stream->writeln('  ' . $example->getCommand());
         }
     }
 
@@ -63,17 +75,10 @@ final readonly class OutputHelper
      * @param string $version Version of the application
      * @param string $author  Author of the application
      */
-    public static function printVersion(string $name, string $version, string $author): void
+    public function printVersion(string $name, string $version, string $author): void
     {
-        printf(
-            '%s v%s by %s and contributors%sPHP runtime: %s%s',
-            $name,
-            $version,
-            $author,
-            \PHP_EOL,
-            \PHP_VERSION,
-            \PHP_EOL
-        );
+        $this->stream->writeln(\sprintf('%s v%s by %s and contributors', $name, $version, $author));
+        $this->stream->writeln('PHP runtime: ' . \PHP_VERSION);
     }
 
     /**
@@ -82,9 +87,9 @@ final readonly class OutputHelper
      * @param string $filePath            Path to the SVG file
      * @param float  $reductionPercentage Percentage of size reduction
      */
-    public static function printOptimizationResult(string $filePath, float $reductionPercentage): void
+    public function printOptimizationResult(string $filePath, float $reductionPercentage): void
     {
-        printf('%s (%.2f%%%s)%s', $filePath, $reductionPercentage, '', \PHP_EOL);
+        $this->stream->writeln(\sprintf('%s (%.2f%%)', $filePath, $reductionPercentage));
     }
 
     /**
@@ -96,23 +101,18 @@ final readonly class OutputHelper
      * @param int   $savedBytes      Total bytes saved
      * @param float $savedPercentage Percentage of space saved
      */
-    public static function printTotalSummary(
+    public function printTotalSummary(
         int $fileCount,
         int $originalSize,
         int $optimizedSize,
         int $savedBytes,
         float $savedPercentage,
     ): void {
-        printf('%sSummary:%s', \PHP_EOL, \PHP_EOL);
-        printf('  Files optimized:      %d%s', $fileCount, \PHP_EOL);
-        printf('  Original total size:  %s%s', Formatter::formatBytes($originalSize), \PHP_EOL);
-        printf('  Optimized total size: %s%s', Formatter::formatBytes($optimizedSize), \PHP_EOL);
-        printf(
-            '  Space saved:          %s (%.2f%%%s)%s',
-            Formatter::formatBytes($savedBytes),
-            $savedPercentage,
-            '',
-            \PHP_EOL
-        );
+        $this->stream->writeln('');
+        $this->stream->writeln('Summary:');
+        $this->stream->writeln(\sprintf('  Files optimized:      %d', $fileCount));
+        $this->stream->writeln(\sprintf('  Original total size:  %s', Formatter::formatBytes($originalSize)));
+        $this->stream->writeln(\sprintf('  Optimized total size: %s', Formatter::formatBytes($optimizedSize)));
+        $this->stream->writeln(\sprintf('  Space saved:          %s (%.2f%%)', Formatter::formatBytes($savedBytes), $savedPercentage));
     }
 }

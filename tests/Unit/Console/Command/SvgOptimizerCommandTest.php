@@ -12,7 +12,10 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Command;
 
 use MathiasReker\PhpSvgOptimizer\Console\Command\SvgOptimizerCommand;
+use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\MemoryStream;
+use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\XmlProcessor;
@@ -39,8 +42,13 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
 use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
+use MathiasReker\PhpSvgOptimizer\Type\Command;
+use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
+use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -77,6 +85,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(Rule::class)]
 #[CoversClass(MetaDataValueObject::class)]
+#[CoversClass(MemoryStream::class)]
+#[CoversClass(ArgumentData::class)]
+#[CoversClass(Command::class)]
+#[CoversClass(Option::class)]
+#[CoversClass(ArgumentOptionValueObject::class)]
+#[CoversClass(ExampleCommandValueObject::class)]
+#[CoversClass(OptionValueObject::class)]
+#[CoversClass(OutputHelper::class)]
 final class SvgOptimizerCommandTest extends TestCase
 {
     private string $tempDir;
@@ -97,16 +113,15 @@ final class SvgOptimizerCommandTest extends TestCase
             self::fail('Constructor not found in SvgOptimizerCommand');
         }
 
-        $constructor->setAccessible(true);
-
         // Create instance without invoking constructor, then call constructor manually
         $command = $reflection->newInstanceWithoutConstructor();
-        $constructor->invoke($command, [$svgFile], '');
+
+        $outputHelper = new OutputHelper(new MemoryStream());
+        $constructor->invoke($command, [$svgFile], '', $outputHelper, false, false);
 
         // Set dryRun and quiet to true to avoid actual file writes and output
         foreach (['dryRun', 'quiet'] as $propName) {
             $prop = $reflection->getProperty($propName);
-            $prop->setAccessible(true);
             $prop->setValue($command, true);
         }
 
@@ -115,9 +130,38 @@ final class SvgOptimizerCommandTest extends TestCase
         // Check internals
         foreach (['totalOriginalSize', 'totalOptimizedSize', 'optimizedFiles'] as $propName) {
             $prop = $reflection->getProperty($propName);
-            $prop->setAccessible(true);
             self::assertIsInt($prop->getValue($command));
         }
+    }
+
+    /**
+     * @throws \ReflectionException
+     * @throws \RuntimeException
+     */
+    public function testRunWithNoInputFiles(): void
+    {
+        $reflection = new \ReflectionClass(SvgOptimizerCommand::class);
+        $constructor = $reflection->getConstructor();
+
+        if (!$constructor instanceof \ReflectionMethod) {
+            self::fail('Constructor not found in SvgOptimizerCommand');
+        }
+
+        $outputHelper = new OutputHelper(new MemoryStream());
+
+        $command = $reflection->newInstanceWithoutConstructor();
+
+        $constructor->invoke($command, [], '', $outputHelper, false, false);
+
+        $command->run();
+
+        $totalOptimizedSize = $reflection->getProperty('totalOptimizedSize')->getValue($command);
+        $totalOriginalSize = $reflection->getProperty('totalOriginalSize')->getValue($command);
+        $optimizedFiles = $reflection->getProperty('optimizedFiles')->getValue($command);
+
+        self::assertSame(0, $totalOptimizedSize);
+        self::assertSame(0, $totalOriginalSize);
+        self::assertSame(0, $optimizedFiles);
     }
 
     protected function setUp(): void
