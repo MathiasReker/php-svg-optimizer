@@ -98,8 +98,14 @@ jobs:
           elif (( PERCENT >= 50 )); then COLOR=yellow;
           fi
 
-          curl -s -o dev/artifacts/coverage.svg "https://badgen.net/badge/coverage/${PERCENT}%25/${COLOR}"
+          curl -s -o dev/artifacts/coverage.svg.new "https://badgen.net/badge/coverage/${PERCENT}%25/${COLOR}"
 
-          git add dev/artifacts/coverage.svg
-          git commit -m "Update coverage badge to ${PERCENT}%" || echo "No changes"
-          git push origin develop
+          # Only replace coverage.svg if the content has changed
+          if ! cmp -s dev/artifacts/coverage.svg.new dev/artifacts/coverage.svg; then
+            mv dev/artifacts/coverage.svg.new dev/artifacts/coverage.svg
+            git add dev/artifacts/coverage.svg
+            git commit -m "Update coverage badge to ${PERCENT}%"
+            git push origin develop
+          else
+            echo "Coverage badge unchanged. Skipping commit."
+          fi
