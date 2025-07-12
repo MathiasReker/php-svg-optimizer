@@ -477,9 +477,9 @@ various scenarios to verify the correct behavior and edge cases for your rule.
 
 ### 3. **Integrate the Rule**
 
-- **Register the rule** in the SVG optimizer builder located at `/src/Service/SvgOptimizerFacade.php`.
+- **Register the rule** in the SVG optimizer builder located at `/src/Service/Facade/SvgOptimizerFacade.php`.
 - **Add your rule to the rule enum** in `/src/Type/Rule.php`.
-- **Include the rule in the CLI tool** by updating `/src/Command/SvgOptimizerCommand.php`.
+- **Include the rule in the CLI tool** by updating `/src/Console/Command/SvgOptimizerCommand.php`.
 
 ### 4. **Update Documentation**
 
