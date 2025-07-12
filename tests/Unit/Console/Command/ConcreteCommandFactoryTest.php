@@ -57,4 +57,33 @@ final class ConcreteCommandFactoryTest extends TestCase
 
         self::assertSame($dummyStream, $factory->getOutputStream());
     }
+
+    public function testIsCliReturnsTrueWhenInCliEnvironment(): void
+    {
+        $dummyStream = $this->createMock(StreamInterface::class);
+        $dummyCommand = $this->createMock(CommandInterface::class);
+
+        $factory = new class($dummyStream, $dummyCommand) extends AbstractCommandFactory {
+            private CommandInterface $command;
+
+            public function __construct(StreamInterface $stream, CommandInterface $command)
+            {
+                parent::__construct($stream);
+                $this->command = $command;
+            }
+
+            #[\Override]
+            public function create(array $argv): CommandInterface
+            {
+                return $this->command;
+            }
+
+            public function callIsCli(): bool
+            {
+                return $this->isCli();
+            }
+        };
+
+        self::assertTrue($factory->callIsCli());
+    }
 }

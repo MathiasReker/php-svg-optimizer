@@ -41,12 +41,23 @@ final class SvgOptimizerCommandFactory extends AbstractCommandFactory
         }
 
         if ($parser->hasOption(Option::VERSION)) {
-            $outputHelper->printVersion(Application::NAME->value, Application::VERSION->value, Application::AUTHOR->value);
+            $outputHelper->printVersion(
+                Application::NAME->value,
+                Application::VERSION->value,
+                Application::AUTHOR->value
+            );
             exit(0);
         }
 
+        if (!$this->isCli()) {
+            $outputHelper->printError('This command can only be run in a CLI environment.');
+            exit(1);
+        }
+
         $paths = \array_slice($argv, $parser->getNextPositionalArgumentStartIndex());
-        $configPath = $parser->hasOption(Option::CONFIG) ? $parser->getOption(Option::CONFIG) : '';
+        $configPath = $parser->hasOption(Option::CONFIG)
+            ? $parser->getOption(Option::CONFIG)
+            : '';
 
         return new SvgOptimizerCommand(
             $paths,

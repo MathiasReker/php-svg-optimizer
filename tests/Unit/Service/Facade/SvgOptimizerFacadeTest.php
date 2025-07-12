@@ -9,18 +9,18 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Facade;
 
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\XmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEmptyTagsToSelfClosing;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
@@ -39,7 +39,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -47,10 +46,9 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(SvgOptimizerService::class)]
+#[CoversClass(SvgOptimizerFacade::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(DomDocumentWrapper::class)]
-#[CoversClass(XmlProcessor::class)]
 #[CoversClass(AbstractProvider::class)]
 #[CoversClass(StringProvider::class)]
 #[CoversClass(AbstractXmlProcessor::class)]
@@ -74,7 +72,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SortAttributes::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(FileProvider::class)]
-final class SvgOptimizerServiceTest extends TestCase
+final class SvgOptimizerFacadeTest extends TestCase
 {
     private string $sampleSvg;
 
@@ -83,7 +81,7 @@ final class SvgOptimizerServiceTest extends TestCase
      */
     public function testOptimizeReturnsService(): void
     {
-        $service = SvgOptimizerService::fromString($this->sampleSvg);
+        $service = SvgOptimizerFacade::fromString($this->sampleSvg);
         $result = $service->optimize();
 
         self::assertSame($service, $result);
@@ -101,7 +99,7 @@ final class SvgOptimizerServiceTest extends TestCase
             unlink($file);
         }
 
-        SvgOptimizerService::fromString($this->sampleSvg)
+        SvgOptimizerFacade::fromString($this->sampleSvg)
             ->optimize()
             ->saveToFile($file);
 
@@ -121,7 +119,7 @@ final class SvgOptimizerServiceTest extends TestCase
     public function testFromFileThrowsExceptionOnInvalidPath(): void
     {
         $this->expectException(FileNotFoundException::class);
-        SvgOptimizerService::fromFile('/nonexistent/path.svg');
+        SvgOptimizerFacade::fromFile('/nonexistent/path.svg');
     }
 
     protected function setUp(): void

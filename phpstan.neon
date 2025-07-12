@@ -35,7 +35,7 @@ parameters:
         - InvalidArgumentException
         - RuntimeException
         - MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider
-        - MathiasReker\PhpSvgOptimizer\Service\Rule\AbstractXmlProcessor
+        - MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor
         - MathiasReker\PhpSvgOptimizer\Console\Input\Stream\AbstractStreamOutput
         - MathiasReker\PhpSvgOptimizer\Console\Command\AbstractCommandFactory
 includes:

@@ -191,6 +191,6 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     {
         return '' === $transform
             || '0' === $transform
-            || (bool) preg_match(self::EMPTY_TRANSFORM_REGEX, $transform);
+            || 1 === preg_match(self::EMPTY_TRANSFORM_REGEX, $transform);
     }
 }

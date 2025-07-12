@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Service;
+namespace MathiasReker\PhpSvgOptimizer\Service\Facade;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
@@ -49,13 +49,13 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
  *
  * @no-named-arguments
  */
-final readonly class SvgOptimizerService
+final readonly class SvgOptimizerFacade
 {
     /** @var SvgOptimizer The instance responsible for performing SVG optimizations */
     private SvgOptimizer $svgOptimizer;
 
     /**
-     * Initializes the SvgOptimizerService with a specified SVG provider.
+     * Initializes the SvgOptimizerFacade with a specified SVG provider.
      *
      * @param SvgProviderInterface $svgProvider The provider for retrieving the SVG content
      */
@@ -65,11 +65,11 @@ final readonly class SvgOptimizerService
     }
 
     /**
-     * Creates an instance of SvgOptimizerService from a string.
+     * Creates an instance of SvgOptimizerFacade from a string.
      *
      * @param string $content The SVG content as a string
      *
-     * @return static The SvgOptimizerService instance configured for string-based SVG content
+     * @return static The SvgOptimizerFacade instance configured for string-based SVG content
      */
     public static function fromString(string $content): self
     {
@@ -77,11 +77,11 @@ final readonly class SvgOptimizerService
     }
 
     /**
-     * Creates an instance of SvgOptimizerService from a file path.
+     * Creates an instance of SvgOptimizerFacade from a file path.
      *
      * @param string $filePath The path to the SVG file
      *
-     * @return static The SvgOptimizerService instance configured for file-based SVG content
+     * @return static The SvgOptimizerFacade instance configured for file-based SVG content
      *
      * @throws FileNotFoundException If the specified file does not exist
      * @throws IOException           If the file content cannot be read
@@ -96,13 +96,14 @@ final readonly class SvgOptimizerService
      *
      * If no rules have been added, a default set of rules will be applied.
      *
-     * @return $this The SvgOptimizerService instance
+     * @return $this The SvgOptimizerFacade instance
      *
      * @throws SvgValidationException If the SVG content is invalid
      */
     public function optimize(): self
     {
-        if (0 === $this->svgOptimizer->getRulesCount()) {
+        if (!$this->svgOptimizer->hasRules()) {
+            // If no rules are set, apply the default optimization rules
             $this->withRules();
         }
 
@@ -136,7 +137,7 @@ final readonly class SvgOptimizerService
      * @param bool $removeUnusedNamespaces          Whether to remove unused namespaces
      * @param bool $sortAttributes                  Whether to sort attributes
      *
-     * @return $this The SvgOptimizerService instance
+     * @return $this The SvgOptimizerFacade instance
      */
     public function withRules(
         bool $convertColorsToHex = true,
@@ -181,11 +182,7 @@ final readonly class SvgOptimizerService
             SortAttributes::class => $sortAttributes,
         ];
 
-        foreach ($rules as $class => $enabled) {
-            if (true === $enabled) {
-                $this->svgOptimizer->addRule(new $class());
-            }
-        }
+        $this->svgOptimizer->configureRules($rules);
 
         return $this;
     }
@@ -195,7 +192,7 @@ final readonly class SvgOptimizerService
      *
      * @param string $outputPath The file path where the optimized SVG content will be saved
      *
-     * @return $this The SvgOptimizerService instance
+     * @return $this The SvgOptimizerFacade instance
      */
     public function saveToFile(string $outputPath): self
     {

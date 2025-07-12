@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 
 /**
  * @no-named-arguments
@@ -59,11 +60,12 @@ final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor im
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      *
      * @throws XmlProcessingException When XML content cannot be saved or loaded
+     * @throws \ErrorException        When an error occurs during processing
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->xmlProcessor->process(
+        $this->process(
             $domDocument,
             fn (string $content): string => $this->removeStyleAttributeWhitespace($this->removeAttributeValueWhitespace($content))
         );

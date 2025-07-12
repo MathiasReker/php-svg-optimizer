@@ -17,11 +17,11 @@ use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
+use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\XmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEmptyTagsToSelfClosing;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
@@ -40,7 +40,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
-use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
@@ -59,10 +58,9 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(MetaData::class)]
 #[CoversClass(DomDocumentWrapper::class)]
-#[CoversClass(XmlProcessor::class)]
+#[CoversClass(AbstractXmlProcessor::class)]
 #[CoversClass(AbstractProvider::class)]
 #[CoversClass(FileProvider::class)]
-#[CoversClass(AbstractXmlProcessor::class)]
 #[CoversClass(ConvertColorsToHex::class)]
 #[CoversClass(ConvertEmptyTagsToSelfClosing::class)]
 #[CoversClass(FlattenGroups::class)]
@@ -81,7 +79,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RemoveUnnecessaryWhitespace::class)]
 #[CoversClass(RemoveUnsafeElements::class)]
 #[CoversClass(RemoveUnusedNamespaces::class)]
-#[CoversClass(SvgOptimizerService::class)]
+#[CoversClass(SvgOptimizerFacade::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(Rule::class)]
 #[CoversClass(MetaDataValueObject::class)]
@@ -182,7 +180,9 @@ final class SvgOptimizerCommandTest extends TestCase
                 continue;
             }
             $path = $dir . \DIRECTORY_SEPARATOR . $item;
-            is_dir($path) ? $this->deleteDir($path) : unlink($path);
+            is_dir($path)
+                ? $this->deleteDir($path)
+                : unlink($path);
         }
         rmdir($dir);
     }

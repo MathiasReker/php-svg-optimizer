@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 
 /**
  * @no-named-arguments
@@ -39,11 +40,12 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
      * @param \DOMDocument $domDocument The \DOMDocument to optimize
      *
      * @throws XmlProcessingException When XML content cannot be saved or loaded
+     * @throws \ErrorException        When an error occurs during processing
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->xmlProcessor->process($domDocument, fn (): string => $this->cleanNamespaces($domDocument));
+        $this->process($domDocument, fn (): string => $this->cleanNamespaces($domDocument));
     }
 
     /**
@@ -54,10 +56,11 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
      * @return string The optimized SVG content with unused namespaces removed
      *
      * @throws XmlProcessingException When XML content cannot be saved or loaded
+     * @throws \ErrorException        When an error occurs during processing
      */
     private function cleanNamespaces(\DOMDocument $domDocument): string
     {
-        $svgContent = $this->xmlProcessor->process($domDocument, static fn (string $content): string => $content);
+        $svgContent = $this->process($domDocument, static fn (string $content): string => $content);
 
         $namespaceCounts = $this->countNamespaceElementsWithRegex($svgContent);
 
@@ -67,7 +70,7 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
             }
         }
 
-        return $this->xmlProcessor->process($domDocument, static fn (string $content): string => $content);
+        return $this->process($domDocument, static fn (string $content): string => $content);
     }
 
     /**

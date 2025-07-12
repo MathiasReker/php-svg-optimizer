@@ -53,16 +53,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Add an optimization rule to the optimizer.
-     *
-     * @param SvgOptimizerRuleInterface $svgOptimizerRule The optimization rule to add
-     */
-    public function addRule(SvgOptimizerRuleInterface $svgOptimizerRule): void
-    {
-        $this->rules[] = $svgOptimizerRule;
-    }
-
-    /**
      * Optimize the SVG content by applying all added optimization rules.
      *
      * @return $this The current instance of SvgOptimizer for method chaining
@@ -129,6 +119,16 @@ final class SvgOptimizer
     }
 
     /**
+     * Check if there are any optimization rules configured.
+     *
+     * @return bool True if there are rules, false otherwise
+     */
+    public function hasRules(): bool
+    {
+        return $this->getRulesCount() > 0;
+    }
+
+    /**
      * Get the number of optimization rules added to the optimizer.
      *
      * @return int The number of optimization rules
@@ -136,5 +136,29 @@ final class SvgOptimizer
     public function getRulesCount(): int
     {
         return \count($this->rules);
+    }
+
+    /**
+     * Configure which rules to use based on flags.
+     *
+     * @param array<class-string<SvgOptimizerRuleInterface>, bool> $ruleFlags
+     */
+    public function configureRules(array $ruleFlags): void
+    {
+        foreach ($ruleFlags as $ruleClass => $enabled) {
+            if ($enabled) {
+                $this->addRule(new $ruleClass());
+            }
+        }
+    }
+
+    /**
+     * Add an optimization rule to the optimizer.
+     *
+     * @param SvgOptimizerRuleInterface $svgOptimizerRule The optimization rule to add
+     */
+    public function addRule(SvgOptimizerRuleInterface $svgOptimizerRule): void
+    {
+        $this->rules[] = $svgOptimizerRule;
     }
 }

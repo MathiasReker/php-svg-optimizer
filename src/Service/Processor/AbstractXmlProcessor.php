@@ -17,21 +17,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 /**
  * @no-named-arguments
  */
-class XmlProcessor
+abstract readonly class AbstractXmlProcessor
 {
-    /**
-     * The SVG validator instance.
-     */
-    private SvgValidator $svgValidator;
-
-    /**
-     * Constructor for the XmlProcessor class.
-     */
-    public function __construct()
-    {
-        $this->svgValidator = new SvgValidator();
-    }
-
     /**
      * Processes the SVG content by applying a callback and validating the result.
      *
@@ -47,8 +34,9 @@ class XmlProcessor
      * @return string the optimized SVG content
      *
      * @throws XmlProcessingException if any error occurs while processing, validating, or loading the XML content
+     * @throws \ErrorException        When an error occurs during processing
      */
-    public function process(\DOMDocument $domDocument, callable $callback): string
+    final public function process(\DOMDocument $domDocument, callable $callback): string
     {
         $svgContent = $domDocument->saveXML();
 
@@ -63,17 +51,37 @@ class XmlProcessor
                 throw new XmlProcessingException('Callback must return a string.');
             }
 
-            if (!$this->svgValidator->isValid($svgContent)) {
+            if (!$this->getValidator()->isValid($svgContent)) {
                 throw new XmlProcessingException('Optimized SVG content is not valid.');
             }
+        } catch (XmlProcessingException $e) {
+            throw $e;
         } catch (\Exception $exception) {
             throw new XmlProcessingException('Failed to process the XML content.', 0, $exception);
         }
 
-        if (!$domDocument->loadXML($svgContent)) {
-            throw new XmlProcessingException('Failed to load optimized XML content.');
+        // Convert warnings to exceptions during loadXML
+        set_error_handler(
+            static function (int $severity, string $message): never {
+                throw new \ErrorException($message, 0, $severity);
+            }
+        );
+
+        try {
+            if (!$domDocument->loadXML($svgContent)) {
+                throw new XmlProcessingException('Failed to load optimized XML content.');
+            }
+        } catch (\Throwable $e) {
+            throw new XmlProcessingException('Failed to load optimized XML content.', 0, $e);
+        } finally {
+            restore_error_handler();
         }
 
         return $svgContent;
+    }
+
+    final protected function getValidator(): SvgValidator
+    {
+        return new SvgValidator();
     }
 }

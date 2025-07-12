@@ -46,7 +46,9 @@ final class ConcreteStreamOutputTest extends TestCase
                 rewind($this->stream);
                 $contents = stream_get_contents($this->stream);
 
-                return false !== $contents ? $contents : '';
+                return false !== $contents
+                    ? $contents
+                    : '';
             }
         };
 
@@ -81,7 +83,9 @@ final class ConcreteStreamOutputTest extends TestCase
                 rewind($this->stream);
                 $contents = stream_get_contents($this->stream);
 
-                return false !== $contents ? $contents : '';
+                return false !== $contents
+                    ? $contents
+                    : '';
             }
         };
 

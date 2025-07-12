@@ -49,6 +49,24 @@ final class SvgOptimizerTest extends TestCase
         self::assertSame(1, $optimizer->getRulesCount());
     }
 
+    public function testHasRules(): void
+    {
+        $optimizer = new SvgOptimizer($this->provider);
+
+        self::assertFalse($optimizer->hasRules(), 'Expected hasRules() to return false when no rules are added.');
+
+        $rule = new class implements SvgOptimizerRuleInterface {
+            public function optimize(\DOMDocument $domDocument): void
+            {
+                // no-op for test
+            }
+        };
+
+        $optimizer->addRule($rule);
+
+        self::assertTrue($optimizer->hasRules(), 'Expected hasRules() to return true after a rule is added.');
+    }
+
     /**
      * @throws SvgValidationException
      */
@@ -161,6 +179,37 @@ final class SvgOptimizerTest extends TestCase
 
         self::assertSame($optimizer, $result1);
         self::assertSame($optimizer, $result2);
+    }
+
+    public function testConfigureRulesAddsOnlyEnabledRules(): void
+    {
+        $optimizer = new SvgOptimizer($this->provider);
+
+        self::assertSame(0, $optimizer->getRulesCount());
+
+        $ruleClassEnabled = new class implements SvgOptimizerRuleInterface {
+            public function optimize(\DOMDocument $domDocument): void
+            {
+            }
+        };
+
+        $ruleClassDisabled = new class implements SvgOptimizerRuleInterface {
+            public function optimize(\DOMDocument $domDocument): void
+            {
+            }
+        };
+
+        $enabledRuleClassName = $ruleClassEnabled::class;
+        $disabledRuleClassName = $ruleClassDisabled::class;
+
+        $ruleFlags = [
+            $enabledRuleClassName => true,
+            $disabledRuleClassName => false,
+        ];
+
+        $optimizer->configureRules($ruleFlags);
+
+        self::assertSame(1, $optimizer->getRulesCount());
     }
 
     protected function setUp(): void

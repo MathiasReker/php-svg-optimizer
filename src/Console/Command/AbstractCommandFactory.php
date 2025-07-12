@@ -48,4 +48,14 @@ abstract class AbstractCommandFactory
     {
         return new OutputHelper($this->output);
     }
+
+    /**
+     * Check if the command is being run in a CLI environment.
+     *
+     * @return bool True if running in CLI, false otherwise
+     */
+    final protected function isCli(): bool
+    {
+        return \PHP_SAPI === 'cli';
+    }
 }

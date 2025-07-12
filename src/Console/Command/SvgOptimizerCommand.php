@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
 use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
-use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 
 /**
@@ -127,26 +127,12 @@ final class SvgOptimizerCommand implements CommandInterface
      */
     public function run(): void
     {
-        $this->ensureCli();
-
         foreach ($this->paths as $path) {
             $this->processPath($path);
         }
 
         if (!$this->quiet && $this->optimizedFiles > 0) {
             $this->printSummary();
-        }
-    }
-
-    /**
-     * Ensures that the command is run from the command line interface (CLI).
-     *
-     * If the command is not run from CLI, it prints an error message and exits.
-     */
-    private function ensureCli(): void
-    {
-        if (\PHP_SAPI !== 'cli') {
-            $this->outputHelper->printError('This command can only be run from the command line.');
         }
     }
 
@@ -200,7 +186,7 @@ final class SvgOptimizerCommand implements CommandInterface
                 $rules[$rule->value] = $this->config[$rule->value] ?? $rule->defaultValue();
             }
 
-            $svgOptimizer = SvgOptimizerService::fromFile($filePath)->withRules(
+            $svgOptimizer = SvgOptimizerFacade::fromFile($filePath)->withRules(
                 $rules[Rule::CONVERT_COLORS_TO_HEX->value],
                 $rules[Rule::FLATTEN_GROUPS->value],
                 $rules[Rule::MINIFY_SVG_COORDINATES->value],

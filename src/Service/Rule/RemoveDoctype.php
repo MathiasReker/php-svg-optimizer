@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 
 /**
  * @no-named-arguments
@@ -35,11 +36,12 @@ final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOp
      * @param \DOMDocument $domDocument The \DOMDocument to optimize
      *
      * @throws XmlProcessingException If an error occurs during processing
+     * @throws \ErrorException        When an error occurs during processing
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->xmlProcessor->process($domDocument, fn (string $content): string => $this->removeDoctype($content));
+        $this->process($domDocument, fn (string $content): string => $this->removeDoctype($content));
     }
 
     /**

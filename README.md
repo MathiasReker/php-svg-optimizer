@@ -115,10 +115,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 
 try {
-    $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
+    $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
         ->withRules(
             convertColorsToHex: true,
             convertEmptyTagsToSelfClosing: true,
@@ -155,10 +155,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 
 try {
-    $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
+    $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
         ->optimize()
         ->saveToFile('path/to/output.svg');
 
@@ -183,10 +183,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 
 try {
-    $svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg')
+    $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
         ->optimize();
 
     echo sprintf('Get content: ', $svgOptimizer->getContent(), \PHP_EOL);
@@ -211,10 +211,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MathiasReker\PhpSvgOptimizer\Service\SvgOptimizerService;
+use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 
 try {
-    $svgOptimizer = SvgOptimizerService::fromString('<svg>...</svg>')
+    $svgOptimizer = SvgOptimizerFacade::fromString('<svg>...</svg>')
         ->optimize();
 
     echo sprintf('Content: ', $svgOptimizer->getContent(), \PHP_EOL);
@@ -232,16 +232,16 @@ try {
 
 ### Documentation
 
-Static factory method to create `SvgOptimizerService` from a file path.
+Static factory method to create `SvgOptimizerFacade` from a file path.
 
 ```php
-$svgOptimizer = SvgOptimizerService::fromFile('path/to/source.svg');
+$svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg');
 ```
 
-Static factory method to create `SvgOptimizerService` from a string.
+Static factory method to create `SvgOptimizerFacade` from a string.
 
 ```php
-$svgOptimizer = SvgOptimizerService::fromString('<svg>...</svg>');
+$svgOptimizer = SvgOptimizerFacade::fromString('<svg>...</svg>');
 ```
 
 #### `withRules` Method
@@ -477,7 +477,7 @@ various scenarios to verify the correct behavior and edge cases for your rule.
 
 ### 3. **Integrate the Rule**
 
-- **Register the rule** in the SVG optimizer builder located at `/src/Service/SvgOptimizerService.php`.
+- **Register the rule** in the SVG optimizer builder located at `/src/Service/SvgOptimizerFacade.php`.
 - **Add your rule to the rule enum** in `/src/Type/Rule.php`.
 - **Include the rule in the CLI tool** by updating `/src/Command/SvgOptimizerCommand.php`.
 

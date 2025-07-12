@@ -411,7 +411,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             return false;
         }
 
-        if ((bool) preg_match(self::URL_FUNCTION_REGEX, $value, $matches)) {
+        if (1 === preg_match(self::URL_FUNCTION_REGEX, $value, $matches)) {
             $urlInside = trim($matches[2]);
 
             return 1 === preg_match(self::URL_PROTOCOL_OR_RELATIVE_REGEX, $urlInside);

@@ -93,13 +93,11 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Abstract method to load content into \DOMDocument.
      */
-    #[\Override]
     abstract public function loadContent(): \DOMDocument;
 
     /**
      * Abstract method to get the input content.
      */
-    #[\Override]
     abstract public function getInputContent(): string;
 
     /**
