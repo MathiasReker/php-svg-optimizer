@@ -27,6 +27,11 @@ final class DomDocumentWrapperTest extends TestCase
     private DomDocumentWrapper $domDocumentWrapper;
 
     /**
+     * @phpstan-ignore-next-line
+     */
+    private \DOMDocument $domDocument;
+
+    /**
      * @throws XmlProcessingException
      */
     public function testSaveToStringValid(): void
@@ -127,6 +132,25 @@ final class DomDocumentWrapperTest extends TestCase
 
         $invalidXml = '<root><unclosed></root>';
         $this->domDocumentWrapper->loadFromString($invalidXml);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
+    public function loadFromString(string $xml): void
+    {
+        if ('' === trim($xml)) {
+            throw new XmlProcessingException('Failed to load DOMDocument: input is empty.');
+        }
+
+        $dom = new \DOMDocument();
+
+        libxml_use_internal_errors(true);
+        if (!$dom->loadXML($xml)) {
+            throw new XmlProcessingException('Failed to load DOMDocument.');
+        }
+
+        $this->domDocument = $dom;
     }
 
     #[\Override]

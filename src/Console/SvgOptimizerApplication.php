@@ -56,10 +56,6 @@ final class SvgOptimizerApplication
         return new self($argv);
     }
 
-    /**
-     * @throws \JsonException
-     * @throws \InvalidArgumentException
-     */
     public function run(): void
     {
         $factory = new SvgOptimizerCommandFactory($this->output);

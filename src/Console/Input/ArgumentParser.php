@@ -55,28 +55,17 @@ final readonly class ArgumentParser
     {
         try {
             $argsObject = array_map(
-                fn (string $arg): ?ArgumentOptionValueObject => $this->isOption($arg)
-                    ? $this->argumentData->getOptionByName($this->getOptionKey($arg))
-                    : null,
-                $this->args
+                fn (string $arg): ArgumentOptionValueObject => $this->argumentData->getOptionByName($this->getOptionKey($arg)),
+                array_filter(
+                    \array_slice($this->args, 1),
+                    fn (string $arg): bool => $this->isOption($arg)
+                )
             );
-
-            $argsObject = array_filter($argsObject);
 
             return \in_array($this->argumentData->getOption($option->value), $argsObject, true);
         } catch (\InvalidArgumentException) {
             return false;
         }
-    }
-
-    /**
-     * Check if the given argument is an option.
-     *
-     * @return bool True if the argument is an option, false otherwise
-     */
-    private function isOption(string $option): bool
-    {
-        return str_starts_with($option, '-');
     }
 
     /**
@@ -89,6 +78,16 @@ final readonly class ArgumentParser
     private function getOptionKey(string $option): string
     {
         return explode('=', $option)[self::OPTION_KEY_INDEX];
+    }
+
+    /**
+     * Check if the given argument is an option.
+     *
+     * @return bool True if the argument is an option, false otherwise
+     */
+    private function isOption(string $option): bool
+    {
+        return str_starts_with($option, '-');
     }
 
     /**

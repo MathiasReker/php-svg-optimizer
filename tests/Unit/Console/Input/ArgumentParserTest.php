@@ -38,6 +38,8 @@ final class ArgumentParserTest extends TestCase
      */
     private const int EXPECTED_POSITIONAL_ARGUMENT_INDEX = 2;
 
+    private const int EXPECTED_POSITIONAL_ARGUMENT_START_INDEX = 3;
+
     private const array EXAMPLE_ARGS = [
         'vendor/bin/svg-optimizer',
         '--config=config.json',
@@ -82,6 +84,15 @@ final class ArgumentParserTest extends TestCase
         self::assertSame(self::EXPECTED_POSITIONAL_ARGUMENT_INDEX, $index);
     }
 
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testGetNextPositionalArgumentStartIndex(): void
+    {
+        $index = $this->argumentParser->getNextPositionalArgumentStartIndex();
+        self::assertSame(self::EXPECTED_POSITIONAL_ARGUMENT_START_INDEX, $index);
+    }
+
     public function testHasOptionReturnsTrueForVersionOption(): void
     {
         $args = [
@@ -123,6 +134,41 @@ final class ArgumentParserTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
+    public function testEmptyConfigOption(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            '--config=',
+        ];
+
+        $parser = new ArgumentParser($args);
+
+        $value = $parser->getOption(Option::CONFIG);
+
+        self::assertSame('', $value);
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testInvalidOption(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            '--config=',
+            '--foo=',
+        ];
+
+        $parser = new ArgumentParser($args);
+
+        $value = $parser->getOption(Option::CONFIG);
+
+        self::assertSame('', $value);
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
     public function testGetOptionHandlesEqualsInValue(): void
     {
         $args = [
@@ -135,6 +181,13 @@ final class ArgumentParserTest extends TestCase
         $value = $parser->getOption(Option::CONFIG);
 
         self::assertSame('foo=bar=baz', $value);
+    }
+
+    public function testParseIsEmpty(): void
+    {
+        $parser = new ArgumentParser([]);
+
+        self::assertTrue($parser->isEmpty());
     }
 
     #[\Override]
