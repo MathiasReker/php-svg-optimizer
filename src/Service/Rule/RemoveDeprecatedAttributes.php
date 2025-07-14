@@ -74,6 +74,7 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     {
         $domXPath = new \DOMXPath($domDocument);
         $domXPath->registerNamespace('xlink', 'http://www.w3.org/1999/xlink');
+
         $this->replaceAttributes($domXPath, self::ATTRIBUTES_TO_REPLACE);
         $this->removeNamespaceFromSvgTags($domDocument);
         $this->removeAttributes($domXPath, self::ATTRIBUTES_TO_REMOVE);

@@ -15,7 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\AbstractStreamOutput;
 use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\Formatter;
+use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
@@ -30,7 +30,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(OutputHelper::class)]
 #[CoversClass(AbstractStreamOutput::class)]
 #[CoversClass(MemoryStream::class)]
-#[CoversClass(Formatter::class)]
+#[CoversClass(ByteFormatter::class)]
 #[CoversClass(ArgumentData::class)]
 #[CoversClass(Command::class)]
 #[CoversClass(Option::class)]

@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
@@ -31,6 +32,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(AbstractProvider::class)]
 #[CoversClass(StringProvider::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversClass(XmlFormatter::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(AbstractXmlProcessor::class)]
 final class ConvertEmptyTagsToSelfClosingTest extends TestCase

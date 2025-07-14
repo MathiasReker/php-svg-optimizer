@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Formatter;
 /**
  * @no-named-arguments
  */
-final readonly class Formatter
+final readonly class ByteFormatter
 {
     /**
      * Format a byte value into a human-readable string.

@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 
 /**
  * @no-named-arguments
@@ -27,17 +28,6 @@ final readonly class DomDocumentWrapper
      * Default encoding used when saving the \DOMDocument.
      */
     private const string DEFAULT_ENCODING = 'UTF-8';
-
-    /**
-     * Regex pattern to match whitespace between XML tags.
-     *
-     * This pattern matches any whitespace (spaces, tabs, newlines) that appears
-     * between closing and opening tags, allowing for removal of unnecessary
-     * whitespace in the final XML output.
-     *
-     * @see https://regex101.com/r/lyKDnR/1
-     */
-    private const string WHITESPACE_BETWEEN_TAGS_REGEX = '/>\s+</';
 
     /**
      * Saves the current \DOMDocument content as an XML string.
@@ -56,38 +46,9 @@ final readonly class DomDocumentWrapper
             throw new XmlProcessingException('Failed to save XML content.');
         }
 
-        $clean = $this->removeLineFeedsAndTabs($saveXML);
+        $clean = XmlFormatter::removeLineFeedsAndTabs($saveXML);
 
-        return $this->removeWhitespaceBetweenTags($clean);
-    }
-
-    /**
-     * Removes line feeds (newlines, carriage returns) and tabs from the given content.
-     *
-     * This method removes all newline characters, including `\n` (LF), `\r` (CR), and tabs (`\t`),
-     * while preserving spaces.
-     *
-     * @param string $content The content from which line feeds and tabs will be removed
-     *
-     * @return string The cleaned content with line feeds and tabs removed
-     */
-    private function removeLineFeedsAndTabs(string $content): string
-    {
-        return str_replace(["\r", "\n", "\t"], '', $content);
-    }
-
-    /**
-     * Removes unnecessary whitespace (spaces, tabs, newlines) between XML tags.
-     *
-     * Converts patterns like `>   <` into `><` to compact the XML output.
-     *
-     * @param string $content The XML content with potential inter-tag whitespace
-     *
-     * @return string The XML content with collapsed inter-tag whitespace
-     */
-    private function removeWhitespaceBetweenTags(string $content): string
-    {
-        return (string) preg_replace(self::WHITESPACE_BETWEEN_TAGS_REGEX, '><', $content);
+        return XmlFormatter::removeWhitespaceBetweenTags($clean);
     }
 
     /**

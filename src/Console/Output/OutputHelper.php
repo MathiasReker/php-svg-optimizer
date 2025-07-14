@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Output;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Input\Stream\StreamInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\Formatter;
+use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
 
 /**
  * @no-named-arguments
@@ -111,8 +111,8 @@ final readonly class OutputHelper
         $this->stream->writeln('');
         $this->stream->writeln('Summary:');
         $this->stream->writeln(\sprintf('  Files optimized:      %d', $fileCount));
-        $this->stream->writeln(\sprintf('  Original total size:  %s', Formatter::formatBytes($originalSize)));
-        $this->stream->writeln(\sprintf('  Optimized total size: %s', Formatter::formatBytes($optimizedSize)));
-        $this->stream->writeln(\sprintf('  Space saved:          %s (%.2f%%)', Formatter::formatBytes($savedBytes), $savedPercentage));
+        $this->stream->writeln(\sprintf('  Original total size:  %s', ByteFormatter::formatBytes($originalSize)));
+        $this->stream->writeln(\sprintf('  Optimized total size: %s', ByteFormatter::formatBytes($optimizedSize)));
+        $this->stream->writeln(\sprintf('  Space saved:          %s (%.2f%%)', ByteFormatter::formatBytes($savedBytes), $savedPercentage));
     }
 }

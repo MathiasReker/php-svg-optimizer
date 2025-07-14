@@ -55,6 +55,7 @@ final class SvgOptimizerCommandFactory extends AbstractCommandFactory
         }
 
         $paths = \array_slice($argv, $parser->getNextPositionalArgumentStartIndex());
+
         $configPath = $parser->hasOption(Option::CONFIG)
             ? $parser->getOption(Option::CONFIG)
             : '';
