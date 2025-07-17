@@ -80,7 +80,7 @@ final class ArgumentParserTest extends TestCase
      */
     public function testGetNextPositionalArgumentIndexReturnsCorrectIndex(): void
     {
-        $index = $this->argumentParser->getNextPositionalArgumentIndex();
+        $index = $this->argumentParser->getArgumentIndex();
         self::assertSame(self::EXPECTED_POSITIONAL_ARGUMENT_INDEX, $index);
     }
 
@@ -89,7 +89,7 @@ final class ArgumentParserTest extends TestCase
      */
     public function testGetNextPositionalArgumentStartIndex(): void
     {
-        $index = $this->argumentParser->getNextPositionalArgumentStartIndex();
+        $index = $this->argumentParser->getArgumentStartIndex();
         self::assertSame(self::EXPECTED_POSITIONAL_ARGUMENT_START_INDEX, $index);
     }
 

@@ -84,8 +84,8 @@ final class DomDocumentWrapperTest extends TestCase
      */
     public function testLoadFromStringValid(): void
     {
-        $xmlContent = '<root><child>Test</child></root>';
-        $domDocument = $this->domDocumentWrapper->loadFromString($xmlContent);
+        $content = '<root><child>Test</child></root>';
+        $domDocument = $this->domDocumentWrapper->loadFromString($content);
 
         $xmlString = $domDocument->saveXML();
 
@@ -96,10 +96,29 @@ final class DomDocumentWrapperTest extends TestCase
     /**
      * @throws XmlProcessingException
      */
+    public function loadFromString(string $content): void
+    {
+        if ('' === trim($content)) {
+            throw new XmlProcessingException('Failed to load DOMDocument: input is empty.');
+        }
+
+        $domDocument = new \DOMDocument();
+
+        libxml_use_internal_errors(true);
+        if (!$domDocument->loadXML($content)) {
+            throw new XmlProcessingException('Failed to load DOMDocument.');
+        }
+
+        $this->domDocument = $domDocument;
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
     public function testLoadFromStringWithLineFeedsAndTabs(): void
     {
-        $xmlContent = "<root>\n\t<child>Test</child>\n</root>";
-        $domDocument = $this->domDocumentWrapper->loadFromString($xmlContent);
+        $content = "<root>\n\t<child>Test</child>\n</root>";
+        $domDocument = $this->domDocumentWrapper->loadFromString($content);
 
         $xmlString = $this->domDocumentWrapper->saveToString($domDocument);
 
@@ -132,25 +151,6 @@ final class DomDocumentWrapperTest extends TestCase
 
         $invalidXml = '<root><unclosed></root>';
         $this->domDocumentWrapper->loadFromString($invalidXml);
-    }
-
-    /**
-     * @throws XmlProcessingException
-     */
-    public function loadFromString(string $xml): void
-    {
-        if ('' === trim($xml)) {
-            throw new XmlProcessingException('Failed to load DOMDocument: input is empty.');
-        }
-
-        $dom = new \DOMDocument();
-
-        libxml_use_internal_errors(true);
-        if (!$dom->loadXML($xml)) {
-            throw new XmlProcessingException('Failed to load DOMDocument.');
-        }
-
-        $this->domDocument = $dom;
     }
 
     #[\Override]

@@ -60,6 +60,13 @@ final class ArgumentOptionValueObjectTest extends TestCase
         self::assertSame(self::DESCRIPTION, $this->argumentOptionValueObject->getDescription());
     }
 
+    public function testHasName(): void
+    {
+        self::assertTrue($this->argumentOptionValueObject->hasName(self::SHORTHAND));
+        self::assertTrue($this->argumentOptionValueObject->hasName(self::FULL));
+        self::assertFalse($this->argumentOptionValueObject->hasName('--unknown'));
+    }
+
     #[\Override]
     protected function setUp(): void
     {

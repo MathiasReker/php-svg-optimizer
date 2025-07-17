@@ -217,21 +217,20 @@ final class RemoveDeprecatedAttributesTest extends TestCase
      */
     public function testReplaceAttributesSkipsNonDomElementNodes(): void
     {
-        $dom = new \DOMDocument();
-        $dom->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>');
-        $xpath = new \DOMXPath($dom);
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>');
+        $xpath = new \DOMXPath($domDocument);
         $xpath->registerNamespace('xlink', 'http://www.w3.org/1999/xlink');
 
         $rule = new RemoveDeprecatedAttributes();
 
         $method = new \ReflectionMethod($rule, 'replaceAttributes');
-        $method->setAccessible(true);
 
         $attributes = ['xlink:href' => 'href'];
 
         $method->invoke($rule, $xpath, $attributes);
 
-        $xmlString = $dom->saveXML($dom->documentElement);
+        $xmlString = $domDocument->saveXML($domDocument->documentElement);
         self::assertNotFalse($xmlString, 'Failed to serialize XML');
         self::assertXmlStringEqualsXmlString(
             '<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>',
@@ -244,17 +243,16 @@ final class RemoveDeprecatedAttributesTest extends TestCase
      */
     public function testRemoveAttributesSkipsNonDomElementNodes(): void
     {
-        $dom = new \DOMDocument();
-        $dom->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>');
-        $xpath = new \DOMXPath($dom);
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>');
+        $xpath = new \DOMXPath($domDocument);
 
         $rule = new RemoveDeprecatedAttributes();
         $method = new \ReflectionMethod($rule, 'removeAttributes');
-        $method->setAccessible(true);
 
         $method->invoke($rule, $xpath, ['baseProfile']);
 
-        $xmlString = $dom->saveXML($dom->documentElement);
+        $xmlString = $domDocument->saveXML($domDocument->documentElement);
         self::assertNotFalse($xmlString, 'Failed to serialize XML');
         self::assertXmlStringEqualsXmlString(
             '<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>',
@@ -267,16 +265,15 @@ final class RemoveDeprecatedAttributesTest extends TestCase
      */
     public function testRemoveNamespaceFromSvgTagsRemovesXlinkNamespace(): void
     {
-        $dom = new \DOMDocument();
-        $dom->loadXML('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>');
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>');
 
         $rule = new RemoveDeprecatedAttributes();
         $method = new \ReflectionMethod($rule, 'removeNamespaceFromSvgTags');
-        $method->setAccessible(true);
 
-        $method->invoke($rule, $dom);
+        $method->invoke($rule, $domDocument);
 
-        $root = $dom->documentElement;
+        $root = $domDocument->documentElement;
         self::assertNotNull($root);
         self::assertFalse($root->hasAttribute('xmlns:xlink'));
     }
@@ -286,16 +283,15 @@ final class RemoveDeprecatedAttributesTest extends TestCase
      */
     public function testRemoveNamespaceFromSvgTagsDoesNothingIfNoXlink(): void
     {
-        $dom = new \DOMDocument();
-        $dom->loadXML('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
 
         $rule = new RemoveDeprecatedAttributes();
         $method = new \ReflectionMethod($rule, 'removeNamespaceFromSvgTags');
-        $method->setAccessible(true);
 
-        $method->invoke($rule, $dom);
+        $method->invoke($rule, $domDocument);
 
-        $root = $dom->documentElement;
+        $root = $domDocument->documentElement;
         self::assertNotNull($root);
         self::assertFalse($root->hasAttribute('xmlns:xlink'));
     }

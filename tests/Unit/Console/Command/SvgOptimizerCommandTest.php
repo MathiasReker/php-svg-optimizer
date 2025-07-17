@@ -12,8 +12,10 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Command;
 
 use MathiasReker\PhpSvgOptimizer\Console\Command\SvgOptimizerCommand;
+use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
 use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
@@ -21,6 +23,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\SvgFileProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
@@ -46,6 +49,7 @@ use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
@@ -93,6 +97,10 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ExampleCommandValueObject::class)]
 #[CoversClass(OptionValueObject::class)]
 #[CoversClass(OutputHelper::class)]
+#[CoversClass(MetaDataAggregator::class)]
+#[CoversClass(CommandOptionsValueObject::class)]
+#[CoversClass(SvgFileProcessor::class)]
+#[CoversClass(ConfigLoader::class)]
 final class SvgOptimizerCommandTest extends TestCase
 {
     private string $tempDir;
@@ -116,19 +124,22 @@ final class SvgOptimizerCommandTest extends TestCase
         $command = $reflection->newInstanceWithoutConstructor();
 
         $outputHelper = new OutputHelper(new MemoryStream());
-        $constructor->invoke($command, [$svgFile], '', $outputHelper, false, false);
 
-        foreach (['dryRun', 'quiet'] as $propName) {
-            $prop = $reflection->getProperty($propName);
-            $prop->setValue($command, true);
-        }
+        $options = new CommandOptionsValueObject(
+            false,
+            false,
+            ''
+        );
+
+        $constructor->invoke($command, [$svgFile], $options, $outputHelper);
 
         $command->run();
 
-        foreach (['totalOriginalSize', 'totalOptimizedSize', 'optimizedFiles'] as $propName) {
-            $prop = $reflection->getProperty($propName);
-            self::assertIsInt($prop->getValue($command));
-        }
+        $propName = 'metaDataAggregator';
+        $prop = $reflection->getProperty($propName);
+        $metaDataAggregator = $prop->getValue($command);
+
+        self::assertInstanceOf(MetaDataAggregator::class, $metaDataAggregator);
     }
 
     /**
@@ -145,20 +156,29 @@ final class SvgOptimizerCommandTest extends TestCase
         }
 
         $outputHelper = new OutputHelper(new MemoryStream());
-
         $command = $reflection->newInstanceWithoutConstructor();
 
-        $constructor->invoke($command, [], '', $outputHelper, false, false);
+        $options = new CommandOptionsValueObject(
+            false,
+            false,
+            ''
+        );
+
+        $constructor->invoke($command, [], $options, $outputHelper);
 
         $command->run();
+        $prop = $reflection->getProperty('metaDataAggregator');
+        $metaDataAggregator = $prop->getValue($command);
+        \assert($metaDataAggregator instanceof MetaDataAggregator);
 
-        $totalOptimizedSize = $reflection->getProperty('totalOptimizedSize')->getValue($command);
-        $totalOriginalSize = $reflection->getProperty('totalOriginalSize')->getValue($command);
-        $optimizedFiles = $reflection->getProperty('optimizedFiles')->getValue($command);
+        $originalSizeProp = new \ReflectionProperty($metaDataAggregator::class, 'totalOriginalSize');
+        $totalOriginalSize = $originalSizeProp->getValue($metaDataAggregator);
 
-        self::assertSame(0, $totalOptimizedSize);
+        $optimizedSizeProp = new \ReflectionProperty($metaDataAggregator::class, 'totalOptimizedSize');
+        $totalOptimizedSize = $optimizedSizeProp->getValue($metaDataAggregator);
+
         self::assertSame(0, $totalOriginalSize);
-        self::assertSame(0, $optimizedFiles);
+        self::assertSame(0, $totalOptimizedSize);
     }
 
     protected function setUp(): void

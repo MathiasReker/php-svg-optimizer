@@ -54,7 +54,7 @@ final readonly class ArgumentParser
     public function hasOption(Option $option): bool
     {
         try {
-            $argsObject = array_map(
+            $arguments = array_map(
                 fn (string $arg): ArgumentOptionValueObject => $this->argumentData->getOptionByName($this->getOptionKey($arg)),
                 array_filter(
                     \array_slice($this->args, 1),
@@ -62,7 +62,7 @@ final readonly class ArgumentParser
                 )
             );
 
-            return \in_array($this->argumentData->getOption($option->value), $argsObject, true);
+            return \in_array($this->argumentData->getOption($option->value), $arguments, true);
         } catch (\InvalidArgumentException) {
             return false;
         }
@@ -147,9 +147,9 @@ final readonly class ArgumentParser
      *
      * @throws \InvalidArgumentException If no positional argument is found
      */
-    public function getNextPositionalArgumentStartIndex(): int
+    public function getArgumentStartIndex(): int
     {
-        return $this->getNextPositionalArgumentIndex() + 1;
+        return $this->getArgumentIndex() + 1;
     }
 
     /**
@@ -159,7 +159,7 @@ final readonly class ArgumentParser
      *
      * @throws \InvalidArgumentException If no positional argument is found
      */
-    public function getNextPositionalArgumentIndex(): int
+    public function getArgumentIndex(): int
     {
         foreach ($this->args as $index => $arg) {
             if (!str_starts_with($arg, '-') && self::OPTION_KEY_INDEX !== $index) {

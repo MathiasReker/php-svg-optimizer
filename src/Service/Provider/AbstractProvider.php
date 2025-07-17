@@ -50,6 +50,11 @@ abstract class AbstractProvider implements SvgProviderInterface
      */
     protected string $inputContent;
 
+    /**
+     * Constructor for the AbstractProvider class.
+     *
+     * Initializes the DomDocumentWrapper instance.
+     */
     public function __construct()
     {
         $this->domDocumentWrapper = new DomDocumentWrapper();
@@ -63,13 +68,13 @@ abstract class AbstractProvider implements SvgProviderInterface
     #[\Override]
     final public function optimize(\DOMDocument $domDocument): self
     {
-        $xmlContent = $this->domDocumentWrapper->saveToString($domDocument);
-        $xmlContent = preg_replace(self::XML_DECLARATION_REGEX, '', $xmlContent);
-        if (null === $xmlContent) {
+        $content = $this->domDocumentWrapper->saveToString($domDocument);
+        $content = preg_replace(self::XML_DECLARATION_REGEX, '', $content);
+        if (null === $content) {
             throw new XmlProcessingException('Failed to process XML content.');
         }
 
-        $this->outputContent = trim($xmlContent);
+        $this->outputContent = trim($content);
 
         return $this;
     }

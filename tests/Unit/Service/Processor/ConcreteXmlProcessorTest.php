@@ -33,8 +33,8 @@ final class ConcreteXmlProcessorTest extends TestCase
     public function testProcessValidSvgContent(): void
     {
         $svg = '<svg><rect width="100" height="100" style="fill:blue;"/></svg>';
-        $dom = new \DOMDocument();
-        $dom->loadXML($svg);
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML($svg);
 
         $callback = static fn (string $content): string => str_replace('blue', 'red', $content);
 
@@ -45,7 +45,7 @@ final class ConcreteXmlProcessorTest extends TestCase
         readonly class extends AbstractXmlProcessor {
         };
 
-        $result = $processor->process($dom, $callback);
+        $result = $processor->process($domDocument, $callback);
 
         self::assertStringContainsString('fill:red', $result);
         self::assertStringContainsString('<svg', $result);
@@ -58,8 +58,8 @@ final class ConcreteXmlProcessorTest extends TestCase
     public function testProcessWithInvalidXmlThrows(): void
     {
         $svg = '<svg><rect width="100" height="100"/></svg>';
-        $dom = new \DOMDocument();
-        $dom->loadXML($svg);
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML($svg);
 
         // Callback returns broken XML (missing closing tags)
         $callback = static fn (string $content): string => '<svg><rect>';
@@ -73,7 +73,7 @@ final class ConcreteXmlProcessorTest extends TestCase
         $this->expectException(XmlProcessingException::class);
         $this->expectExceptionMessage('Failed to load optimized XML content.');
 
-        $processor->process($dom, $callback);
+        $processor->process($domDocument, $callback);
     }
 
     /**
@@ -85,8 +85,8 @@ final class ConcreteXmlProcessorTest extends TestCase
     public function testProcessWithCallbackReturningNonStringThrows(): void
     {
         $svg = '<svg><rect width="100" height="100"/></svg>';
-        $dom = new \DOMDocument();
-        $dom->loadXML($svg);
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML($svg);
 
         // Callback returns array, not string
         $callback = static fn (string $content) => [];
@@ -100,6 +100,6 @@ final class ConcreteXmlProcessorTest extends TestCase
         $this->expectException(XmlProcessingException::class);
         $this->expectExceptionMessage('Callback must return a string.');
 
-        $processor->process($dom, $callback);
+        $processor->process($domDocument, $callback);
     }
 }

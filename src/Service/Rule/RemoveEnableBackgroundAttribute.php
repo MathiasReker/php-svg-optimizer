@@ -26,6 +26,9 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
      */
     private const string ENABLE_BACKGROUND_REGEX = '/^new\s0\s0\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)$/';
 
+    /**
+     * The name of the attribute to be removed or cleaned up.
+     */
     private const string ENABLE_BACKGROUND_ATTRIBUTE = 'enable-background';
 
     /**

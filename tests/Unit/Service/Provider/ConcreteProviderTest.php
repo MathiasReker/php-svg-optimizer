@@ -41,9 +41,9 @@ final class ConcreteProviderTest extends TestCase
     {
         $input = "<?xml version=\"1.0\"?>\n<svg>  hello  </svg>";
         $provider = $this->getConcreteProvider($input);
-        $dom = $provider->loadContent();
+        $content = $provider->loadContent();
 
-        $provider->optimize($dom);
+        $provider->optimize($content);
         $output = $provider->getOutputContent();
 
         self::assertStringStartsNotWith('<?xml', $output);
@@ -61,10 +61,10 @@ final class ConcreteProviderTest extends TestCase
 
             public function loadContent(): \DOMDocument
             {
-                $dom = new \DOMDocument();
-                $dom->loadXML($this->testInput);
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML($this->testInput);
 
-                return $dom;
+                return $domDocument;
             }
 
             public function getInputContent(): string
@@ -82,9 +82,9 @@ final class ConcreteProviderTest extends TestCase
     {
         $input = "<?xml version=\"1.0\"?>\n<svg>✓漢</svg>";
         $provider = $this->getConcreteProvider($input);
-        $dom = $provider->loadContent();
+        $content = $provider->loadContent();
 
-        $provider->optimize($dom);
+        $provider->optimize($content);
         $meta = $provider->getMetaData();
 
         self::assertSame(mb_strlen($provider->getInputContent(), '8bit'), $meta->getOriginalSize());
@@ -117,8 +117,8 @@ final class ConcreteProviderTest extends TestCase
 
         $input = '<svg>error</svg>';
         $provider = $this->getConcreteProvider($input);
-        $dom = $provider->loadContent();
-        $provider->optimize($dom);
+        $content = $provider->loadContent();
+        $provider->optimize($content);
 
         $baseFile = tempnam(sys_get_temp_dir(), 'svgtest');
         file_put_contents($baseFile, '');

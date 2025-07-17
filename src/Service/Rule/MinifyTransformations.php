@@ -19,11 +19,6 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
 {
     /**
-     * Constant for the percentage factor used in calculations.
-     */
-    private const int PERCENTAGE_FACTOR = 100;
-
-    /**
      * Regex pattern to match percentage values in transformations.
      *
      * @see https://regex101.com/r/JUBzng/1
@@ -138,7 +133,7 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     {
         return preg_replace_callback(
             self::PERCENTAGE_REGEX,
-            static fn (array $matches): string => (string) ((float) $matches[1] / self::PERCENTAGE_FACTOR),
+            static fn (array $matches): string => (string) ((float) $matches[1] / 100),
             $transform
         ) ?? $transform;
     }

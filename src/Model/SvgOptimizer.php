@@ -44,6 +44,8 @@ final class SvgOptimizer
     private readonly SvgValidator $svgValidator;
 
     /**
+     * Constructor for SvgOptimizer.
+     *
      * @param SvgProviderInterface $svgProvider The provider used to get and save SVG content
      */
     public function __construct(

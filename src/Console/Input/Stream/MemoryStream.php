@@ -17,6 +17,8 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Input\Stream;
 class MemoryStream extends AbstractStreamOutput
 {
     /**
+     * Constructor for MemoryStream.
+     *
      * @throws \RuntimeException If unable to open the memory stream
      */
     public function __construct()
@@ -38,12 +40,12 @@ class MemoryStream extends AbstractStreamOutput
     public function getContent(): string
     {
         rewind($this->stream);
-        $contents = stream_get_contents($this->stream);
+        $content = stream_get_contents($this->stream);
 
-        if (false === $contents) {
+        if (false === $content) {
             throw new \RuntimeException('Failed to read from memory stream.');
         }
 
-        return $contents;
+        return $content;
     }
 }

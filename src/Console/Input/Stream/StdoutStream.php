@@ -17,6 +17,8 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Input\Stream;
 class StdoutStream extends AbstractStreamOutput
 {
     /**
+     * Constructor for StdoutStream.
+     *
      * @throws \RuntimeException If unable to open the stdout stream
      */
     public function __construct()

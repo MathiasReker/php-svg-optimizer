@@ -25,6 +25,11 @@ abstract class AbstractCommandFactory
      */
     private StreamInterface $output;
 
+    /**
+     * Constructor for AbstractCommandFactory.
+     *
+     * @param StreamInterface $output The output stream to write messages to
+     */
     public function __construct(StreamInterface $output)
     {
         $this->output = $output;

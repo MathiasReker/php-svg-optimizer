@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
 use MathiasReker\PhpSvgOptimizer\Type\Application;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 
 /**
  * @no-named-arguments
@@ -52,26 +53,24 @@ final class SvgOptimizerCommandFactory extends AbstractCommandFactory
         }
 
         try {
-            $paths = \array_slice($argv, $parser->getNextPositionalArgumentStartIndex());
-            $configPath = $parser->hasOption(Option::CONFIG)
-                ? $parser->getOption(Option::CONFIG)
-                : '';
+            $paths = \array_slice($argv, $parser->getArgumentStartIndex());
+
+            $options = new CommandOptionsValueObject(
+                $parser->hasOption(Option::DRY_RUN),
+                $parser->hasOption(Option::QUIET),
+                $parser->hasOption(Option::CONFIG)
+                    ? $parser->getOption(Option::CONFIG)
+                    : ''
+            );
         } catch (\InvalidArgumentException $invalidArgumentException) {
             $outputHelper->printError($invalidArgumentException->getMessage());
             exit(1);
         }
 
-        try {
-            return new SvgOptimizerCommand(
-                $paths,
-                $configPath,
-                $outputHelper,
-                $parser->hasOption(Option::DRY_RUN),
-                $parser->hasOption(Option::QUIET)
-            );
-        } catch (\JsonException) {
-            $outputHelper->printError('Invalid configuration.');
-            exit(1);
-        }
+        return new SvgOptimizerCommand(
+            $paths,
+            $options,
+            $outputHelper,
+        );
     }
 }

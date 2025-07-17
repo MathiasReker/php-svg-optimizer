@@ -20,6 +20,11 @@ use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
  */
 final readonly class OutputHelper
 {
+    /**
+     * Constructor for OutputHelper.
+     *
+     * @param StreamInterface $stream The output stream to write messages to
+     */
     public function __construct(private StreamInterface $stream) {}
 
     /**

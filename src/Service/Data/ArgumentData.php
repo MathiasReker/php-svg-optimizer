@@ -37,7 +37,9 @@ final readonly class ArgumentData
     private array $examples;
 
     /**
-     * Constructor for the ArgumentData class.
+     * Constructor for ArgumentData.
+     *
+     * Initializes the options, commands, and examples for the command line interface.
      */
     public function __construct()
     {
@@ -124,7 +126,7 @@ final readonly class ArgumentData
     public function getOptionByName(string $name): ArgumentOptionValueObject
     {
         foreach ($this->options as $option) {
-            if ($option->getShorthand() === $name || $option->getFull() === $name) {
+            if ($option->hasName($name)) {
                 return $option;
             }
         }

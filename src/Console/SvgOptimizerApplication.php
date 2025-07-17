@@ -33,6 +33,8 @@ final class SvgOptimizerApplication
     private StreamInterface $output;
 
     /**
+     * Constructor for SvgOptimizerApplication.
+     *
      * @param array<int, string> $argv The command line arguments
      *
      * @throws \RuntimeException
@@ -56,6 +58,11 @@ final class SvgOptimizerApplication
         return new self($argv);
     }
 
+    /**
+     * Run the application.
+     *
+     * This method processes the command line arguments and executes the appropriate command.
+     */
     public function run(): void
     {
         $factory = new SvgOptimizerCommandFactory($this->output);

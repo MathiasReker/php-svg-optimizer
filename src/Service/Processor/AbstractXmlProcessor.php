@@ -80,6 +80,14 @@ abstract readonly class AbstractXmlProcessor
         return $svgContent;
     }
 
+    /**
+     * Returns an instance of SvgValidator for validating SVG content.
+     *
+     * This method provides a dedicated SvgValidator instance to validate the SVG content
+     * after processing. It can be overridden in subclasses if a different validator is needed.
+     *
+     * @return SvgValidator An instance of SvgValidator for validating SVG content
+     */
     final protected function getValidator(): SvgValidator
     {
         return new SvgValidator();

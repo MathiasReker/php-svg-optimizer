@@ -110,17 +110,17 @@ final readonly class DomDocumentWrapper
     /**
      * Loads XML from a string into a \DOMDocument.
      *
-     * @param string $xmlContent The XML content as a string
+     * @param string $content The XML content as a string
      *
      * @return \DOMDocument Returns the loaded \DOMDocument
      *
      * @throws XmlProcessingException If the XML content cannot be loaded
      */
-    public function loadFromString(string $xmlContent): \DOMDocument
+    public function loadFromString(string $content): \DOMDocument
     {
         return $this->loadDomDocument(
             static fn (\DOMDocument $domDocument): bool => $domDocument->loadXML(
-                $xmlContent,
+                $content,
                 \LIBXML_NONET | \LIBXML_NOENT | \LIBXML_NOCDATA | \LIBXML_NOEMPTYTAG
             )
         );

@@ -52,4 +52,14 @@ final readonly class ArgumentOptionValueObject
     {
         return $this->description;
     }
+
+    /**
+     * Check if the argument option has a specific name.
+     *
+     * @param string $name The name to check against the shorthand and full names
+     */
+    public function hasName(string $name): bool
+    {
+        return $this->shorthand === $name || $this->full === $name;
+    }
 }

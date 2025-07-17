@@ -21,6 +21,8 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 final class FileProvider extends AbstractProvider
 {
     /**
+     * The path to the input SVG file.
+     *
      * @param string $inputFile The path to the input SVG file
      *
      * @throws FileNotFoundException If the file does not exist
