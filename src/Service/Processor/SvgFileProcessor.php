@@ -92,7 +92,7 @@ final class SvgFileProcessor
      */
     private function optimizeSvg(string $filePath): void
     {
-        $config = ConfigLoader::loadConfig($this->commandOptions->configPath);
+        $config = $this->commandOptions->configPath !== '' ? ConfigLoader::loadConfig($this->commandOptions->configPath) : [];
 
         $rules = array_combine(
             array_map(static fn (Rule $rule): string => $rule->value, Rule::cases()),
