@@ -34,18 +34,11 @@ class MemoryStream extends AbstractStreamOutput
 
     /**
      * Write a message to the memory stream.
-     *
-     * @throws \RuntimeException If writing to the memory stream fails
      */
     public function getContent(): string
     {
         rewind($this->stream);
-        $content = stream_get_contents($this->stream);
 
-        if (false === $content) {
-            throw new \RuntimeException('Failed to read from memory stream.');
-        }
-
-        return $content;
+        return stream_get_contents($this->stream);
     }
 }

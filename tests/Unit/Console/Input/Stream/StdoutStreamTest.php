@@ -72,11 +72,8 @@ final class StdoutStreamTest extends TestCase
             public function getContent(): string
             {
                 rewind($this->stream);
-                $contents = stream_get_contents($this->stream);
 
-                return false !== $contents
-                    ? $contents
-                    : '';
+                return stream_get_contents($this->stream);
             }
         };
 

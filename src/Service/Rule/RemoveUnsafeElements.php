@@ -326,6 +326,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
                 continue;
             }
 
+            /** @var \DOMAttr $attr */
             foreach (iterator_to_array($element->attributes, false) as $attr) {
                 $name = $attr->name;
                 $value = trim($attr->value);

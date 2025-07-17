@@ -64,6 +64,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
      */
     private function applyAttributesToChild(\DOMElement $parent, \DOMElement $child): void
     {
+        /** @var \DOMAttr $attribute */
         foreach ($parent->attributes ?? [] as $attribute) {
             $this->setAttributeIfNotExists($child, $attribute);
         }
