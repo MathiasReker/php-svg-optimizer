@@ -479,7 +479,7 @@ various scenarios to verify the correct behavior and edge cases for your rule.
 
 - **Register the rule** in the SVG optimizer builder located at `/src/Service/Facade/SvgOptimizerFacade.php`.
 - **Add your rule to the rule enum** in `/src/Type/Rule.php`.
-- **Include the rule in the CLI tool** by updating `/src/Console/Command/SvgOptimizerCommand.php`.
+- **Include the rule in the processor** by updating `/src/Console/Processor/SvgFileProcessor.php`.
 
 ### 4. **Update Documentation**
 
