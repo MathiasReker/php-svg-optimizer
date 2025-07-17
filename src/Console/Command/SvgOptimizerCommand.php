@@ -20,12 +20,12 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 /**
  * @no-named-arguments
  */
-final class SvgOptimizerCommand implements CommandInterface
+final readonly class SvgOptimizerCommand implements CommandInterface
 {
     /** @var list<string> */
-    private readonly array $paths;
+    private array $paths;
 
-    private readonly OutputHelper $outputHelper;
+    private OutputHelper $outputHelper;
 
     private MetaDataAggregator $metaDataAggregator;
 
