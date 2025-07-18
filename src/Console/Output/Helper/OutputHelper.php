@@ -9,9 +9,9 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Console\Output;
+namespace MathiasReker\PhpSvgOptimizer\Console\Output\Helper;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Console\Input\Stream\StreamInterface;
+use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
 

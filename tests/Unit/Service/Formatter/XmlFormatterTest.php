@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Service\Formatter;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Formatter;
 
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use PHPUnit\Framework\Attributes\CoversClass;

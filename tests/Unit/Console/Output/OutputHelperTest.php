@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output;
 
-use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\AbstractStreamOutput;
-use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\MemoryStream;
-use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Helper\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
@@ -28,7 +28,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(OutputHelper::class)]
-#[CoversClass(AbstractStreamOutput::class)]
+#[CoversClass(AbstractStream::class)]
 #[CoversClass(MemoryStream::class)]
 #[CoversClass(ByteFormatter::class)]
 #[CoversClass(ArgumentData::class)]

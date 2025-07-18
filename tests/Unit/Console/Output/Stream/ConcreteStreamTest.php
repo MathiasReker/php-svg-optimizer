@@ -9,24 +9,24 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input\Stream;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output\Stream;
 
-use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\AbstractStreamOutput;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[CoversClass(AbstractStreamOutput::class)]
-final class ConcreteStreamOutputTest extends TestCase
+#[CoversClass(AbstractStream::class)]
+final class ConcreteStreamTest extends TestCase
 {
     /**
      * @throws \RuntimeException
      */
     public function testWriteAppendsToStream(): void
     {
-        $stream = new class extends AbstractStreamOutput {
+        $stream = new class extends AbstractStream {
             public function __construct()
             {
                 $stream = fopen('php://memory', 'w+');
@@ -60,7 +60,7 @@ final class ConcreteStreamOutputTest extends TestCase
      */
     public function testWritelnAppendsWithNewline(): void
     {
-        $stream = new class extends AbstractStreamOutput {
+        $stream = new class extends AbstractStream {
             public function __construct()
             {
                 $stream = fopen('php://memory', 'w+');

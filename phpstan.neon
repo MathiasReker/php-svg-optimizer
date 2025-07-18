@@ -27,8 +27,10 @@ parameters:
       classesNotRequiredToBeAbstractOrFinal:
         - MathiasReker\PhpSvgOptimizer\Service\Processor\XmlProcessor
         - MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator
-        - MathiasReker\PhpSvgOptimizer\Console\Input\Stream\MemoryStream
-        - MathiasReker\PhpSvgOptimizer\Console\Input\Stream\StdoutStream
+        - MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream
+        - MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream
+    finalInAbstractClass:
+      enabled: false
     noExtends:
       classesAllowedToBeExtended:
         - RuntimeException
@@ -36,7 +38,7 @@ parameters:
         - RuntimeException
         - MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider
         - MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor
-        - MathiasReker\PhpSvgOptimizer\Console\Input\Stream\AbstractStreamOutput
+        - MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream
         - MathiasReker\PhpSvgOptimizer\Console\Command\AbstractCommandFactory
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon

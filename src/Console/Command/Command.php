@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 
-use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Helper\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
 use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\SvgFileProcessor;
@@ -20,51 +20,65 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 /**
  * @no-named-arguments
  */
-final readonly class SvgOptimizerCommand implements CommandInterface
+final readonly class Command implements CommandInterface
 {
-    /** @var list<string> */
-    private array $paths;
-
-    private OutputHelper $outputHelper;
-
+    /**
+     * The aggregator for collecting metadata about processed SVG files.
+     */
     private MetaDataAggregator $metaDataAggregator;
 
+    /**
+     * The processor for handling SVG files.
+     */
     private SvgFileProcessor $svgFileProcessor;
-
-    private CommandOptionsValueObject $commandOptions;
 
     /**
      * Constructor for SvgOptimizerCommand.
      *
-     * @param list<string> $paths
+     * @param list<string>              $paths
+     * @param CommandOptionsValueObject $commandOptions The options for the command
+     * @param OutputHelper              $outputHelper   The output helper for displaying messages
      */
     public function __construct(
-        array $paths,
-        CommandOptionsValueObject $options,
-        OutputHelper $outputHelper,
+        private array $paths,
+        private CommandOptionsValueObject $commandOptions,
+        private OutputHelper $outputHelper,
     ) {
-        $this->paths = $paths;
-        $this->commandOptions = $options;
-        $this->outputHelper = $outputHelper;
         $this->metaDataAggregator = new MetaDataAggregator();
 
-        if ([] === $paths) {
+        $this->validateInputs();
+        $this->svgFileProcessor = $this->buildProcessor();
+    }
+
+    /**
+     * Validates the input paths and configuration options.
+     */
+    private function validateInputs(): void
+    {
+        if ([] === $this->paths) {
             $this->outputHelper->printError('No SVG files or directories specified for optimization.');
         }
 
-        foreach ($paths as $path) {
+        foreach ($this->paths as $path) {
             if (!is_dir($path) && !is_file($path)) {
                 $this->outputHelper->printError(\sprintf('"%s" is not a valid directory or file.', $path));
             }
         }
 
-        if ('' !== trim($this->commandOptions->configPath)) {
-            if (!is_file($this->commandOptions->configPath)) {
-                $this->outputHelper->printError(\sprintf('The configuration file "%s" does not exist.', $this->commandOptions->configPath));
-            }
+        $config = trim($this->commandOptions->configPath);
+        if ('' !== $config && !is_file($config)) {
+            $this->outputHelper->printError(\sprintf('The configuration file "%s" does not exist.', $config));
         }
+    }
 
-        $this->svgFileProcessor = new SvgFileProcessor(
+    /**
+     * Builds the SVG file processor with the provided command options and output helper.
+     *
+     * @return SvgFileProcessor The configured SVG file processor
+     */
+    private function buildProcessor(): SvgFileProcessor
+    {
+        return new SvgFileProcessor(
             new CommandOptionsValueObject(
                 $this->commandOptions->dryRun,
                 $this->commandOptions->quiet,
@@ -84,7 +98,9 @@ final readonly class SvgOptimizerCommand implements CommandInterface
             $this->processPathWithHandling($path);
         }
 
-        $this->printSummaryIfNeeded();
+        if (!$this->commandOptions->quiet && $this->metaDataAggregator->getOptimizedFileCount() > 0) {
+            $this->printSummary();
+        }
     }
 
     /**
@@ -97,33 +113,11 @@ final readonly class SvgOptimizerCommand implements CommandInterface
         try {
             $this->svgFileProcessor->processPath($path);
         } catch (\RuntimeException $exception) {
-            $this->printErrorUnlessQuiet(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
+            $this->outputHelper->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
         } catch (\JsonException $jsonException) {
-            $this->printErrorUnlessQuiet(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptions->configPath, $jsonException->getMessage()));
+            $this->outputHelper->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptions->configPath, $jsonException->getMessage()));
         } catch (\InvalidArgumentException $invalidArgumentException) {
-            $this->printErrorUnlessQuiet(\sprintf('Invalid argument for "%s": %s', $path, $invalidArgumentException->getMessage()));
-        }
-    }
-
-    /**
-     * Prints an error message unless the command is run in quiet mode.
-     *
-     * @param string $message The error message to print
-     */
-    private function printErrorUnlessQuiet(string $message): void
-    {
-        if (!$this->commandOptions->quiet) {
-            $this->outputHelper->printError($message);
-        }
-    }
-
-    /**
-     * Prints a summary of the optimization results if there are any optimized files.
-     */
-    private function printSummaryIfNeeded(): void
-    {
-        if (!$this->commandOptions->quiet && $this->metaDataAggregator->getOptimizedFileCount() > 0) {
-            $this->printSummary();
+            $this->outputHelper->printError(\sprintf('Invalid argument for "%s": %s', $path, $invalidArgumentException->getMessage()));
         }
     }
 

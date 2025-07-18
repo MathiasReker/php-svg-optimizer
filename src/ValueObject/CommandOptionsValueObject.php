@@ -16,6 +16,13 @@ namespace MathiasReker\PhpSvgOptimizer\ValueObject;
  */
 final readonly class CommandOptionsValueObject
 {
+    /**
+     * Constructor for CommandOptionsValueObject.
+     *
+     * @param bool   $dryRun     Indicates if the command should run in dry-run mode
+     * @param bool   $quiet      Indicates if the command should run quietly
+     * @param string $configPath The path to the configuration file
+     */
     public function __construct(
         public bool $dryRun,
         public bool $quiet,

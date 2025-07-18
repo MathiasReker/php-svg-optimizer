@@ -141,6 +141,18 @@ final readonly class ArgumentParser
     }
 
     /**
+     * Get the list of positional arguments (file paths) from the command-line arguments.
+     *
+     * @return list<string>
+     *
+     * @throws \InvalidArgumentException If no positional arguments are found
+     */
+    public function getPaths(): array
+    {
+        return \array_slice($this->args, $this->getArgumentStartIndex());
+    }
+
+    /**
      * Get the index of the next positional argument after options/subcommands.
      *
      * @return int The index of the first positional argument

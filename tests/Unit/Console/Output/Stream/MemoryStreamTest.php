@@ -9,9 +9,9 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input\Stream;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output\Stream;
 
-use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\MemoryStream;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

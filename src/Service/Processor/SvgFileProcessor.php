@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
-use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Helper\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
@@ -21,25 +21,15 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 /**
  * @no-named-arguments
  */
-final class SvgFileProcessor
+final readonly class SvgFileProcessor
 {
     private const string SVG_EXTENSION = 'svg';
 
-    private OutputHelper $outputHelper;
-
-    private MetaDataAggregator $metaDataAggregator;
-
-    private CommandOptionsValueObject $commandOptions;
-
     public function __construct(
-        CommandOptionsValueObject $commandOptions,
-        OutputHelper $outputHelper,
-        MetaDataAggregator $metaDataAggregator,
-    ) {
-        $this->commandOptions = $commandOptions;
-        $this->outputHelper = $outputHelper;
-        $this->metaDataAggregator = $metaDataAggregator;
-    }
+        private CommandOptionsValueObject $commandOptions,
+        private OutputHelper $outputHelper,
+        private MetaDataAggregator $metaDataAggregator,
+    ) {}
 
     /**
      * Process a path - directory or file.
@@ -98,7 +88,7 @@ final class SvgFileProcessor
 
         $rules = array_combine(
             array_map(static fn (Rule $rule): string => $rule->value, Rule::cases()),
-            array_map(static fn (Rule $rule): bool => $config[$rule->value] ?? $rule->defaultValue(), Rule::cases())
+            array_map(static fn (Rule $rule): bool => $config[$rule->value] ?? $rule->defaultValue(), Rule::cases()),
         );
 
         $svgOptimizer = SvgOptimizerFacade::fromFile($filePath)
@@ -133,7 +123,7 @@ final class SvgFileProcessor
 
         $this->metaDataAggregator->addFileData(
             $metaData->getOriginalSize(),
-            $metaData->getOptimizedSize()
+            $metaData->getOptimizedSize(),
         );
 
         if (!$this->commandOptions->quiet) {

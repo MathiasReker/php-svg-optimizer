@@ -9,14 +9,12 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Console\Input\Stream;
-
-use MathiasReker\PhpSvgOptimizer\Contract\Console\Input\Stream\StreamInterface;
+namespace MathiasReker\PhpSvgOptimizer\Console\Output\Stream;
 
 /**
  * @no-named-arguments
  */
-abstract class AbstractStreamOutput implements StreamInterface
+abstract class AbstractStream implements \MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface
 {
     /**
      * The output stream resource.
@@ -30,7 +28,7 @@ abstract class AbstractStreamOutput implements StreamInterface
      *
      * @param string $message The message to write
      */
-    final public function writeln(string $message): void
+    public function writeln(string $message): void
     {
         $this->write(\sprintf('%s%s', $message, \PHP_EOL));
     }
@@ -40,7 +38,7 @@ abstract class AbstractStreamOutput implements StreamInterface
      *
      * @param string $message The message to write
      */
-    final public function write(string $message): void
+    public function write(string $message): void
     {
         fwrite($this->stream, $message);
     }

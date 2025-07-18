@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Contract\Console\Input\Stream;
+namespace MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream;
 
 /**
  * @no-named-arguments

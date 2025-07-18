@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-use MathiasReker\PhpSvgOptimizer\Console\SvgOptimizerApplication;
+use MathiasReker\PhpSvgOptimizer\Console\Command\CommandDispatcher;
 
 ini_set('memory_limit', '-1');
 error_reporting(\E_ALL);
@@ -39,4 +39,4 @@ foreach ($autoloadCandidates as $path) {
  *
  * @var array<int, string> $argv
  */
-SvgOptimizerApplication::fromArgs($argv)->run();
+CommandDispatcher::fromArgs($argv)->run();

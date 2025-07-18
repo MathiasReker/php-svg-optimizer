@@ -9,12 +9,14 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Console\Input\Stream;
+namespace MathiasReker\PhpSvgOptimizer\Console\Output\Stream;
+
+use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 
 /**
  * @no-named-arguments
  */
-class MemoryStream extends AbstractStreamOutput
+class MemoryStream extends AbstractStream implements StreamInterface
 {
     /**
      * Constructor for MemoryStream.

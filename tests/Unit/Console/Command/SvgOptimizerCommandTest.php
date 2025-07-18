@@ -11,15 +11,16 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Command;
 
-use MathiasReker\PhpSvgOptimizer\Console\Command\SvgOptimizerCommand;
+use MathiasReker\PhpSvgOptimizer\Console\Command\Command;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
-use MathiasReker\PhpSvgOptimizer\Console\Input\Stream\MemoryStream;
-use MathiasReker\PhpSvgOptimizer\Console\Output\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Helper\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
+use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
@@ -45,7 +46,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
-use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
@@ -59,7 +59,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(SvgOptimizerCommand::class)]
+#[CoversClass(Command::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(MetaData::class)]
 #[CoversClass(DomDocumentWrapper::class)]
@@ -91,7 +91,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MetaDataValueObject::class)]
 #[CoversClass(MemoryStream::class)]
 #[CoversClass(ArgumentData::class)]
-#[CoversClass(Command::class)]
 #[CoversClass(Option::class)]
 #[CoversClass(ArgumentOptionValueObject::class)]
 #[CoversClass(ExampleCommandValueObject::class)]
@@ -101,6 +100,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(CommandOptionsValueObject::class)]
 #[CoversClass(SvgFileProcessor::class)]
 #[CoversClass(ConfigLoader::class)]
+#[CoversClass(ByteFormatter::class)]
 final class SvgOptimizerCommandTest extends TestCase
 {
     private string $tempDir;
@@ -114,7 +114,7 @@ final class SvgOptimizerCommandTest extends TestCase
         $svgFile = $this->tempDir . '/test.svg';
         file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
 
-        $reflection = new \ReflectionClass(SvgOptimizerCommand::class);
+        $reflection = new \ReflectionClass(Command::class);
         $constructor = $reflection->getConstructor();
 
         if (!$constructor instanceof \ReflectionMethod) {
@@ -148,7 +148,7 @@ final class SvgOptimizerCommandTest extends TestCase
      */
     public function testRunWithNoInputFiles(): void
     {
-        $reflection = new \ReflectionClass(SvgOptimizerCommand::class);
+        $reflection = new \ReflectionClass(Command::class);
         $constructor = $reflection->getConstructor();
 
         if (!$constructor instanceof \ReflectionMethod) {
