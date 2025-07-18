@@ -30,7 +30,7 @@ abstract class AbstractStream implements StreamInterface
      *
      * @param string $message The message to write
      */
-    public function writeln(string $message): void
+    final public function writeln(string $message): void
     {
         $this->write(\sprintf('%s%s', $message, \PHP_EOL));
     }
@@ -40,7 +40,7 @@ abstract class AbstractStream implements StreamInterface
      *
      * @param string $message The message to write
      */
-    public function write(string $message): void
+    final public function write(string $message): void
     {
         fwrite($this->stream, $message);
     }

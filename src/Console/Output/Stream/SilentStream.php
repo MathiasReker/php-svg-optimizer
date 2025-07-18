@@ -16,14 +16,13 @@ use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 /**
  * @no-named-arguments
  */
-final class SilentStream extends AbstractStream implements StreamInterface
+final class SilentStream implements StreamInterface
 {
     /**
      * This stream does not open any resource, as it is silent.
      *
      * @param string $message The message to write
      */
-    #[\Override]
     public function writeln(string $message): void
     {
     }
@@ -33,7 +32,6 @@ final class SilentStream extends AbstractStream implements StreamInterface
      *
      * @param string $message The message to write
      */
-    #[\Override]
     public function write(string $message): void
     {
     }

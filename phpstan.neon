@@ -29,8 +29,6 @@ parameters:
         - MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator
         - MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream
         - MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream
-    finalInAbstractClass:
-      enabled: false
     noExtends:
       classesAllowedToBeExtended:
         - RuntimeException
