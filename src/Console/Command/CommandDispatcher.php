@@ -46,7 +46,7 @@ final readonly class CommandDispatcher
      *
      * This method processes the command line arguments and executes the appropriate command.
      *
-     * @throws \RuntimeException If the application is not run in a CLI environment or if an error occurs during command execution.
+     * @throws \RuntimeException If the application is not run in a CLI environment or if an error occurs during command execution
      */
     public function run(): void
     {
