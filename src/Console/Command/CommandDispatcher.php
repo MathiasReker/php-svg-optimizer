@@ -12,11 +12,11 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
+use MathiasReker\PhpSvgOptimizer\Console\Input\OptionIntent;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Helper\OutputHelper;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\SilentStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
 use MathiasReker\PhpSvgOptimizer\Type\Application;
-use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 
 /**
@@ -51,7 +51,8 @@ final readonly class CommandDispatcher
     public function run(): void
     {
         $parser = new ArgumentParser($this->argv);
-        $stream = $parser->hasOption(Option::QUIET)
+        $option = new OptionIntent($parser);
+        $stream = $option->isQuiet()
             ? new SilentStream()
             : new StdoutStream();
         $helper = new OutputHelper($stream);
@@ -61,12 +62,12 @@ final readonly class CommandDispatcher
             exit(1);
         }
 
-        if ($parser->isEmpty() || $parser->hasOption(Option::HELP)) {
+        if ($parser->isEmpty() || $option->isHelp()) {
             $helper->printHelp();
             exit(0);
         }
 
-        if ($parser->hasOption(Option::VERSION)) {
+        if ($option->isVersion()) {
             $helper->printVersion(
                 Application::NAME->value,
                 Application::VERSION->value,
@@ -77,11 +78,9 @@ final readonly class CommandDispatcher
 
         try {
             $options = new CommandOptionsValueObject(
-                $parser->hasOption(Option::DRY_RUN),
-                $parser->hasOption(Option::QUIET),
-                $parser->hasOption(Option::CONFIG)
-                    ? $parser->getOption(Option::CONFIG)
-                    : ''
+                $option->isDryRun(),
+                $option->isQuiet(),
+                $option->getConfigPath()
             );
 
             $command = (new CommandFactory($stream, $parser))->create($options);
