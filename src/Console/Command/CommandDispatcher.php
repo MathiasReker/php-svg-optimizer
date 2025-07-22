@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Console\Input\OptionIntent;
-use MathiasReker\PhpSvgOptimizer\Console\Output\Helper\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\SilentStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
 use MathiasReker\PhpSvgOptimizer\Type\Application;
@@ -55,20 +55,20 @@ final readonly class CommandDispatcher
         $stream = $option->isQuiet()
             ? new SilentStream()
             : new StdoutStream();
-        $helper = new OutputHelper($stream);
+        $outputManager = new OutputManager($stream);
 
         if (\PHP_SAPI !== 'cli') {
-            $helper->printError('This command can only be run in a CLI environment.');
+            $outputManager->printError('This command can only be run in a CLI environment.');
             exit(1);
         }
 
         if ($parser->isEmpty() || $option->isHelp()) {
-            $helper->printHelp();
+            $outputManager->printHelp();
             exit(0);
         }
 
         if ($option->isVersion()) {
-            $helper->printVersion(
+            $outputManager->printVersion(
                 Application::NAME->value,
                 Application::VERSION->value,
                 Application::AUTHOR->value
@@ -86,7 +86,7 @@ final readonly class CommandDispatcher
             $command = (new CommandFactory($stream, $parser))->create($options);
             $command->run();
         } catch (\InvalidArgumentException $e) {
-            $helper->printError($e->getMessage());
+            $outputManager->printError($e->getMessage());
             exit(1);
         }
     }

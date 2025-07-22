@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
-use MathiasReker\PhpSvgOptimizer\Console\Output\Helper\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
@@ -51,8 +51,8 @@ final readonly class CommandFactory
     /**
      * Helper to build a reusable OutputHelper.
      */
-    private function buildOutputHelper(): OutputHelper
+    private function buildOutputHelper(): OutputManager
     {
-        return new OutputHelper($this->output);
+        return new OutputManager($this->output);
     }
 }

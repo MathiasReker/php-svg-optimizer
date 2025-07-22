@@ -65,8 +65,13 @@ final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor 
      */
     private function convertEmptyTagsToSelfClosing(string $content): string
     {
-        $content = preg_replace(self::EMPTY_TAG_REGEX, '<$1$2/>', $content) ?? $content;
-
-        return preg_replace(self::SELF_CLOSING_REGEX, '<$1$2/>', $content) ?? $content;
+        return array_reduce(
+            [
+                self::EMPTY_TAG_REGEX,
+                self::SELF_CLOSING_REGEX,
+            ],
+            static fn (string $carry, string $pattern): string => preg_replace($pattern, '<$1$2/>', $carry) ?? $carry,
+            $content
+        );
     }
 }

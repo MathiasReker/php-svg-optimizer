@@ -16,10 +16,19 @@ namespace MathiasReker\PhpSvgOptimizer\Model;
  */
 final class MetaDataAggregator
 {
+    /**
+     * The total original size of all SVG files processed, in bytes.
+     */
     private int $totalOriginalSize = 0;
 
+    /**
+     * The total optimized size of all SVG files processed, in bytes.
+     */
     private int $totalOptimizedSize = 0;
 
+    /**
+     * The number of SVG files that have been optimized.
+     */
     private int $optimizedFileCount = 0;
 
     /**

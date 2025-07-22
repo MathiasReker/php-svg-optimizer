@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Command;
 
 use MathiasReker\PhpSvgOptimizer\Console\Command\Command;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
-use MathiasReker\PhpSvgOptimizer\Console\Output\Helper\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
@@ -95,7 +95,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ArgumentOptionValueObject::class)]
 #[CoversClass(ExampleCommandValueObject::class)]
 #[CoversClass(OptionValueObject::class)]
-#[CoversClass(OutputHelper::class)]
+#[CoversClass(OutputManager::class)]
 #[CoversClass(MetaDataAggregator::class)]
 #[CoversClass(CommandOptionsValueObject::class)]
 #[CoversClass(SvgFileProcessor::class)]
@@ -123,7 +123,7 @@ final class SvgOptimizerCommandTest extends TestCase
 
         $command = $reflection->newInstanceWithoutConstructor();
 
-        $outputHelper = new OutputHelper(new MemoryStream());
+        $outputHelper = new OutputManager(new MemoryStream());
 
         $options = new CommandOptionsValueObject(
             false,
@@ -155,7 +155,7 @@ final class SvgOptimizerCommandTest extends TestCase
             self::fail('Constructor not found in SvgOptimizerCommand');
         }
 
-        $outputHelper = new OutputHelper(new MemoryStream());
+        $outputHelper = new OutputManager(new MemoryStream());
         $command = $reflection->newInstanceWithoutConstructor();
 
         $options = new CommandOptionsValueObject(

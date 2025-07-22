@@ -31,6 +31,16 @@ final readonly class ArgumentParser
     private const int OPTION_VALUE_INDEX = 1;
 
     /**
+     * Minimum number of arguments required (script name + at least one argument).
+     */
+    private const int MINIMUM_ARG_COUNT = 2;
+
+    /**
+     * Limit for the explode function when splitting key and value.
+     */
+    private const int OPTION_EXPLODE_LIMIT = 2;
+
+    /**
      * The ArgumentData instance.
      */
     private ArgumentData $argumentData;
@@ -122,8 +132,8 @@ final readonly class ArgumentParser
      */
     private function getOptionValue(string $option): string
     {
-        $parts = explode('=', $option, 2);
-        if (\count($parts) < 2) {
+        $parts = explode('=', $option, self::OPTION_EXPLODE_LIMIT);
+        if (\count($parts) < self::OPTION_EXPLODE_LIMIT) {
             throw new \InvalidArgumentException(\sprintf('Option "%s" requires a value.', $parts[self::OPTION_KEY_INDEX]));
         }
 
@@ -137,7 +147,7 @@ final readonly class ArgumentParser
      */
     public function isEmpty(): bool
     {
-        return \count($this->args) < 2;
+        return \count($this->args) < self::MINIMUM_ARG_COUNT;
     }
 
     /**

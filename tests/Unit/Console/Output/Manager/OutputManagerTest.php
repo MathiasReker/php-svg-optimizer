@@ -9,9 +9,9 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Maanger\Output;
 
-use MathiasReker\PhpSvgOptimizer\Console\Output\Helper\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
@@ -27,7 +27,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(OutputHelper::class)]
+#[CoversClass(OutputManager::class)]
 #[CoversClass(AbstractStream::class)]
 #[CoversClass(MemoryStream::class)]
 #[CoversClass(ByteFormatter::class)]
@@ -37,17 +37,17 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ArgumentOptionValueObject::class)]
 #[CoversClass(ExampleCommandValueObject::class)]
 #[CoversClass(OptionValueObject::class)]
-final class OutputHelperTest extends TestCase
+final class OutputManagerTest extends TestCase
 {
     private MemoryStream $memoryStream;
-    private OutputHelper $outputHelper;
+    private OutputManager $outputManager;
 
     /**
      * @throws \RuntimeException
      */
     public function testPrintError(): void
     {
-        $this->outputHelper->printError('Something went wrong');
+        $this->outputManager->printError('Something went wrong');
         $output = $this->memoryStream->getContent();
 
         self::assertSame('Error: Something went wrong' . \PHP_EOL, $output);
@@ -58,7 +58,7 @@ final class OutputHelperTest extends TestCase
      */
     public function testPrintVersion(): void
     {
-        $this->outputHelper->printVersion('PHP SVG Optimizer', '1.2.3', 'Mathias Reker');
+        $this->outputManager->printVersion('PHP SVG Optimizer', '1.2.3', 'Mathias Reker');
         $output = $this->memoryStream->getContent();
 
         $expected = 'PHP SVG Optimizer v1.2.3 by Mathias Reker and contributors' . \PHP_EOL .
@@ -72,7 +72,7 @@ final class OutputHelperTest extends TestCase
      */
     public function testPrintOptimizationResult(): void
     {
-        $this->outputHelper->printOptimizationResult('file.svg', 42.567_89);
+        $this->outputManager->printOptimizationResult('file.svg', 42.567_89);
         $output = $this->memoryStream->getContent();
 
         self::assertSame('file.svg (42.57%)' . \PHP_EOL, $output);
@@ -83,7 +83,7 @@ final class OutputHelperTest extends TestCase
      */
     public function testPrintHelp(): void
     {
-        $this->outputHelper->printHelp();
+        $this->outputManager->printHelp();
         $output = $this->memoryStream->getContent();
 
         self::assertStringContainsString('PHP SVG Optimizer', $output);
@@ -105,7 +105,7 @@ final class OutputHelperTest extends TestCase
      */
     public function testPrintHelpIncludesOptions(): void
     {
-        $this->outputHelper->printHelp();
+        $this->outputManager->printHelp();
         $output = $this->memoryStream->getContent();
 
         self::assertStringContainsString('Options:', $output);
@@ -117,7 +117,7 @@ final class OutputHelperTest extends TestCase
      */
     public function testPrintHelpIncludesCommands(): void
     {
-        $this->outputHelper->printHelp();
+        $this->outputManager->printHelp();
         $output = $this->memoryStream->getContent();
 
         self::assertStringContainsString('Commands:', $output);
@@ -129,7 +129,7 @@ final class OutputHelperTest extends TestCase
      */
     public function testPrintTotalSummary(): void
     {
-        $this->outputHelper->printTotalSummary(
+        $this->outputManager->printTotalSummary(
             3,
             10_240,
             5_120,
@@ -152,6 +152,6 @@ final class OutputHelperTest extends TestCase
     protected function setUp(): void
     {
         $this->memoryStream = new MemoryStream();
-        $this->outputHelper = new OutputHelper($this->memoryStream);
+        $this->outputManager = new OutputManager($this->memoryStream);
     }
 }

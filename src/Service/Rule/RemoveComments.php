@@ -35,7 +35,7 @@ final readonly class RemoveComments implements SvgOptimizerRuleInterface
         $comments = $domXPath->query('//comment()');
 
         foreach ($comments as $comment) {
-            // @var \DOMComment $comment
+            // DOMComment $comment
             $comment->parentNode?->removeChild($comment);
         }
     }

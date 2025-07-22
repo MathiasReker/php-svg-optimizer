@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
-use MathiasReker\PhpSvgOptimizer\Console\Output\Helper\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
@@ -23,11 +23,21 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
  */
 final readonly class SvgFileProcessor
 {
+    /**
+     * The file extension for SVG files.
+     */
     private const string SVG_EXTENSION = 'svg';
 
+    /**
+     * Constructor for SvgFileProcessor.
+     *
+     * @param CommandOptionsValueObject $commandOptions     The options provided by the command line
+     * @param OutputManager             $outputManager      The output manager for displaying messages
+     * @param MetaDataAggregator        $metaDataAggregator The aggregator for metadata about processed files
+     */
     public function __construct(
         private CommandOptionsValueObject $commandOptions,
-        private OutputHelper $outputHelper,
+        private OutputManager $outputManager,
         private MetaDataAggregator $metaDataAggregator,
     ) {}
 
@@ -45,7 +55,7 @@ final readonly class SvgFileProcessor
         } elseif (is_file($path) && self::SVG_EXTENSION === pathinfo($path, \PATHINFO_EXTENSION)) {
             $this->optimizeSvg($path);
         } else {
-            $this->outputHelper->printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
+            $this->outputManager->printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
         }
     }
 
@@ -127,7 +137,7 @@ final readonly class SvgFileProcessor
         );
 
         if (!$this->commandOptions->quiet) {
-            $this->outputHelper->printOptimizationResult($filePath, $metaData->getSavedPercentage());
+            $this->outputManager->printOptimizationResult($filePath, $metaData->getSavedPercentage());
         }
     }
 }

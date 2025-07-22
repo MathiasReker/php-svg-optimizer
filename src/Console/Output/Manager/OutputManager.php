@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Console\Output\Helper;
+namespace MathiasReker\PhpSvgOptimizer\Console\Output\Manager;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
@@ -18,7 +18,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
 /**
  * @no-named-arguments
  */
-final readonly class OutputHelper
+final readonly class OutputManager
 {
     /**
      * Constructor for OutputHelper.
@@ -54,15 +54,15 @@ final readonly class OutputHelper
         $this->stream->writeln('');
 
         $this->stream->writeln('Options:');
-        foreach ($arg->getOptions() as $opt) {
-            $this->stream->writeln(\sprintf('  %-3s  %-20s %s', $opt->getShorthand(), $opt->getFull(), $opt->getDescription()));
+        foreach ($arg->getOptions() as $option) {
+            $this->stream->writeln(\sprintf('  %-3s  %-20s %s', $option->getShorthand(), $option->getFull(), $option->getDescription()));
         }
 
         $this->stream->writeln('');
         $this->stream->writeln('Commands:');
         $this->stream->writeln('');
-        foreach ($arg->getCommands() as $cmd) {
-            $this->stream->writeln(\sprintf('  %-25s %s', $cmd->getTitle(), $cmd->getDescription()));
+        foreach ($arg->getCommands() as $command) {
+            $this->stream->writeln(\sprintf('  %-25s %s', $command->getTitle(), $command->getDescription()));
         }
 
         $this->stream->writeln('');

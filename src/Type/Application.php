@@ -17,6 +17,6 @@ namespace MathiasReker\PhpSvgOptimizer\Type;
 enum Application: string
 {
     case NAME = 'PHP SVG Optimizer';
-    case VERSION = '7.0.1';
+    case VERSION = '7.0.2';
     case AUTHOR = 'Mathias Reker';
 }

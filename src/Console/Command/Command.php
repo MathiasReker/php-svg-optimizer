@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 
-use MathiasReker\PhpSvgOptimizer\Console\Output\Helper\OutputHelper;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
 use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\SvgFileProcessor;
@@ -37,12 +37,12 @@ final readonly class Command implements CommandInterface
      *
      * @param list<string>              $paths
      * @param CommandOptionsValueObject $commandOptions The options for the command
-     * @param OutputHelper              $outputHelper   The output helper for displaying messages
+     * @param OutputManager             $outputHelper   The output helper for displaying messages
      */
     public function __construct(
         private array $paths,
         private CommandOptionsValueObject $commandOptions,
-        private OutputHelper $outputHelper,
+        private OutputManager $outputHelper,
     ) {
         $this->metaDataAggregator = new MetaDataAggregator();
 
