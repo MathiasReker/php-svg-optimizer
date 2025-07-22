@@ -161,8 +161,7 @@ final readonly class ArgumentParser
     {
         $paths = \array_slice($this->args, $this->getArgumentStartIndex());
 
-        $collector = new FileCollector();
-        $svgFiles = $collector->collectSvgFiles($paths);
+        $svgFiles = (new FileCollector())->collectSvgFiles($paths);
 
         if ([] === $svgFiles) {
             throw new \InvalidArgumentException('No valid .svg files found to optimize.');

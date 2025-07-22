@@ -22,12 +22,12 @@ final class Finder
     private string $directory;
 
     /**
-     * Whether to only find files (not directories).
+     * Whether to only find files.
      */
     private bool $onlyFiles = false;
 
     /**
-     * The file extension to filter by (case-insensitive).
+     * The file extension to filter by.
      */
     private string $extension = '';
 
@@ -56,7 +56,7 @@ final class Finder
     /**
      * Set the file extension to filter by.
      *
-     * @param string $extension The file extension to filter by (case-insensitive)
+     * @param string $extension The file extension to filter by
      */
     public function withExtension(string $extension): self
     {
@@ -104,9 +104,11 @@ final class Finder
             }
 
             $realPath = $fileInfo->getRealPath();
-            if (false !== $realPath) {
-                $results[] = $realPath;
+            if (false === $realPath) {
+                continue;
             }
+
+            $results[] = $realPath;
         }
 
         return $results;
