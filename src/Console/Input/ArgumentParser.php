@@ -36,9 +36,9 @@ final readonly class ArgumentParser
     private const int MINIMUM_ARG_COUNT = 2;
 
     /**
-     * Limit for the explode function when splitting key and value.
+     * Limit for key and value.
      */
-    private const int OPTION_EXPLODE_LIMIT = 2;
+    private const int OPTION_LIMIT = 2;
 
     /**
      * The ArgumentData instance.
@@ -132,8 +132,8 @@ final readonly class ArgumentParser
      */
     private function getOptionValue(string $option): string
     {
-        $parts = explode('=', $option, self::OPTION_EXPLODE_LIMIT);
-        if (\count($parts) < self::OPTION_EXPLODE_LIMIT) {
+        $parts = explode('=', $option, self::OPTION_LIMIT);
+        if (\count($parts) < self::OPTION_LIMIT) {
             throw new \InvalidArgumentException(\sprintf('Option "%s" requires a value.', $parts[self::OPTION_KEY_INDEX]));
         }
 
@@ -159,7 +159,16 @@ final readonly class ArgumentParser
      */
     public function getPaths(): array
     {
-        return \array_slice($this->args, $this->getArgumentStartIndex());
+        $paths = \array_slice($this->args, $this->getArgumentStartIndex());
+
+        $collector = new FileCollector();
+        $svgFiles = $collector->collectSvgFiles($paths);
+
+        if ([] === $svgFiles) {
+            throw new \InvalidArgumentException('No valid .svg files found to optimize.');
+        }
+
+        return $svgFiles;
     }
 
     /**

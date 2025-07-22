@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
+use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 
@@ -66,20 +67,16 @@ final readonly class SvgFileProcessor
      * @throws \JsonException
      * @throws \InvalidArgumentException
      */
-    public function processDirectory(string $directoryPath): void
+    public function processDirectory(string $directory): void
     {
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directoryPath, \FilesystemIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::LEAVES_ONLY
-        );
+        $svgFiles = (new Finder())
+            ->in($directory)
+            ->files()
+            ->withExtension(self::SVG_EXTENSION)
+            ->find();
 
-        foreach ($iterator as $fileInfo) {
-            if ($fileInfo instanceof \SplFileInfo
-                && $fileInfo->isFile()
-                && self::SVG_EXTENSION === $fileInfo->getExtension()
-            ) {
-                $this->optimizeSvg($fileInfo->getPathname());
-            }
+        foreach ($svgFiles as $filePath) {
+            $this->optimizeSvg($filePath);
         }
     }
 

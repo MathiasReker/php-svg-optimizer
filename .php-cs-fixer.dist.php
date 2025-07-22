@@ -111,4 +111,4 @@ return (new PhpCsFixer\Config())
         PhpCsFixerCustomFixers\Fixer\ClassConstantUsageFixer::name() => true,
     ])
     ->setFinder($finder)
-    ->setLineEnding(\PHP_EOL);
+    ->setLineEnding("\n");

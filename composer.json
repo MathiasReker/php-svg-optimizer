@@ -94,6 +94,7 @@
             "@composer composer-dependency-analyser",
             "@composer validate --strict",
             "@composer check",
+            "@composer dump-autoload -o",
             "@composer cs-check",
             "@composer test",
             "@composer infection"
