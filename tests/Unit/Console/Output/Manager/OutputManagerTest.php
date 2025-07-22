@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Maanger\Output;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output\Manager;
 
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream;

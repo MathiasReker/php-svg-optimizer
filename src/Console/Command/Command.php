@@ -37,12 +37,12 @@ final readonly class Command implements CommandInterface
      *
      * @param list<string>              $paths
      * @param CommandOptionsValueObject $commandOptions The options for the command
-     * @param OutputManager             $outputHelper   The output helper for displaying messages
+     * @param OutputManager             $outputManager  The output helper for displaying messages
      */
     public function __construct(
         private array $paths,
         private CommandOptionsValueObject $commandOptions,
-        private OutputManager $outputHelper,
+        private OutputManager $outputManager,
     ) {
         $this->metaDataAggregator = new MetaDataAggregator();
 
@@ -56,18 +56,18 @@ final readonly class Command implements CommandInterface
     private function validateInputs(): void
     {
         if ([] === $this->paths) {
-            $this->outputHelper->printError('No SVG files or directories specified for optimization.');
+            $this->outputManager->printError('No SVG files or directories specified for optimization.');
         }
 
         foreach ($this->paths as $path) {
             if (!is_dir($path) && !is_file($path)) {
-                $this->outputHelper->printError(\sprintf('"%s" is not a valid directory or file.', $path));
+                $this->outputManager->printError(\sprintf('"%s" is not a valid directory or file.', $path));
             }
         }
 
         $config = trim($this->commandOptions->configPath);
         if ('' !== $config && !is_file($config)) {
-            $this->outputHelper->printError(\sprintf('The configuration file "%s" does not exist.', $config));
+            $this->outputManager->printError(\sprintf('The configuration file "%s" does not exist.', $config));
         }
     }
 
@@ -84,7 +84,7 @@ final readonly class Command implements CommandInterface
                 $this->commandOptions->quiet,
                 $this->commandOptions->configPath
             ),
-            $this->outputHelper,
+            $this->outputManager,
             $this->metaDataAggregator
         );
     }
@@ -113,11 +113,11 @@ final readonly class Command implements CommandInterface
         try {
             $this->svgFileProcessor->processPath($path);
         } catch (\RuntimeException $exception) {
-            $this->outputHelper->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
+            $this->outputManager->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
         } catch (\JsonException $jsonException) {
-            $this->outputHelper->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptions->configPath, $jsonException->getMessage()));
+            $this->outputManager->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptions->configPath, $jsonException->getMessage()));
         } catch (\InvalidArgumentException $invalidArgumentException) {
-            $this->outputHelper->printError(\sprintf('Invalid argument for "%s": %s', $path, $invalidArgumentException->getMessage()));
+            $this->outputManager->printError(\sprintf('Invalid argument for "%s": %s', $path, $invalidArgumentException->getMessage()));
         }
     }
 
@@ -126,7 +126,7 @@ final readonly class Command implements CommandInterface
      */
     private function printSummary(): void
     {
-        $this->outputHelper->printTotalSummary(
+        $this->outputManager->printTotalSummary(
             $this->metaDataAggregator->getOptimizedFileCount(),
             $this->metaDataAggregator->getTotalOriginalSize(),
             $this->metaDataAggregator->getTotalOptimizedSize(),

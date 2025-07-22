@@ -36,8 +36,12 @@ final readonly class ConfigLoader
             ? file_get_contents($config)
             : $config;
 
-        if ('' === $configContent || false === $configContent) {
+        if ('' === $configContent) {
             throw new \InvalidArgumentException('Configuration content cannot be empty.');
+        }
+
+        if (false === $configContent) {
+            throw new \InvalidArgumentException('Failed to read configuration content.');
         }
 
         $decodedConfig = json_decode($configContent, true, 512, \JSON_THROW_ON_ERROR);

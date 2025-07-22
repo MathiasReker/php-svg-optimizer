@@ -46,6 +46,9 @@ jobs:
       - name: Check platform requirements for packages
         run: composer check
 
+      - name: Check PSR-4 autoloading
+        run: composer dump-autoload -o
+
       - name: Analyze Composer Dependencies
         run: composer composer-dependency-analyser
 
