@@ -31,7 +31,7 @@ final readonly class ArgumentParser
     private const int OPTION_VALUE_INDEX = 1;
 
     /**
-     * Minimum number of arguments required (script name + at least one argument).
+     * Minimum number of arguments required.
      */
     private const int MINIMUM_ARG_COUNT = 2;
 
