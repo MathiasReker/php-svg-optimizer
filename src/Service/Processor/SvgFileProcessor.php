@@ -133,8 +133,6 @@ final readonly class SvgFileProcessor
             $metaData->getOptimizedSize(),
         );
 
-        if (!$this->commandOptions->quiet) {
-            $this->output->printOptimizationResult($filePath, $metaData->getSavedPercentage());
-        }
+        $this->output->printOptimizationResult($filePath, $metaData->getSavedPercentage());
     }
 }

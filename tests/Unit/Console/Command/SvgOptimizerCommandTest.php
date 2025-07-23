@@ -129,7 +129,6 @@ final class SvgOptimizerCommandTest extends TestCase
 
         $options = new CommandOptionsValueObject(
             false,
-            false,
             ''
         );
 
@@ -161,7 +160,6 @@ final class SvgOptimizerCommandTest extends TestCase
         $command = $reflection->newInstanceWithoutConstructor();
 
         $options = new CommandOptionsValueObject(
-            false,
             false,
             ''
         );

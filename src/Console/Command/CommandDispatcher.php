@@ -81,7 +81,6 @@ final readonly class CommandDispatcher
         try {
             $options = new CommandOptionsValueObject(
                 $option->isDryRun(),
-                $option->isQuiet(),
                 $option->getConfigPath()
             );
 

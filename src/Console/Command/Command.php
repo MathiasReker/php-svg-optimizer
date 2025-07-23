@@ -58,7 +58,6 @@ final readonly class Command implements CommandInterface
         return new SvgFileProcessor(
             new CommandOptionsValueObject(
                 $this->commandOptions->dryRun,
-                $this->commandOptions->quiet,
                 $this->commandOptions->configPath
             ),
             $this->output,
@@ -75,7 +74,7 @@ final readonly class Command implements CommandInterface
             $this->processPath($path);
         }
 
-        if (!$this->commandOptions->quiet && $this->metaDataAggregator->getOptimizedFileCount() > 0) {
+        if ($this->metaDataAggregator->getOptimizedFileCount() > 0) {
             $this->printSummary();
         }
     }

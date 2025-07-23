@@ -25,12 +25,10 @@ final class CommandOptionsValueObjectTest extends TestCase
     {
         $options = new CommandOptionsValueObject(
             true,
-            false,
             '/path/to/config.json',
         );
 
         self::assertTrue($options->dryRun);
-        self::assertFalse($options->quiet);
         self::assertSame('/path/to/config.json', $options->configPath);
     }
 }
