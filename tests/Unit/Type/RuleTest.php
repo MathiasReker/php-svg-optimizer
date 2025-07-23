@@ -34,7 +34,7 @@ final class RuleTest extends TestCase
     public static function provideDefaultValueCases(): iterable
     {
         yield [Rule::CONVERT_COLORS_TO_HEX, true];
-        yield [Rule::FLATTEN_GROUPS, true];
+        yield [Rule::FLATTEN_GROUPS, false];
         yield [Rule::MINIFY_SVG_COORDINATES, true];
         yield [Rule::MINIFY_TRANSFORMATIONS, true];
         yield [Rule::REMOVE_COMMENTS, true];

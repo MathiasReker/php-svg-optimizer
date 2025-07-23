@@ -33,12 +33,12 @@ final readonly class SvgFileProcessor
      * Constructor for SvgFileProcessor.
      *
      * @param CommandOptionsValueObject $commandOptions     The options provided by the command line
-     * @param OutputManager             $outputManager      The output manager for displaying messages
+     * @param OutputManager             $output             The output manager for displaying messages
      * @param MetaDataAggregator        $metaDataAggregator The aggregator for metadata about processed files
      */
     public function __construct(
         private CommandOptionsValueObject $commandOptions,
-        private OutputManager $outputManager,
+        private OutputManager $output,
         private MetaDataAggregator $metaDataAggregator,
     ) {}
 
@@ -56,7 +56,7 @@ final readonly class SvgFileProcessor
         } elseif (is_file($path) && self::SVG_EXTENSION === pathinfo($path, \PATHINFO_EXTENSION)) {
             $this->optimizeSvg($path);
         } else {
-            $this->outputManager->printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
+            $this->output->printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
         }
     }
 
@@ -67,15 +67,15 @@ final readonly class SvgFileProcessor
      * @throws \JsonException
      * @throws \InvalidArgumentException
      */
-    public function processDirectory(string $directory): void
+    private function processDirectory(string $directory): void
     {
-        $svgFiles = (new Finder())
+        $filePaths = (new Finder())
             ->in($directory)
             ->files()
             ->withExtension(self::SVG_EXTENSION)
             ->find();
 
-        foreach ($svgFiles as $filePath) {
+        foreach ($filePaths as $filePath) {
             $this->optimizeSvg($filePath);
         }
     }
@@ -101,6 +101,7 @@ final readonly class SvgFileProcessor
         $svgOptimizer = SvgOptimizerFacade::fromFile($filePath)
             ->withRules(
                 $rules[Rule::CONVERT_COLORS_TO_HEX->value],
+                $rules[Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->value],
                 $rules[Rule::FLATTEN_GROUPS->value],
                 $rules[Rule::MINIFY_SVG_COORDINATES->value],
                 $rules[Rule::MINIFY_TRANSFORMATIONS->value],
@@ -110,15 +111,14 @@ final readonly class SvgFileProcessor
                 $rules[Rule::REMOVE_DOCTYPE->value],
                 $rules[Rule::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE->value],
                 $rules[Rule::REMOVE_EMPTY_ATTRIBUTES->value],
+                $rules[Rule::REMOVE_INKSCAPE_FOOTPRINTS->value],
                 $rules[Rule::REMOVE_INVISIBLE_CHARACTERS->value],
                 $rules[Rule::REMOVE_METADATA->value],
                 $rules[Rule::REMOVE_TITLE_AND_DESC->value],
-                $rules[Rule::SORT_ATTRIBUTES->value],
-                $rules[Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->value],
                 $rules[Rule::REMOVE_UNNECESSARY_WHITESPACE->value],
-                $rules[Rule::REMOVE_UNUSED_NAMESPACES->value],
-                $rules[Rule::REMOVE_INKSCAPE_FOOTPRINTS->value],
                 $rules[Rule::REMOVE_UNSAFE_ELEMENTS->value],
+                $rules[Rule::REMOVE_UNUSED_NAMESPACES->value],
+                $rules[Rule::SORT_ATTRIBUTES->value],
             )
             ->optimize();
 
@@ -134,7 +134,7 @@ final readonly class SvgFileProcessor
         );
 
         if (!$this->commandOptions->quiet) {
-            $this->outputManager->printOptimizationResult($filePath, $metaData->getSavedPercentage());
+            $this->output->printOptimizationResult($filePath, $metaData->getSavedPercentage());
         }
     }
 }

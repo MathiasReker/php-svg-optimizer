@@ -44,7 +44,6 @@ enum Rule: string
         return match ($this->value) {
             self::CONVERT_COLORS_TO_HEX->value,
             self::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->value,
-            self::FLATTEN_GROUPS->value,
             self::MINIFY_SVG_COORDINATES->value,
             self::MINIFY_TRANSFORMATIONS->value,
             self::REMOVE_COMMENTS->value,
@@ -61,6 +60,7 @@ enum Rule: string
             self::REMOVE_UNUSED_NAMESPACES->value,
             self::SORT_ATTRIBUTES->value => true,
 
+            self::FLATTEN_GROUPS->value,
             self::REMOVE_UNSAFE_ELEMENTS->value => false,
         };
     }

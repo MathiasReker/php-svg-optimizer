@@ -66,6 +66,8 @@ final class Finder
     }
 
     /**
+     * Find files in the specified directory based on the set criteria.
+     *
      * @return list<string>
      */
     public function find(): array
@@ -82,6 +84,8 @@ final class Finder
     }
 
     /**
+     * Search the directory recursively for files matching the criteria.
+     *
      * @return list<string>
      *
      * @throws \UnexpectedValueException

@@ -49,7 +49,17 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     /**
      * List of color attributes to process.
      */
-    private const array COLOR_ATTRIBUTES = ['fill', 'stroke', 'color'];
+    private const array COLOR_ATTRIBUTES = [
+        'fill',
+        'stroke',
+        'color',
+        'stop-color',
+        'flood-color',
+        'lighting-color',
+        'solid-color',
+        'background-color',
+        'border-color',
+    ];
 
     /**
      * Constant for bitwise shift when converting RGB to shorthand HEX.

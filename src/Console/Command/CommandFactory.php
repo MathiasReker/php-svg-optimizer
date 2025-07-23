@@ -25,25 +25,25 @@ final readonly class CommandFactory
     /**
      * Constructor for CommandFactory.
      *
-     * @param StreamInterface $output         The output stream to use
+     * @param StreamInterface $stream         The output stream to use
      * @param ArgumentParser  $argumentParser The argument parser to use
      */
-    public function __construct(public StreamInterface $output, public ArgumentParser $argumentParser) {}
+    public function __construct(public StreamInterface $stream, public ArgumentParser $argumentParser) {}
 
     /**
      * Create a new Command instance with the provided options.
      *
-     * @param CommandOptionsValueObject $options The options for the command
+     * @param CommandOptionsValueObject $commandOptions The options for the command
      *
      * @return CommandInterface The created command instance
      *
      * @throws \InvalidArgumentException If the options are not valid
      */
-    public function create(CommandOptionsValueObject $options): CommandInterface
+    public function create(CommandOptionsValueObject $commandOptions): CommandInterface
     {
         return new Command(
             $this->argumentParser->getPaths(),
-            $options,
+            $commandOptions,
             $this->buildOutputHelper()
         );
     }
@@ -53,6 +53,6 @@ final readonly class CommandFactory
      */
     private function buildOutputHelper(): OutputManager
     {
-        return new OutputManager($this->output);
+        return new OutputManager($this->stream);
     }
 }

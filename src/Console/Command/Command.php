@@ -35,40 +35,17 @@ final readonly class Command implements CommandInterface
     /**
      * Constructor for SvgOptimizerCommand.
      *
-     * @param list<string>              $paths
+     * @param list<string>              $paths          The paths to SVG files or directories to process
      * @param CommandOptionsValueObject $commandOptions The options for the command
-     * @param OutputManager             $outputManager  The output helper for displaying messages
+     * @param OutputManager             $output         The output helper for displaying messages
      */
     public function __construct(
         private array $paths,
         private CommandOptionsValueObject $commandOptions,
-        private OutputManager $outputManager,
+        private OutputManager $output,
     ) {
         $this->metaDataAggregator = new MetaDataAggregator();
-
-        $this->validateInputs();
         $this->svgFileProcessor = $this->buildProcessor();
-    }
-
-    /**
-     * Validates the input paths and configuration options.
-     */
-    private function validateInputs(): void
-    {
-        if ([] === $this->paths) {
-            $this->outputManager->printError('No SVG files or directories specified for optimization.');
-        }
-
-        foreach ($this->paths as $path) {
-            if (!is_dir($path) && !is_file($path)) {
-                $this->outputManager->printError(\sprintf('"%s" is not a valid directory or file.', $path));
-            }
-        }
-
-        $config = trim($this->commandOptions->configPath);
-        if ('' !== $config && !is_file($config)) {
-            $this->outputManager->printError(\sprintf('The configuration file "%s" does not exist.', $config));
-        }
     }
 
     /**
@@ -84,7 +61,7 @@ final readonly class Command implements CommandInterface
                 $this->commandOptions->quiet,
                 $this->commandOptions->configPath
             ),
-            $this->outputManager,
+            $this->output,
             $this->metaDataAggregator
         );
     }
@@ -95,7 +72,7 @@ final readonly class Command implements CommandInterface
     public function run(): void
     {
         foreach ($this->paths as $path) {
-            $this->processPathWithHandling($path);
+            $this->processPath($path);
         }
 
         if (!$this->commandOptions->quiet && $this->metaDataAggregator->getOptimizedFileCount() > 0) {
@@ -108,16 +85,16 @@ final readonly class Command implements CommandInterface
      *
      * @param string $path The path to process, either a file or directory
      */
-    private function processPathWithHandling(string $path): void
+    private function processPath(string $path): void
     {
         try {
             $this->svgFileProcessor->processPath($path);
         } catch (\RuntimeException $exception) {
-            $this->outputManager->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
+            $this->output->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
         } catch (\JsonException $jsonException) {
-            $this->outputManager->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptions->configPath, $jsonException->getMessage()));
+            $this->output->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptions->configPath, $jsonException->getMessage()));
         } catch (\InvalidArgumentException $invalidArgumentException) {
-            $this->outputManager->printError(\sprintf('Invalid argument for "%s": %s', $path, $invalidArgumentException->getMessage()));
+            $this->output->printError($invalidArgumentException->getMessage());
         }
     }
 
@@ -126,7 +103,7 @@ final readonly class Command implements CommandInterface
      */
     private function printSummary(): void
     {
-        $this->outputManager->printTotalSummary(
+        $this->output->printTotalSummary(
             $this->metaDataAggregator->getOptimizedFileCount(),
             $this->metaDataAggregator->getTotalOriginalSize(),
             $this->metaDataAggregator->getTotalOptimizedSize(),

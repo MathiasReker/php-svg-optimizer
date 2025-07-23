@@ -102,11 +102,6 @@ final readonly class SvgOptimizerFacade
      */
     public function optimize(): self
     {
-        if (!$this->svgOptimizer->hasRules()) {
-            // If no rules are set, apply the default optimization rules
-            $this->withRules();
-        }
-
         $this->svgOptimizer->optimize();
 
         return $this;

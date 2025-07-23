@@ -13,8 +13,8 @@
 [![MIT License](https://img.shields.io/github/license/MathiasReker/php-svg-optimizer.svg)](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/LICENSE.txt)
 [![PHP](https://img.shields.io/badge/PHP-777BB4?style=flat&logo=php&logoColor=white)](#)
 
-`php-svg-optimizer` is a PHP library designed to optimize SVG files by applying various transformations and cleanup
-operations. The library ensures that the optimized SVG files are **compliant with SVG 2.0** specifications.
+`php-svg-optimizer` is a lightweight PHP library designed to optimize SVG files by applying various transformations and
+cleanup operations. The library ensures that the optimized SVG files are **compliant with SVG 2.0** specifications.
 
 The tool strives to optimize as much as possible without losing any data that could distort the image's quality,
 ensuring the resulting SVG remains visually identical to the original while being more efficient in terms of size and
@@ -73,6 +73,7 @@ Process                   Provide a list of directories or files to process.
 ```bash
 vendor/bin/svg-optimizer --dry-run process /path/to/svgs
 vendor/bin/svg-optimizer --config=config.json process /path/to/file.svg
+vendor/bin/svg-optimizer --config='{"removeUnsafeElements": true}' process /path/to/file.svg
 vendor/bin/svg-optimizer --quiet process /path/to/file.svg
 ```
 
@@ -82,7 +83,7 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
 {
     "convertColorsToHex": true,
     "convertEmptyTagsToSelfClosing": true,
-    "flattenGroups": true,
+    "flattenGroups": false,
     "minifySvgCoordinates": true,
     "minifyTransformations": true,
     "removeComments": true,
@@ -124,7 +125,7 @@ try {
         ->withRules(
             convertColorsToHex: true,
             convertEmptyTagsToSelfClosing: true,
-            flattenGroups: true,
+            flattenGroups: false,
             minifySvgCoordinates: true,
             minifyTransformations: true,
             removeComments: true,
@@ -374,7 +375,7 @@ the desired values to it:
 $svgOptimizer->withRules(
     convertColorsToHex: true,
     convertEmptyTagsToSelfClosing: true,
-    flattenGroups: true,
+    flattenGroups: false,
     minifySvgCoordinates: true,
     minifyTransformations: true,
     removeComments: true,

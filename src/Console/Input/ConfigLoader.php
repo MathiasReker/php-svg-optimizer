@@ -37,7 +37,7 @@ final readonly class ConfigLoader
             : $config;
 
         if ('' === $configContent) {
-            throw new \InvalidArgumentException('Configuration content cannot be empty.');
+            throw new \InvalidArgumentException('Configuration must be a valid file path or a JSON string.');
         }
 
         if (false === $configContent) {
@@ -47,7 +47,7 @@ final readonly class ConfigLoader
         $decodedConfig = json_decode($configContent, true, 512, \JSON_THROW_ON_ERROR);
 
         if (!\is_array($decodedConfig)) {
-            throw new \InvalidArgumentException('Configuration must be an associative array.');
+            throw new \InvalidArgumentException('Configuration must be a valid file path or a JSON string.');
         }
 
         return array_combine(

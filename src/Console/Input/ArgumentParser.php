@@ -161,6 +161,16 @@ final readonly class ArgumentParser
     {
         $paths = \array_slice($this->args, $this->getArgumentStartIndex());
 
+        if ([] === $paths) {
+            throw new \InvalidArgumentException('No positional arguments found. Please provide at least one SVG file or directory.');
+        }
+
+        foreach ($paths as $path) {
+            if (!is_dir($path) && !is_file($path)) {
+                throw new \InvalidArgumentException(\sprintf('"%s" is not a valid directory or file.', $path));
+            }
+        }
+
         $svgFiles = (new FileCollector())->collectSvgFiles($paths);
 
         if ([] === $svgFiles) {
