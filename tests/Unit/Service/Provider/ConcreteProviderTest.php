@@ -40,7 +40,7 @@ final class ConcreteProviderTest extends TestCase
     public function testOptimizeTrimsXmlContent(): void
     {
         $input = "<?xml version=\"1.0\"?>\n<svg>  hello  </svg>";
-        $provider = $this->getConcreteProvider($input);
+        $provider = self::getConcreteProvider($input);
         $content = $provider->loadContent();
 
         $provider->optimize($content);
@@ -50,11 +50,12 @@ final class ConcreteProviderTest extends TestCase
         self::assertSame(trim($output), $output, 'Output should be trimmed');
     }
 
-    private function getConcreteProvider(string $inputContent): AbstractProvider
+    private static function getConcreteProvider(string $inputContent): AbstractProvider
     {
         return new class($inputContent) extends AbstractProvider {
-            public function __construct(private readonly string $testInput)
-            {
+            public function __construct(
+                private readonly string $testInput,
+            ) {
                 parent::__construct();
                 $this->inputContent = $testInput;
             }
@@ -81,7 +82,7 @@ final class ConcreteProviderTest extends TestCase
     public function testGetMetaDataWithMbStrlen(): void
     {
         $input = "<?xml version=\"1.0\"?>\n<svg>✓漢</svg>";
-        $provider = $this->getConcreteProvider($input);
+        $provider = self::getConcreteProvider($input);
         $content = $provider->loadContent();
 
         $provider->optimize($content);
@@ -98,7 +99,7 @@ final class ConcreteProviderTest extends TestCase
     public function testSaveToFileWritesCorrectly(): void
     {
         $input = '<svg>saved</svg>';
-        $provider = $this->getConcreteProvider($input);
+        $provider = self::getConcreteProvider($input);
         $provider->optimize($provider->loadContent());
         $this->tmpFile = sys_get_temp_dir() . '/svg-test-' . uniqid('', true) . '.svg';
         $provider->saveToFile($this->tmpFile);
@@ -116,7 +117,7 @@ final class ConcreteProviderTest extends TestCase
         $this->expectException(IOException::class);
 
         $input = '<svg>error</svg>';
-        $provider = $this->getConcreteProvider($input);
+        $provider = self::getConcreteProvider($input);
         $content = $provider->loadContent();
         $provider->optimize($content);
 
@@ -135,7 +136,7 @@ final class ConcreteProviderTest extends TestCase
     public function testSaveToFileCreatesDirectory(): void
     {
         $input = '<svg>dir creation</svg>';
-        $provider = $this->getConcreteProvider($input);
+        $provider = self::getConcreteProvider($input);
         $provider->optimize($provider->loadContent());
 
         $tempDir = sys_get_temp_dir() . '/svgtest_' . uniqid();

@@ -35,7 +35,7 @@ final class FinderTest extends TestCase
      */
     protected function tearDown(): void
     {
-        $this->deleteDirectory($this->tempDir);
+        self::deleteDirectory($this->tempDir);
         parent::tearDown();
     }
 
@@ -135,7 +135,7 @@ final class FinderTest extends TestCase
     /**
      * @throws \UnexpectedValueException
      */
-    private function deleteDirectory(string $dir): void
+    private static function deleteDirectory(string $dir): void
     {
         if (!is_dir($dir)) {
             return;

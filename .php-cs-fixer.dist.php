@@ -59,6 +59,9 @@ return (new PhpCsFixer\Config())
         'phpdoc_array_type' => true,
         'phpdoc_list_type' => true,
         'general_attribute_remove' => true,
+        'multiline_promoted_properties' => true,
+        'new_expression_parentheses' => true,
+        'static_private_method' => true,
 
         // PHP-CS-Fixer Rules
         '@PhpCsFixer' => true,

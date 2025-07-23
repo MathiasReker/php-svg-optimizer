@@ -108,13 +108,13 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
         foreach ($elements as $element) {
             $transform = $element->getAttribute('transform');
 
-            $transform = $this->convertPercentagesToNumbers($transform);
-            $transform = $this->removeIdentityTransforms($transform);
-            $transform = $this->normalizeSpacesAndCommas($transform);
+            $transform = self::convertPercentagesToNumbers($transform);
+            $transform = self::removeIdentityTransforms($transform);
+            $transform = self::normalizeSpacesAndCommas($transform);
 
             $transform = trim($transform);
 
-            if ($this->isEmptyTransform($transform)) {
+            if (self::isEmptyTransform($transform)) {
                 $element->removeAttribute('transform');
             } else {
                 $element->setAttribute('transform', $transform);
@@ -129,7 +129,7 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
      *
      * @return string The transform string with percentages converted
      */
-    private function convertPercentagesToNumbers(string $transform): string
+    private static function convertPercentagesToNumbers(string $transform): string
     {
         return preg_replace_callback(
             self::PERCENTAGE_REGEX,
@@ -145,7 +145,7 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
      *
      * @return string The transform string without identity transformations
      */
-    private function removeIdentityTransforms(string $transform): string
+    private static function removeIdentityTransforms(string $transform): string
     {
         return preg_replace(
             [
@@ -168,7 +168,7 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
      *
      * @return string The normalized transform string
      */
-    private function normalizeSpacesAndCommas(string $transform): string
+    private static function normalizeSpacesAndCommas(string $transform): string
     {
         $transform = preg_replace(self::MULTIPLE_SPACES_REGEX, ' ', $transform) ?? $transform;
 
@@ -182,7 +182,7 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
      *
      * @return bool True if the transform should be considered empty and removed
      */
-    private function isEmptyTransform(string $transform): bool
+    private static function isEmptyTransform(string $transform): bool
     {
         return '' === $transform
             || '0' === $transform

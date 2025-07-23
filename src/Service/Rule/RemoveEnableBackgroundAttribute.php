@@ -40,7 +40,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $this->processEnableBackgroundAttributes($domXPath);
+        self::processEnableBackgroundAttributes($domXPath);
     }
 
     /**
@@ -48,7 +48,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
      *
      * @param \DOMXPath $domXPath The \DOMXPath instance used to query the SVG elements
      */
-    private function processEnableBackgroundAttributes(\DOMXPath $domXPath): void
+    private static function processEnableBackgroundAttributes(\DOMXPath $domXPath): void
     {
         $elements = $domXPath->query('//*[@enable-background]');
 
@@ -63,7 +63,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
                 $width = $element->getAttribute('width');
                 $height = $element->getAttribute('height');
 
-                $cleanedValue = $this->cleanupEnableBackgroundValue($enableBackgroundValue, $width, $height);
+                $cleanedValue = self::cleanupEnableBackgroundValue($enableBackgroundValue, $width, $height);
 
                 if ('' === trim($cleanedValue)) {
                     $element->removeAttribute(self::ENABLE_BACKGROUND_ATTRIBUTE);
@@ -83,7 +83,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
      *
      * @return string The cleaned up value, or empty if it is redundant
      */
-    private function cleanupEnableBackgroundValue(string $value, string $width, string $height): string
+    private static function cleanupEnableBackgroundValue(string $value, string $width, string $height): string
     {
         if (\in_array(preg_match(self::ENABLE_BACKGROUND_REGEX, $value, $matches), [0, false], true)) {
             return $value;

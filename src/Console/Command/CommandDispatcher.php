@@ -29,7 +29,9 @@ final readonly class CommandDispatcher
      *
      * @param array<int, string> $argv The command line arguments
      */
-    private function __construct(private array $argv) {}
+    private function __construct(
+        private array $argv,
+    ) {}
 
     /**
      * Create a new SvgOptimizerApplication instance from command line arguments.

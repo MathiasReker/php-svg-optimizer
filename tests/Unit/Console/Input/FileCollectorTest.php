@@ -35,7 +35,7 @@ final class FileCollectorTest extends TestCase
      */
     protected function tearDown(): void
     {
-        $this->deleteDirectory($this->tempDir);
+        self::deleteDirectory($this->tempDir);
     }
 
     public function testReturnsEmptyArrayForNonExistentPath(): void
@@ -102,7 +102,7 @@ final class FileCollectorTest extends TestCase
     /**
      * @throws \UnexpectedValueException
      */
-    private function deleteDirectory(string $dir): void
+    private static function deleteDirectory(string $dir): void
     {
         if (!file_exists($dir)) {
             return;

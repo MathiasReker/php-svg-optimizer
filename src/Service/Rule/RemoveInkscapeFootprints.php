@@ -99,9 +99,9 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
         }
 
         for ($i = 0; $i < self::OPTIMIZATION_LOOP_COUNT; ++$i) {
-            $this->removeNamespaceDeclarations($domDocument);
-            $this->removeTags($domXPath, self::TAGS_TO_REMOVE);
-            $this->removeNamespacedAttributes($domXPath);
+            self::removeNamespaceDeclarations($domDocument);
+            self::removeTags($domXPath, self::TAGS_TO_REMOVE);
+            self::removeNamespacedAttributes($domXPath);
         }
     }
 
@@ -114,7 +114,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
-    private function removeNamespaceDeclarations(\DOMDocument $domDocument): void
+    private static function removeNamespaceDeclarations(\DOMDocument $domDocument): void
     {
         $domNodeList = $domDocument->getElementsByTagName('*');
 
@@ -137,7 +137,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      * @param \DOMXPath    $domXPath     The \DOMXPath instance representing the SVG file to be optimized
      * @param list<string> $tagsToRemove
      */
-    private function removeTags(\DOMXPath $domXPath, array $tagsToRemove): void
+    private static function removeTags(\DOMXPath $domXPath, array $tagsToRemove): void
     {
         foreach ($tagsToRemove as $tagToRemove) {
             [$prefix] = explode(':', $tagToRemove, self::EXPLODE_LIMIT);
@@ -172,7 +172,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      *
      * @param \DOMXPath $domXPath The \DOMXPath instance representing the SVG file to be optimized
      */
-    private function removeNamespacedAttributes(\DOMXPath $domXPath): void
+    private static function removeNamespacedAttributes(\DOMXPath $domXPath): void
     {
         foreach (self::ATTRIBUTES_TO_REMOVE as $pattern) {
             if (!str_contains($pattern, ':')) {
@@ -189,14 +189,14 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
                 continue;
             }
 
-            $this->processNodes($domXPath, self::NAMESPACE_URIS[$prefix]);
+            self::processNodes($domXPath, self::NAMESPACE_URIS[$prefix]);
         }
     }
 
     /**
      * Process all nodes in the \DOMXPath and remove attributes that match the given namespace URI.
      */
-    private function processNodes(\DOMXPath $domXPath, string $namespaceUri): void
+    private static function processNodes(\DOMXPath $domXPath, string $namespaceUri): void
     {
         $nodes = $domXPath->query(self::ALL_NODES_XPATH_QUERY);
         if (!($nodes instanceof \DOMNodeList)) {
@@ -205,7 +205,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
 
         foreach (iterator_to_array($nodes, true) as $domNode) {
             if ($domNode instanceof \DOMElement) {
-                $this->removeNodeAttributes($domNode, $namespaceUri);
+                self::removeNodeAttributes($domNode, $namespaceUri);
             }
         }
     }
@@ -213,9 +213,9 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     /**
      * Remove attributes from the node that match the given namespace URI.
      */
-    private function removeNodeAttributes(\DOMElement $domElement, string $namespaceUri): void
+    private static function removeNodeAttributes(\DOMElement $domElement, string $namespaceUri): void
     {
-        $attributesToRemove = $this->getAttributesToRemove($domElement, $namespaceUri);
+        $attributesToRemove = self::getAttributesToRemove($domElement, $namespaceUri);
 
         foreach ($attributesToRemove as $attributeToRemove) {
             $domElement->removeAttributeNS($namespaceUri, $attributeToRemove);
@@ -227,7 +227,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      *
      * @return list<string>
      */
-    private function getAttributesToRemove(\DOMElement $domElement, string $namespaceUri): array
+    private static function getAttributesToRemove(\DOMElement $domElement, string $namespaceUri): array
     {
         $attributesToRemove = [];
 

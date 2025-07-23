@@ -28,7 +28,10 @@ final readonly class CommandFactory
      * @param StreamInterface $stream         The output stream to use
      * @param ArgumentParser  $argumentParser The argument parser to use
      */
-    public function __construct(public StreamInterface $stream, public ArgumentParser $argumentParser) {}
+    public function __construct(
+        public StreamInterface $stream,
+        public ArgumentParser $argumentParser,
+    ) {}
 
     /**
      * Create a new Command instance with the provided options.

@@ -65,10 +65,10 @@ final readonly class ArgumentParser
     {
         try {
             $arguments = array_map(
-                fn (string $arg): ArgumentOptionValueObject => $this->argumentData->getOptionByName($this->getOptionKey($arg)),
+                fn (string $arg): ArgumentOptionValueObject => $this->argumentData->getOptionByName(self::getOptionKey($arg)),
                 array_filter(
                     \array_slice($this->args, 1),
-                    fn (string $arg): bool => $this->isOption($arg)
+                    static fn (string $arg): bool => self::isOption($arg)
                 )
             );
 
@@ -85,7 +85,7 @@ final readonly class ArgumentParser
      *
      * @return string The key of the option
      */
-    private function getOptionKey(string $option): string
+    private static function getOptionKey(string $option): string
     {
         return explode('=', $option)[self::OPTION_KEY_INDEX];
     }
@@ -95,7 +95,7 @@ final readonly class ArgumentParser
      *
      * @return bool True if the argument is an option, false otherwise
      */
-    private function isOption(string $option): bool
+    private static function isOption(string $option): bool
     {
         return str_starts_with($option, '-');
     }
@@ -112,9 +112,9 @@ final readonly class ArgumentParser
     public function getOption(Option $option): string
     {
         foreach ($this->args as $arg) {
-            if ($this->isOption($arg)
-                && $this->argumentData->getOptionByName($this->getOptionKey($arg)) === $this->argumentData->getOption($option->value)) {
-                return $this->getOptionValue($arg);
+            if (self::isOption($arg)
+                && $this->argumentData->getOptionByName(self::getOptionKey($arg)) === $this->argumentData->getOption($option->value)) {
+                return self::getOptionValue($arg);
             }
         }
 
@@ -130,7 +130,7 @@ final readonly class ArgumentParser
      *
      * @throws \InvalidArgumentException If the option is missing a value
      */
-    private function getOptionValue(string $option): string
+    private static function getOptionValue(string $option): string
     {
         $parts = explode('=', $option, self::OPTION_LIMIT);
         if (\count($parts) < self::OPTION_LIMIT) {

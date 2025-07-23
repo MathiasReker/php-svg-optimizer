@@ -67,7 +67,7 @@ final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor im
     {
         $this->process(
             $domDocument,
-            fn (string $content): string => $this->removeStyleAttributeWhitespace($this->removeAttributeValueWhitespace($content))
+            static fn (string $content): string => self::removeStyleAttributeWhitespace(self::removeAttributeValueWhitespace($content))
         );
     }
 
@@ -81,7 +81,7 @@ final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor im
      *
      * @return string The processed SVG content with whitespace removed from style attributes
      */
-    private function removeStyleAttributeWhitespace(string $content): string
+    private static function removeStyleAttributeWhitespace(string $content): string
     {
         return preg_replace_callback(
             self::STYLE_ATTRIBUTE_REGEX,
@@ -103,7 +103,7 @@ final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor im
      *
      * @return string The processed SVG content with reduced whitespace in attribute values
      */
-    private function removeAttributeValueWhitespace(string $content): string
+    private static function removeAttributeValueWhitespace(string $content): string
     {
         return preg_replace_callback(
             self::ATTRIBUTE_VALUE_REGEX,

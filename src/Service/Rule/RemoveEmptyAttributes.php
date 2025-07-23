@@ -37,7 +37,7 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->removeEmptyAttributes($domDocument);
+        self::removeEmptyAttributes($domDocument);
     }
 
     /**
@@ -48,10 +48,10 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The \DOMDocument object to process
      */
-    private function removeEmptyAttributes(\DOMDocument $domDocument): void
+    private static function removeEmptyAttributes(\DOMDocument $domDocument): void
     {
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
-            $this->removeEmptyAttributesFromElement($domNodeList);
+            self::removeEmptyAttributesFromElement($domNodeList);
         }
     }
 
@@ -63,11 +63,11 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
      *
      * @param \DOMElement $domElement The \DOMElement from which to remove empty attributes
      */
-    private function removeEmptyAttributesFromElement(\DOMElement $domElement): void
+    private static function removeEmptyAttributesFromElement(\DOMElement $domElement): void
     {
         /** @var \DOMAttr $domAttr */
         foreach (iterator_to_array($domElement->attributes ?? [], true) as $attrName => $domAttr) {
-            if ($this->isEmptyOrWhitespace($domAttr->value)) {
+            if (self::isEmptyOrWhitespace($domAttr->value)) {
                 $domElement->removeAttribute($attrName);
             }
         }
@@ -83,7 +83,7 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
      *
      * @return bool True if the string is empty or contains only whitespace, false otherwise
      */
-    private function isEmptyOrWhitespace(string $value): bool
+    private static function isEmptyOrWhitespace(string $value): bool
     {
         return '' === preg_replace(self::MULTIPLE_SPACES_REGEX, '', $value);
     }

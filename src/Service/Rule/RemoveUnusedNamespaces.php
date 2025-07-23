@@ -62,11 +62,11 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     {
         $svgContent = $this->process($domDocument, static fn (string $content): string => $content);
 
-        $namespaceCounts = $this->countNamespaceElementsWithRegex($svgContent);
+        $namespaceCounts = self::countNamespaceElementsWithRegex($svgContent);
 
         foreach ($namespaceCounts as $namespaceKey => $count) {
             if (0 === $count) {
-                $this->removeNamespaceFromSvgTags($domDocument, $namespaceKey);
+                self::removeNamespaceFromSvgTags($domDocument, $namespaceKey);
             }
         }
 
@@ -80,7 +80,7 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
      *
      * @return array<string, int> An associative array where keys are namespace prefixes and values are counts of elements
      */
-    private function countNamespaceElementsWithRegex(string $svgContent): array
+    private static function countNamespaceElementsWithRegex(string $svgContent): array
     {
         $namespaceCounts = [];
 
@@ -105,7 +105,7 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
      * @param \DOMDocument $domDocument        The \DOMDocument instance representing the SVG to be optimized
      * @param string       $namespaceAttribute The namespace attribute to remove
      */
-    private function removeNamespaceFromSvgTags(\DOMDocument $domDocument, string $namespaceAttribute): void
+    private static function removeNamespaceFromSvgTags(\DOMDocument $domDocument, string $namespaceAttribute): void
     {
         $root = $domDocument->documentElement;
 

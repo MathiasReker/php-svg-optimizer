@@ -146,10 +146,10 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->removeProcessingInstructions($domDocument);
-        $this->removeDangerousElements($domDocument);
-        $this->removeDangerousAttributes($domDocument);
-        $this->removeStyleWithImport($domDocument);
+        self::removeProcessingInstructions($domDocument);
+        self::removeDangerousElements($domDocument);
+        self::removeDangerousAttributes($domDocument);
+        self::removeStyleWithImport($domDocument);
     }
 
     /**
@@ -160,7 +160,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
-    private function removeProcessingInstructions(\DOMDocument $domDocument): void
+    private static function removeProcessingInstructions(\DOMDocument $domDocument): void
     {
         for ($node = $domDocument->firstChild; $node instanceof \DOMNode; $node = $node->nextSibling) {
             if ($node instanceof \DOMProcessingInstruction
@@ -178,10 +178,10 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
-    private function removeDangerousElements(\DOMDocument $domDocument): void
+    private static function removeDangerousElements(\DOMDocument $domDocument): void
     {
-        $this->removeAlwaysDangerousTags($domDocument);
-        $this->removeConditionallyDangerousTags($domDocument);
+        self::removeAlwaysDangerousTags($domDocument);
+        self::removeConditionallyDangerousTags($domDocument);
     }
 
     /**
@@ -192,10 +192,10 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
-    private function removeAlwaysDangerousTags(\DOMDocument $domDocument): void
+    private static function removeAlwaysDangerousTags(\DOMDocument $domDocument): void
     {
         foreach (self::ALWAYS_REMOVE_TAGS as $tag) {
-            $this->removeAllElementsByTagName($domDocument, $tag);
+            self::removeAllElementsByTagName($domDocument, $tag);
         }
     }
 
@@ -207,7 +207,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      * @param string       $tagName     The name of the tag to remove from the SVG document
      */
-    private function removeAllElementsByTagName(\DOMDocument $domDocument, string $tagName): void
+    private static function removeAllElementsByTagName(\DOMDocument $domDocument, string $tagName): void
     {
         while (true) {
             $nodes = $domDocument->getElementsByTagName($tagName);
@@ -230,7 +230,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
-    private function removeConditionallyDangerousTags(\DOMDocument $domDocument): void
+    private static function removeConditionallyDangerousTags(\DOMDocument $domDocument): void
     {
         foreach (self::CONDITIONAL_TAGS as $tag) {
             $nodes = $domDocument->getElementsByTagName($tag);
@@ -239,7 +239,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
                 if (null === $nodes->item($i)) {
                     continue;
                 }
-                $this->removeIfDangerous($nodes->item($i));
+                self::removeIfDangerous($nodes->item($i));
             }
         }
     }
@@ -252,7 +252,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * @param \DOMNode $node The DOM node to check and potentially remove
      */
-    private function removeIfDangerous(\DOMNode $node): void
+    private static function removeIfDangerous(\DOMNode $node): void
     {
         if (!$node instanceof \DOMElement) {
             return;
@@ -260,7 +260,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 
         foreach (['href', 'xlink:href'] as $attr) {
             $value = $node->getAttribute($attr);
-            if ($this->isExactDangerousAttribute($attr, $value)) {
+            if (self::isExactDangerousAttribute($attr, $value)) {
                 if ($node->parentNode instanceof \DOMNode) {
                     $node->parentNode->removeChild($node);
                 }
@@ -279,10 +279,10 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * @return bool True if the attribute is an exact dangerous attribute, false otherwise
      */
-    private function isExactDangerousAttribute(string $name, string $value): bool
+    private static function isExactDangerousAttribute(string $name, string $value): bool
     {
         return \in_array($name, self::DANGEROUS_ATTRS_EXACT, true)
-            && $this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX);
+            && self::matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX);
     }
 
     /**
@@ -295,7 +295,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * @return bool True if the value matches the pattern, false otherwise
      */
-    private function matchesPattern(string $value, string $pattern): bool
+    private static function matchesPattern(string $value, string $pattern): bool
     {
         return (bool) preg_match($pattern, $value);
     }
@@ -308,7 +308,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
-    private function removeDangerousAttributes(\DOMDocument $domDocument): void
+    private static function removeDangerousAttributes(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
         $elements = $domXPath->query('//*');
@@ -331,7 +331,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
                 $name = $attr->name;
                 $value = trim($attr->value);
 
-                if ($this->isDangerousAttribute($name, $value)) {
+                if (self::isDangerousAttribute($name, $value)) {
                     $element->removeAttributeNode($attr);
                 }
             }
@@ -349,27 +349,27 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * @return bool True if the attribute is considered dangerous, false otherwise
      */
-    private function isDangerousAttribute(string $name, string $value): bool
+    private static function isDangerousAttribute(string $name, string $value): bool
     {
         $nameLower = mb_strtolower($name);
 
-        if ($this->hasDangerousPrefix($nameLower)) {
+        if (self::hasDangerousPrefix($nameLower)) {
             return true;
         }
 
-        if ($this->isExactDangerousAttribute($nameLower, $value)) {
+        if (self::isExactDangerousAttribute($nameLower, $value)) {
             return true;
         }
 
-        if ($this->isUrlAttributeDangerous($nameLower, $value)) {
+        if (self::isUrlAttributeDangerous($nameLower, $value)) {
             return true;
         }
 
-        if ('style' === $nameLower && $this->matchesPattern($value, self::STYLE_DANGEROUS_REGEX)) {
+        if ('style' === $nameLower && self::matchesPattern($value, self::STYLE_DANGEROUS_REGEX)) {
             return true;
         }
 
-        if ('src' === $nameLower && $this->matchesPattern($value, self::URI_PROTOCOL_REGEX)) {
+        if ('src' === $nameLower && self::matchesPattern($value, self::URI_PROTOCOL_REGEX)) {
             return true;
         }
 
@@ -385,7 +385,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * @return bool True if the attribute name starts with a dangerous prefix, false otherwise
      */
-    private function hasDangerousPrefix(string $name): bool
+    private static function hasDangerousPrefix(string $name): bool
     {
         foreach (self::DANGEROUS_ATTR_PREFIXES as $prefix) {
             if (str_starts_with(mb_strtolower($name), $prefix)) {
@@ -406,7 +406,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * @return bool True if the attribute is a dangerous URL attribute, false otherwise
      */
-    private function isUrlAttributeDangerous(string $name, string $value): bool
+    private static function isUrlAttributeDangerous(string $name, string $value): bool
     {
         if (!\in_array($name, self::URL_ATTRIBUTES, true)) {
             return false;
@@ -429,7 +429,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
-    private function removeStyleWithImport(\DOMDocument $domDocument): void
+    private static function removeStyleWithImport(\DOMDocument $domDocument): void
     {
         $domNodeList = $domDocument->getElementsByTagName('style');
 
@@ -440,7 +440,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             }
 
             $text = $style->textContent ?? '';
-            if ($this->matchesPattern($text, self::STYLE_NODE_DANGEROUS_REGEX)
+            if (self::matchesPattern($text, self::STYLE_NODE_DANGEROUS_REGEX)
                 && $style->parentNode instanceof \DOMNode) {
                 $style->parentNode->removeChild($style);
             }

@@ -53,7 +53,7 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
         if ($elements instanceof \DOMNodeList) {
             foreach ($elements as $element) {
                 if ($element instanceof \DOMElement) {
-                    $this->sortElementAttributes($element);
+                    self::sortElementAttributes($element);
                 }
             }
         }
@@ -68,10 +68,10 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
      *
      * @param \DOMElement $domElement The \DOMElement whose attributes should be sorted
      */
-    private function sortElementAttributes(\DOMElement $domElement): void
+    private static function sortElementAttributes(\DOMElement $domElement): void
     {
-        $attributes = $this->extractAttributes($domElement);
-        $sortedAttributes = $this->sortAttributes($attributes);
+        $attributes = self::extractAttributes($domElement);
+        $sortedAttributes = self::sortAttributes($attributes);
 
         /** @var \DOMAttr $attribute */
         foreach (iterator_to_array($domElement->attributes ?? [], false) as $attribute) {
@@ -94,7 +94,7 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
      *
      * @return array<string, string> The extracted attributes and their values
      */
-    private function extractAttributes(\DOMElement $domElement): array
+    private static function extractAttributes(\DOMElement $domElement): array
     {
         $attributes = [];
 
@@ -117,7 +117,7 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
      *
      * @return array<string, string> The sorted attributes
      */
-    private function sortAttributes(array $attributes): array
+    private static function sortAttributes(array $attributes): array
     {
         $priorityAttributes = [];
         $otherAttributes = [];

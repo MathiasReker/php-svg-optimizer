@@ -25,7 +25,9 @@ final readonly class OutputManager
      *
      * @param StreamInterface $stream The output stream to write messages to
      */
-    public function __construct(private StreamInterface $stream) {}
+    public function __construct(
+        private StreamInterface $stream,
+    ) {}
 
     /**
      * Print a message to the output stream.

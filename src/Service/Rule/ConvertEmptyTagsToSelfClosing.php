@@ -49,7 +49,7 @@ final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor 
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->process($domDocument, fn (string $content): string => $this->convertEmptyTagsToSelfClosing($content));
+        $this->process($domDocument, static fn (string $content): string => self::convertEmptyTagsToSelfClosing($content));
     }
 
     /**
@@ -63,7 +63,7 @@ final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor 
      *
      * @return string The processed SVG content with empty tags converted to self-closing tags
      */
-    private function convertEmptyTagsToSelfClosing(string $content): string
+    private static function convertEmptyTagsToSelfClosing(string $content): string
     {
         return array_reduce(
             [

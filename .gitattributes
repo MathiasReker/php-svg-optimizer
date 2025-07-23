@@ -18,3 +18,5 @@
 /.github export-ignore
 /dev export-ignore
 /infection.json5 export-ignore
+/composer-dependency-analyser.php export-ignore
+/README.md export-ignore

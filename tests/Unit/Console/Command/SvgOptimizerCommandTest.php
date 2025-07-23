@@ -45,6 +45,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
@@ -101,6 +102,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgFileProcessor::class)]
 #[CoversClass(ConfigLoader::class)]
 #[CoversClass(ByteFormatter::class)]
+#[CoversClass(SortAttributes::class)]
 final class SvgOptimizerCommandTest extends TestCase
 {
     private string $tempDir;

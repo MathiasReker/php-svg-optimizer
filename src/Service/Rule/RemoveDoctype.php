@@ -41,7 +41,7 @@ final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOp
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->process($domDocument, fn (string $content): string => $this->removeDoctype($content));
+        $this->process($domDocument, static fn (string $content): string => self::removeDoctype($content));
     }
 
     /**
@@ -51,7 +51,7 @@ final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOp
      *
      * @return string The SVG content without the DOCTYPE declaration
      */
-    private function removeDoctype(string $svgContent): string
+    private static function removeDoctype(string $svgContent): string
     {
         return (string) preg_replace(self::DOCTYPE_REGEX, '', $svgContent);
     }
