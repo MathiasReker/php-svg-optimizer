@@ -57,20 +57,20 @@ final readonly class CommandDispatcher
         $stream = $option->isQuiet()
             ? new SilentStream()
             : new StdoutStream();
-        $outputManager = new OutputManager($stream);
+        $output = new OutputManager($stream);
 
         if (\PHP_SAPI !== 'cli') {
-            $outputManager->printError('This command can only be run in a CLI environment.');
+            $output->printError('This command can only be run in a CLI environment.');
             exit(1);
         }
 
         if ($parser->isEmpty() || $option->isHelp()) {
-            $outputManager->printHelp();
+            $output->printHelp();
             exit(0);
         }
 
         if ($option->isVersion()) {
-            $outputManager->printVersion(
+            $output->printVersion(
                 Application::NAME->value,
                 Application::VERSION->value,
                 Application::AUTHOR->value
@@ -88,7 +88,7 @@ final readonly class CommandDispatcher
             $command = (new CommandFactory($stream, $parser))->create($options);
             $command->run();
         } catch (\InvalidArgumentException $e) {
-            $outputManager->printError($e->getMessage());
+            $output->printError($e->getMessage());
             exit(1);
         }
     }
