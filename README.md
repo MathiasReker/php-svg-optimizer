@@ -369,8 +369,7 @@ Sorts attributes within each element:
 $svgOptimizer->withRules(sortAttributes: true);
 ```
 
-All options are set to `true` by default except `removeUnsafeElements`. You can configure them individually by passing
-the desired values to it:
+Below you see the default configuration. You can configure each rule individually by passing the desired values to it:
 
 ```php
 $svgOptimizer->withRules(
