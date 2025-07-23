@@ -101,7 +101,7 @@ jobs:
           elif (( PERCENT >= 50 )); then COLOR=yellow;
           fi
 
-          curl -s -o dev/artifacts/coverage.svg.new "https://badgen.net/badge/coverage/${PERCENT}%25/${COLOR}"
+          curl -s -o dev/artifacts/coverage.svg.new "https://badgen.net/badge/code%20coverage/${PERCENT}%25/${COLOR}"
 
           # Only replace coverage.svg if the content has changed
           if ! cmp -s dev/artifacts/coverage.svg.new dev/artifacts/coverage.svg; then
@@ -111,4 +111,27 @@ jobs:
             git push origin develop
           else
             echo "Coverage badge unchanged. Skipping commit."
+          fi
+
+      - name: Generate and push filesize badge
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          # Calculate size of bin, src, composer.json, composer.lock, LICENSE
+          SIZE_KB=$(du -sk bin src composer.json composer.lock LICENSE 2>/dev/null | awk '{sum+=$1} END {print sum}')
+
+          COLOR=green
+
+          mkdir -p dev/artifacts
+
+          curl -s -o dev/artifacts/filesize.svg.new "https://badgen.net/badge/size/${SIZE_KB}KB/${COLOR}?label=size"
+
+          if ! cmp -s dev/artifacts/filesize.svg.new dev/artifacts/filesize.svg; then
+            mv dev/artifacts/filesize.svg.new dev/artifacts/filesize.svg
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add dev/artifacts/filesize.svg
+            git commit -m "Update filesize badge to ${SIZE_KB}KB"
+            git push origin develop
+          else
+            echo "File size badge unchanged. Skipping commit."
           fi
