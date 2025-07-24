@@ -5,7 +5,7 @@ on:
     branches:
       - develop
     paths:
-      - 'dev/config/demo.sh'
+      - 'dev/scripts/demo.sh'
     tags:
       - '*'
 
@@ -39,11 +39,11 @@ jobs:
 
       - name: Make the script executable
         run: |
-          chmod +x ./dev/config/demo.sh
+          chmod +x ./dev/scripts/demo.sh
 
       - name: Record the script execution
         run: |
-          asciinema rec --command="./dev/config/demo.sh" --quiet --overwrite demo.cast
+          asciinema rec --command="./dev/scripts/demo.sh" --quiet --overwrite demo.cast
 
       - name: Download the prebuilt `agg` binary for Ubuntu (x86_64)
         run: |

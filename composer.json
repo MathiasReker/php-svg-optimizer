@@ -99,6 +99,7 @@
             "@composer test",
             "@composer infection"
         ],
+        "build-badges": "bash dev/scipts/badges.sh",
         "composer-dependency-analyser": "@php vendor/bin/composer-dependency-analyser",
         "cs-check": "@php vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php --dry-run --diff",
         "cs-fix": "@php vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php",
