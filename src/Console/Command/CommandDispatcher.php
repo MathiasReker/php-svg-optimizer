@@ -59,6 +59,13 @@ final readonly class CommandDispatcher
             : new StdoutStream();
         $output = new OutputManager($stream);
 
+        try {
+            $parser->validateOptions();
+        } catch (\InvalidArgumentException $invalidArgumentException) {
+            $output->printError($invalidArgumentException->getMessage());
+            exit(1);
+        }
+
         if (\PHP_SAPI !== 'cli') {
             $output->printError('This command can only be run in a CLI environment.');
             exit(1);

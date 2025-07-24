@@ -141,6 +141,36 @@ final readonly class ArgumentParser
     }
 
     /**
+     * Validates that all options passed via the command-line arguments
+     * are recognized and supported by the application.
+     *
+     * This method checks both long-form options (e.g., --dry-run) and
+     * shorthand versions (e.g., -d). If an unknown option is found,
+     * an \InvalidArgumentException is thrown with a helpful message.
+     *
+     * @throws \InvalidArgumentException If any unsupported or unknown option is provided
+     */
+    public function validateOptions(): void
+    {
+        $validOptionKeys = [];
+
+        foreach (Option::cases() as $option) {
+            $validOptionKeys[] = $option->getFull();
+            $validOptionKeys[] = $option->getShorthand();
+        }
+
+        foreach ($this->args as $arg) {
+            if (self::isOption($arg)) {
+                $optionName = self::getOptionKey($arg);
+
+                if (!\in_array($optionName, $validOptionKeys, true)) {
+                    throw new \InvalidArgumentException(\sprintf('Unknown option: "%s". Run with --help to see valid options.', $optionName));
+                }
+            }
+        }
+    }
+
+    /**
      * Check if the argument list is empty.
      *
      * @return bool True if the argument list is empty, false otherwise

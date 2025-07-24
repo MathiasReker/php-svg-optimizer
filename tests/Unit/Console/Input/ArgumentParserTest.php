@@ -250,6 +250,64 @@ final class ArgumentParserTest extends TestCase
         self::assertFalse($parser->hasOption(Option::CONFIG));
     }
 
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testValidateOptionsDoesNotThrowWithValidOptions(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            '--config=config.json',
+            '--dry-run',
+            'process',
+            '/path/to/file.svg',
+        ];
+
+        $parser = new ArgumentParser($args);
+
+        $this->expectNotToPerformAssertions();
+        $parser->validateOptions();
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testValidateOptionsThrowsExceptionForUnknownOption(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            '--invalid-option=value',
+            'process',
+            '/path/to/file.svg',
+        ];
+
+        $parser = new ArgumentParser($args);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown option: "--invalid-option". Run with --help to see valid options.');
+
+        $parser->validateOptions();
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testValidateOptionsAcceptsShorthandOptions(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            '-d',
+            '-c=config.json',
+            'process',
+            '/path/to/file.svg',
+        ];
+
+        $parser = new ArgumentParser($args);
+
+        $this->expectNotToPerformAssertions();
+        $parser->validateOptions();
+    }
+
     #[\Override]
     protected function setUp(): void
     {
