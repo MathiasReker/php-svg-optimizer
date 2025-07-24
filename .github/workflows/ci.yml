@@ -41,18 +41,18 @@ jobs:
         run: composer install --optimize-autoloader
 
       - name: Validate Composer Configuration
-        run: composer validate --strict
+        run: composer analyze:validate
 
       - name: Check platform requirements for packages
-        run: composer check
+        run: composer analyze:check
 
       - name: Check PSR-4 autoloading
-        run: composer dump-autoload -o
+        run: composer analyze:autoload
 
       - name: Analyze Composer Dependencies
-        run: composer composer-dependency-analyser
+        run: composer analyze:dependency
 
-      - name: Lint PHP Files
+      - name: Check syntax
         run: |
           find src tests -name '*.php' -exec php -l {} \;
 
@@ -64,14 +64,14 @@ jobs:
       - name: Check Code Style with PHP CS Fixer
         run: |
           if [[ "${{ matrix.php-versions }}" != "8.4" ]]; then
-            composer cs-check
+            composer analyze:php-cs-fixer
           fi
 
       - name: Analyze Code with PHPStan
-        run: vendor/bin/phpstan analyse --level=max --error-format=table --memory-limit=1G
+        run: composer analyze:phpstan
 
       - name: Perform Composer Security Audit
-        run: composer audit --format=table
+        run: composer analyze:audit
 
       - name: Normalize Composer Configuration
-        run: composer normalize --dry-run --no-check-lock
+        run: composer analyze:normalize
