@@ -27,46 +27,29 @@ final class StdoutStreamTest extends TestCase
     public function testConstructorOpensStdoutSuccessfully(): void
     {
         $this->expectNotToPerformAssertions();
-
         new StdoutStream();
     }
 
     /**
      * @throws \RuntimeException
-     * @throws \ReflectionException
      */
-    public function testWriteOutputsToStream(): void
+    public function testWriteAndWritelnToMemoryStream(): void
     {
-        $mock = $this->getMockBuilder(StdoutStream::class)
-            ->onlyMethods(['write', 'writeln'])
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $reflection = new \ReflectionClass(StdoutStream::class);
-        $property = $reflection->getProperty('stream');
-        $resource = fopen('php://memory', 'w+');
-        $property->setValue($mock, $resource);
-
-        if (false === $resource) {
-            throw new \RuntimeException('Unable to open stdout stream.');
-        }
-
-        fclose($resource);
-
         /**
          * @phpstan-ignore-next-line
          */
-        $mock = new class extends StdoutStream {
+        $stream = new class extends StdoutStream {
             public function __construct()
             {
                 parent::__construct();
-                $stream = fopen('php://memory', 'w+');
 
-                if (false === $stream) {
+                /*
+                 * @phpstan-ignore-next-line
+                 */
+                $this->stream = fopen('php://memory', 'w+');
+                if (false === $this->stream) {
                     throw new \RuntimeException('Unable to open memory stream.');
                 }
-
-                $this->stream = $stream;
             }
 
             public function getContent(): string
@@ -77,10 +60,10 @@ final class StdoutStreamTest extends TestCase
             }
         };
 
-        $mock->write('Hello');
-        $mock->writeln(' World');
+        $stream->write('Hello');
+        $stream->writeln(' World');
 
-        $output = $mock->getContent();
+        $output = $stream->getContent();
 
         self::assertStringContainsString('Hello', $output);
         self::assertStringContainsString(' World', $output);
@@ -89,11 +72,61 @@ final class StdoutStreamTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testConstructorThrowsIfStreamFails(): void
+    public function testMultipleWrites(): void
     {
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Unable to open stdout stream.');
+        /**
+         * @phpstan-ignore-next-line
+         */
+        $stream = new class extends StdoutStream {
+            public function __construct()
+            {
+                parent::__construct();
 
-        throw new \RuntimeException('Unable to open stdout stream.');
+                /*
+                 * @phpstan-ignore-next-line
+                 */
+                $this->stream = fopen('php://memory', 'w+');
+                if (false === $this->stream) {
+                    throw new \RuntimeException('Unable to open memory stream.');
+                }
+            }
+
+            public function getContent(): string
+            {
+                rewind($this->stream);
+
+                return stream_get_contents($this->stream);
+            }
+        };
+
+        $stream->write('Line 1');
+        $stream->writeln(' Line 2');
+        $stream->write('Line 3');
+        $stream->writeln(' Line 4');
+
+        $output = $stream->getContent();
+
+        self::assertStringContainsString('Line 1', $output);
+        self::assertStringContainsString('Line 2' . \PHP_EOL, $output);
+        self::assertStringContainsString('Line 3', $output);
+        self::assertStringContainsString('Line 4' . \PHP_EOL, $output);
+    }
+
+    /**
+     * @throws \RuntimeException
+     * @throws \ReflectionException
+     */
+    public function testStreamClosedOnDestruct(): void
+    {
+        $stream = new StdoutStream();
+
+        $ref = new \ReflectionClass($stream);
+        $property = $ref->getProperty('stream');
+
+        $resource = $property->getValue($stream);
+
+        unset($stream);
+
+        self::assertFalse(\is_resource($resource), 'Stream should be closed after destruction');
     }
 }

@@ -133,10 +133,14 @@ final class SvgOptimizerTest extends TestCase
         $optimizer->optimize();
     }
 
+    /**
+     * @throws \LogicException
+     */
     public function testGetMetaDataReturnsProviderMetaData(): void
     {
         $optimizer = new SvgOptimizer($this->provider);
 
+        $optimizer->optimize();
         $metaData = $optimizer->getMetaData();
 
         self::assertSame(100, $metaData->getOriginalSize());
@@ -210,6 +214,19 @@ final class SvgOptimizerTest extends TestCase
         $optimizer->configureRules($ruleFlags);
 
         self::assertSame(1, $optimizer->getRulesCount());
+    }
+
+    /**
+     * @throws \LogicException
+     */
+    public function testGetMetaDataThrowsIfCalledBeforeOptimize(): void
+    {
+        $optimizer = new SvgOptimizer($this->provider);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Metadata is not available before optimization.');
+
+        $optimizer->getMetaData();
     }
 
     protected function setUp(): void

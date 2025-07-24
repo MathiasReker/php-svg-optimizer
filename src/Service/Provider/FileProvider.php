@@ -46,16 +46,21 @@ final class FileProvider extends AbstractProvider
     #[\Override]
     public function getInputContent(): string
     {
-        if (!file_exists($this->inputFile)) {
+        if (!file_exists($this->inputFile) || !is_file($this->inputFile)) {
             throw new FileNotFoundException(\sprintf('Input file does not exist: %s', $this->inputFile));
         }
 
-        $svgContent = file_get_contents($this->inputFile);
-        if (false === $svgContent) {
+        if (!is_readable($this->inputFile)) {
+            throw new IOException(\sprintf('Input file is not readable: %s', $this->inputFile));
+        }
+
+        $content = file_get_contents($this->inputFile);
+
+        if (false === $content) {
             throw new IOException(\sprintf('Failed to read input file content: %s', $this->inputFile));
         }
 
-        return $svgContent;
+        return $content;
     }
 
     /**

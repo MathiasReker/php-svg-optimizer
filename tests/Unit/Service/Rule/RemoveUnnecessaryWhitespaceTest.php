@@ -39,9 +39,9 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
      * @throws SvgValidationException
      */
     #[DataProvider('provideOptimizeRemovesUnnecessaryWhitespaceCases')]
-    public function testOptimizeRemovesUnnecessaryWhitespace(string $svgContent, string $expected): void
+    public function testOptimizeRemovesUnnecessaryWhitespace(string $content, string $expected): void
     {
-        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
+        $svgOptimizer = new SvgOptimizer(new StringProvider($content));
         $svgOptimizer->addRule(new RemoveUnnecessaryWhitespace());
 
         $actual = $svgOptimizer->optimize()->getContent();

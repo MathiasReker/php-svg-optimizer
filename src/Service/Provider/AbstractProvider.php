@@ -38,7 +38,7 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Holds the optimized SVG content.
      */
-    protected string $outputContent;
+    protected string $outputContent = '';
 
     /**
      * The DOMDocumentWrapper instance.
@@ -48,7 +48,7 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Input content to be loaded in child classes.
      */
-    protected string $inputContent;
+    protected string $inputContent = '';
 
     /**
      * Constructor for the AbstractProvider class.

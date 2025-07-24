@@ -12,31 +12,18 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\FileCollector;
+use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[\PHPUnit\Framework\Attributes\CoversNothing]
+#[CoversClass(FileCollector::class)]
+#[CoversClass(Finder::class)]
 final class FileCollectorTest extends TestCase
 {
     private string $tempDir;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->tempDir = sys_get_temp_dir() . '/svg_test_' . uniqid();
-        mkdir($this->tempDir, 0o777, true);
-    }
-
-    /**
-     * @throws \UnexpectedValueException
-     */
-    protected function tearDown(): void
-    {
-        self::deleteDirectory($this->tempDir);
-    }
 
     public function testReturnsEmptyArrayForNonExistentPath(): void
     {
@@ -97,6 +84,22 @@ final class FileCollectorTest extends TestCase
         $result = $collector->collectSvgFiles([$svgFile, $svgFile]);
 
         self::assertCount(1, $result);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->tempDir = sys_get_temp_dir() . '/svg_test_' . uniqid();
+        mkdir($this->tempDir, 0o777, true);
+    }
+
+    /**
+     * @throws \UnexpectedValueException
+     */
+    protected function tearDown(): void
+    {
+        self::deleteDirectory($this->tempDir);
     }
 
     /**

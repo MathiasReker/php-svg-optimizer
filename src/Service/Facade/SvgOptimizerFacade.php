@@ -200,6 +200,8 @@ final readonly class SvgOptimizerFacade
      * Retrieves metadata related to the SVG content.
      *
      * @return MetaDataValueObject The metadata associated with the SVG content
+     *
+     * @throws \LogicException If the metadata cannot be retrieved
      */
     public function getMetaData(): MetaDataValueObject
     {

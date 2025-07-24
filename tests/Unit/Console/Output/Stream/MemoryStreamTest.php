@@ -91,4 +91,133 @@ final class MemoryStreamTest extends TestCase
 
         $mock->getContent();
     }
+
+    /**
+     * @throws \RuntimeException
+     */
+    public function testMultipleWritesAndGetContent(): void
+    {
+        $stream = new MemoryStream();
+        $stream->write('Line 1');
+        $stream->writeln(' Line 2');
+        $stream->write('Line 3');
+        $stream->writeln(' Line 4');
+
+        $output = $stream->getContent();
+
+        self::assertStringContainsString('Line 1', $output);
+        self::assertStringContainsString('Line 2' . \PHP_EOL, $output);
+        self::assertStringContainsString('Line 3', $output);
+        self::assertStringContainsString('Line 4' . \PHP_EOL, $output);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    public function testGetContentInitiallyEmpty(): void
+    {
+        $stream = new MemoryStream();
+
+        $output = $stream->getContent();
+
+        self::assertSame('', $output);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    public function testGetContentConsistentUnlessChanged(): void
+    {
+        $stream = new MemoryStream();
+        $stream->writeln('Snapshot');
+
+        $first = $stream->getContent();
+        $second = $stream->getContent();
+
+        self::assertSame($first, $second);
+
+        $stream->writeln('New line');
+
+        $third = $stream->getContent();
+
+        self::assertNotSame($first, $third);
+    }
+
+    /**
+     * @throws \RuntimeException
+     * @throws \ReflectionException
+     */
+    public function testWriteAndManualRewind(): void
+    {
+        $stream = new MemoryStream();
+        $stream->write('Testing');
+
+        /*
+         * @phpstan-ignore-next-line
+         */
+        rewind((new \ReflectionClass($stream))->getProperty('stream')->getValue($stream));
+        $output = $stream->getContent();
+
+        self::assertStringContainsString('Testing', $output);
+    }
+
+    /**
+     * @throws \RuntimeException
+     * @throws \ReflectionException
+     */
+    public function testStreamIsClosedOnDestruct(): void
+    {
+        $stream = new MemoryStream();
+
+        $ref = new \ReflectionClass($stream);
+        $streamProp = $ref->getProperty('stream');
+        $resource = $streamProp->getValue($stream);
+
+        unset($stream);
+
+        self::assertFalse(\is_resource($resource), 'Stream should be closed after destruct');
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    public function testWriteEmptyString(): void
+    {
+        $stream = new MemoryStream();
+        $stream->write('');
+        self::assertSame('', $stream->getContent());
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    public function testWriteBinaryData(): void
+    {
+        $stream = new MemoryStream();
+        $binaryData = "\x00\xFF\x00\xFF";
+        $stream->write($binaryData);
+        self::assertStringContainsString($binaryData, $stream->getContent());
+    }
+
+    /**
+     * @throws \RuntimeException
+     * @throws \ReflectionException
+     */
+    public function testGetContentAfterStreamClosedThrows(): void
+    {
+        $stream = new MemoryStream();
+
+        $ref = new \ReflectionClass($stream);
+        $streamProp = $ref->getProperty('stream');
+        $resource = $streamProp->getValue($stream);
+
+        /*
+         * @phpstan-ignore-next-line
+         */
+        fclose($resource);
+
+        $this->expectException(\Error::class);
+
+        $stream->getContent();
+    }
 }

@@ -47,12 +47,12 @@ final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOp
     /**
      * Removes the DOCTYPE declaration from the SVG content.
      *
-     * @param string $svgContent The SVG content as a string
+     * @param string $content The SVG content as a string
      *
      * @return string The SVG content without the DOCTYPE declaration
      */
-    private static function removeDoctype(string $svgContent): string
+    private static function removeDoctype(string $content): string
     {
-        return (string) preg_replace(self::DOCTYPE_REGEX, '', $svgContent);
+        return (string) preg_replace(self::DOCTYPE_REGEX, '', $content);
     }
 }

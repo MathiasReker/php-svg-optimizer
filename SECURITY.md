@@ -5,8 +5,8 @@ our top priority, and we greatly value the support of our community in this rega
 
 ## Reporting Vulnerabilities
 
-If you discover a potential security vulnerability, please report it to us directly. Send an email
-to [Mathias Reker](mailto:github@reker.dk) with detailed information about the issue.
+If you discover a potential security vulnerability, please report it to us directly.
+Email [Mathias Reker](mailto:github@reker.dk) with detailed information about the issue.
 
 **Important:** Do not publicly disclose the vulnerability until we have completed our investigation and addressed the
 issue. We are committed to acknowledging your report promptly and keeping you informed throughout the process.

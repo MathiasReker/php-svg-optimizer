@@ -20,6 +20,7 @@ use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
+use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
@@ -103,6 +104,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ConfigLoader::class)]
 #[CoversClass(ByteFormatter::class)]
 #[CoversClass(SortAttributes::class)]
+#[CoversClass(Finder::class)]
 final class SvgOptimizerCommandTest extends TestCase
 {
     private string $tempDir;
@@ -110,6 +112,7 @@ final class SvgOptimizerCommandTest extends TestCase
     /**
      * @throws \ReflectionException
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     public function testRunWithValidSvgFile(): void
     {
@@ -146,6 +149,7 @@ final class SvgOptimizerCommandTest extends TestCase
     /**
      * @throws \ReflectionException
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     public function testRunWithNoInputFiles(): void
     {
@@ -179,6 +183,23 @@ final class SvgOptimizerCommandTest extends TestCase
 
         self::assertSame(0, $totalOriginalSize);
         self::assertSame(0, $totalOptimizedSize);
+    }
+
+    /**
+     * @throws \RuntimeException
+     * @throws \LogicException
+     */
+    public function testRunWithDryRunOption(): void
+    {
+        $svgFile = $this->tempDir . '/test.svg';
+        $originalContent = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+        file_put_contents($svgFile, $originalContent);
+
+        $command = new Command([$svgFile], new CommandOptionsValueObject(true, ''), new OutputManager(new MemoryStream()));
+        $command->run();
+
+        $newContent = file_get_contents($svgFile);
+        self::assertSame($originalContent, $newContent); // no overwrite
     }
 
     protected function setUp(): void

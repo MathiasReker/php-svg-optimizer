@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
+use MathiasReker\PhpSvgOptimizer\Console\Input\FileCollector;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
+use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
@@ -31,6 +33,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ArgumentData::class)]
 #[CoversClass(Command::class)]
 #[CoversClass(OptionValueObject::class)]
+#[CoversClass(FileCollector::class)]
+#[CoversClass(Finder::class)]
 final class ArgumentParserTest extends TestCase
 {
     /**
@@ -188,6 +192,62 @@ final class ArgumentParserTest extends TestCase
         $parser = new ArgumentParser([]);
 
         self::assertTrue($parser->isEmpty());
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testGetPathsThrowsIfNoSvgFilesFound(): void
+    {
+        // Create temporary directory with no SVG files
+        $tempDir = sys_get_temp_dir() . '/empty_dir_' . uniqid();
+        mkdir($tempDir);
+
+        $args = [
+            'vendor/bin/svg-optimizer',
+            'process',
+            $tempDir,
+        ];
+
+        $parser = new ArgumentParser($args);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('No valid .svg files found to optimize.');
+
+        try {
+            $parser->getPaths();
+        } finally {
+            rmdir($tempDir);
+        }
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testGetArgumentIndexThrowsExceptionWhenNoPositionalArg(): void
+    {
+        $args = ['vendor/bin/svg-optimizer', '--config=config.json', '--dry-run'];
+
+        $parser = new ArgumentParser($args);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Please follow the following format:');
+
+        $parser->getArgumentIndex();
+    }
+
+    public function testHasOptionReturnsFalseOnInvalidOptionName(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            '--unknown-option=value',
+            'process',
+            '/path/to/file.svg',
+        ];
+
+        $parser = new ArgumentParser($args);
+
+        self::assertFalse($parser->hasOption(Option::CONFIG));
     }
 
     #[\Override]

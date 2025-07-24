@@ -117,6 +117,233 @@ final class FileProviderTest extends TestCase
         $fileProvider->optimize($domDocument);
     }
 
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public function testLoadContentReturnsDomDocument(): void
+    {
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+
+        $dom = $fileProvider->loadContent();
+
+        /*
+         * @phpstan-ignore-next-line
+         */
+        self::assertSame('svg', $dom->documentElement->tagName);
+    }
+
+    /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public function testGetOutputContentBeforeOptimizeReturnsEmptyString(): void
+    {
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+
+        $output = $fileProvider->getOutputContent();
+
+        self::assertSame('', $output);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public function testOptimizeModifiesOutputContent(): void
+    {
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+
+        $dom = $fileProvider->loadContent();
+        /*
+         * @phpstan-ignore-next-line
+         */
+        $dom->documentElement->setAttribute('id', 'svg1');
+
+        $fileProvider->optimize($dom);
+        $output = $fileProvider->getOutputContent();
+
+        self::assertStringContainsString('id="svg1"', $output);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws \InvalidArgumentException
+     */
+    public function testGetMetaDataReflectsOptimizedSize(): void
+    {
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+
+        $dom = $fileProvider->loadContent();
+        $fileProvider->optimize($dom);
+
+        $meta = $fileProvider->getMetaData();
+
+        self::assertGreaterThan(0, $meta->getOriginalSize());
+        self::assertGreaterThan(0, $meta->getOptimizedSize());
+        self::assertGreaterThanOrEqual(0.0, $meta->getSavedPercentage());
+    }
+
+    /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws \InvalidArgumentException
+     */
+    public function testProviderReturnsZeroBeforeOptimization(): void
+    {
+        $provider = new FileProvider(self::TEST_INPUT_FILE);
+        $meta = $provider->getMetaData();
+
+        self::assertSame(filesize(self::TEST_INPUT_FILE), $meta->getOriginalSize());
+        self::assertSame(0, $meta->getOptimizedSize());
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public function testOptimizeWithMinimalSvg(): void
+    {
+        file_put_contents(
+            self::TEST_INPUT_FILE,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><text textContent="a &amp; b"></text></svg>
+                XML
+        );
+
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $dom = $fileProvider->loadContent();
+
+        $fileProvider->optimize($dom);
+        $output = $fileProvider->getOutputContent();
+
+        self::assertStringContainsString('<svg', $output);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public function testLoadContentThrowsXmlProcessingException(): void
+    {
+        file_put_contents(self::TEST_INPUT_FILE, '<svg><invalid></svg>'); // malformed XML
+
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+
+        $this->expectException(XmlProcessingException::class);
+        $fileProvider->loadContent();
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws \InvalidArgumentException
+     * @throws \DivisionByZeroError
+     */
+    public function testMetaDataSavedPercentageCalculation(): void
+    {
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+
+        $dom = $fileProvider->loadContent();
+        $fileProvider->optimize($dom);
+
+        $meta = $fileProvider->getMetaData();
+
+        $expectedSaved = $meta->getOriginalSize() - $meta->getOptimizedSize();
+        $expectedPercentage = $expectedSaved / $meta->getOriginalSize() * 100;
+
+        self::assertEqualsWithDelta($expectedPercentage, $meta->getSavedPercentage(), 0.01);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public function testLoadContentThrowsXmlProcessingExceptionOnMalformedXml(): void
+    {
+        file_put_contents(self::TEST_INPUT_FILE, '<svg><unclosed></svg>');
+
+        $provider = new FileProvider(self::TEST_INPUT_FILE);
+
+        $this->expectException(XmlProcessingException::class);
+
+        $provider->loadContent();
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public function testOptimizeUpdatesOutputContentWithAttributes(): void
+    {
+        $provider = new FileProvider(self::TEST_INPUT_FILE);
+        $dom = new \DOMDocument();
+        $dom->loadXML('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+        /*
+         * @phpstan-ignore-next-line
+         */
+        $dom->documentElement->setAttribute('data-test', 'value');
+
+        $provider->optimize($dom);
+
+        $output = $provider->getOutputContent();
+
+        self::assertStringContainsString('data-test="value"', $output);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws \InvalidArgumentException
+     */
+    public function testMetaDataReflectsMultipleOptimizations(): void
+    {
+        $provider = new FileProvider(self::TEST_INPUT_FILE);
+
+        $dom = $provider->loadContent();
+        $provider->optimize($dom);
+
+        $firstMeta = $provider->getMetaData();
+
+        /*
+         * @phpstan-ignore-next-line
+         */
+        $dom->documentElement->setAttribute('class', 'test');
+        $provider->optimize($dom);
+
+        $secondMeta = $provider->getMetaData();
+
+        self::assertSame($firstMeta->getOriginalSize(), $secondMeta->getOriginalSize());
+        self::assertNotSame($firstMeta->getOptimizedSize(), $secondMeta->getOptimizedSize());
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public function testOptimizeThrowsTypeErrorOnInvalidInput(): void
+    {
+        $provider = new FileProvider(self::TEST_INPUT_FILE);
+
+        $this->expectException(\TypeError::class);
+
+        /*
+         * @phpstan-ignore-next-line
+         */
+        $provider->optimize(null);
+    }
+
     #[\Override]
     protected function setUp(): void
     {

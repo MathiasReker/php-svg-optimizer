@@ -39,9 +39,9 @@ final class RemoveUnusedNamespacesTest extends TestCase
      * @throws SvgValidationException
      */
     #[DataProvider('provideOptimizeCases')]
-    public function testOptimize(string $svgContent, string $expected): void
+    public function testOptimize(string $content, string $expected): void
     {
-        $svgOptimizer = new SvgOptimizer(new StringProvider($svgContent));
+        $svgOptimizer = new SvgOptimizer(new StringProvider($content));
         $svgOptimizer->addRule(new RemoveUnusedNamespaces());
 
         $actual = $svgOptimizer->optimize()->getContent();

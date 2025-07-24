@@ -44,6 +44,13 @@ final class SvgOptimizer
     private readonly SvgValidator $svgValidator;
 
     /**
+     * Flag indicating whether the SVG content has been optimized.
+     *
+     * @var bool True if the SVG content has been optimized, false otherwise
+     */
+    private bool $isOptimized = false;
+
+    /**
      * Constructor for SvgOptimizer.
      *
      * @param SvgProviderInterface $svgProvider The provider used to get and save SVG content
@@ -63,15 +70,17 @@ final class SvgOptimizer
      */
     public function optimize(): self
     {
-        $svgContent = $this->svgProvider->getInputContent();
+        $content = $this->svgProvider->getInputContent();
 
-        if (!$this->svgValidator->isValid($svgContent)) {
+        if (!$this->svgValidator->isValid($content)) {
             throw new SvgValidationException('The file does not appear to be a valid SVG file.');
         }
 
         $domDocument = $this->svgProvider->loadContent();
         $this->applyRules($domDocument);
         $this->domDocumentContent = $this->svgProvider->optimize($domDocument)->getOutputContent();
+
+        $this->isOptimized = true;
 
         return $this;
     }
@@ -92,9 +101,15 @@ final class SvgOptimizer
      * Get metadata related to the SVG content.
      *
      * @return MetaDataValueObject The metadata containing information about the SVG file sizes
+     *
+     * @throws \LogicException If metadata is requested before optimization
      */
     public function getMetaData(): MetaDataValueObject
     {
+        if (false === $this->isOptimized) {
+            throw new \LogicException('Metadata is not available before optimization.');
+        }
+
         return $this->svgProvider->getMetaData();
     }
 

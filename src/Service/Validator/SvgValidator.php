@@ -62,13 +62,13 @@ readonly class SvgValidator
      * the presence of an SVG tag after removing any XML and DOCTYPE
      * declarations.
      *
-     * @param string $svgContent The SVG content to be validated
+     * @param string $content The SVG content to be validated
      *
      * @return bool True if the content is a valid SVG, false otherwise
      */
-    public function isValid(string $svgContent): bool
+    public function isValid(string $content): bool
     {
-        $cleanedContent = self::removeUnnecessaryDeclarations($svgContent);
+        $cleanedContent = self::removeUnnecessaryDeclarations($content);
 
         return self::containsSvgTag($cleanedContent);
     }

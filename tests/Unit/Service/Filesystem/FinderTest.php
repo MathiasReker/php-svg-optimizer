@@ -23,22 +23,6 @@ final class FinderTest extends TestCase
 {
     private string $tempDir;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->tempDir = sys_get_temp_dir() . '/finder_test_' . uniqid();
-        mkdir($this->tempDir, 0o777, true);
-    }
-
-    /**
-     * @throws \UnexpectedValueException
-     */
-    protected function tearDown(): void
-    {
-        self::deleteDirectory($this->tempDir);
-        parent::tearDown();
-    }
-
     public function testReturnsEmptyArrayForInvalidDirectory(): void
     {
         $finder = (new Finder())->in('/non/existing/path');
@@ -130,6 +114,85 @@ final class FinderTest extends TestCase
             ->withExtension('svg');
 
         self::assertSame([], $finder->find());
+    }
+
+    public function testNotReturnsDirectoriesIfFilesNotSet(): void
+    {
+        $subDir = $this->tempDir . '/subfolder';
+        mkdir($subDir);
+
+        $finder = (new Finder())
+            ->in($this->tempDir);
+
+        $results = $finder->find();
+
+        self::assertNotContains(realpath($subDir), $results);
+    }
+
+    public function testFindsAllFilesWhenNoExtensionSet(): void
+    {
+        $svg = $this->tempDir . '/icon.svg';
+        $txt = $this->tempDir . '/note.txt';
+
+        file_put_contents($svg, '<svg></svg>');
+        file_put_contents($txt, 'note');
+
+        $finder = (new Finder())
+            ->in($this->tempDir)
+            ->files();
+
+        $results = $finder->find();
+
+        self::assertCount(2, $results);
+        self::assertContains(realpath($svg), $results);
+        self::assertContains(realpath($txt), $results);
+    }
+
+    public function testSkipsFilesWithInvalidRealPath(): void
+    {
+        $brokenLink = $this->tempDir . '/broken.svg';
+        symlink('/nonexistent/path.svg', $brokenLink);
+
+        $finder = (new Finder())
+            ->in($this->tempDir)
+            ->files()
+            ->withExtension('svg');
+
+        $results = $finder->find();
+
+        self::assertNotContains($brokenLink, $results);
+    }
+
+    public function testWithExtensionMatchesMixedCase(): void
+    {
+        $svgUpper = $this->tempDir . '/IMAGE.SvG';
+        file_put_contents($svgUpper, '<svg></svg>');
+
+        $finder = (new Finder())
+            ->in($this->tempDir)
+            ->files()
+            ->withExtension('sVG');
+
+        $results = $finder->find();
+
+        self::assertCount(1, $results);
+        self::assertSame(realpath($svgUpper), $results[0]);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->tempDir = sys_get_temp_dir() . '/finder_test_' . uniqid();
+        mkdir($this->tempDir, 0o777, true);
+    }
+
+    /**
+     * @throws \UnexpectedValueException
+     */
+    protected function tearDown(): void
+    {
+        self::deleteDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     /**

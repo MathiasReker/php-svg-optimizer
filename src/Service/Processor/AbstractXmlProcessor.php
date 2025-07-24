@@ -38,20 +38,20 @@ abstract readonly class AbstractXmlProcessor
      */
     final public function process(\DOMDocument $domDocument, callable $callback): string
     {
-        $svgContent = $domDocument->saveXML();
+        $content = $domDocument->saveXML();
 
-        if (false === $svgContent) {
+        if (false === $content) {
             throw new XmlProcessingException('Failed to save SVG XML content.');
         }
 
         try {
-            $svgContent = $callback($svgContent);
+            $content = $callback($content);
 
-            if (!\is_string($svgContent)) {
+            if (!\is_string($content)) {
                 throw new XmlProcessingException('Callback must return a string.');
             }
 
-            if (!$this->getValidator()->isValid($svgContent)) {
+            if (!$this->getValidator()->isValid($content)) {
                 throw new XmlProcessingException('Optimized SVG content is not valid.');
             }
         } catch (XmlProcessingException $e) {
@@ -68,7 +68,7 @@ abstract readonly class AbstractXmlProcessor
         );
 
         try {
-            if (!$domDocument->loadXML($svgContent)) {
+            if (!$domDocument->loadXML($content)) {
                 throw new XmlProcessingException('Failed to load optimized XML content.');
             }
         } catch (\Throwable $e) {
@@ -77,7 +77,7 @@ abstract readonly class AbstractXmlProcessor
             restore_error_handler();
         }
 
-        return $svgContent;
+        return $content;
     }
 
     /**

@@ -102,4 +102,83 @@ final class ConcreteXmlProcessorTest extends TestCase
 
         $processor->process($domDocument, $callback);
     }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws \ErrorException
+     */
+    public function testProcessInvalidContentThrows(): void
+    {
+        $svg = '<svg></svg>';
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML($svg);
+
+        // Callback returns empty string (invalid SVG)
+        $callback = static fn (string $content): string => '';
+
+        $processor = new /**
+                          * @no-named-arguments
+                          */
+        readonly class extends AbstractXmlProcessor {
+        };
+
+        $this->expectException(XmlProcessingException::class);
+        $this->expectExceptionMessage('Optimized SVG content is not valid.');
+
+        $processor->process($domDocument, $callback);
+    }
+
+    /**
+     * @throws \RuntimeException
+     * @throws \ErrorException
+     */
+    public function testProcessCallbackThrowsGenericException(): void
+    {
+        $svg = '<svg></svg>';
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML($svg);
+
+        $callback = static function (string $content): string {
+            /*
+             * @phpstan-ignore-next-line
+             */
+            throw new \RuntimeException('Callback failed');
+        };
+
+        $processor = new /**
+                          * @no-named-arguments
+                          */
+        readonly class extends AbstractXmlProcessor {
+        };
+
+        $this->expectException(XmlProcessingException::class);
+        $this->expectExceptionMessage('Failed to process the XML content.');
+
+        $processor->process($domDocument, $callback);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws \ErrorException
+     */
+    public function testProcessLoadXmlTriggersWarningConvertedToException(): void
+    {
+        $svg = '<svg></svg>';
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML($svg);
+
+        // Intentionally invalid XML that will cause loadXML to fail
+        $callback = static fn (string $content): string => '<svg><invalid>';
+
+        $processor = new /**
+                          * @no-named-arguments
+                          */
+        readonly class extends AbstractXmlProcessor {
+        };
+
+        $this->expectException(XmlProcessingException::class);
+        $this->expectExceptionMessage('Failed to load optimized XML content.');
+
+        $processor->process($domDocument, $callback);
+    }
 }

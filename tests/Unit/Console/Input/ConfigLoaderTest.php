@@ -90,6 +90,141 @@ final class ConfigLoaderTest extends TestCase
         ConfigLoader::loadConfig($this->configFile);
     }
 
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    public function testLoadConfigWithBooleanAndNumericValues(): void
+    {
+        $jsonString = '{"flag": true, "disabled": 0, "enabled": 1}';
+
+        $result = ConfigLoader::loadConfig($jsonString);
+
+        self::assertSame(
+            [
+                'flag' => true,
+                'disabled' => false,
+                'enabled' => true,
+            ],
+            $result
+        );
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    public function testLoadConfigWithNonBooleanValues(): void
+    {
+        $jsonString = '{"key1": "yes", "key2": 123, "key3": null}';
+
+        $result = ConfigLoader::loadConfig($jsonString);
+
+        self::assertSame(
+            [
+                'key1' => true,  // "yes" casts to true
+                'key2' => true,  // 123 casts to true
+                'key3' => false, // null casts to false
+            ],
+            $result
+        );
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    public function testLoadConfigWithNumericKeys(): void
+    {
+        $jsonString = '{"0": true, "1": false}';
+
+        $result = ConfigLoader::loadConfig($jsonString);
+
+        /*
+         * @phpstan-ignore-next-line
+         */
+        self::assertSame(['0' => true, '1' => false], $result);
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     * @throws \JsonException
+     */
+    public function testLoadConfigWithEmptyStringThrowsException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Configuration must be a valid file path or a JSON string.');
+
+        ConfigLoader::loadConfig('');
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     * @throws \JsonException
+     */
+    public function testLoadConfigWithNestedJsonObject(): void
+    {
+        $json = '{"key1": {"subkey": true}, "key2": false}';
+
+        // Expect that nested objects will be cast to boolean true (non-empty array)
+        $result = ConfigLoader::loadConfig($json);
+
+        self::assertSame(
+            [
+                'key1' => true,
+                'key2' => false,
+            ],
+            $result
+        );
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     * @throws \JsonException
+     */
+    public function testLoadConfigWithInvalidStringThrowsException(): void
+    {
+        $this->expectException(\JsonException::class);
+
+        ConfigLoader::loadConfig('not a valid json or file path');
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     * @throws \JsonException
+     */
+    public function testLoadConfigWithEmptyJsonObjectReturnsEmptyArray(): void
+    {
+        $json = '{}';
+        $result = ConfigLoader::loadConfig($json);
+        self::assertSame([], $result);
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     * @throws \JsonException
+     */
+    public function testLoadConfigWithNonArrayJsonThrowsException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Configuration must be a valid file path or a JSON string.');
+
+        ConfigLoader::loadConfig('true');
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     * @throws \JsonException
+     */
+    public function testLoadConfigWithNonExistentFilePathThrowsJsonException(): void
+    {
+        $this->expectException(\JsonException::class);
+
+        $nonExistentFile = '/path/to/non-existent-file.json';
+
+        ConfigLoader::loadConfig($nonExistentFile);
+    }
+
     protected function setUp(): void
     {
         $this->configFile = tempnam(sys_get_temp_dir(), 'config_test_');

@@ -107,6 +107,55 @@ final class ArgumentDataTest extends TestCase
         $this->argumentData->getOption('unknown');
     }
 
+    /**
+     * @throws \InvalidArgumentException If the option does not exist
+     */
+    public function testGetOptionByNameReturnsCorrectOption(): void
+    {
+        $helpOption = $this->argumentData->getOptionByName(Option::HELP->getFull());
+        self::assertSame(Option::HELP->getFull(), $helpOption->getFull());
+
+        $dryRunOption = $this->argumentData->getOptionByName(Option::DRY_RUN->getShorthand());
+        self::assertSame(Option::DRY_RUN->getFull(), $dryRunOption->getFull());
+    }
+
+    /**
+     * @throws \InvalidArgumentException If the option does not exist
+     */
+    public function testGetOptionByNameThrowsForUnknownName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Option "nonexistent" not found.');
+
+        $this->argumentData->getOptionByName('nonexistent');
+    }
+
+    public function testExamplesContainCorrectCommands(): void
+    {
+        $examples = $this->argumentData->getExamples();
+
+        self::assertStringContainsString(self::EXAMPLE_COMMAND, $examples[0]->getCommand());
+        self::assertStringContainsString('vendor/bin/svg-optimizer --config config.json process /path/to/file.svg', $examples[1]->getCommand());
+        self::assertStringContainsString('vendor/bin/svg-optimizer --quiet process /path/to/file.svg', $examples[2]->getCommand());
+    }
+
+    public function testGetOptionsContainsAllDefinedOptions(): void
+    {
+        $options = $this->argumentData->getOptions();
+
+        foreach (Option::cases() as $option) {
+            self::assertArrayHasKey($option->value, $options);
+        }
+    }
+
+    public function testGetCommandsContainsOnlyProcess(): void
+    {
+        $commands = $this->argumentData->getCommands();
+
+        self::assertCount(1, $commands);
+        self::assertArrayHasKey(Command::PROCESS->value, $commands);
+    }
+
     #[\Override]
     protected function setUp(): void
     {

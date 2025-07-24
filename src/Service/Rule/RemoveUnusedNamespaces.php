@@ -60,9 +60,9 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
      */
     private function cleanNamespaces(\DOMDocument $domDocument): string
     {
-        $svgContent = $this->process($domDocument, static fn (string $content): string => $content);
+        $content = $this->process($domDocument, static fn (string $content): string => $content);
 
-        $namespaceCounts = self::countNamespaceElementsWithRegex($svgContent);
+        $namespaceCounts = self::countNamespaceElementsWithRegex($content);
 
         foreach ($namespaceCounts as $namespaceKey => $count) {
             if (0 === $count) {
@@ -76,22 +76,22 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     /**
      * Count the number of elements associated with each namespace in the SVG content.
      *
-     * @param string $svgContent The raw SVG content as a string
+     * @param string $content The raw SVG content as a string
      *
      * @return array<string, int> An associative array where keys are namespace prefixes and values are counts of elements
      */
-    private static function countNamespaceElementsWithRegex(string $svgContent): array
+    private static function countNamespaceElementsWithRegex(string $content): array
     {
         $namespaceCounts = [];
 
         $namespacePattern = self::NAMESPACE_PATTERN;
 
-        $result = preg_match_all($namespacePattern, $svgContent, $matches);
+        $result = preg_match_all($namespacePattern, $content, $matches);
         if (false !== $result && $result > 0) {
             foreach ($matches[1] as $prefix) {
                 $namespaceKey = \sprintf('xmlns:%s', $prefix);
                 $elementPattern = \sprintf(self::ELEMENT_PATTERN_TEMPLATE, preg_quote($prefix, '/'));
-                preg_match_all($elementPattern, $svgContent, $elementMatches);
+                preg_match_all($elementPattern, $content, $elementMatches);
                 $namespaceCounts[$namespaceKey] = \count($elementMatches[0]);
             }
         }

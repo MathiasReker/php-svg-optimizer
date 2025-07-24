@@ -43,4 +43,14 @@ class MemoryStream extends AbstractStream implements StreamInterface
 
         return stream_get_contents($this->stream);
     }
+
+    /**
+     * Close the stream resource when the object is destroyed.
+     */
+    public function __destruct()
+    {
+        if (\is_resource($this->stream)) {
+            fclose($this->stream);
+        }
+    }
 }
