@@ -32,13 +32,13 @@ final readonly class SvgFileProcessor
     /**
      * Constructor for SvgFileProcessor.
      *
-     * @param CommandOptionsValueObject $commandOptions     The options provided by the command line
-     * @param OutputManager             $output             The output manager for displaying messages
-     * @param MetaDataAggregator        $metaDataAggregator The aggregator for metadata about processed files
+     * @param CommandOptionsValueObject $commandOptionsValueObject The options provided by the command line
+     * @param OutputManager             $outputManager             The output manager for displaying messages
+     * @param MetaDataAggregator        $metaDataAggregator        The aggregator for metadata about processed files
      */
     public function __construct(
-        private CommandOptionsValueObject $commandOptions,
-        private OutputManager $output,
+        private CommandOptionsValueObject $commandOptionsValueObject,
+        private OutputManager $outputManager,
         private MetaDataAggregator $metaDataAggregator,
     ) {}
 
@@ -56,7 +56,7 @@ final readonly class SvgFileProcessor
         } elseif (is_file($path) && self::SVG_EXTENSION === pathinfo($path, \PATHINFO_EXTENSION)) {
             $this->optimizeSvg($path);
         } else {
-            $this->output->printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
+            $this->outputManager->printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
         }
     }
 
@@ -89,8 +89,8 @@ final readonly class SvgFileProcessor
      */
     private function optimizeSvg(string $filePath): void
     {
-        $config = '' !== $this->commandOptions->getConfigPath()
-            ? ConfigLoader::loadConfig($this->commandOptions->getConfigPath())
+        $config = '' !== $this->commandOptionsValueObject->getConfigPath()
+            ? ConfigLoader::loadConfig($this->commandOptionsValueObject->getConfigPath())
             : [];
 
         $rules = array_combine(
@@ -98,7 +98,7 @@ final readonly class SvgFileProcessor
             array_map(static fn (Rule $rule): bool => $config[$rule->value] ?? $rule->defaultValue(), Rule::cases()),
         );
 
-        $svgOptimizer = SvgOptimizerFacade::fromFile($filePath)
+        $svgOptimizerFacade = SvgOptimizerFacade::fromFile($filePath)
             ->withRules(
                 $rules[Rule::CONVERT_COLORS_TO_HEX->value],
                 $rules[Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->value],
@@ -122,17 +122,17 @@ final readonly class SvgFileProcessor
             )
             ->optimize();
 
-        if (!$this->commandOptions->isDryRun()) {
-            $svgOptimizer->saveToFile($filePath);
+        if (!$this->commandOptionsValueObject->isDryRun()) {
+            $svgOptimizerFacade->saveToFile($filePath);
         }
 
-        $metaData = $svgOptimizer->getMetaData();
+        $metaDataValueObject = $svgOptimizerFacade->getMetaData();
 
         $this->metaDataAggregator->addFileData(
-            $metaData->getOriginalSize(),
-            $metaData->getOptimizedSize(),
+            $metaDataValueObject->getOriginalSize(),
+            $metaDataValueObject->getOptimizedSize(),
         );
 
-        $this->output->printOptimizationResult($filePath, $metaData->getSavedPercentage());
+        $this->outputManager->printOptimizationResult($filePath, $metaDataValueObject->getSavedPercentage());
     }
 }

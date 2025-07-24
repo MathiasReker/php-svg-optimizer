@@ -23,9 +23,9 @@ final class XmlProcessingExceptionTest extends TestCase
 {
     public function testExceptionCanBeInstantiated(): void
     {
-        $exception = new XmlProcessingException('Test message', 123);
+        $xmlProcessingException = new XmlProcessingException('Test message', 123);
 
-        self::assertSame('Test message', $exception->getMessage());
-        self::assertSame(123, $exception->getCode());
+        self::assertSame('Test message', $xmlProcessingException->getMessage());
+        self::assertSame(123, $xmlProcessingException->getCode());
     }
 }

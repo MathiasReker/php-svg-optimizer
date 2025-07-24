@@ -75,9 +75,9 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
         $domXPath = new \DOMXPath($domDocument);
         $domXPath->registerNamespace('xlink', 'http://www.w3.org/1999/xlink');
 
-        self::replaceAttributes($domXPath, self::ATTRIBUTES_TO_REPLACE);
-        self::removeNamespaceFromSvgTags($domDocument);
-        self::removeAttributes($domXPath, self::ATTRIBUTES_TO_REMOVE);
+        $this->replaceAttributes($domXPath, self::ATTRIBUTES_TO_REPLACE);
+        $this->removeNamespaceFromSvgTags($domDocument);
+        $this->removeAttributes($domXPath, self::ATTRIBUTES_TO_REMOVE);
     }
 
     /**
@@ -91,7 +91,7 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
      * @param array<string, string> $attributes An associative array where the key is the old attribute
      *                                          and the value is the new attribute name
      */
-    private static function replaceAttributes(\DOMXPath $domXPath, array $attributes): void
+    private function replaceAttributes(\DOMXPath $domXPath, array $attributes): void
     {
         foreach ($attributes as $oldName => $newName) {
             $nodes = $domXPath->query(\sprintf('//*[@%s]', $oldName));
@@ -123,7 +123,7 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
      *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG to be optimized
      */
-    private static function removeNamespaceFromSvgTags(\DOMDocument $domDocument): void
+    private function removeNamespaceFromSvgTags(\DOMDocument $domDocument): void
     {
         $root = $domDocument->documentElement;
 
@@ -141,7 +141,7 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
      * @param \DOMXPath    $domXPath   The \DOMXPath instance used to query the SVG elements
      * @param list<string> $attributes An associative array where the key is the attribute
      */
-    private static function removeAttributes(\DOMXPath $domXPath, array $attributes): void
+    private function removeAttributes(\DOMXPath $domXPath, array $attributes): void
     {
         foreach ($attributes as $attribute) {
             $nodes = $domXPath->query(\sprintf('//*[@%s]', $attribute));

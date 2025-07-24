@@ -68,9 +68,9 @@ readonly class SvgValidator
      */
     public function isValid(string $content): bool
     {
-        $cleanedContent = self::removeUnnecessaryDeclarations($content);
+        $cleanedContent = $this->removeUnnecessaryDeclarations($content);
 
-        return self::containsSvgTag($cleanedContent);
+        return $this->containsSvgTag($cleanedContent);
     }
 
     /**
@@ -83,7 +83,7 @@ readonly class SvgValidator
      *
      * @return string The cleaned SVG content
      */
-    private static function removeUnnecessaryDeclarations(string $content): string
+    private function removeUnnecessaryDeclarations(string $content): string
     {
         return preg_replace(
             [
@@ -106,7 +106,7 @@ readonly class SvgValidator
      *
      * @return bool True if the content contains a valid SVG tag, false otherwise
      */
-    private static function containsSvgTag(string $content): bool
+    private function containsSvgTag(string $content): bool
     {
         return 1 === preg_match(self::SVG_TAG_REGEX, $content);
     }

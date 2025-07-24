@@ -23,44 +23,44 @@ final class MetaDataAggregatorTest extends TestCase
 {
     public function testInitialStateIsZero(): void
     {
-        $aggregator = new MetaDataAggregator();
+        $metaDataAggregator = new MetaDataAggregator();
 
-        self::assertSame(0, $aggregator->getTotalOriginalSize());
-        self::assertSame(0, $aggregator->getTotalOptimizedSize());
-        self::assertSame(0, $aggregator->getSavedBytes());
-        self::assertSame(0.0, $aggregator->getSavedPercentage());
+        self::assertSame(0, $metaDataAggregator->getTotalOriginalSize());
+        self::assertSame(0, $metaDataAggregator->getTotalOptimizedSize());
+        self::assertSame(0, $metaDataAggregator->getSavedBytes());
+        self::assertSame(0.0, $metaDataAggregator->getSavedPercentage());
     }
 
     public function testAddFileDataAccumulatesSizes(): void
     {
-        $aggregator = new MetaDataAggregator();
+        $metaDataAggregator = new MetaDataAggregator();
 
-        $aggregator->addFileData(1_000, 800);
-        $aggregator->addFileData(500, 400);
+        $metaDataAggregator->addFileData(1_000, 800);
+        $metaDataAggregator->addFileData(500, 400);
 
-        self::assertSame(1_500, $aggregator->getTotalOriginalSize());
-        self::assertSame(1_200, $aggregator->getTotalOptimizedSize());
-        self::assertSame(300, $aggregator->getSavedBytes());
-        self::assertSame(20.0, $aggregator->getSavedPercentage());
+        self::assertSame(1_500, $metaDataAggregator->getTotalOriginalSize());
+        self::assertSame(1_200, $metaDataAggregator->getTotalOptimizedSize());
+        self::assertSame(300, $metaDataAggregator->getSavedBytes());
+        self::assertSame(20.0, $metaDataAggregator->getSavedPercentage());
     }
 
     public function testGetSavedPercentageHandlesZeroDivision(): void
     {
-        $aggregator = new MetaDataAggregator();
+        $metaDataAggregator = new MetaDataAggregator();
 
-        self::assertSame(0.0, $aggregator->getSavedPercentage());
+        self::assertSame(0.0, $metaDataAggregator->getSavedPercentage());
     }
 
     public function testOptimizedFileCountIncrementsCorrectly(): void
     {
-        $aggregator = new MetaDataAggregator();
+        $metaDataAggregator = new MetaDataAggregator();
 
-        self::assertSame(0, $aggregator->getOptimizedFileCount());
+        self::assertSame(0, $metaDataAggregator->getOptimizedFileCount());
 
-        $aggregator->addFileData(1_000, 800);
-        self::assertSame(1, $aggregator->getOptimizedFileCount());
+        $metaDataAggregator->addFileData(1_000, 800);
+        self::assertSame(1, $metaDataAggregator->getOptimizedFileCount());
 
-        $aggregator->addFileData(500, 400);
-        self::assertSame(2, $aggregator->getOptimizedFileCount());
+        $metaDataAggregator->addFileData(500, 400);
+        self::assertSame(2, $metaDataAggregator->getOptimizedFileCount());
     }
 }

@@ -47,30 +47,30 @@ final readonly class OutputManager
      */
     public function printHelp(): void
     {
-        $arg = new ArgumentData();
+        $argumentData = new ArgumentData();
 
         $this->stream->writeln('PHP SVG Optimizer');
         $this->stream->writeln('');
         $this->stream->writeln('Usage:');
-        $this->stream->writeln('  ' . $arg->getFormat());
+        $this->stream->writeln('  ' . $argumentData->getFormat());
         $this->stream->writeln('');
 
         $this->stream->writeln('Options:');
-        foreach ($arg->getOptions() as $option) {
-            $this->stream->writeln(\sprintf('  %-3s  %-20s %s', $option->getShorthand(), $option->getFull(), $option->getDescription()));
+        foreach ($argumentData->getOptions() as $argumentOptionValueObject) {
+            $this->stream->writeln(\sprintf('  %-3s  %-20s %s', $argumentOptionValueObject->getShorthand(), $argumentOptionValueObject->getFull(), $argumentOptionValueObject->getDescription()));
         }
 
         $this->stream->writeln('');
         $this->stream->writeln('Commands:');
         $this->stream->writeln('');
-        foreach ($arg->getCommands() as $command) {
-            $this->stream->writeln(\sprintf('  %-25s %s', $command->getTitle(), $command->getDescription()));
+        foreach ($argumentData->getCommands() as $optionValueObject) {
+            $this->stream->writeln(\sprintf('  %-25s %s', $optionValueObject->getTitle(), $optionValueObject->getDescription()));
         }
 
         $this->stream->writeln('');
         $this->stream->writeln('Examples:');
         $this->stream->writeln('');
-        foreach ($arg->getExamples() as $example) {
+        foreach ($argumentData->getExamples() as $example) {
             $this->stream->writeln('  ' . $example->getCommand());
         }
     }

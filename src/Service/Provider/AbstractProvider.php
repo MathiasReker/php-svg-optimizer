@@ -115,7 +115,7 @@ abstract class AbstractProvider implements SvgProviderInterface
     #[\Override]
     final public function saveToFile(string $path): self
     {
-        if (!self::ensureDirectoryExists(\dirname($path))) {
+        if (!$this->ensureDirectoryExists(\dirname($path))) {
             throw new IOException(\sprintf('Failed to create directory for output file: %s', $path));
         }
 
@@ -131,7 +131,7 @@ abstract class AbstractProvider implements SvgProviderInterface
      *
      * @param string $directoryPath The directory path to check/create
      */
-    private static function ensureDirectoryExists(string $directoryPath): bool
+    private function ensureDirectoryExists(string $directoryPath): bool
     {
         if (is_dir($directoryPath)) {
             return true;

@@ -37,8 +37,8 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         $groups = $domXPath->query('//svg:g');
 
         foreach ($groups as $group) {
-            self::applyGroupAttributesToChildren($group);
-            self::flattenGroup($group);
+            $this->applyGroupAttributesToChildren($group);
+            $this->flattenGroup($group);
         }
     }
 
@@ -47,11 +47,11 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
      *
      * @param \DOMElement $domElement The group element whose attributes will be applied to its children
      */
-    private static function applyGroupAttributesToChildren(\DOMElement $domElement): void
+    private function applyGroupAttributesToChildren(\DOMElement $domElement): void
     {
         foreach ($domElement->childNodes as $child) {
             if ($child instanceof \DOMElement) {
-                self::applyAttributesToChild($domElement, $child);
+                $this->applyAttributesToChild($domElement, $child);
             }
         }
     }
@@ -62,11 +62,11 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
      * @param \DOMElement $parent The parent group element
      * @param \DOMElement $child  The child element to which attributes will be applied
      */
-    private static function applyAttributesToChild(\DOMElement $parent, \DOMElement $child): void
+    private function applyAttributesToChild(\DOMElement $parent, \DOMElement $child): void
     {
         /** @var \DOMAttr $attribute */
         foreach ($parent->attributes ?? [] as $attribute) {
-            self::setAttributeIfNotExists($child, $attribute);
+            $this->setAttributeIfNotExists($child, $attribute);
         }
     }
 
@@ -76,7 +76,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
      * @param \DOMElement $domElement The child element to set the attribute on
      * @param \DOMAttr    $domAttr    The attribute to set
      */
-    private static function setAttributeIfNotExists(\DOMElement $domElement, \DOMAttr $domAttr): void
+    private function setAttributeIfNotExists(\DOMElement $domElement, \DOMAttr $domAttr): void
     {
         if (!$domElement->hasAttribute($domAttr->nodeName) && \is_string($domAttr->nodeValue)) {
             $domElement->setAttribute($domAttr->nodeName, $domAttr->nodeValue);
@@ -88,15 +88,15 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
      *
      * @param \DOMElement $domElement The group element to be flattened
      */
-    private static function flattenGroup(\DOMElement $domElement): void
+    private function flattenGroup(\DOMElement $domElement): void
     {
         $parentNode = $domElement->parentNode;
 
         if ($parentNode instanceof \DOMElement) {
             $transform = $domElement->getAttribute('transform');
 
-            self::applyTransformsToChildren($domElement, $transform);
-            self::moveChildrenUp($domElement, $parentNode);
+            $this->applyTransformsToChildren($domElement, $transform);
+            $this->moveChildrenUp($domElement, $parentNode);
             $parentNode->removeChild($domElement);
         }
     }
@@ -104,12 +104,12 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     /**
      * Apply the combined transform from the group to each child element.
      */
-    private static function applyTransformsToChildren(\DOMElement $domElement, string $transform): void
+    private function applyTransformsToChildren(\DOMElement $domElement, string $transform): void
     {
         foreach ($domElement->childNodes as $child) {
             if ($child instanceof \DOMElement) {
                 $childTransform = $child->getAttribute('transform');
-                $newTransform = self::combineTransforms($transform, $childTransform);
+                $newTransform = $this->combineTransforms($transform, $childTransform);
 
                 if ('' !== $newTransform) {
                     $child->setAttribute('transform', $newTransform);
@@ -121,7 +121,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     /**
      * Combine two transform strings, returning the concatenated result only if necessary.
      */
-    private static function combineTransforms(string $transform1, string $transform2): string
+    private function combineTransforms(string $transform1, string $transform2): string
     {
         if ($transform1 === $transform2) {
             return $transform1;
@@ -133,7 +133,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     /**
      * Move all children of the group up to the parent node.
      */
-    private static function moveChildrenUp(\DOMElement $domElement, \DOMElement $parentNode): void
+    private function moveChildrenUp(\DOMElement $domElement, \DOMElement $parentNode): void
     {
         $children = iterator_to_array($domElement->childNodes, false);
         foreach ($children as $child) {

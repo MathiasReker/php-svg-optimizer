@@ -412,7 +412,7 @@ final class ConvertColorsToHexTest extends TestCase
                 XML,
         ];
 
-        yield 'Don\'t normalizes hex in text node' => [
+        yield "Don't normalizes hex in text node" => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
                     <text>#ABCDEF</text>
@@ -423,7 +423,7 @@ final class ConvertColorsToHexTest extends TestCase
                 XML,
         ];
 
-        yield 'Don\'t convert RGB in text node' => [
+        yield "Don't convert RGB in text node" => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
                     <text>rgb(255,255,255)</text>

@@ -36,17 +36,17 @@ final readonly class CommandFactory
     /**
      * Create a new Command instance with the provided options.
      *
-     * @param CommandOptionsValueObject $commandOptions The options for the command
+     * @param CommandOptionsValueObject $commandOptionsValueObject The options for the command
      *
      * @return CommandInterface The created command instance
      *
      * @throws \InvalidArgumentException If the options are not valid
      */
-    public function create(CommandOptionsValueObject $commandOptions): CommandInterface
+    public function create(CommandOptionsValueObject $commandOptionsValueObject): CommandInterface
     {
         return new Command(
             $this->argumentParser->getPaths(),
-            $commandOptions,
+            $commandOptionsValueObject,
             $this->buildOutputHelper()
         );
     }

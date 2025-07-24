@@ -40,14 +40,15 @@ use PHPUnit\Framework\TestCase;
 final class OutputManagerTest extends TestCase
 {
     private MemoryStream $memoryStream;
-    private OutputManager $output;
+
+    private OutputManager $outputManager;
 
     /**
      * @throws \RuntimeException
      */
     public function testPrintError(): void
     {
-        $this->output->printError('Something went wrong');
+        $this->outputManager->printError('Something went wrong');
         $output = $this->memoryStream->getContent();
 
         self::assertSame('Error: Something went wrong' . \PHP_EOL, $output);
@@ -58,7 +59,7 @@ final class OutputManagerTest extends TestCase
      */
     public function testPrintVersion(): void
     {
-        $this->output->printVersion('PHP SVG Optimizer', '1.2.3', 'Mathias Reker');
+        $this->outputManager->printVersion('PHP SVG Optimizer', '1.2.3', 'Mathias Reker');
         $output = $this->memoryStream->getContent();
 
         $expected = 'PHP SVG Optimizer v1.2.3 by Mathias Reker and contributors' . \PHP_EOL .
@@ -72,7 +73,7 @@ final class OutputManagerTest extends TestCase
      */
     public function testPrintOptimizationResult(): void
     {
-        $this->output->printOptimizationResult('file.svg', 42.567_89);
+        $this->outputManager->printOptimizationResult('file.svg', 42.567_89);
         $output = $this->memoryStream->getContent();
 
         self::assertSame('file.svg (42.57%)' . \PHP_EOL, $output);
@@ -83,7 +84,7 @@ final class OutputManagerTest extends TestCase
      */
     public function testPrintHelp(): void
     {
-        $this->output->printHelp();
+        $this->outputManager->printHelp();
         $output = $this->memoryStream->getContent();
 
         self::assertStringContainsString('PHP SVG Optimizer', $output);
@@ -105,7 +106,7 @@ final class OutputManagerTest extends TestCase
      */
     public function testPrintHelpIncludesOptions(): void
     {
-        $this->output->printHelp();
+        $this->outputManager->printHelp();
         $output = $this->memoryStream->getContent();
 
         self::assertStringContainsString('Options:', $output);
@@ -117,7 +118,7 @@ final class OutputManagerTest extends TestCase
      */
     public function testPrintHelpIncludesCommands(): void
     {
-        $this->output->printHelp();
+        $this->outputManager->printHelp();
         $output = $this->memoryStream->getContent();
 
         self::assertStringContainsString('Commands:', $output);
@@ -129,7 +130,7 @@ final class OutputManagerTest extends TestCase
      */
     public function testPrintTotalSummary(): void
     {
-        $this->output->printTotalSummary(
+        $this->outputManager->printTotalSummary(
             3,
             10_240,
             5_120,
@@ -152,6 +153,6 @@ final class OutputManagerTest extends TestCase
     protected function setUp(): void
     {
         $this->memoryStream = new MemoryStream();
-        $this->output = new OutputManager($this->memoryStream);
+        $this->outputManager = new OutputManager($this->memoryStream);
     }
 }

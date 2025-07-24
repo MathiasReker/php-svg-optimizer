@@ -505,10 +505,10 @@ docker exec -it php-svg-optimizer bash
 
 #### Tools
 
-Run analysis tools:
+Run static analysis:
 
 ```bash
-composer analyze
+composer analyze:all
 ```
 
 Run tests:
@@ -517,10 +517,16 @@ Run tests:
 composer test
 ```
 
-Format code:
+Fix code style:
 
 ```bash
-composer format
+composer lint:all
+```
+
+Build badges:
+
+```bash
+composer build:badges
 ```
 
 ### License

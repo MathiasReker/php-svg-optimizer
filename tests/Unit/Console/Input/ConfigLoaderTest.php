@@ -164,18 +164,12 @@ final class ConfigLoaderTest extends TestCase
      */
     public function testLoadConfigWithNestedJsonObject(): void
     {
+        $this->expectException(\JsonException::class);
+        $this->expectExceptionMessage('Maximum stack depth exceeded');
+
         $json = '{"key1": {"subkey": true}, "key2": false}';
 
-        // Expect that nested objects will be cast to boolean true (non-empty array)
-        $result = ConfigLoader::loadConfig($json);
-
-        self::assertSame(
-            [
-                'key1' => true,
-                'key2' => false,
-            ],
-            $result
-        );
+        ConfigLoader::loadConfig($json);
     }
 
     /**
@@ -198,6 +192,19 @@ final class ConfigLoaderTest extends TestCase
         $json = '{}';
         $result = ConfigLoader::loadConfig($json);
         self::assertSame([], $result);
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     * @throws \JsonException
+     */
+    public function testItFailsOnTooDeeplyNestedJson(): void
+    {
+        $this->expectException(\JsonException::class);
+
+        $json = '{"foo": {"bar": false}, "baz": 0}';
+
+        ConfigLoader::loadConfig($json);
     }
 
     /**

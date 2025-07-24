@@ -65,7 +65,7 @@ final readonly class ArgumentParser
     {
         try {
             $arguments = array_map(
-                fn (string $arg): ArgumentOptionValueObject => $this->argumentData->getOptionByName(self::getOptionKey($arg)),
+                fn (string $arg): ArgumentOptionValueObject => $this->argumentData->getOptionByName($this->getOptionKey($arg)),
                 array_filter(
                     \array_slice($this->args, 1),
                     static fn (string $arg): bool => self::isOption($arg)
@@ -85,7 +85,7 @@ final readonly class ArgumentParser
      *
      * @return string The key of the option
      */
-    private static function getOptionKey(string $option): string
+    private function getOptionKey(string $option): string
     {
         return explode('=', $option)[self::OPTION_KEY_INDEX];
     }
@@ -113,8 +113,8 @@ final readonly class ArgumentParser
     {
         foreach ($this->args as $arg) {
             if (self::isOption($arg)
-                && $this->argumentData->getOptionByName(self::getOptionKey($arg)) === $this->argumentData->getOption($option->value)) {
-                return self::getOptionValue($arg);
+                && $this->argumentData->getOptionByName($this->getOptionKey($arg)) === $this->argumentData->getOption($option->value)) {
+                return $this->getOptionValue($arg);
             }
         }
 
@@ -130,7 +130,7 @@ final readonly class ArgumentParser
      *
      * @throws \InvalidArgumentException If the option is missing a value
      */
-    private static function getOptionValue(string $option): string
+    private function getOptionValue(string $option): string
     {
         $parts = explode('=', $option, self::OPTION_LIMIT);
         if (\count($parts) < self::OPTION_LIMIT) {
@@ -161,7 +161,7 @@ final readonly class ArgumentParser
 
         foreach ($this->args as $arg) {
             if (self::isOption($arg)) {
-                $optionName = self::getOptionKey($arg);
+                $optionName = $this->getOptionKey($arg);
 
                 if (!\in_array($optionName, $validOptionKeys, true)) {
                     throw new \InvalidArgumentException(\sprintf('Unknown option: "%s". Run with --help to see valid options.', $optionName));

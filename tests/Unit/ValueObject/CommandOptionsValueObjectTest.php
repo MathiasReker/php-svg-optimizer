@@ -23,12 +23,12 @@ final class CommandOptionsValueObjectTest extends TestCase
 {
     public function testPropertiesAreAssignedCorrectly(): void
     {
-        $options = new CommandOptionsValueObject(
+        $commandOptionsValueObject = new CommandOptionsValueObject(
             true,
             '/path/to/config.json',
         );
 
-        self::assertTrue($options->isDryRun());
-        self::assertSame('/path/to/config.json', $options->getConfigPath());
+        self::assertTrue($commandOptionsValueObject->isDryRun());
+        self::assertSame('/path/to/config.json', $commandOptionsValueObject->getConfigPath());
     }
 }

@@ -21,10 +21,10 @@ final readonly class OptionIntent
     /**
      * Constructor for OptionIntent.
      *
-     * @param ArgumentParser $parser The argument parser to check for options
+     * @param ArgumentParser $argumentParser The argument parser to check for options
      */
     public function __construct(
-        private ArgumentParser $parser,
+        private ArgumentParser $argumentParser,
     ) {}
 
     /**
@@ -34,7 +34,7 @@ final readonly class OptionIntent
      */
     public function isDryRun(): bool
     {
-        return $this->parser->hasOption(Option::DRY_RUN);
+        return $this->argumentParser->hasOption(Option::DRY_RUN);
     }
 
     /**
@@ -44,7 +44,7 @@ final readonly class OptionIntent
      */
     public function isQuiet(): bool
     {
-        return $this->parser->hasOption(Option::QUIET);
+        return $this->argumentParser->hasOption(Option::QUIET);
     }
 
     /**
@@ -54,7 +54,7 @@ final readonly class OptionIntent
      */
     public function isHelp(): bool
     {
-        return $this->parser->hasOption(Option::HELP);
+        return $this->argumentParser->hasOption(Option::HELP);
     }
 
     /**
@@ -64,7 +64,7 @@ final readonly class OptionIntent
      */
     public function isVersion(): bool
     {
-        return $this->parser->hasOption(Option::VERSION);
+        return $this->argumentParser->hasOption(Option::VERSION);
     }
 
     /**
@@ -74,8 +74,8 @@ final readonly class OptionIntent
      */
     public function getConfigPath(): string
     {
-        return $this->parser->hasOption(Option::CONFIG)
-            ? $this->parser->getOption(Option::CONFIG)
+        return $this->argumentParser->hasOption(Option::CONFIG)
+            ? $this->argumentParser->getOption(Option::CONFIG)
             : '';
     }
 }

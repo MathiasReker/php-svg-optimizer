@@ -62,7 +62,7 @@ final readonly class DomDocumentWrapper
      */
     public function loadFromFile(string $filePath): \DOMDocument
     {
-        return self::loadDomDocument(static fn (\DOMDocument $domDocument): bool => $domDocument->load($filePath));
+        return $this->loadDomDocument(static fn (\DOMDocument $domDocument): bool => $domDocument->load($filePath));
     }
 
     /**
@@ -74,9 +74,9 @@ final readonly class DomDocumentWrapper
      *
      * @throws XmlProcessingException If the \DOMDocument fails to load
      */
-    private static function loadDomDocument(callable $loader): \DOMDocument
+    private function loadDomDocument(callable $loader): \DOMDocument
     {
-        $domDocument = self::createDomDocument();
+        $domDocument = $this->createDomDocument();
         libxml_use_internal_errors(true);
 
         if (!$loader($domDocument)) {
@@ -94,7 +94,7 @@ final readonly class DomDocumentWrapper
     /**
      * Creates and returns a new \DOMDocument instance with default settings.
      */
-    private static function createDomDocument(): \DOMDocument
+    private function createDomDocument(): \DOMDocument
     {
         $domDocument = new \DOMDocument(self::DEFAULT_XML_VERSION, self::DEFAULT_ENCODING);
         $domDocument->formatOutput = false;
@@ -118,7 +118,7 @@ final readonly class DomDocumentWrapper
      */
     public function loadFromString(string $content): \DOMDocument
     {
-        return self::loadDomDocument(
+        return $this->loadDomDocument(
             static fn (\DOMDocument $domDocument): bool => $domDocument->loadXML(
                 $content,
                 \LIBXML_NONET | \LIBXML_NOENT | \LIBXML_NOCDATA | \LIBXML_NOEMPTYTAG

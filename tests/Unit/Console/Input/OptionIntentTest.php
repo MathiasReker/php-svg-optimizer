@@ -38,72 +38,72 @@ final class OptionIntentTest extends TestCase
     public function testIsDryRunOptionIsSet(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--dry-run'];
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $optionIntent = new OptionIntent($parser);
+        $optionIntent = new OptionIntent($argumentParser);
         self::assertTrue($optionIntent->isDryRun());
     }
 
     public function testIsDryRunOptionIsNotSet(): void
     {
         $args = ['vendor/bin/svg-optimizer'];
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $optionIntent = new OptionIntent($parser);
+        $optionIntent = new OptionIntent($argumentParser);
         self::assertFalse($optionIntent->isDryRun());
     }
 
     public function testIsQuietOptionIsSet(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--quiet'];
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $optionIntent = new OptionIntent($parser);
+        $optionIntent = new OptionIntent($argumentParser);
         self::assertTrue($optionIntent->isQuiet());
     }
 
     public function testIsQuietOptionIsNotSet(): void
     {
         $args = ['vendor/bin/svg-optimizer'];
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $optionIntent = new OptionIntent($parser);
+        $optionIntent = new OptionIntent($argumentParser);
         self::assertFalse($optionIntent->isQuiet());
     }
 
     public function testIsHelpOptionIsSet(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--help'];
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $optionIntent = new OptionIntent($parser);
+        $optionIntent = new OptionIntent($argumentParser);
         self::assertTrue($optionIntent->isHelp());
     }
 
     public function testIsHelpOptionIsNotSet(): void
     {
         $args = ['vendor/bin/svg-optimizer'];
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $optionIntent = new OptionIntent($parser);
+        $optionIntent = new OptionIntent($argumentParser);
         self::assertFalse($optionIntent->isHelp());
     }
 
     public function testIsVersionOptionIsSet(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--version'];
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $optionIntent = new OptionIntent($parser);
+        $optionIntent = new OptionIntent($argumentParser);
         self::assertTrue($optionIntent->isVersion());
     }
 
     public function testIsVersionOptionIsNotSet(): void
     {
         $args = ['vendor/bin/svg-optimizer'];
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $optionIntent = new OptionIntent($parser);
+        $optionIntent = new OptionIntent($argumentParser);
         self::assertFalse($optionIntent->isVersion());
     }
 
@@ -113,9 +113,9 @@ final class OptionIntentTest extends TestCase
     public function testGetConfigPathOptionIsSet(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--config=/path/to/config'];
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $optionIntent = new OptionIntent($parser);
+        $optionIntent = new OptionIntent($argumentParser);
         self::assertSame('/path/to/config', $optionIntent->getConfigPath());
     }
 
@@ -125,9 +125,9 @@ final class OptionIntentTest extends TestCase
     public function testGetConfigPathOptionIsNotSet(): void
     {
         $args = ['vendor/bin/svg-optimizer'];
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $optionIntent = new OptionIntent($parser);
+        $optionIntent = new OptionIntent($argumentParser);
         self::assertSame('', $optionIntent->getConfigPath());
     }
 }

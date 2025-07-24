@@ -118,14 +118,14 @@ final class StdoutStreamTest extends TestCase
      */
     public function testStreamClosedOnDestruct(): void
     {
-        $stream = new StdoutStream();
+        $stdoutStream = new StdoutStream();
 
-        $ref = new \ReflectionClass($stream);
-        $property = $ref->getProperty('stream');
+        $reflectionClass = new \ReflectionClass($stdoutStream);
+        $reflectionProperty = $reflectionClass->getProperty('stream');
 
-        $resource = $property->getValue($stream);
+        $resource = $reflectionProperty->getValue($stdoutStream);
 
-        unset($stream);
+        unset($stdoutStream);
 
         self::assertFalse(\is_resource($resource), 'Stream should be closed after destruction');
     }

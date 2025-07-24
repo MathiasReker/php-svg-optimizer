@@ -83,10 +83,10 @@ final class SvgOptimizerFacadeTest extends TestCase
      */
     public function testOptimizeReturnsService(): void
     {
-        $service = SvgOptimizerFacade::fromString($this->sampleSvg);
-        $result = $service->optimize();
+        $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg);
+        $result = $svgOptimizerFacade->optimize();
 
-        self::assertSame($service, $result);
+        self::assertSame($svgOptimizerFacade, $result);
         self::assertNotEmpty($result->getContent());
     }
 

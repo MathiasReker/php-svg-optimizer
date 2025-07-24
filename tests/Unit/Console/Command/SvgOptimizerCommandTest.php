@@ -119,29 +119,29 @@ final class SvgOptimizerCommandTest extends TestCase
         $svgFile = $this->tempDir . '/test.svg';
         file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
 
-        $reflection = new \ReflectionClass(Command::class);
-        $constructor = $reflection->getConstructor();
+        $reflectionClass = new \ReflectionClass(Command::class);
+        $constructor = $reflectionClass->getConstructor();
 
         if (!$constructor instanceof \ReflectionMethod) {
             self::fail('Constructor not found in SvgOptimizerCommand');
         }
 
-        $command = $reflection->newInstanceWithoutConstructor();
+        $command = $reflectionClass->newInstanceWithoutConstructor();
 
-        $outputHelper = new OutputManager(new MemoryStream());
+        $outputManager = new OutputManager(new MemoryStream());
 
-        $options = new CommandOptionsValueObject(
+        $commandOptionsValueObject = new CommandOptionsValueObject(
             false,
             ''
         );
 
-        $constructor->invoke($command, [$svgFile], $options, $outputHelper);
+        $constructor->invoke($command, [$svgFile], $commandOptionsValueObject, $outputManager);
 
         $command->run();
 
         $propName = 'metaDataAggregator';
-        $prop = $reflection->getProperty($propName);
-        $metaDataAggregator = $prop->getValue($command);
+        $reflectionProperty = $reflectionClass->getProperty($propName);
+        $metaDataAggregator = $reflectionProperty->getValue($command);
 
         self::assertInstanceOf(MetaDataAggregator::class, $metaDataAggregator);
     }
@@ -153,25 +153,25 @@ final class SvgOptimizerCommandTest extends TestCase
      */
     public function testRunWithNoInputFiles(): void
     {
-        $reflection = new \ReflectionClass(Command::class);
-        $constructor = $reflection->getConstructor();
+        $reflectionClass = new \ReflectionClass(Command::class);
+        $constructor = $reflectionClass->getConstructor();
 
         if (!$constructor instanceof \ReflectionMethod) {
             self::fail('Constructor not found in SvgOptimizerCommand');
         }
 
-        $outputHelper = new OutputManager(new MemoryStream());
-        $command = $reflection->newInstanceWithoutConstructor();
+        $outputManager = new OutputManager(new MemoryStream());
+        $command = $reflectionClass->newInstanceWithoutConstructor();
 
-        $options = new CommandOptionsValueObject(
+        $commandOptionsValueObject = new CommandOptionsValueObject(
             false,
             ''
         );
 
-        $constructor->invoke($command, [], $options, $outputHelper);
+        $constructor->invoke($command, [], $commandOptionsValueObject, $outputManager);
 
         $command->run();
-        $prop = $reflection->getProperty('metaDataAggregator');
+        $prop = $reflectionClass->getProperty('metaDataAggregator');
         $metaDataAggregator = $prop->getValue($command);
         \assert($metaDataAggregator instanceof MetaDataAggregator);
 
@@ -218,15 +218,22 @@ final class SvgOptimizerCommandTest extends TestCase
         if (!is_dir($dir)) {
             return;
         }
+
         foreach (scandir($dir) as $item) {
-            if ('.' === $item || '..' === $item) {
+            if ('.' === $item) {
                 continue;
             }
+
+            if ('..' === $item) {
+                continue;
+            }
+
             $path = $dir . \DIRECTORY_SEPARATOR . $item;
             is_dir($path)
                 ? $this->deleteDir($path)
                 : unlink($path);
         }
+
         rmdir($dir);
     }
 }

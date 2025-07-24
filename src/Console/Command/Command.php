@@ -35,14 +35,14 @@ final readonly class Command implements CommandInterface
     /**
      * Constructor for SvgOptimizerCommand.
      *
-     * @param list<string>              $paths          The paths to SVG files or directories to process
-     * @param CommandOptionsValueObject $commandOptions The options for the command
-     * @param OutputManager             $output         The output helper for displaying messages
+     * @param list<string>              $paths                     The paths to SVG files or directories to process
+     * @param CommandOptionsValueObject $commandOptionsValueObject The options for the command
+     * @param OutputManager             $outputManager             The output helper for displaying messages
      */
     public function __construct(
         private array $paths,
-        private CommandOptionsValueObject $commandOptions,
-        private OutputManager $output,
+        private CommandOptionsValueObject $commandOptionsValueObject,
+        private OutputManager $outputManager,
     ) {
         $this->metaDataAggregator = new MetaDataAggregator();
         $this->svgFileProcessor = $this->buildProcessor();
@@ -56,8 +56,8 @@ final readonly class Command implements CommandInterface
     private function buildProcessor(): SvgFileProcessor
     {
         return new SvgFileProcessor(
-            $this->commandOptions,
-            $this->output,
+            $this->commandOptionsValueObject,
+            $this->outputManager,
             $this->metaDataAggregator
         );
     }
@@ -90,11 +90,11 @@ final readonly class Command implements CommandInterface
         try {
             $this->svgFileProcessor->processPath($path);
         } catch (\RuntimeException $exception) {
-            $this->output->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
+            $this->outputManager->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
         } catch (\JsonException $jsonException) {
-            $this->output->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptions->getConfigPath(), $jsonException->getMessage()));
+            $this->outputManager->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptionsValueObject->getConfigPath(), $jsonException->getMessage()));
         } catch (\InvalidArgumentException $invalidArgumentException) {
-            $this->output->printError($invalidArgumentException->getMessage());
+            $this->outputManager->printError($invalidArgumentException->getMessage());
         }
     }
 
@@ -103,7 +103,7 @@ final readonly class Command implements CommandInterface
      */
     private function printSummary(): void
     {
-        $this->output->printTotalSummary(
+        $this->outputManager->printTotalSummary(
             $this->metaDataAggregator->getOptimizedFileCount(),
             $this->metaDataAggregator->getTotalOriginalSize(),
             $this->metaDataAggregator->getTotalOptimizedSize(),

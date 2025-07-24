@@ -52,32 +52,32 @@ final readonly class CommandDispatcher
      */
     public function run(): void
     {
-        $parser = new ArgumentParser($this->argv);
-        $option = new OptionIntent($parser);
-        $stream = $option->isQuiet()
+        $argumentParser = new ArgumentParser($this->argv);
+        $optionIntent = new OptionIntent($argumentParser);
+        $stream = $optionIntent->isQuiet()
             ? new SilentStream()
             : new StdoutStream();
-        $output = new OutputManager($stream);
+        $outputManager = new OutputManager($stream);
 
         try {
-            $parser->validateOptions();
+            $argumentParser->validateOptions();
         } catch (\InvalidArgumentException $invalidArgumentException) {
-            $output->printError($invalidArgumentException->getMessage());
+            $outputManager->printError($invalidArgumentException->getMessage());
             exit(1);
         }
 
         if (\PHP_SAPI !== 'cli') {
-            $output->printError('This command can only be run in a CLI environment.');
+            $outputManager->printError('This command can only be run in a CLI environment.');
             exit(1);
         }
 
-        if ($parser->isEmpty() || $option->isHelp()) {
-            $output->printHelp();
+        if ($argumentParser->isEmpty() || $optionIntent->isHelp()) {
+            $outputManager->printHelp();
             exit(0);
         }
 
-        if ($option->isVersion()) {
-            $output->printVersion(
+        if ($optionIntent->isVersion()) {
+            $outputManager->printVersion(
                 Application::NAME->value,
                 Application::VERSION->value,
                 Application::AUTHOR->value
@@ -86,15 +86,15 @@ final readonly class CommandDispatcher
         }
 
         try {
-            $options = new CommandOptionsValueObject(
-                $option->isDryRun(),
-                $option->getConfigPath()
+            $commandOptionsValueObject = new CommandOptionsValueObject(
+                $optionIntent->isDryRun(),
+                $optionIntent->getConfigPath()
             );
 
-            $command = (new CommandFactory($stream, $parser))->create($options);
+            $command = (new CommandFactory($stream, $argumentParser))->create($commandOptionsValueObject);
             $command->run();
-        } catch (\InvalidArgumentException $e) {
-            $output->printError($e->getMessage());
+        } catch (\InvalidArgumentException $invalidArgumentException) {
+            $outputManager->printError($invalidArgumentException->getMessage());
             exit(1);
         }
     }

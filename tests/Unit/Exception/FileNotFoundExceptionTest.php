@@ -23,9 +23,9 @@ final class FileNotFoundExceptionTest extends TestCase
 {
     public function testCanBeInstantiated(): void
     {
-        $exception = new FileNotFoundException('File not found', 404);
+        $fileNotFoundException = new FileNotFoundException('File not found', 404);
 
-        self::assertSame('File not found', $exception->getMessage());
-        self::assertSame(404, $exception->getCode());
+        self::assertSame('File not found', $fileNotFoundException->getMessage());
+        self::assertSame(404, $fileNotFoundException->getCode());
     }
 }

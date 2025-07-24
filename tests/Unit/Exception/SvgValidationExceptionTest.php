@@ -23,9 +23,9 @@ final class SvgValidationExceptionTest extends TestCase
 {
     public function testCanBeInstantiated(): void
     {
-        $exception = new SvgValidationException('Invalid SVG detected', 100);
+        $svgValidationException = new SvgValidationException('Invalid SVG detected', 100);
 
-        self::assertSame('Invalid SVG detected', $exception->getMessage());
-        self::assertSame(100, $exception->getCode());
+        self::assertSame('Invalid SVG detected', $svgValidationException->getMessage());
+        self::assertSame(100, $svgValidationException->getCode());
     }
 }

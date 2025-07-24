@@ -27,11 +27,6 @@ final class DomDocumentWrapperTest extends TestCase
     private DomDocumentWrapper $domDocumentWrapper;
 
     /**
-     * @phpstan-ignore-next-line
-     */
-    private \DOMDocument $domDocument;
-
-    /**
      * @throws XmlProcessingException
      */
     public function testSaveToStringValid(): void
@@ -108,8 +103,6 @@ final class DomDocumentWrapperTest extends TestCase
         if (!$domDocument->loadXML($content)) {
             throw new XmlProcessingException('Failed to load DOMDocument.');
         }
-
-        $this->domDocument = $domDocument;
     }
 
     /**

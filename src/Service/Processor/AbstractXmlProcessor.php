@@ -71,8 +71,8 @@ abstract readonly class AbstractXmlProcessor
             if (!$domDocument->loadXML($content)) {
                 throw new XmlProcessingException('Failed to load optimized XML content.');
             }
-        } catch (\Throwable $e) {
-            throw new XmlProcessingException('Failed to load optimized XML content.', 0, $e);
+        } catch (\Throwable $throwable) {
+            throw new XmlProcessingException('Failed to load optimized XML content.', 0, $throwable);
         } finally {
             restore_error_handler();
         }

@@ -104,9 +104,9 @@ final class ArgumentParserTest extends TestCase
             '-v',
         ];
 
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $hasVersionOption = $parser->hasOption(Option::VERSION);
+        $hasVersionOption = $argumentParser->hasOption(Option::VERSION);
         self::assertTrue($hasVersionOption);
     }
 
@@ -118,9 +118,9 @@ final class ArgumentParserTest extends TestCase
             '/path/to/file.svg',
         ];
 
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        self::assertFalse($parser->hasOption(Option::CONFIG));
+        self::assertFalse($argumentParser->hasOption(Option::CONFIG));
     }
 
     public function testHasInvalidOptionArguments(): void
@@ -130,9 +130,9 @@ final class ArgumentParserTest extends TestCase
             'bar',
         ];
 
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        self::assertFalse($parser->hasOption(Option::CONFIG));
+        self::assertFalse($argumentParser->hasOption(Option::CONFIG));
     }
 
     /**
@@ -145,9 +145,9 @@ final class ArgumentParserTest extends TestCase
             '--config=',
         ];
 
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $value = $parser->getOption(Option::CONFIG);
+        $value = $argumentParser->getOption(Option::CONFIG);
 
         self::assertSame('', $value);
     }
@@ -163,9 +163,9 @@ final class ArgumentParserTest extends TestCase
             '--foo=',
         ];
 
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $value = $parser->getOption(Option::CONFIG);
+        $value = $argumentParser->getOption(Option::CONFIG);
 
         self::assertSame('', $value);
     }
@@ -180,18 +180,18 @@ final class ArgumentParserTest extends TestCase
             '--config=foo=bar=baz',
         ];
 
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        $value = $parser->getOption(Option::CONFIG);
+        $value = $argumentParser->getOption(Option::CONFIG);
 
         self::assertSame('foo=bar=baz', $value);
     }
 
     public function testParseIsEmpty(): void
     {
-        $parser = new ArgumentParser([]);
+        $argumentParser = new ArgumentParser([]);
 
-        self::assertTrue($parser->isEmpty());
+        self::assertTrue($argumentParser->isEmpty());
     }
 
     /**
@@ -209,13 +209,13 @@ final class ArgumentParserTest extends TestCase
             $tempDir,
         ];
 
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('No valid .svg files found to optimize.');
 
         try {
-            $parser->getPaths();
+            $argumentParser->getPaths();
         } finally {
             rmdir($tempDir);
         }
@@ -228,12 +228,12 @@ final class ArgumentParserTest extends TestCase
     {
         $args = ['vendor/bin/svg-optimizer', '--config=config.json', '--dry-run'];
 
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Please follow the following format:');
 
-        $parser->getArgumentIndex();
+        $argumentParser->getArgumentIndex();
     }
 
     public function testHasOptionReturnsFalseOnInvalidOptionName(): void
@@ -245,9 +245,9 @@ final class ArgumentParserTest extends TestCase
             '/path/to/file.svg',
         ];
 
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
-        self::assertFalse($parser->hasOption(Option::CONFIG));
+        self::assertFalse($argumentParser->hasOption(Option::CONFIG));
     }
 
     /**
@@ -263,10 +263,10 @@ final class ArgumentParserTest extends TestCase
             '/path/to/file.svg',
         ];
 
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
         $this->expectNotToPerformAssertions();
-        $parser->validateOptions();
+        $argumentParser->validateOptions();
     }
 
     /**
@@ -281,12 +281,12 @@ final class ArgumentParserTest extends TestCase
             '/path/to/file.svg',
         ];
 
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Unknown option: "--invalid-option". Run with --help to see valid options.');
 
-        $parser->validateOptions();
+        $argumentParser->validateOptions();
     }
 
     /**
@@ -302,10 +302,10 @@ final class ArgumentParserTest extends TestCase
             '/path/to/file.svg',
         ];
 
-        $parser = new ArgumentParser($args);
+        $argumentParser = new ArgumentParser($args);
 
         $this->expectNotToPerformAssertions();
-        $parser->validateOptions();
+        $argumentParser->validateOptions();
     }
 
     #[\Override]

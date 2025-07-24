@@ -27,8 +27,8 @@ final class FileCollectorTest extends TestCase
 
     public function testReturnsEmptyArrayForNonExistentPath(): void
     {
-        $collector = new FileCollector();
-        $result = $collector->collectSvgFiles(['/path/does/not/exist']);
+        $fileCollector = new FileCollector();
+        $result = $fileCollector->collectSvgFiles(['/path/does/not/exist']);
 
         self::assertSame([], $result);
     }
@@ -38,8 +38,8 @@ final class FileCollectorTest extends TestCase
         $svgFile = $this->tempDir . '/icon.svg';
         file_put_contents($svgFile, '<svg></svg>');
 
-        $collector = new FileCollector();
-        $result = $collector->collectSvgFiles([$svgFile]);
+        $fileCollector = new FileCollector();
+        $result = $fileCollector->collectSvgFiles([$svgFile]);
 
         self::assertCount(1, $result);
         self::assertSame(realpath($svgFile), $result[0]);
@@ -50,8 +50,8 @@ final class FileCollectorTest extends TestCase
         $txtFile = $this->tempDir . '/note.txt';
         file_put_contents($txtFile, 'text');
 
-        $collector = new FileCollector();
-        $result = $collector->collectSvgFiles([$txtFile]);
+        $fileCollector = new FileCollector();
+        $result = $fileCollector->collectSvgFiles([$txtFile]);
 
         self::assertSame([], $result);
     }
@@ -67,8 +67,8 @@ final class FileCollectorTest extends TestCase
         file_put_contents($svg2, '<svg></svg>');
         file_put_contents($txt, 'text');
 
-        $collector = new FileCollector();
-        $result = $collector->collectSvgFiles([$this->tempDir]);
+        $fileCollector = new FileCollector();
+        $result = $fileCollector->collectSvgFiles([$this->tempDir]);
 
         self::assertCount(2, $result);
         self::assertContains(realpath($svg1), $result);
@@ -80,8 +80,8 @@ final class FileCollectorTest extends TestCase
         $svgFile = $this->tempDir . '/duplicate.svg';
         file_put_contents($svgFile, '<svg></svg>');
 
-        $collector = new FileCollector();
-        $result = $collector->collectSvgFiles([$svgFile, $svgFile]);
+        $fileCollector = new FileCollector();
+        $result = $fileCollector->collectSvgFiles([$svgFile, $svgFile]);
 
         self::assertCount(1, $result);
     }
@@ -99,13 +99,13 @@ final class FileCollectorTest extends TestCase
      */
     protected function tearDown(): void
     {
-        self::deleteDirectory($this->tempDir);
+        $this->deleteDirectory($this->tempDir);
     }
 
     /**
      * @throws \UnexpectedValueException
      */
-    private static function deleteDirectory(string $dir): void
+    private function deleteDirectory(string $dir): void
     {
         if (!file_exists($dir)) {
             return;

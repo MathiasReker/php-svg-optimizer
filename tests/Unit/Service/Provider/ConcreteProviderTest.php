@@ -40,17 +40,17 @@ final class ConcreteProviderTest extends TestCase
     public function testOptimizeTrimsXmlContent(): void
     {
         $input = "<?xml version=\"1.0\"?>\n<svg>  hello  </svg>";
-        $provider = self::getConcreteProvider($input);
-        $content = $provider->loadContent();
+        $provider = $this->getConcreteProvider($input);
+        $domDocument = $provider->loadContent();
 
-        $provider->optimize($content);
+        $provider->optimize($domDocument);
         $output = $provider->getOutputContent();
 
         self::assertStringStartsNotWith('<?xml', $output);
         self::assertSame(trim($output), $output, 'Output should be trimmed');
     }
 
-    private static function getConcreteProvider(string $inputContent): AbstractProvider
+    private function getConcreteProvider(string $inputContent): AbstractProvider
     {
         return new class($inputContent) extends AbstractProvider {
             public function __construct(
@@ -82,14 +82,14 @@ final class ConcreteProviderTest extends TestCase
     public function testGetMetaDataWithMbStrlen(): void
     {
         $input = "<?xml version=\"1.0\"?>\n<svg>✓漢</svg>";
-        $provider = self::getConcreteProvider($input);
-        $content = $provider->loadContent();
+        $provider = $this->getConcreteProvider($input);
+        $domDocument = $provider->loadContent();
 
-        $provider->optimize($content);
-        $meta = $provider->getMetaData();
+        $provider->optimize($domDocument);
+        $metaDataValueObject = $provider->getMetaData();
 
-        self::assertSame(mb_strlen($provider->getInputContent(), '8bit'), $meta->getOriginalSize());
-        self::assertSame(mb_strlen($provider->getOutputContent(), '8bit'), $meta->getOptimizedSize());
+        self::assertSame(mb_strlen($provider->getInputContent(), '8bit'), $metaDataValueObject->getOriginalSize());
+        self::assertSame(mb_strlen($provider->getOutputContent(), '8bit'), $metaDataValueObject->getOptimizedSize());
     }
 
     /**
@@ -99,8 +99,9 @@ final class ConcreteProviderTest extends TestCase
     public function testSaveToFileWritesCorrectly(): void
     {
         $input = '<svg>saved</svg>';
-        $provider = self::getConcreteProvider($input);
+        $provider = $this->getConcreteProvider($input);
         $provider->optimize($provider->loadContent());
+
         $this->tmpFile = sys_get_temp_dir() . '/svg-test-' . uniqid('', true) . '.svg';
         $provider->saveToFile($this->tmpFile);
 
@@ -117,9 +118,9 @@ final class ConcreteProviderTest extends TestCase
         $this->expectException(IOException::class);
 
         $input = '<svg>error</svg>';
-        $provider = self::getConcreteProvider($input);
-        $content = $provider->loadContent();
-        $provider->optimize($content);
+        $provider = $this->getConcreteProvider($input);
+        $domDocument = $provider->loadContent();
+        $provider->optimize($domDocument);
 
         $baseFile = tempnam(sys_get_temp_dir(), 'svgtest');
         file_put_contents($baseFile, '');
@@ -136,7 +137,7 @@ final class ConcreteProviderTest extends TestCase
     public function testSaveToFileCreatesDirectory(): void
     {
         $input = '<svg>dir creation</svg>';
-        $provider = self::getConcreteProvider($input);
+        $provider = $this->getConcreteProvider($input);
         $provider->optimize($provider->loadContent());
 
         $tempDir = sys_get_temp_dir() . '/svgtest_' . uniqid();

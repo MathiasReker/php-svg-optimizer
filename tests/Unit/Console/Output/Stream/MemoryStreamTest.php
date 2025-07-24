@@ -36,11 +36,11 @@ final class MemoryStreamTest extends TestCase
      */
     public function testWriteAndGetContents(): void
     {
-        $stream = new MemoryStream();
-        $stream->write('Hello');
-        $stream->writeln(' World');
+        $memoryStream = new MemoryStream();
+        $memoryStream->write('Hello');
+        $memoryStream->writeln(' World');
 
-        $output = $stream->getContent();
+        $output = $memoryStream->getContent();
 
         self::assertStringContainsString('Hello', $output);
         self::assertStringContainsString(' World', $output);
@@ -60,9 +60,9 @@ final class MemoryStreamTest extends TestCase
             ->onlyMethods([])
             ->getMock();
 
-        $reflection = new \ReflectionClass(MemoryStream::class);
-        $streamProperty = $reflection->getProperty('stream');
-        $streamProperty->setValue($mock, false);
+        $reflectionClass = new \ReflectionClass(MemoryStream::class);
+        $reflectionProperty = $reflectionClass->getProperty('stream');
+        $reflectionProperty->setValue($mock, false);
 
         throw new \RuntimeException('Unable to open memory stream.');
     }
@@ -81,7 +81,7 @@ final class MemoryStreamTest extends TestCase
             ->getMock();
 
         $mock->method('getContent')->willReturnCallback(
-            static function (): void {
+            static function (): never {
                 /*
                  * @phpstan-ignore-next-line
                  */
@@ -97,13 +97,13 @@ final class MemoryStreamTest extends TestCase
      */
     public function testMultipleWritesAndGetContent(): void
     {
-        $stream = new MemoryStream();
-        $stream->write('Line 1');
-        $stream->writeln(' Line 2');
-        $stream->write('Line 3');
-        $stream->writeln(' Line 4');
+        $memoryStream = new MemoryStream();
+        $memoryStream->write('Line 1');
+        $memoryStream->writeln(' Line 2');
+        $memoryStream->write('Line 3');
+        $memoryStream->writeln(' Line 4');
 
-        $output = $stream->getContent();
+        $output = $memoryStream->getContent();
 
         self::assertStringContainsString('Line 1', $output);
         self::assertStringContainsString('Line 2' . \PHP_EOL, $output);
@@ -116,9 +116,9 @@ final class MemoryStreamTest extends TestCase
      */
     public function testGetContentInitiallyEmpty(): void
     {
-        $stream = new MemoryStream();
+        $memoryStream = new MemoryStream();
 
-        $output = $stream->getContent();
+        $output = $memoryStream->getContent();
 
         self::assertSame('', $output);
     }
@@ -128,17 +128,17 @@ final class MemoryStreamTest extends TestCase
      */
     public function testGetContentConsistentUnlessChanged(): void
     {
-        $stream = new MemoryStream();
-        $stream->writeln('Snapshot');
+        $memoryStream = new MemoryStream();
+        $memoryStream->writeln('Snapshot');
 
-        $first = $stream->getContent();
-        $second = $stream->getContent();
+        $first = $memoryStream->getContent();
+        $second = $memoryStream->getContent();
 
         self::assertSame($first, $second);
 
-        $stream->writeln('New line');
+        $memoryStream->writeln('New line');
 
-        $third = $stream->getContent();
+        $third = $memoryStream->getContent();
 
         self::assertNotSame($first, $third);
     }
@@ -149,14 +149,14 @@ final class MemoryStreamTest extends TestCase
      */
     public function testWriteAndManualRewind(): void
     {
-        $stream = new MemoryStream();
-        $stream->write('Testing');
+        $memoryStream = new MemoryStream();
+        $memoryStream->write('Testing');
 
         /*
          * @phpstan-ignore-next-line
          */
-        rewind((new \ReflectionClass($stream))->getProperty('stream')->getValue($stream));
-        $output = $stream->getContent();
+        rewind((new \ReflectionClass($memoryStream))->getProperty('stream')->getValue($memoryStream));
+        $output = $memoryStream->getContent();
 
         self::assertStringContainsString('Testing', $output);
     }
@@ -167,13 +167,13 @@ final class MemoryStreamTest extends TestCase
      */
     public function testStreamIsClosedOnDestruct(): void
     {
-        $stream = new MemoryStream();
+        $memoryStream = new MemoryStream();
 
-        $ref = new \ReflectionClass($stream);
-        $streamProp = $ref->getProperty('stream');
-        $resource = $streamProp->getValue($stream);
+        $reflectionClass = new \ReflectionClass($memoryStream);
+        $reflectionProperty = $reflectionClass->getProperty('stream');
+        $resource = $reflectionProperty->getValue($memoryStream);
 
-        unset($stream);
+        unset($memoryStream);
 
         self::assertFalse(\is_resource($resource), 'Stream should be closed after destruct');
     }
@@ -183,9 +183,9 @@ final class MemoryStreamTest extends TestCase
      */
     public function testWriteEmptyString(): void
     {
-        $stream = new MemoryStream();
-        $stream->write('');
-        self::assertSame('', $stream->getContent());
+        $memoryStream = new MemoryStream();
+        $memoryStream->write('');
+        self::assertSame('', $memoryStream->getContent());
     }
 
     /**
@@ -193,10 +193,10 @@ final class MemoryStreamTest extends TestCase
      */
     public function testWriteBinaryData(): void
     {
-        $stream = new MemoryStream();
+        $memoryStream = new MemoryStream();
         $binaryData = "\x00\xFF\x00\xFF";
-        $stream->write($binaryData);
-        self::assertStringContainsString($binaryData, $stream->getContent());
+        $memoryStream->write($binaryData);
+        self::assertStringContainsString($binaryData, $memoryStream->getContent());
     }
 
     /**
@@ -205,11 +205,11 @@ final class MemoryStreamTest extends TestCase
      */
     public function testGetContentAfterStreamClosedThrows(): void
     {
-        $stream = new MemoryStream();
+        $memoryStream = new MemoryStream();
 
-        $ref = new \ReflectionClass($stream);
-        $streamProp = $ref->getProperty('stream');
-        $resource = $streamProp->getValue($stream);
+        $reflectionClass = new \ReflectionClass($memoryStream);
+        $reflectionProperty = $reflectionClass->getProperty('stream');
+        $resource = $reflectionProperty->getValue($memoryStream);
 
         /*
          * @phpstan-ignore-next-line
@@ -218,6 +218,6 @@ final class MemoryStreamTest extends TestCase
 
         $this->expectException(\Error::class);
 
-        $stream->getContent();
+        $memoryStream->getContent();
     }
 }

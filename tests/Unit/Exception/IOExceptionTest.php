@@ -23,9 +23,9 @@ final class IOExceptionTest extends TestCase
 {
     public function testCanBeInstantiated(): void
     {
-        $exception = new IOException('IO operation failed', 500);
+        $ioException = new IOException('IO operation failed', 500);
 
-        self::assertSame('IO operation failed', $exception->getMessage());
-        self::assertSame(500, $exception->getCode());
+        self::assertSame('IO operation failed', $ioException->getMessage());
+        self::assertSame(500, $ioException->getCode());
     }
 }

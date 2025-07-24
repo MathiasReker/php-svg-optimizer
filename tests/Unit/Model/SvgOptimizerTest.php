@@ -30,13 +30,13 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 final class SvgOptimizerTest extends TestCase
 {
-    private SvgProviderInterface $provider;
+    private SvgProviderInterface $svgProvider;
 
     public function testAddRuleAndGetRulesCount(): void
     {
-        $optimizer = new SvgOptimizer($this->provider);
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
-        self::assertSame(0, $optimizer->getRulesCount());
+        self::assertSame(0, $svgOptimizer->getRulesCount());
 
         $rule = new class implements SvgOptimizerRuleInterface {
             public function optimize(\DOMDocument $domDocument): void
@@ -45,15 +45,15 @@ final class SvgOptimizerTest extends TestCase
             }
         };
 
-        $optimizer->addRule($rule);
-        self::assertSame(1, $optimizer->getRulesCount());
+        $svgOptimizer->addRule($rule);
+        self::assertSame(1, $svgOptimizer->getRulesCount());
     }
 
     public function testHasRules(): void
     {
-        $optimizer = new SvgOptimizer($this->provider);
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
-        self::assertFalse($optimizer->hasRules(), 'Expected hasRules() to return false when no rules are added.');
+        self::assertFalse($svgOptimizer->hasRules(), 'Expected hasRules() to return false when no rules are added.');
 
         $rule = new class implements SvgOptimizerRuleInterface {
             public function optimize(\DOMDocument $domDocument): void
@@ -62,9 +62,9 @@ final class SvgOptimizerTest extends TestCase
             }
         };
 
-        $optimizer->addRule($rule);
+        $svgOptimizer->addRule($rule);
 
-        self::assertTrue($optimizer->hasRules(), 'Expected hasRules() to return true after a rule is added.');
+        self::assertTrue($svgOptimizer->hasRules(), 'Expected hasRules() to return true after a rule is added.');
     }
 
     /**
@@ -72,12 +72,12 @@ final class SvgOptimizerTest extends TestCase
      */
     public function testOptimizeReturnsSelfAndContentIsSet(): void
     {
-        $optimizer = new SvgOptimizer($this->provider);
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
-        $result = $optimizer->optimize();
+        $result = $svgOptimizer->optimize();
 
-        self::assertSame($optimizer, $result);
-        self::assertSame('<svg>optimized</svg>', $optimizer->getContent());
+        self::assertSame($svgOptimizer, $result);
+        self::assertSame('<svg>optimized</svg>', $svgOptimizer->getContent());
     }
 
     /**
@@ -93,10 +93,10 @@ final class SvgOptimizerTest extends TestCase
 
             public function loadContent(): \DOMDocument
             {
-                $doc = new \DOMDocument();
-                $doc->loadXML('<svg></svg>');
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg></svg>');
 
-                return $doc;
+                return $domDocument;
             }
 
             public function optimize(\DOMDocument $domDocument): SvgProviderInterface
@@ -125,12 +125,12 @@ final class SvgOptimizerTest extends TestCase
             }
         };
 
-        $optimizer = new SvgOptimizer($invalidProvider);
+        $svgOptimizer = new SvgOptimizer($invalidProvider);
 
         $this->expectException(SvgValidationException::class);
         $this->expectExceptionMessage('The file does not appear to be a valid SVG file.');
 
-        $optimizer->optimize();
+        $svgOptimizer->optimize();
     }
 
     /**
@@ -138,28 +138,29 @@ final class SvgOptimizerTest extends TestCase
      */
     public function testGetMetaDataReturnsProviderMetaData(): void
     {
-        $optimizer = new SvgOptimizer($this->provider);
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
-        $optimizer->optimize();
-        $metaData = $optimizer->getMetaData();
+        $svgOptimizer->optimize();
 
-        self::assertSame(100, $metaData->getOriginalSize());
-        self::assertSame(50, $metaData->getOptimizedSize());
+        $metaDataValueObject = $svgOptimizer->getMetaData();
+
+        self::assertSame(100, $metaDataValueObject->getOriginalSize());
+        self::assertSame(50, $metaDataValueObject->getOptimizedSize());
     }
 
     public function testSaveToFileReturnsSelf(): void
     {
-        $optimizer = new SvgOptimizer($this->provider);
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
-        $result = $optimizer->saveToFile('/tmp/output.svg');
+        $result = $svgOptimizer->saveToFile('/tmp/output.svg');
 
-        self::assertSame($optimizer, $result);
+        self::assertSame($svgOptimizer, $result);
     }
 
     public function testGetContentReturnsEmptyStringBeforeOptimize(): void
     {
-        $optimizer = new SvgOptimizer($this->provider);
-        self::assertSame('', $optimizer->getContent());
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
+        self::assertSame('', $svgOptimizer->getContent());
     }
 
     /**
@@ -167,29 +168,29 @@ final class SvgOptimizerTest extends TestCase
      */
     public function testOptimizeWithNoRules(): void
     {
-        $optimizer = new SvgOptimizer($this->provider);
-        $result = $optimizer->optimize();
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
+        $result = $svgOptimizer->optimize();
 
-        self::assertSame($optimizer, $result);
-        self::assertSame('<svg>optimized</svg>', $optimizer->getContent());
+        self::assertSame($svgOptimizer, $result);
+        self::assertSame('<svg>optimized</svg>', $svgOptimizer->getContent());
     }
 
     public function testSaveToFileChainingWithDifferentPaths(): void
     {
-        $optimizer = new SvgOptimizer($this->provider);
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
-        $result1 = $optimizer->saveToFile('/tmp/file1.svg');
-        $result2 = $optimizer->saveToFile('/tmp/file2.svg');
+        $result1 = $svgOptimizer->saveToFile('/tmp/file1.svg');
+        $result2 = $svgOptimizer->saveToFile('/tmp/file2.svg');
 
-        self::assertSame($optimizer, $result1);
-        self::assertSame($optimizer, $result2);
+        self::assertSame($svgOptimizer, $result1);
+        self::assertSame($svgOptimizer, $result2);
     }
 
     public function testConfigureRulesAddsOnlyEnabledRules(): void
     {
-        $optimizer = new SvgOptimizer($this->provider);
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
-        self::assertSame(0, $optimizer->getRulesCount());
+        self::assertSame(0, $svgOptimizer->getRulesCount());
 
         $ruleClassEnabled = new class implements SvgOptimizerRuleInterface {
             public function optimize(\DOMDocument $domDocument): void
@@ -211,9 +212,9 @@ final class SvgOptimizerTest extends TestCase
             $disabledRuleClassName => false,
         ];
 
-        $optimizer->configureRules($ruleFlags);
+        $svgOptimizer->configureRules($ruleFlags);
 
-        self::assertSame(1, $optimizer->getRulesCount());
+        self::assertSame(1, $svgOptimizer->getRulesCount());
     }
 
     /**
@@ -221,17 +222,17 @@ final class SvgOptimizerTest extends TestCase
      */
     public function testGetMetaDataThrowsIfCalledBeforeOptimize(): void
     {
-        $optimizer = new SvgOptimizer($this->provider);
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage('Metadata is not available before optimization.');
 
-        $optimizer->getMetaData();
+        $svgOptimizer->getMetaData();
     }
 
     protected function setUp(): void
     {
-        $this->provider = new class implements SvgProviderInterface {
+        $this->svgProvider = new class implements SvgProviderInterface {
             public function getInputContent(): string
             {
                 return '<svg></svg>';
@@ -239,10 +240,10 @@ final class SvgOptimizerTest extends TestCase
 
             public function loadContent(): \DOMDocument
             {
-                $doc = new \DOMDocument();
-                $doc->loadXML('<svg></svg>');
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg></svg>');
 
-                return $doc;
+                return $domDocument;
             }
 
             public function optimize(\DOMDocument $domDocument): SvgProviderInterface

@@ -26,7 +26,7 @@ final readonly class ByteFormatter
     public static function formatBytes(int $bytes): string
     {
         if ($bytes < 1_024) {
-            return "{$bytes} B";
+            return \sprintf('%d B', $bytes);
         }
 
         $units = ['KB', 'MB', 'GB', 'TB'];

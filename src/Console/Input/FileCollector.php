@@ -35,7 +35,7 @@ final class FileCollector
         $realFiles = [];
 
         foreach ($paths as $path) {
-            $files = self::resolveSvgFiles($path);
+            $files = $this->resolveSvgFiles($path);
 
             foreach ($files as $file) {
                 $realFiles[$file] = true;
@@ -50,7 +50,7 @@ final class FileCollector
      *
      * @return list<string>
      */
-    private static function resolveSvgFiles(string $path): array
+    private function resolveSvgFiles(string $path): array
     {
         if (!file_exists($path)) {
             return [];
@@ -69,7 +69,7 @@ final class FileCollector
                 ->find();
         }
 
-        if (is_file($realPath) && self::hasSvgExtension($realPath)) {
+        if (is_file($realPath) && $this->hasSvgExtension($realPath)) {
             return [$realPath];
         }
 
@@ -79,7 +79,7 @@ final class FileCollector
     /**
      * Checks if a file has a .svg extension.
      */
-    private static function hasSvgExtension(string $filePath): bool
+    private function hasSvgExtension(string $filePath): bool
     {
         return self::SVG_EXTENSION === mb_strtolower(pathinfo($filePath, \PATHINFO_EXTENSION));
     }

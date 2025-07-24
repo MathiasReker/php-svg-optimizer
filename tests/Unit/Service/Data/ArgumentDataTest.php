@@ -112,8 +112,8 @@ final class ArgumentDataTest extends TestCase
      */
     public function testGetOptionByNameReturnsCorrectOption(): void
     {
-        $helpOption = $this->argumentData->getOptionByName(Option::HELP->getFull());
-        self::assertSame(Option::HELP->getFull(), $helpOption->getFull());
+        $argumentOptionValueObject = $this->argumentData->getOptionByName(Option::HELP->getFull());
+        self::assertSame(Option::HELP->getFull(), $argumentOptionValueObject->getFull());
 
         $dryRunOption = $this->argumentData->getOptionByName(Option::DRY_RUN->getShorthand());
         self::assertSame(Option::DRY_RUN->getFull(), $dryRunOption->getFull());

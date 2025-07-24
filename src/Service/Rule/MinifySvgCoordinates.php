@@ -73,7 +73,7 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         /** @var \DOMNodeList<\DOMAttr> $pathAttributes */
         $pathAttributes = $domXPath->query('//svg:path/@d');
         foreach ($pathAttributes as $attribute) {
-            $attribute->value = self::minifyCoordinates($attribute->value);
+            $attribute->value = $this->minifyCoordinates($attribute->value);
         }
 
         /** @var \DOMNodeList<\DOMElement> $coordinateElements */
@@ -82,7 +82,7 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
             foreach ($coordinateElement->attributes ?? [] as $attribute) {
                 /** @var \DOMAttr $attribute */
                 if (\in_array($attribute->name, ['x', 'x1', 'x2', 'y', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'rx', 'ry', 'r', 'points', 'd'], true)) {
-                    $attribute->value = self::minifyCoordinates($attribute->value);
+                    $attribute->value = $this->minifyCoordinates($attribute->value);
                 }
             }
         }
@@ -101,26 +101,26 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
      *
      * @return string The minified value
      */
-    private static function minifyCoordinates(string $value): string
+    private function minifyCoordinates(string $value): string
     {
         if ('' === $value) {
             return $value;
         }
 
         if (\in_array(preg_match(self::ZERO_REGEX, $value), [0, false], true)) {
-            $value = self::removeLeadingZero($value);
+            $value = $this->removeLeadingZero($value);
         }
 
-        $value = self::removeTrailingZeroes($value);
-        $value = self::removeUnnecessaryDecimalPoint($value);
+        $value = $this->removeTrailingZeroes($value);
+        $value = $this->removeUnnecessaryDecimalPoint($value);
 
-        return self::removeTrailingDecimalPoint($value);
+        return $this->removeTrailingDecimalPoint($value);
     }
 
     /**
      * Remove leading zero before a decimal point.
      */
-    private static function removeLeadingZero(string $value): string
+    private function removeLeadingZero(string $value): string
     {
         return preg_replace(self::REMOVE_LEADING_ZERO_REGEX, '$1', $value) ?? $value;
     }
@@ -128,7 +128,7 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     /**
      * Remove unnecessary trailing zeroes in decimal numbers.
      */
-    private static function removeTrailingZeroes(string $value): string
+    private function removeTrailingZeroes(string $value): string
     {
         return preg_replace(self::TRAILING_ZEROES_REGEX, '$1$2', $value) ?? $value;
     }
@@ -136,7 +136,7 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     /**
      * Remove unnecessary decimal point if there are no digits following it.
      */
-    private static function removeUnnecessaryDecimalPoint(string $value): string
+    private function removeUnnecessaryDecimalPoint(string $value): string
     {
         return preg_replace(self::UNNECESSARY_DECIMAL_POINT_REGEX, '$1', $value) ?? $value;
     }
@@ -144,7 +144,7 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     /**
      * Remove trailing decimal point if there are no digits following it.
      */
-    private static function removeTrailingDecimalPoint(string $value): string
+    private function removeTrailingDecimalPoint(string $value): string
     {
         return preg_replace(self::TRAILING_DECIMAL_POINT_REGEX, '', $value) ?? $value;
     }

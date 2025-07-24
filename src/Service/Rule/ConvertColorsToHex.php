@@ -92,13 +92,13 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
             )
         );
 
-        self::processStyleAttributes($nodeList);
+        $this->processStyleAttributes($nodeList);
 
         foreach (self::COLOR_ATTRIBUTES as $attribute) {
             /** @var \DOMNodeList<\DOMElement> $nodeList */
             $nodeList = $domXPath->query('//@' . $attribute);
 
-            self::processNodeList($nodeList);
+            $this->processNodeList($nodeList);
         }
     }
 
@@ -109,11 +109,11 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * @param \DOMNodeList<\DOMElement> $domNodeList The \DOMNodeList instance containing the nodes to be processed
      */
-    private static function processStyleAttributes(\DOMNodeList $domNodeList): void
+    private function processStyleAttributes(\DOMNodeList $domNodeList): void
     {
         foreach ($domNodeList as $node) {
             $styleValue = $node->getAttribute('style');
-            $styleValue = self::processColorAttributesInStyle($styleValue);
+            $styleValue = $this->processColorAttributesInStyle($styleValue);
 
             $styleValue = preg_replace_callback(
                 self::HEX_REGEX,
@@ -136,14 +136,14 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * @return string The processed style value
      */
-    private static function processColorAttributesInStyle(string $styleValue): string
+    private function processColorAttributesInStyle(string $styleValue): string
     {
         foreach (self::COLOR_ATTRIBUTES as $attribute) {
             if (1 === preg_match('/\b' . preg_quote($attribute, '/') . '\s*:\s*([^;]+)/', $styleValue, $matches)) {
                 $colorValue = trim($matches[1]);
 
-                if (self::isRgbColor($colorValue)) {
-                    $convertedColor = self::convertRgbToHex($colorValue);
+                if ($this->isRgbColor($colorValue)) {
+                    $convertedColor = $this->convertRgbToHex($colorValue);
                     $styleValue = str_replace($colorValue, $convertedColor, $styleValue);
                 }
 
@@ -163,7 +163,7 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * @return bool True if the value is an RGB color, false otherwise
      */
-    private static function isRgbColor(string $value): bool
+    private function isRgbColor(string $value): bool
     {
         return 1 === preg_match(self::RGB_REGEX, $value);
     }
@@ -177,18 +177,18 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * @return string The converted HEX color value
      */
-    private static function convertRgbToHex(string $rgbValue): string
+    private function convertRgbToHex(string $rgbValue): string
     {
         preg_match(self::RGB_REGEX, $rgbValue, $matches);
         [$r, $g, $b] = array_map('intval', \array_slice($matches, 1));
 
-        if (!self::isValidRgbValue($r) || !self::isValidRgbValue($g) || !self::isValidRgbValue($b)) {
+        if (!$this->isValidRgbValue($r) || !$this->isValidRgbValue($g) || !$this->isValidRgbValue($b)) {
             return $rgbValue;
         }
 
         $hex = \sprintf('#%02x%02x%02x', $r, $g, $b);
 
-        return self::canBeShortened($hex)
+        return $this->canBeShortened($hex)
             ? \sprintf('#%1x%1x%1x', $r >> self::BITWISE_SHIFT, $g >> self::BITWISE_SHIFT, $b >> self::BITWISE_SHIFT)
             : mb_strtolower($hex);
     }
@@ -202,7 +202,7 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * @return bool True if the value is a valid RGB component, false otherwise
      */
-    private static function isValidRgbValue(int $value): bool
+    private function isValidRgbValue(int $value): bool
     {
         return $value >= self::MIN_RGB_VALUE && $value <= self::MAX_RGB_VALUE;
     }
@@ -216,7 +216,7 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * @return bool True if the HEX color value can be shortened, false otherwise
      */
-    private static function canBeShortened(string $hex): bool
+    private function canBeShortened(string $hex): bool
     {
         return $hex[1] === $hex[2] && $hex[3] === $hex[4] && $hex[5] === $hex[6];
     }
@@ -228,14 +228,14 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * @param \DOMNodeList<\DOMElement> $domNodeList The \DOMNodeList instance containing the nodes to be processed
      */
-    private static function processNodeList(\DOMNodeList $domNodeList): void
+    private function processNodeList(\DOMNodeList $domNodeList): void
     {
         foreach ($domNodeList as $node) {
             $value = trim((string) $node->nodeValue);
 
-            if (self::isRgbColor($value)) {
-                $node->nodeValue = self::convertRgbToHex($value);
-            } elseif (self::isHexColor($value)) {
+            if ($this->isRgbColor($value)) {
+                $node->nodeValue = $this->convertRgbToHex($value);
+            } elseif ($this->isHexColor($value)) {
                 $node->nodeValue = mb_strtolower($value);
             }
         }
@@ -250,7 +250,7 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * @return bool True if the value is a HEX color, false otherwise
      */
-    private static function isHexColor(string $value): bool
+    private function isHexColor(string $value): bool
     {
         return 1 === preg_match(self::HEX_REGEX, $value);
     }

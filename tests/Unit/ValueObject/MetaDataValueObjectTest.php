@@ -69,29 +69,29 @@ final class MetaDataValueObjectTest extends TestCase
 
     public function testZeroAndNegativeValues(): void
     {
-        $object = new MetaDataValueObject(0, -1, -1, -100.0);
-        self::assertSame(0, $object->getOriginalSize());
-        self::assertSame(-1, $object->getOptimizedSize());
-        self::assertSame(-1, $object->getSavedBytes());
-        self::assertEqualsWithDelta(-100.0, $object->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+        $metaDataValueObject = new MetaDataValueObject(0, -1, -1, -100.0);
+        self::assertSame(0, $metaDataValueObject->getOriginalSize());
+        self::assertSame(-1, $metaDataValueObject->getOptimizedSize());
+        self::assertSame(-1, $metaDataValueObject->getSavedBytes());
+        self::assertEqualsWithDelta(-100.0, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
     public function testLargeValues(): void
     {
-        $object = new MetaDataValueObject(\PHP_INT_MAX, \PHP_INT_MAX - 1, 1, 0.000_000_1);
-        self::assertSame(\PHP_INT_MAX, $object->getOriginalSize());
-        self::assertSame(\PHP_INT_MAX - 1, $object->getOptimizedSize());
-        self::assertSame(1, $object->getSavedBytes());
-        self::assertEqualsWithDelta(0.000_000_1, $object->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+        $metaDataValueObject = new MetaDataValueObject(\PHP_INT_MAX, \PHP_INT_MAX - 1, 1, 0.000_000_1);
+        self::assertSame(\PHP_INT_MAX, $metaDataValueObject->getOriginalSize());
+        self::assertSame(\PHP_INT_MAX - 1, $metaDataValueObject->getOptimizedSize());
+        self::assertSame(1, $metaDataValueObject->getSavedBytes());
+        self::assertEqualsWithDelta(0.000_000_1, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
     public function testBoundaryValues(): void
     {
-        $object = new MetaDataValueObject(\PHP_INT_MIN, \PHP_INT_MAX, 0, 0.0);
-        self::assertSame(\PHP_INT_MIN, $object->getOriginalSize());
-        self::assertSame(\PHP_INT_MAX, $object->getOptimizedSize());
-        self::assertSame(0, $object->getSavedBytes());
-        self::assertEqualsWithDelta(0.0, $object->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+        $metaDataValueObject = new MetaDataValueObject(\PHP_INT_MIN, \PHP_INT_MAX, 0, 0.0);
+        self::assertSame(\PHP_INT_MIN, $metaDataValueObject->getOriginalSize());
+        self::assertSame(\PHP_INT_MAX, $metaDataValueObject->getOptimizedSize());
+        self::assertSame(0, $metaDataValueObject->getSavedBytes());
+        self::assertEqualsWithDelta(0.0, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
     #[\Override]
