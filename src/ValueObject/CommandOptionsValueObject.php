@@ -23,7 +23,27 @@ final readonly class CommandOptionsValueObject
      * @param string $configPath The path to the configuration file
      */
     public function __construct(
-        public bool $dryRun,
-        public string $configPath,
+        private bool $dryRun,
+        private string $configPath,
     ) {}
+
+    /**
+     * Check if the command is set to run in dry-run mode.
+     *
+     * @return bool true if dry-run is enabled; false otherwise
+     */
+    public function isDryRun(): bool
+    {
+        return $this->dryRun;
+    }
+
+    /**
+     * Get the path to the configuration file.
+     *
+     * @return string the configuration file path
+     */
+    public function getConfigPath(): string
+    {
+        return $this->configPath;
+    }
 }

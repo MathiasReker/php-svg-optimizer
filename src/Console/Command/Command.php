@@ -56,10 +56,7 @@ final readonly class Command implements CommandInterface
     private function buildProcessor(): SvgFileProcessor
     {
         return new SvgFileProcessor(
-            new CommandOptionsValueObject(
-                $this->commandOptions->dryRun,
-                $this->commandOptions->configPath
-            ),
+            $this->commandOptions,
             $this->output,
             $this->metaDataAggregator
         );
@@ -95,7 +92,7 @@ final readonly class Command implements CommandInterface
         } catch (\RuntimeException $exception) {
             $this->output->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
         } catch (\JsonException $jsonException) {
-            $this->output->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptions->configPath, $jsonException->getMessage()));
+            $this->output->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptions->getConfigPath(), $jsonException->getMessage()));
         } catch (\InvalidArgumentException $invalidArgumentException) {
             $this->output->printError($invalidArgumentException->getMessage());
         }

@@ -89,8 +89,8 @@ final readonly class SvgFileProcessor
      */
     private function optimizeSvg(string $filePath): void
     {
-        $config = '' !== $this->commandOptions->configPath
-            ? ConfigLoader::loadConfig($this->commandOptions->configPath)
+        $config = '' !== $this->commandOptions->getConfigPath()
+            ? ConfigLoader::loadConfig($this->commandOptions->getConfigPath())
             : [];
 
         $rules = array_combine(
@@ -122,7 +122,7 @@ final readonly class SvgFileProcessor
             )
             ->optimize();
 
-        if (!$this->commandOptions->dryRun) {
+        if (!$this->commandOptions->isDryRun()) {
             $svgOptimizer->saveToFile($filePath);
         }
 
