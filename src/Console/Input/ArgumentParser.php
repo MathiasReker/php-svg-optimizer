@@ -113,7 +113,8 @@ final readonly class ArgumentParser
     {
         foreach ($this->args as $arg) {
             if (self::isOption($arg)
-                && $this->argumentData->getOptionByName($this->getOptionKey($arg)) === $this->argumentData->getOption($option->value)) {
+                && $this->argumentData->getOptionByName($this->getOptionKey($arg)) === $this->argumentData->getOption($option->value)
+            ) {
                 return $this->getOptionValue($arg);
             }
         }

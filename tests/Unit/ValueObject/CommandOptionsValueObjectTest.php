@@ -29,6 +29,7 @@ final class CommandOptionsValueObjectTest extends TestCase
         );
 
         self::assertTrue($commandOptionsValueObject->isDryRun());
+
         self::assertSame('/path/to/config.json', $commandOptionsValueObject->getConfigPath());
     }
 }

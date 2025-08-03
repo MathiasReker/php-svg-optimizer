@@ -164,7 +164,8 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     {
         for ($node = $domDocument->firstChild; $node instanceof \DOMNode; $node = $node->nextSibling) {
             if ($node instanceof \DOMProcessingInstruction
-                && str_contains(mb_strtolower($node->nodeName), 'xml-stylesheet')) {
+                && str_contains(mb_strtolower($node->nodeName), 'xml-stylesheet')
+            ) {
                 $domDocument->removeChild($node);
             }
         }
@@ -439,7 +440,8 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 
             $text = $style->textContent ?? '';
             if ($this->matchesPattern($text, self::STYLE_NODE_DANGEROUS_REGEX)
-                && $style->parentNode instanceof \DOMNode) {
+                && $style->parentNode instanceof \DOMNode
+            ) {
                 $style->parentNode->removeChild($style);
             }
         }

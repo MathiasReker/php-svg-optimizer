@@ -34,9 +34,13 @@ return RectorConfig::configure()
     ->withSkipPath(__DIR__ . '/vendor')
     ->withPaths([__DIR__])
     ->withoutParallel()
-    ->withSkip([
-        PreferPHPUnitThisCallRector::class,
-    ])
-    ->withRules([
-        ExplicitNullableParamTypeRector::class,
-    ]);
+    ->withSkip(
+        [
+            PreferPHPUnitThisCallRector::class,
+        ]
+    )
+    ->withRules(
+        [
+            ExplicitNullableParamTypeRector::class,
+        ]
+    );

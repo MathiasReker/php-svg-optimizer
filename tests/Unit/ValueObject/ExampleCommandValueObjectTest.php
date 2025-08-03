@@ -21,10 +21,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ExampleCommandValueObject::class)]
 final class ExampleCommandValueObjectTest extends TestCase
 {
-    /**
-     * The example command to be tested.
-     * This command is used to test the ExampleCommandValueObject's methods.
-     */
     private const string EXAMPLE_COMMAND = 'vendor/bin/svg-optimizer --dry-run --quiet process /path/to/svgs';
 
     private ExampleCommandValueObject $exampleCommandValueObject;

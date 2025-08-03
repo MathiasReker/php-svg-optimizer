@@ -21,28 +21,12 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ArgumentOptionValueObject::class)]
 final class ArgumentOptionValueObjectTest extends TestCase
 {
-    /**
-     * The shorthand for the help option.
-     * This is used to test the ArgumentOptionValueObject's methods.
-     */
     private const string SHORTHAND = '-h';
 
-    /**
-     * The full name for the help option.
-     * This is used to test the ArgumentOptionValueObject's methods.
-     */
     private const string FULL = '--help';
 
-    /**
-     * The description for the help option.
-     * This is used to test the ArgumentOptionValueObject's methods.
-     */
     private const string DESCRIPTION = 'Display help for the command.';
 
-    /**
-     * The ArgumentOptionValueObject instance to be tested.
-     * This is used to test the ArgumentOptionValueObject's methods.
-     */
     private ArgumentOptionValueObject $argumentOptionValueObject;
 
     public function testGetShorthand(): void

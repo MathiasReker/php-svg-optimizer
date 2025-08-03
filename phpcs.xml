@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<ruleset name="CustomStandard">
+    <description>Combined ruleset: PEAR, PSR1, PSR2, PSR12</description>
+
+    <config name="php_version" value="80300"/>
+
+    <file>src</file>
+    <file>tests</file>
+    <file>bin</file>
+
+    <rule ref="PEAR"/>
+    <rule ref="PSR1"/>
+    <rule ref="PSR2"/>
+    <rule ref="PSR12"/>
+</ruleset>
