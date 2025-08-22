@@ -34,7 +34,6 @@ abstract readonly class AbstractXmlProcessor
      * @return string the optimized SVG content
      *
      * @throws XmlProcessingException if any error occurs while processing, validating, or loading the XML content
-     * @throws \ErrorException        When an error occurs during processing
      */
     final public function process(\DOMDocument $domDocument, callable $callback): string
     {
@@ -59,13 +58,6 @@ abstract readonly class AbstractXmlProcessor
         } catch (\Exception $exception) {
             throw new XmlProcessingException('Failed to process the XML content.', 0, $exception);
         }
-
-        // Convert warnings to exceptions during loadXML
-        set_error_handler(
-            static function (int $severity, string $message): never {
-                throw new \ErrorException($message, 0, $severity);
-            }
-        );
 
         try {
             if (!$domDocument->loadXML($content)) {

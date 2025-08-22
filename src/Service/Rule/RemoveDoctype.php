@@ -36,7 +36,6 @@ final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOp
      * @param \DOMDocument $domDocument The \DOMDocument to optimize
      *
      * @throws XmlProcessingException If an error occurs during processing
-     * @throws \ErrorException        When an error occurs during processing
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void

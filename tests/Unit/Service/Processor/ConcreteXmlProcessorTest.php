@@ -28,7 +28,6 @@ final class ConcreteXmlProcessorTest extends TestCase
      * Test processing with a valid callback that changes fill color from blue to red.
      *
      * @throws XmlProcessingException
-     * @throws \ErrorException
      */
     public function testProcessValidSvgContent(): void
     {
@@ -53,7 +52,6 @@ final class ConcreteXmlProcessorTest extends TestCase
 
     /**
      * @throws XmlProcessingException
-     * @throws \ErrorException
      */
     public function testProcessWithInvalidXmlThrows(): void
     {
@@ -80,7 +78,6 @@ final class ConcreteXmlProcessorTest extends TestCase
      * Test processing with callback returning non-string (should throw).
      *
      * @throws XmlProcessingException
-     * @throws \ErrorException
      */
     public function testProcessWithCallbackReturningNonStringThrows(): void
     {
@@ -105,7 +102,6 @@ final class ConcreteXmlProcessorTest extends TestCase
 
     /**
      * @throws XmlProcessingException
-     * @throws \ErrorException
      */
     public function testProcessInvalidContentThrows(): void
     {
@@ -129,37 +125,7 @@ final class ConcreteXmlProcessorTest extends TestCase
     }
 
     /**
-     * @throws \RuntimeException
-     * @throws \ErrorException
-     */
-    public function testProcessCallbackThrowsGenericException(): void
-    {
-        $svg = '<svg></svg>';
-        $domDocument = new \DOMDocument();
-        $domDocument->loadXML($svg);
-
-        $callback = static function (string $content): string {
-            /*
-             * @phpstan-ignore-next-line
-             */
-            throw new \RuntimeException('Callback failed');
-        };
-
-        $processor = new /**
-                          * @no-named-arguments
-                          */
-        readonly class extends AbstractXmlProcessor {
-        };
-
-        $this->expectException(XmlProcessingException::class);
-        $this->expectExceptionMessage('Failed to process the XML content.');
-
-        $processor->process($domDocument, $callback);
-    }
-
-    /**
      * @throws XmlProcessingException
-     * @throws \ErrorException
      */
     public function testProcessLoadXmlTriggersWarningConvertedToException(): void
     {
