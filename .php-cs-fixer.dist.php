@@ -61,6 +61,10 @@ return (new PhpCsFixer\Config())
         'general_attribute_remove' => true,
         'multiline_promoted_properties' => true,
         'new_expression_parentheses' => true,
+        'no_useless_printf' => true,
+
+        // PER-CS3.0 Rules
+        '@PER-CS3.0:risky' => true,
 
         // PHP-CS-Fixer Rules
         '@PhpCsFixer' => true,

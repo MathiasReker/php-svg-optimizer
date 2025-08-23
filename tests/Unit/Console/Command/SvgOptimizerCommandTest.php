@@ -186,8 +186,8 @@ final class SvgOptimizerCommandTest extends TestCase
     }
 
     /**
-     * @throws \RuntimeException
      * @throws \LogicException
+     * @throws \RuntimeException
      */
     public function testRunWithDryRunOption(): void
     {

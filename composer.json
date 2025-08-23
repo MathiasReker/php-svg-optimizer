@@ -41,7 +41,7 @@
         "phpstan/phpstan-phpunit": "^2.0.7",
         "phpstan/phpstan-strict-rules": "^2.0.6",
         "phpunit/php-code-coverage": "^12.3.2",
-        "phpunit/phpunit": "^12.3.6",
+        "phpunit/phpunit": "^12.3.0",
         "povils/phpmnd": "^3.6.0",
         "rector/rector": "^2.1.4",
         "shipmonk/composer-dependency-analyser": "^1.8.3",

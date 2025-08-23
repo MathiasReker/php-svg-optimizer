@@ -65,8 +65,6 @@ abstract readonly class AbstractXmlProcessor
             }
         } catch (\Throwable $throwable) {
             throw new XmlProcessingException('Failed to load optimized XML content.', 0, $throwable);
-        } finally {
-            restore_error_handler();
         }
 
         return $content;

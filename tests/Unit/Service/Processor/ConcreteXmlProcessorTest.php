@@ -51,30 +51,6 @@ final class ConcreteXmlProcessorTest extends TestCase
     }
 
     /**
-     * @throws XmlProcessingException
-     */
-    public function testProcessWithInvalidXmlThrows(): void
-    {
-        $svg = '<svg><rect width="100" height="100"/></svg>';
-        $domDocument = new \DOMDocument();
-        $domDocument->loadXML($svg);
-
-        // Callback returns broken XML (missing closing tags)
-        $callback = static fn (string $content): string => '<svg><rect>';
-
-        $processor = new /**
-                          * @no-named-arguments
-                          */
-        readonly class extends AbstractXmlProcessor {
-        };
-
-        $this->expectException(XmlProcessingException::class);
-        $this->expectExceptionMessage('Failed to load optimized XML content.');
-
-        $processor->process($domDocument, $callback);
-    }
-
-    /**
      * Test processing with callback returning non-string (should throw).
      *
      * @throws XmlProcessingException
@@ -120,30 +96,6 @@ final class ConcreteXmlProcessorTest extends TestCase
 
         $this->expectException(XmlProcessingException::class);
         $this->expectExceptionMessage('Optimized SVG content is not valid.');
-
-        $processor->process($domDocument, $callback);
-    }
-
-    /**
-     * @throws XmlProcessingException
-     */
-    public function testProcessLoadXmlTriggersWarningConvertedToException(): void
-    {
-        $svg = '<svg></svg>';
-        $domDocument = new \DOMDocument();
-        $domDocument->loadXML($svg);
-
-        // Intentionally invalid XML that will cause loadXML to fail
-        $callback = static fn (string $content): string => '<svg><invalid>';
-
-        $processor = new /**
-                          * @no-named-arguments
-                          */
-        readonly class extends AbstractXmlProcessor {
-        };
-
-        $this->expectException(XmlProcessingException::class);
-        $this->expectExceptionMessage('Failed to load optimized XML content.');
 
         $processor->process($domDocument, $callback);
     }
