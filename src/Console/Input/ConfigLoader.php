@@ -29,6 +29,7 @@ final readonly class ConfigLoader
      *
      * @throws \InvalidArgumentException If the file cannot be read or the JSON is invalid
      * @throws \JsonException            If the JSON decoding fails
+     * @throws \ValueError               If the decoded JSON is not an array
      */
     public static function loadConfig(string $config): array
     {

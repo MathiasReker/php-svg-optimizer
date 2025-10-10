@@ -113,6 +113,7 @@ final class SvgOptimizerCommandTest extends TestCase
      * @throws \ReflectionException
      * @throws \RuntimeException
      * @throws \LogicException
+     * @throws \ValueError
      */
     public function testRunWithValidSvgFile(): void
     {
@@ -150,6 +151,7 @@ final class SvgOptimizerCommandTest extends TestCase
      * @throws \ReflectionException
      * @throws \RuntimeException
      * @throws \LogicException
+     * @throws \ValueError
      */
     public function testRunWithNoInputFiles(): void
     {
@@ -188,6 +190,7 @@ final class SvgOptimizerCommandTest extends TestCase
     /**
      * @throws \LogicException
      * @throws \RuntimeException
+     * @throws \ValueError
      */
     public function testRunWithDryRunOption(): void
     {

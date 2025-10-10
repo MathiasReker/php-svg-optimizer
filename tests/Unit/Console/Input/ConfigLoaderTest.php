@@ -26,6 +26,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
+     * @throws \ValueError
      */
     public function testLoadConfigWithValidJsonString(): void
     {
@@ -39,6 +40,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
+     * @throws \ValueError
      */
     public function testLoadConfigWithValidJsonFile(): void
     {
@@ -53,6 +55,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
+     * @throws \ValueError
      */
     public function testLoadConfigWithInvalidJsonString(): void
     {
@@ -66,6 +69,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
+     * @throws \ValueError
      */
     public function testLoadConfigWithInvalidJsonFile(): void
     {
@@ -80,6 +84,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
+     * @throws \ValueError
      */
     public function testLoadConfigWithEmptyJsonContent(): void
     {
@@ -93,6 +98,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
+     * @throws \ValueError
      */
     public function testLoadConfigWithBooleanAndNumericValues(): void
     {
@@ -113,6 +119,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
+     * @throws \ValueError
      */
     public function testLoadConfigWithNonBooleanValues(): void
     {
@@ -133,6 +140,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
+     * @throws \ValueError
      */
     public function testLoadConfigWithNumericKeys(): void
     {
@@ -149,6 +157,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
+     * @throws \ValueError
      */
     public function testLoadConfigWithEmptyStringThrowsException(): void
     {
@@ -161,6 +170,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
+     * @throws \ValueError
      */
     public function testLoadConfigWithNestedJsonObject(): void
     {
@@ -175,6 +185,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
+     * @throws \ValueError
      */
     public function testLoadConfigWithInvalidStringThrowsException(): void
     {
@@ -186,6 +197,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
+     * @throws \ValueError
      */
     public function testLoadConfigWithEmptyJsonObjectReturnsEmptyArray(): void
     {
@@ -197,6 +209,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
+     * @throws \ValueError
      */
     public function testItFailsOnTooDeeplyNestedJson(): void
     {
@@ -210,6 +223,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
+     * @throws \ValueError
      */
     public function testLoadConfigWithNonArrayJsonThrowsException(): void
     {
@@ -222,6 +236,7 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
+     * @throws \ValueError
      */
     public function testLoadConfigWithNonExistentFilePathThrowsJsonException(): void
     {

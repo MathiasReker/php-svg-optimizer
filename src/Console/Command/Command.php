@@ -66,6 +66,7 @@ final readonly class Command implements CommandInterface
      * Executes the SVG optimization command.
      *
      * @throws \LogicException
+     * @throws \ValueError
      */
     public function run(): void
     {
@@ -84,6 +85,7 @@ final readonly class Command implements CommandInterface
      * @param string $path The path to process, either a file or directory
      *
      * @throws \LogicException
+     * @throws \ValueError
      */
     private function processPath(string $path): void
     {

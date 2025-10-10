@@ -62,7 +62,7 @@ final class ConcreteXmlProcessorTest extends TestCase
         $domDocument->loadXML($svg);
 
         // Callback returns array, not string
-        $callback = static fn (string $content): array => [];
+        $callback = static fn (): array => [];
 
         $processor = new /**
                           * @no-named-arguments
@@ -86,7 +86,7 @@ final class ConcreteXmlProcessorTest extends TestCase
         $domDocument->loadXML($svg);
 
         // Callback returns empty string (invalid SVG)
-        $callback = static fn (string $content): string => '';
+        $callback = static fn (): string => '';
 
         $processor = new /**
                           * @no-named-arguments

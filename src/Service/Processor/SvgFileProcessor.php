@@ -48,6 +48,7 @@ final readonly class SvgFileProcessor
      * @throws \RuntimeException
      * @throws \JsonException
      * @throws \LogicException
+     * @throws \ValueError
      */
     public function processPath(string $path): void
     {
@@ -66,6 +67,7 @@ final readonly class SvgFileProcessor
      * @throws \RuntimeException
      * @throws \JsonException
      * @throws \LogicException
+     * @throws \ValueError
      */
     private function processDirectory(string $directory): void
     {
@@ -86,6 +88,7 @@ final readonly class SvgFileProcessor
      * @throws \RuntimeException
      * @throws \JsonException
      * @throws \LogicException
+     * @throws \ValueError
      */
     private function optimizeSvg(string $filePath): void
     {
