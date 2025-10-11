@@ -59,7 +59,6 @@ enum Rule: string
             self::REMOVE_UNNECESSARY_WHITESPACE->value,
             self::REMOVE_UNUSED_NAMESPACES->value,
             self::SORT_ATTRIBUTES->value => true,
-
             self::FLATTEN_GROUPS->value,
             self::REMOVE_UNSAFE_ELEMENTS->value => false,
         };
