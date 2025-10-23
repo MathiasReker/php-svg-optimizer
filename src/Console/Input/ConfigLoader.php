@@ -52,8 +52,8 @@ final readonly class ConfigLoader
         }
 
         return array_combine(
-            array_map('strval', array_keys($decodedConfig)),
-            array_map('boolval', $decodedConfig)
+            array_map(strval(...), array_keys($decodedConfig)),
+            array_map(boolval(...), $decodedConfig)
         );
     }
 }

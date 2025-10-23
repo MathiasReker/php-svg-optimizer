@@ -19,7 +19,9 @@ use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEmptyTagsToSelfClosing;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
@@ -35,7 +37,9 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedMasks;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 
@@ -136,7 +140,9 @@ final readonly class SvgOptimizerFacade
      */
     public function withRules(
         bool $convertColorsToHex = true,
+        bool $convertCssClassesToAttributes = true,
         bool $convertEmptyTagsToSelfClosing = true,
+        bool $convertInlineStylesToAttributes = true,
         bool $flattenGroups = true,
         bool $minifySvgCoordinates = true,
         bool $minifyTransformations = true,
@@ -152,12 +158,16 @@ final readonly class SvgOptimizerFacade
         bool $removeTitleAndDesc = true,
         bool $removeUnnecessaryWhitespace = true,
         bool $removeUnsafeElements = false,
+        bool $removeUnusedMasks = true,
         bool $removeUnusedNamespaces = true,
+        bool $removeWidthHeightAttributes = true,
         bool $sortAttributes = true,
     ): self {
         $rules = [
             ConvertColorsToHex::class => $convertColorsToHex,
+            ConvertCssClassesToAttributes::class => $convertCssClassesToAttributes,
             ConvertEmptyTagsToSelfClosing::class => $convertEmptyTagsToSelfClosing,
+            ConvertInlineStylesToAttributes::class => $convertInlineStylesToAttributes,
             FlattenGroups::class => $flattenGroups,
             MinifySvgCoordinates::class => $minifySvgCoordinates,
             MinifyTransformations::class => $minifyTransformations,
@@ -173,7 +183,9 @@ final readonly class SvgOptimizerFacade
             RemoveTitleAndDesc::class => $removeTitleAndDesc,
             RemoveUnnecessaryWhitespace::class => $removeUnnecessaryWhitespace,
             RemoveUnsafeElements::class => $removeUnsafeElements,
+            RemoveUnusedMasks::class => $removeUnusedMasks,
             RemoveUnusedNamespaces::class => $removeUnusedNamespaces,
+            RemoveWidthHeightAttributes::class => $removeWidthHeightAttributes,
             SortAttributes::class => $sortAttributes,
         ];
 

@@ -68,7 +68,7 @@ final readonly class ArgumentParser
                 fn (string $arg): ArgumentOptionValueObject => $this->argumentData->getOptionByName($this->getOptionKey($arg)),
                 array_filter(
                     \array_slice($this->args, 1),
-                    static fn (string $arg): bool => self::isOption($arg)
+                    $this->isOption(...)
                 )
             );
 
@@ -91,16 +91,6 @@ final readonly class ArgumentParser
     }
 
     /**
-     * Check if the given argument is an option.
-     *
-     * @return bool True if the argument is an option, false otherwise
-     */
-    private static function isOption(string $option): bool
-    {
-        return str_starts_with($option, '-');
-    }
-
-    /**
      * Get the value of the given option from the command-line arguments.
      *
      * @param Option $option The option to get the value of
@@ -112,7 +102,7 @@ final readonly class ArgumentParser
     public function getOption(Option $option): string
     {
         foreach ($this->args as $arg) {
-            if (self::isOption($arg)
+            if ($this->isOption($arg)
                 && $this->argumentData->getOptionByName($this->getOptionKey($arg)) === $this->argumentData->getOption($option->value)
             ) {
                 return $this->getOptionValue($arg);
@@ -120,6 +110,16 @@ final readonly class ArgumentParser
         }
 
         throw new \InvalidArgumentException(\sprintf('Option "%s" not found in the command-line arguments.', $option->value));
+    }
+
+    /**
+     * Check if the given argument is an option.
+     *
+     * @return bool True if the argument is an option, false otherwise
+     */
+    private function isOption(string $option): bool
+    {
+        return str_starts_with($option, '-');
     }
 
     /**
@@ -161,7 +161,7 @@ final readonly class ArgumentParser
         }
 
         foreach ($this->args as $arg) {
-            if (self::isOption($arg)) {
+            if ($this->isOption($arg)) {
                 $optionName = $this->getOptionKey($arg);
 
                 if (!\in_array($optionName, $validOptionKeys, true)) {

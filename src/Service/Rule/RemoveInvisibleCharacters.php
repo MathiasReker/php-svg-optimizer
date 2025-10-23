@@ -40,7 +40,7 @@ final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor impl
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->process($domDocument, static fn (string $content): string => self::removeInvisibleCharacters($content));
+        $this->process($domDocument, $this->removeInvisibleCharacters(...));
     }
 
     /**
@@ -50,7 +50,7 @@ final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor impl
      *
      * @return string The processed SVG content with invisible characters removed
      */
-    private static function removeInvisibleCharacters(string $content): string
+    private function removeInvisibleCharacters(string $content): string
     {
         return preg_replace(self::INVISIBLE_CHARACTERS_REGEX, '', $content) ?? $content;
     }

@@ -104,7 +104,9 @@ final readonly class SvgFileProcessor
         $svgOptimizerFacade = SvgOptimizerFacade::fromFile($filePath)
             ->withRules(
                 $rules[Rule::CONVERT_COLORS_TO_HEX->value],
+                $rules[Rule::CONVERT_CSS_CLASSES_TO_ATTRIBUTES->value],
                 $rules[Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->value],
+                $rules[Rule::CONVERT_INLINE_STYLES_TO_ATTRIBUTES->value],
                 $rules[Rule::FLATTEN_GROUPS->value],
                 $rules[Rule::MINIFY_SVG_COORDINATES->value],
                 $rules[Rule::MINIFY_TRANSFORMATIONS->value],
@@ -120,7 +122,9 @@ final readonly class SvgFileProcessor
                 $rules[Rule::REMOVE_TITLE_AND_DESC->value],
                 $rules[Rule::REMOVE_UNNECESSARY_WHITESPACE->value],
                 $rules[Rule::REMOVE_UNSAFE_ELEMENTS->value],
+                $rules[Rule::REMOVE_UNUSED_MASKS->value],
                 $rules[Rule::REMOVE_UNUSED_NAMESPACES->value],
+                $rules[Rule::REMOVE_WIDTH_HEIGHT_ATTRIBUTES->value],
                 $rules[Rule::SORT_ATTRIBUTES->value],
             )
             ->optimize();

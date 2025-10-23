@@ -70,8 +70,8 @@ final readonly class OutputManager
         $this->stream->writeln('');
         $this->stream->writeln('Examples:');
         $this->stream->writeln('');
-        foreach ($argumentData->getExamples() as $example) {
-            $this->stream->writeln('  ' . $example->getCommand());
+        foreach ($argumentData->getExamples() as $exampleCommandValueObject) {
+            $this->stream->writeln('  ' . $exampleCommandValueObject->getCommand());
         }
     }
 

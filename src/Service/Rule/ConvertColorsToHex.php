@@ -180,7 +180,7 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     private function convertRgbToHex(string $rgbValue): string
     {
         preg_match(self::RGB_REGEX, $rgbValue, $matches);
-        [$r, $g, $b] = array_map('intval', \array_slice($matches, 1));
+        [$r, $g, $b] = array_map(intval(...), \array_slice($matches, 1));
 
         if (!$this->isValidRgbValue($r) || !$this->isValidRgbValue($g) || !$this->isValidRgbValue($b)) {
             return $rgbValue;

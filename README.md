@@ -83,7 +83,9 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
 ```json
 {
     "convertColorsToHex": true,
+    "convertCssClassesToAttributes": true,
     "convertEmptyTagsToSelfClosing": true,
+    "convertInlineStylesToAttributes": true,
     "flattenGroups": false,
     "minifySvgCoordinates": true,
     "minifyTransformations": true,
@@ -91,15 +93,17 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
     "removeDefaultAttributes": true,
     "removeDeprecatedAttributes": true,
     "removeDoctype": true,
-    "removeEnableBackgroundAttribute": true,
     "removeEmptyAttributes": true,
+    "removeEnableBackgroundAttribute": true,
     "removeInkscapeFootprints": true,
     "removeInvisibleCharacters": true,
     "removeMetadata": true,
     "removeTitleAndDesc": true,
     "removeUnnecessaryWhitespace": true,
     "removeUnsafeElements": false,
+    "removeUnusedMasks": true,
     "removeUnusedNamespaces": true,
+    "removeWidthHeightAttributes": true,
     "sortAttributes": true
 }
 ```
@@ -125,7 +129,9 @@ try {
     $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
         ->withRules(
             convertColorsToHex: true,
+            convertCssClassesToAttributes: true,
             convertEmptyTagsToSelfClosing: true,
+            convertInlineStylesToAttributes: true,
             flattenGroups: false,
             minifySvgCoordinates: true,
             minifyTransformations: true,
@@ -136,11 +142,14 @@ try {
             removeEmptyAttributes: true,
             removeEnableBackgroundAttribute: true,
             removeInkscapeFootprints: true,
+            removeInvisibleCharacters: true,
             removeMetadata: true,
             removeTitleAndDesc: true,
             removeUnnecessaryWhitespace: true,
             removeUnsafeElements: false,
+            removeUnusedMasks: true,
             removeUnusedNamespaces: true,
+            removeWidthHeightAttributes: true,
             sortAttributes: true,
         )
         ->optimize()
@@ -261,10 +270,22 @@ Converts `rgb()` color values to hexadecimal format:
 $svgOptimizer->withRules(convertColorsToHex: true);
 ```
 
+Converts css classes to attributes:
+
+```php
+$svgOptimizer->withRules(convertCssClassesToAttributes: true);
+```
+
 Converts empty tags to self-closing tags:
 
 ```php
 $svgOptimizer->withRules(convertEmptyTagsToSelfClosing: true);
+```
+
+Converts inline styles to attributes:
+
+```php
+$svgOptimizer->withRules(convertInlineStylesToAttributes: true);
 ```
 
 Flattens nested `<g>` elements, moving their child elements up to the parent node:
@@ -357,10 +378,23 @@ Removes unused namespaces from the SVG:
 $svgOptimizer->withRules(removeUnusedNamespaces: true);
 ```
 
+Removes the width and height attributes from the `<svg>` element, allowing the SVG to scale automatically based on its
+viewBox:
+
+```php
+$svgOptimizer->withRules(removeWidthHeightAttributes: true);
+```
+
 Removes unsafe elements from the SVG (**risky**):
 
 ```php
 $svgOptimizer->withRules(removeUnsafeElements: true);
+```
+
+Removes `<mask>` elements that are not referenced or used anywhere in the SVG:
+
+```php
+$svgOptimizer->withRules(removeUnusedMasks: true);
 ```
 
 Sorts attributes within each element:
@@ -374,7 +408,9 @@ Below you see the default configuration. You can configure each rule individuall
 ```php
 $svgOptimizer->withRules(
     convertColorsToHex: true,
+    convertCssClassesToAttributes: true,
     convertEmptyTagsToSelfClosing: true,
+    convertInlineStylesToAttributes: true,
     flattenGroups: false,
     minifySvgCoordinates: true,
     minifyTransformations: true,
@@ -385,11 +421,14 @@ $svgOptimizer->withRules(
     removeEmptyAttributes: true,
     removeEnableBackgroundAttribute: true,
     removeInkscapeFootprints: true,
+    removeInvisibleCharacters: true,
     removeMetadata: true,
     removeTitleAndDesc: true,
     removeUnnecessaryWhitespace: true,
     removeUnsafeElements: false,
+    removeUnusedMasks: true,
     removeUnusedNamespaces: true,
+    removeWidthHeightAttributes: true,
     sortAttributes: true,
 );
 ```

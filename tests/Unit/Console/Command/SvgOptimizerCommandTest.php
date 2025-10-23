@@ -175,7 +175,7 @@ final class SvgOptimizerCommandTest extends TestCase
         $command->run();
         $prop = $reflectionClass->getProperty('metaDataAggregator');
         $metaDataAggregator = $prop->getValue($command);
-        \assert($metaDataAggregator instanceof MetaDataAggregator);
+        self::assertInstanceOf(MetaDataAggregator::class, $metaDataAggregator);
 
         $originalSizeProp = new \ReflectionProperty($metaDataAggregator::class, 'totalOriginalSize');
         $totalOriginalSize = $originalSizeProp->getValue($metaDataAggregator);
