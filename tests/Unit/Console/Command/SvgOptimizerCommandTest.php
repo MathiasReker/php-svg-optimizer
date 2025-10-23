@@ -29,7 +29,9 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\SvgFileProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEmptyTagsToSelfClosing;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
@@ -45,7 +47,9 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedMasks;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
@@ -105,6 +109,10 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ByteFormatter::class)]
 #[CoversClass(SortAttributes::class)]
 #[CoversClass(Finder::class)]
+#[CoversClass(ConvertCssClassesToAttributes::class)]
+#[CoversClass(ConvertInlineStylesToAttributes::class)]
+#[CoversClass(RemoveUnusedMasks::class)]
+#[CoversClass(RemoveWidthHeightAttributes::class)]
 final class SvgOptimizerCommandTest extends TestCase
 {
     private string $tempDir;
