@@ -35,6 +35,10 @@ final readonly class RemoveComments implements SvgOptimizerRuleInterface
         $comments = $domXPath->query('//comment()');
 
         foreach ($comments as $comment) {
+            if (str_starts_with((string) $comment->nodeValue, '!')) {
+                continue; // Skip legal/license comments
+            }
+
             $comment->parentNode?->removeChild($comment);
         }
     }
