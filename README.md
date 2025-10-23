@@ -103,7 +103,7 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
     "removeUnsafeElements": false,
     "removeUnusedMasks": true,
     "removeUnusedNamespaces": true,
-    "removeWidthHeightAttributes": true,
+    "removeWidthHeightAttributes": false,
     "sortAttributes": true
 }
 ```
@@ -149,7 +149,7 @@ try {
             removeUnsafeElements: false,
             removeUnusedMasks: true,
             removeUnusedNamespaces: true,
-            removeWidthHeightAttributes: true,
+            removeWidthHeightAttributes: false,
             sortAttributes: true,
         )
         ->optimize()
@@ -379,10 +379,10 @@ $svgOptimizer->withRules(removeUnusedNamespaces: true);
 ```
 
 Removes the width and height attributes from the `<svg>` element, allowing the SVG to scale automatically based on its
-viewBox:
+viewBox (**risky**):
 
 ```php
-$svgOptimizer->withRules(removeWidthHeightAttributes: true);
+$svgOptimizer->withRules(removeWidthHeightAttributes: false);
 ```
 
 Removes unsafe elements from the SVG (**risky**):
@@ -428,7 +428,7 @@ $svgOptimizer->withRules(
     removeUnsafeElements: false,
     removeUnusedMasks: true,
     removeUnusedNamespaces: true,
-    removeWidthHeightAttributes: true,
+    removeWidthHeightAttributes: false,
     sortAttributes: true,
 );
 ```

@@ -72,10 +72,10 @@ enum Rule: string
             self::REMOVE_UNNECESSARY_WHITESPACE->value,
             self::REMOVE_UNUSED_MASKS->value,
             self::REMOVE_UNUSED_NAMESPACES->value,
-            self::REMOVE_WIDTH_HEIGHT_ATTRIBUTES->value,
             self::SORT_ATTRIBUTES->value => true,
 
             self::FLATTEN_GROUPS->value,
+            self::REMOVE_WIDTH_HEIGHT_ATTRIBUTES->value,
             self::REMOVE_UNSAFE_ELEMENTS->value => false,
         };
     }

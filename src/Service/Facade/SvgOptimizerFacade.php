@@ -160,7 +160,7 @@ final readonly class SvgOptimizerFacade
         bool $removeUnsafeElements = false,
         bool $removeUnusedMasks = true,
         bool $removeUnusedNamespaces = true,
-        bool $removeWidthHeightAttributes = true,
+        bool $removeWidthHeightAttributes = false,
         bool $sortAttributes = true,
     ): self {
         $rules = [
