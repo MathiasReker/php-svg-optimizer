@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "586c7dc0a01722935d180e33a8df638a",
+    "content-hash": "a6500c626c67d7c2147bfbb8fff5fcdc",
     "packages": [],
     "packages-dev": [
         {
@@ -7020,16 +7020,16 @@
         },
         {
             "name": "symplify/phpstan-rules",
-            "version": "14.8.0",
+            "version": "14.8.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symplify/phpstan-rules.git",
-                "reference": "27edd52710424b71d62985e2e48f8cd94f29f17b"
+                "reference": "ad5cba33a8fcc02e70a92c443925ae85670fde5d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/27edd52710424b71d62985e2e48f8cd94f29f17b",
-                "reference": "27edd52710424b71d62985e2e48f8cd94f29f17b",
+                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/ad5cba33a8fcc02e70a92c443925ae85670fde5d",
+                "reference": "ad5cba33a8fcc02e70a92c443925ae85670fde5d",
                 "shasum": ""
             },
             "require": {
@@ -7061,7 +7061,7 @@
             "description": "Set of Symplify rules for PHPStan",
             "support": {
                 "issues": "https://github.com/symplify/phpstan-rules/issues",
-                "source": "https://github.com/symplify/phpstan-rules/tree/14.8.0"
+                "source": "https://github.com/symplify/phpstan-rules/tree/14.8.1"
             },
             "funding": [
                 {
@@ -7073,7 +7073,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-09T15:57:03+00:00"
+            "time": "2025-11-03T15:01:46+00:00"
         },
         {
             "name": "thecodingmachine/safe",
