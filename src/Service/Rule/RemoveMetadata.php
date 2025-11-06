@@ -35,4 +35,10 @@ final readonly class RemoveMetadata implements SvgOptimizerRuleInterface
     {
         $this->removeElementsByTagName($domDocument, 'metadata');
     }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
+    }
 }

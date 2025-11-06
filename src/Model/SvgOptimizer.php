@@ -92,8 +92,20 @@ final class SvgOptimizer
      */
     private function applyRules(\DOMDocument $domDocument): void
     {
+        $originalContent = $this->svgProvider->optimize(clone $domDocument)->getOutputContent();
+
         foreach ($this->rules as $rule) {
             $rule->optimize($domDocument);
+
+            if ($rule->shouldCheckSize()) {
+                $newContent = $this->svgProvider->optimize($domDocument)->getOutputContent();
+                if (mb_strlen($newContent, '8bit') < mb_strlen($originalContent, '8bit')) {
+                    $originalContent = $newContent;
+                } else {
+                    // Revert DOM if it didn't improve size
+                    $domDocument->loadXML($originalContent);
+                }
+            }
         }
     }
 

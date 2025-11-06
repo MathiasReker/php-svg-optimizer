@@ -360,11 +360,11 @@ final class ConvertColorsToHexTest extends TestCase
         yield 'Ensures hex color is lowercase' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-                    <rect width="100" height="100" fill="#FBB040"/>
+                    <rect width="100" height="100" fill="#FBB041"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#fbb040"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#fbb041"/></svg>
                 XML,
         ];
 

@@ -43,6 +43,12 @@ final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOp
         $this->process($domDocument, $this->removeDoctype(...));
     }
 
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes the DOCTYPE declaration from the SVG content.
      *

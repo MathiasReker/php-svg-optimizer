@@ -44,6 +44,12 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
         }
     }
 
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Returns a list of DOM elements that have a `style` attribute.
      *

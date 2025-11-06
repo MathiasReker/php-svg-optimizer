@@ -28,4 +28,9 @@ interface SvgOptimizerRuleInterface
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
     public function optimize(\DOMDocument $domDocument): void;
+
+    /**
+     * If true, SvgOptimizer will only keep the rule's effect if it reduces size.
+     */
+    public function shouldCheckSize(): bool;
 }

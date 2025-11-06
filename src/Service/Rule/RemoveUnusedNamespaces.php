@@ -49,6 +49,12 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
         $this->process($domDocument, fn (): string => $this->cleanNamespaces($domDocument));
     }
 
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Optimize the SVG content by removing unused namespaces.
      *

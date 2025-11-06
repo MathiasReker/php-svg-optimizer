@@ -88,6 +88,12 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         }
     }
 
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Minify the coordinates of the given value by removing unnecessary formatting.
      *

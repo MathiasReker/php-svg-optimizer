@@ -40,6 +40,12 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
         $this->removeEmptyAttributes($domDocument);
     }
 
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes empty or whitespace-only attributes from all elements in the \DOMDocument.
      *

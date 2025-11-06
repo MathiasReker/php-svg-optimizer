@@ -59,6 +59,12 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
         }
     }
 
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Sort attributes of a given \DOMElement.
      *

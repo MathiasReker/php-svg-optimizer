@@ -36,4 +36,10 @@ final readonly class RemoveTitleAndDesc implements SvgOptimizerRuleInterface
         $this->removeElementsByTagName($domDocument, 'title');
         $this->removeElementsByTagName($domDocument, 'desc');
     }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
+    }
 }

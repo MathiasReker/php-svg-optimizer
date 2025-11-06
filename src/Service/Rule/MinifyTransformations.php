@@ -122,6 +122,12 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
         }
     }
 
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Convert percentage values in the transform attribute to decimal numbers.
      *

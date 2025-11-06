@@ -115,7 +115,7 @@ final class FlattenGroupsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" fill="red"/><circle cx="50" cy="50" r="20" fill="red"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g fill="red"><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></g></svg>
                 XML,
         ];
 
@@ -129,7 +129,7 @@ final class FlattenGroupsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" fill="blue"/><text x="20" y="20" fill="blue">Hello</text></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g fill="blue"><rect x="10" y="10" width="30" height="30"/><text x="20" y="20">Hello</text></g></svg>
                 XML,
         ];
 
@@ -180,7 +180,7 @@ final class FlattenGroupsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" stroke="black" stroke-width="2" fill="green"/><circle cx="50" cy="50" r="20" stroke="black" stroke-width="2" fill="green"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g stroke="black" stroke-width="2" fill="green"><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></g></svg>
                 XML,
         ];
 
@@ -196,7 +196,7 @@ final class FlattenGroupsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" stroke-width="2" stroke="black"/><circle cx="50" cy="50" r="20" stroke="black"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g stroke="black"><g stroke-width="2"><rect x="10" y="10" width="30" height="30"/></g><circle cx="50" cy="50" r="20"/></g></svg>
                 XML,
         ];
 

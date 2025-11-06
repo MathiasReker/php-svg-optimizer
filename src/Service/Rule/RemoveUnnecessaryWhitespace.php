@@ -70,6 +70,12 @@ final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor im
         );
     }
 
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Remove all whitespace inside style attribute values.
      *

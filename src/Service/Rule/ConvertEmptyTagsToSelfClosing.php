@@ -51,6 +51,12 @@ final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor 
         $this->process($domDocument, $this->convertEmptyTagsToSelfClosing(...));
     }
 
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Convert empty tags to self-closing tags and remove spaces before slashes in self-closing tags.
      *

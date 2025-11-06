@@ -65,8 +65,8 @@ final class StringProviderTest extends TestCase
 
         $metaDataValueObject = $stringProvider->getMetaData();
 
-        $originalSize = mb_strlen(self::TEST_INPUT_STRING);
-        $optimizedSize = mb_strlen($stringProvider->getOutputContent());
+        $originalSize = mb_strlen(self::TEST_INPUT_STRING, '8bit');
+        $optimizedSize = mb_strlen($stringProvider->getOutputContent(), '8bit');
 
         self::assertSame($originalSize, $metaDataValueObject->getOriginalSize());
         self::assertSame($optimizedSize, $metaDataValueObject->getOptimizedSize());

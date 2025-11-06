@@ -102,6 +102,12 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
         }
     }
 
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Process style attributes containing color values.
      *

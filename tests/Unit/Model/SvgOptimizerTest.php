@@ -43,6 +43,11 @@ final class SvgOptimizerTest extends TestCase
             {
                 // no-op for test
             }
+
+            public function shouldCheckSize(): bool
+            {
+                return false;
+            }
         };
 
         $svgOptimizer->addRule($rule);
@@ -59,6 +64,11 @@ final class SvgOptimizerTest extends TestCase
             public function optimize(\DOMDocument $domDocument): void
             {
                 // no-op for test
+            }
+
+            public function shouldCheckSize(): bool
+            {
+                return false;
             }
         };
 
@@ -196,11 +206,21 @@ final class SvgOptimizerTest extends TestCase
             public function optimize(\DOMDocument $domDocument): void
             {
             }
+
+            public function shouldCheckSize(): bool
+            {
+                return false;
+            }
         };
 
         $ruleClassDisabled = new class implements SvgOptimizerRuleInterface {
             public function optimize(\DOMDocument $domDocument): void
             {
+            }
+
+            public function shouldCheckSize(): bool
+            {
+                return false;
             }
         };
 

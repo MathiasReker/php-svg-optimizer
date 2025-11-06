@@ -42,4 +42,10 @@ final readonly class RemoveComments implements SvgOptimizerRuleInterface
             $comment->parentNode?->removeChild($comment);
         }
     }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
+    }
 }
