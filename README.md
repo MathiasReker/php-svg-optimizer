@@ -25,7 +25,7 @@ performance.
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^7.2    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^7.3    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
