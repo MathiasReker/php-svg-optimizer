@@ -63,7 +63,7 @@ jobs:
 
       - name: Check Code Style with PHP CS Fixer
         run: |
-          if [[ "${{ matrix.php-versions }}" != "8.4" ]]; then
+          if [[ "${{ matrix.php-versions }}" == "8.3" ]]; then
             composer analyze:php-cs-fixer
           fi
 
