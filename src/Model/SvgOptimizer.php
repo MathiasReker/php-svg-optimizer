@@ -86,7 +86,19 @@ final class SvgOptimizer
     }
 
     /**
-     * Apply all optimization rules to the provided \DOMDocument.
+     * Apply all configured optimization rules to the provided \DOMDocument.
+     *
+     * Each rule is applied in the order it was added. If a rule has
+     * `shouldCheckSize()` enabled, the method compares the SVG content
+     * size before and after applying the rule:
+     *
+     * - If the rule reduces the file size, the change is kept and
+     *   considered the new "best" version of the SVG content.
+     * - If the rule increases or does not improve the file size, the
+     *   DOMDocument is reverted to the previous best version.
+     *
+     * This ensures that only optimizations that improve (reduce) the SVG
+     * size are retained, while preserving improvements from earlier rules.
      *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
