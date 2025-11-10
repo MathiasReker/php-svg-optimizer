@@ -152,12 +152,6 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         $this->removeStyleWithImport($domDocument);
     }
 
-    #[\Override]
-    public function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * Remove processing instructions that match specific criteria from the SVG document.
      *
@@ -451,5 +445,11 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
                 $style->parentNode->removeChild($style);
             }
         }
+    }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
     }
 }

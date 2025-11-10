@@ -80,12 +80,6 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
         $this->removeAttributes($domXPath, self::ATTRIBUTES_TO_REMOVE);
     }
 
-    #[\Override]
-    public function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * Replaces specific attributes in the SVG document with their modern equivalents.
      *
@@ -163,5 +157,11 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
                 $node->removeAttribute($attribute);
             }
         }
+    }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
     }
 }

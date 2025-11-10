@@ -95,7 +95,7 @@ final class SvgOptimizer
      * - If the rule reduces the file size, the change is kept and
      *   considered the new "best" version of the SVG content.
      * - If the rule increases or does not improve the file size, the
-     *   DOMDocument is reverted to the previous best version.
+     *   \DOMDocument is reverted to the previous best version.
      *
      * This ensures that only optimizations that improve (reduce) the SVG
      * size are retained, while preserving improvements from earlier rules.

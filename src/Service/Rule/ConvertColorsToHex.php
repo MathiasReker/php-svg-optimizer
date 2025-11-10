@@ -102,12 +102,6 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
         }
     }
 
-    #[\Override]
-    public function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * Process style attributes containing color values.
      *
@@ -259,5 +253,11 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     private function isHexColor(string $value): bool
     {
         return 1 === preg_match(self::HEX_REGEX, $value);
+    }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
     }
 }

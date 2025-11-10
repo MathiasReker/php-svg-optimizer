@@ -228,5 +228,47 @@ final class MinifySvgCoordinatesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="20" width="30" height="40"/><circle cx="50" cy="50" r="25"/><path d="M10 20 L30 40"/></svg>
                 XML,
         ];
+
+        yield 'Optimizes viewBox coordinates' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0.000000 0.000000 100.000000 100.000000">
+                    <rect x="10.000000" y="20.000000" width="30.000000" height="40.000000"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect x="10" y="20" width="30" height="40"/></svg>
+                XML,
+        ];
+
+        yield 'Optimizes enable-background coordinates' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" enable-background="new 0.000000 0.000000 200.000000 200.000000">
+                    <circle cx="50.000000" cy="50.000000" r="25.000000"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" enable-background="new 0 0 200 200"><circle cx="50" cy="50" r="25"/></svg>
+                XML,
+        ];
+
+        yield 'Handles both viewBox and enable-background attributes together' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0.000000 0.000000 500.000000 500.000000" enable-background="new 0.000000 0.000000 500.000000 500.000000">
+                    <path d="M10.000000 20.000000 L30.500000 40.500000"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 500 500" enable-background="new 0 0 500 500"><path d="M10 20 L30.5 40.5"/></svg>
+                XML,
+        ];
+
+        yield 'Zero Coordinated Elements' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="0.000" height="0.000"/>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"/>
+                XML,
+        ];
     }
 }

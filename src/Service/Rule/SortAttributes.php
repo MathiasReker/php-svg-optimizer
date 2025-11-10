@@ -59,12 +59,6 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
         }
     }
 
-    #[\Override]
-    public function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * Sort attributes of a given \DOMElement.
      *
@@ -141,5 +135,11 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
         ksort($otherAttributes, \SORT_STRING);
 
         return array_merge($priorityAttributes, $otherAttributes);
+    }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
     }
 }

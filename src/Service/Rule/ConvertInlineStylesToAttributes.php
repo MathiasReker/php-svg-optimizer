@@ -44,12 +44,6 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
         }
     }
 
-    #[\Override]
-    public function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * Returns a list of DOM elements that have a `style` attribute.
      *
@@ -150,5 +144,11 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
     private function isValidPropertyName(string $prop): bool
     {
         return 1 === preg_match(self::PROPERTY_NAME_REGEX, $prop);
+    }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
     }
 }

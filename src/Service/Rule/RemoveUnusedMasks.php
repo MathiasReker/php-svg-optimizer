@@ -32,12 +32,6 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
         $this->removeEmptyDefs($domDocument);
     }
 
-    #[\Override]
-    public function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * Removes <mask> elements that are not referenced anywhere in the SVG.
      *
@@ -90,5 +84,11 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
                 $domNodeList->parentNode?->removeChild($domNodeList);
             }
         }
+    }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
     }
 }

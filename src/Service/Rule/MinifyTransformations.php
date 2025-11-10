@@ -122,12 +122,6 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
         }
     }
 
-    #[\Override]
-    public function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * Convert percentage values in the transform attribute to decimal numbers.
      *
@@ -193,5 +187,11 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
         return '' === $transform
             || '0' === $transform
             || 1 === preg_match(self::EMPTY_TRANSFORM_REGEX, $transform);
+    }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
     }
 }

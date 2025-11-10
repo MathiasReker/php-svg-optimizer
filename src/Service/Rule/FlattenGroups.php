@@ -42,12 +42,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         }
     }
 
-    #[\Override]
-    public function shouldCheckSize(): bool
-    {
-        return true;
-    }
-
     /**
      * Apply attributes from the group to its child elements.
      *
@@ -145,5 +139,11 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         foreach ($children as $child) {
             $parentNode->insertBefore($child, $domElement);
         }
+    }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return true;
     }
 }

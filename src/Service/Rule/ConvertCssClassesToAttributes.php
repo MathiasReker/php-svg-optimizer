@@ -60,12 +60,6 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         }
     }
 
-    #[\Override]
-    public function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * Processes CSS text and converts matching rules to SVG attributes.
      *
@@ -208,5 +202,11 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         }
 
         return \sprintf('.%s{%s}', $class, implode(';', $props));
+    }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
     }
 }

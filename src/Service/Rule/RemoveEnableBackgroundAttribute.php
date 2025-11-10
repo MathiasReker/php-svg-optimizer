@@ -43,12 +43,6 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
         $this->processEnableBackgroundAttributes($domXPath);
     }
 
-    #[\Override]
-    public function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * Processes the `enable-background` attribute on SVG, mask, and pattern elements.
      *
@@ -100,5 +94,11 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
         }
 
         return $value;
+    }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
     }
 }

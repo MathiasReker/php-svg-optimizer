@@ -105,12 +105,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
         }
     }
 
-    #[\Override]
-    public function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * Remove the XML namespace attributes from all SVG tags.
      *
@@ -245,5 +239,11 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
         }
 
         return $attributesToRemove;
+    }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
     }
 }

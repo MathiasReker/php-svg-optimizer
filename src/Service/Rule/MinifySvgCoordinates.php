@@ -47,18 +47,29 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     private const string REMOVE_LEADING_ZERO_REGEX = '/(?<=^|\D)0(\.\d+)/';
 
     /**
-     * Regular expression pattern to match zero values.
+     * Regular expression pattern to replace a standalone decimal point "." with "0".
      *
-     * @see https://regex101.com/r/3ejIEg/1
+     * @see https://regex101.com/r/CBS2bQ/1
      */
-    private const string ZERO_REGEX = '/^0(\.0+)?$/';
+    private const string STANDALONE_DOT_REGEX = '/(?<=^|\s)\.(?=\s|$)/';
+
+    /**
+     * Mapping of SVG elements (XPath queries) to their attributes that should be minified.
+     */
+    private const array ELEMENTS_TO_ATTRIBUTES = [
+        '//svg:path' => ['d'],
+        '//svg:rect | //svg:circle | //svg:ellipse | //svg:line | //svg:polyline | //svg:polygon | //svg:svg' => [
+            'x', 'x1', 'x2', 'y', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'rx', 'ry', 'r', 'points', 'd',
+        ],
+        '//svg:svg' => ['viewBox', 'enable-background'],
+    ];
 
     /**
      * Optimize the SVG document by minifying the coordinates of specific elements.
      *
      * This method processes the following elements and their attributes:
      * - `<path>` elements with `d` attribute
-     * - `<rect>`, `<circle>`, `<ellipse>`, `<line>`, `<polyline>`, and `<polygon>` elements with coordinate attributes
+     * - `<svg>`, `<rect>`, `<circle>`, `<ellipse>`, `<line>`, `<polyline>`, and `<polygon>` elements with coordinate attributes
      *
      * It removes unnecessary trailing zeroes, decimal points, and trailing decimal points in coordinates.
      *
@@ -70,28 +81,47 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         $domXPath = new \DOMXPath($domDocument);
         $domXPath->registerNamespace('svg', 'http://www.w3.org/2000/svg');
 
-        /** @var \DOMNodeList<\DOMAttr> $pathAttributes */
-        $pathAttributes = $domXPath->query('//svg:path/@d');
-        foreach ($pathAttributes as $attribute) {
-            $attribute->value = $this->minifyCoordinates($attribute->value);
+        foreach (self::ELEMENTS_TO_ATTRIBUTES as $xpath => $attributes) {
+            $this->processNodes($domXPath, $xpath, $attributes);
+        }
+    }
+
+    /**
+     * Query nodes for a given XPath and minify their attributes.
+     *
+     * @param list<string> $attributes
+     */
+    private function processNodes(\DOMXPath $domXPath, string $xpath, array $attributes): void
+    {
+        $nodes = $domXPath->query($xpath);
+        if (!$nodes instanceof \DOMNodeList) {
+            return;
         }
 
-        /** @var \DOMNodeList<\DOMElement> $coordinateElements */
-        $coordinateElements = $domXPath->query('//svg:rect | //svg:circle | //svg:ellipse | //svg:line | //svg:polyline | //svg:polygon');
-        foreach ($coordinateElements as $coordinateElement) {
-            foreach ($coordinateElement->attributes ?? [] as $attribute) {
-                /** @var \DOMAttr $attribute */
-                if (\in_array($attribute->name, ['x', 'x1', 'x2', 'y', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'rx', 'ry', 'r', 'points', 'd'], true)) {
-                    $attribute->value = $this->minifyCoordinates($attribute->value);
-                }
+        /** @var \DOMNode $node */
+        foreach ($nodes as $node) {
+            if ($node instanceof \DOMElement) {
+                $this->minifyNodeAttributes($node, $attributes);
             }
         }
     }
 
-    #[\Override]
-    public function shouldCheckSize(): bool
+    /**
+     * Minify specified attributes of a DOM element.
+     *
+     * @param list<string> $attributes
+     */
+    private function minifyNodeAttributes(\DOMNode $domNode, array $attributes): void
     {
-        return false;
+        if (!$domNode instanceof \DOMElement) {
+            return;
+        }
+
+        foreach ($attributes as $attribute) {
+            if ($domNode->hasAttribute($attribute)) {
+                $domNode->setAttribute($attribute, $this->minifyCoordinates($domNode->getAttribute($attribute)));
+            }
+        }
     }
 
     /**
@@ -113,14 +143,15 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
             return $value;
         }
 
-        if (\in_array(preg_match(self::ZERO_REGEX, $value), [0, false], true)) {
+        if (str_contains($value, '.')) {
             $value = $this->removeLeadingZero($value);
         }
 
         $value = $this->removeTrailingZeroes($value);
         $value = $this->removeUnnecessaryDecimalPoint($value);
+        $value = $this->removeTrailingDecimalPoint($value);
 
-        return $this->removeTrailingDecimalPoint($value);
+        return preg_replace(self::STANDALONE_DOT_REGEX, '0', $value) ?? $value;
     }
 
     /**
@@ -153,5 +184,11 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     private function removeTrailingDecimalPoint(string $value): string
     {
         return preg_replace(self::TRAILING_DECIMAL_POINT_REGEX, '', $value) ?? $value;
+    }
+
+    #[\Override]
+    public function shouldCheckSize(): bool
+    {
+        return false;
     }
 }
