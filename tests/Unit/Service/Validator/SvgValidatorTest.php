@@ -48,7 +48,7 @@ final class SvgValidatorTest extends TestCase
     public function testIsValidWithMalformedSvg(): void
     {
         $malformedSvg = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"></svg>';
-        self::assertTrue($this->svgValidator->isValid($malformedSvg));
+        self::assertFalse($this->svgValidator->isValid($malformedSvg));
     }
 
     public function testIsValidWithXmlDeclaration(): void
@@ -66,13 +66,19 @@ final class SvgValidatorTest extends TestCase
     public function testIsValidWithComment(): void
     {
         $svgComment = '<svg xmlns="http://www.w3.org/2000/svg"><!-- comment -->';
-        self::assertTrue($this->svgValidator->isValid($svgComment));
+        self::assertFalse($this->svgValidator->isValid($svgComment));
+    }
+
+    public function testEmpty(): void
+    {
+        $svgComment = '';
+        self::assertFalse($this->svgValidator->isValid($svgComment));
     }
 
     public function testIsValidWithCommentInFrontOfSvg(): void
     {
         $svgComment = '<!-- comment --><svg xmlns="http://www.w3.org/2000/svg">';
-        self::assertTrue($this->svgValidator->isValid($svgComment));
+        self::assertFalse($this->svgValidator->isValid($svgComment));
     }
 
     #[\Override]

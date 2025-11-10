@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Validator;
 
+use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
+
 /**
  * @no-named-arguments
  */
@@ -55,6 +58,13 @@ readonly class SvgValidator
      */
     private const string HTML_COMMENT_REGEX = '/<!--.*?-->/s';
 
+    private DomDocumentWrapper $domDocumentWrapper;
+
+    public function __construct()
+    {
+        $this->domDocumentWrapper = new DomDocumentWrapper();
+    }
+
     /**
      * Checks if the provided content is a valid SVG.
      *
@@ -70,7 +80,11 @@ readonly class SvgValidator
     {
         $cleanedContent = $this->removeUnnecessaryDeclarations($content);
 
-        return $this->containsSvgTag($cleanedContent);
+        if (!$this->containsSvgTag($cleanedContent)) {
+            return false;
+        }
+
+        return $this->isWellFormedXml($content);
     }
 
     /**
@@ -109,5 +123,27 @@ readonly class SvgValidator
     private function containsSvgTag(string $content): bool
     {
         return 1 === preg_match(self::SVG_TAG_REGEX, $content);
+    }
+
+    /**
+     * Checks whether the given content is well-formed XML using DomDocumentWrapper.
+     *
+     * This method attempts to parse the content using DomDocumentWrapper to ensure
+     * that it is valid XML. It does **not** check for specific SVG structure,
+     * only that the XML is syntactically correct.
+     *
+     * @param string $content the XML content to validate
+     *
+     * @return bool true if the content is well-formed XML, false otherwise
+     */
+    private function isWellFormedXml(string $content): bool
+    {
+        try {
+            $this->domDocumentWrapper->loadFromString($content);
+
+            return true;
+        } catch (XmlProcessingException) {
+            return false;
+        }
     }
 }
