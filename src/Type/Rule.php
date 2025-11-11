@@ -32,7 +32,10 @@ enum Rule: string
     case REMOVE_DEFAULT_ATTRIBUTES = 'removeDefaultAttributes';
     case REMOVE_DEPRECATED_ATTRIBUTES = 'removeDeprecatedAttributes';
     case REMOVE_DOCTYPE = 'removeDoctype';
+    case REMOVE_DUPLICATE_ELEMENTS = 'removeDuplicateElements';
     case REMOVE_ENABLE_BACKGROUND_ATTRIBUTE = 'removeEnableBackgroundAttribute';
+    case REMOVE_EMPTY_GROUPS = 'removeEmptyGroups';
+    case REMOVE_EMPTY_TEXT_ELEMENTS = 'removeEmptyTextElements';
     case REMOVE_EMPTY_ATTRIBUTES = 'removeEmptyAttributes';
     case REMOVE_INKSCAPE_FOOTPRINTS = 'removeInkscapeFootprints';
     case REMOVE_INVISIBLE_CHARACTERS = 'removeInvisibleCharacters';
@@ -63,7 +66,10 @@ enum Rule: string
             self::REMOVE_DEFAULT_ATTRIBUTES->value,
             self::REMOVE_DEPRECATED_ATTRIBUTES->value,
             self::REMOVE_DOCTYPE->value,
+            self::REMOVE_DUPLICATE_ELEMENTS->value,
             self::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE->value,
+            self::REMOVE_EMPTY_GROUPS->value,
+            self::REMOVE_EMPTY_TEXT_ELEMENTS->value,
             self::REMOVE_EMPTY_ATTRIBUTES->value,
             self::REMOVE_INKSCAPE_FOOTPRINTS->value,
             self::REMOVE_INVISIBLE_CHARACTERS->value,

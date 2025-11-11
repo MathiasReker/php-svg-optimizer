@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -28,6 +29,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(MetaDataValueObject::class)]
 #[CoversClass(SvgValidator::class)]
+#[CoversClass(DomDocumentWrapper::class)]
 final class SvgOptimizerTest extends TestCase
 {
     private SvgProviderInterface $svgProvider;

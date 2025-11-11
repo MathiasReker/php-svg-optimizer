@@ -93,7 +93,10 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
     "removeDefaultAttributes": true,
     "removeDeprecatedAttributes": true,
     "removeDoctype": true,
+    "removeDuplicateElements": true,
     "removeEmptyAttributes": true,
+    "removeEmptyGroups": true,
+    "removeEmptyTextElements": true,
     "removeEnableBackgroundAttribute": true,
     "removeInkscapeFootprints": true,
     "removeInvisibleCharacters": true,
@@ -139,7 +142,10 @@ try {
             removeDefaultAttributes: true,
             removeDeprecatedAttributes: true,
             removeDoctype: true,
+            removeDuplicateElements: true,
             removeEmptyAttributes: true,
+            removeEmptyGroups: true,
+            removeEmptyTextElements: true,
             removeEnableBackgroundAttribute: true,
             removeInkscapeFootprints: true,
             removeInvisibleCharacters: true,
@@ -330,10 +336,28 @@ Removes the SVG doctype declaration:
 $svgOptimizer->withRules(removeDoctype: true);
 ```
 
+Removes duplicate elements from the SVG:
+
+```php
+$svgOptimizer->withRules(removeDuplicateElements: true);
+```
+
 Removes empty attributes from the SVG:
 
 ```php
 $svgOptimizer->withRules(removeEmptyAttributes: true);
+```
+
+Removes empty `<g>` groups:
+
+```php
+$svgOptimizer->withRules(removeEmptyGroups: true);
+```
+
+Removes empty text elements:
+
+```php
+$svgOptimizer->withRules(removeEmptyTextElements: true);
 ```
 
 Removes the `enable-background` attribute from the SVG:
@@ -418,7 +442,10 @@ $svgOptimizer->withRules(
     removeDefaultAttributes: true,
     removeDeprecatedAttributes: true,
     removeDoctype: true,
+    removeDuplicateElements: true,
     removeEmptyAttributes: true,
+    removeEmptyGroups: true,
+    removeEmptyTextElements: true,
     removeEnableBackgroundAttribute: true,
     removeInkscapeFootprints: true,
     removeInvisibleCharacters: true,

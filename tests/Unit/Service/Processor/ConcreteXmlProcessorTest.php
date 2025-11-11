@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -22,6 +23,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(AbstractXmlProcessor::class)]
 #[CoversClass(SvgValidator::class)]
+#[CoversClass(DomDocumentWrapper::class)]
 final class ConcreteXmlProcessorTest extends TestCase
 {
     /**

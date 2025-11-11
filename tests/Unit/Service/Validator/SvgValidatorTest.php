@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Validator;
 
+use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -19,6 +20,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(SvgValidator::class)]
+#[CoversClass(DomDocumentWrapper::class)]
 final class SvgValidatorTest extends TestCase
 {
     private SvgValidator $svgValidator;

@@ -29,7 +29,10 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDoctype;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDuplicateElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyGroups;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
@@ -117,7 +120,9 @@ final readonly class SvgOptimizerFacade
      * Each rule can be enabled or disabled via the respective parameters.
      *
      * @param bool $convertColorsToHex              Whether to convert colors to hexadecimal format
+     * @param bool $convertCssClassesToAttributes   Whether to convert CSS classes to attributes
      * @param bool $convertEmptyTagsToSelfClosing   Whether to convert empty tags to self-closing tags
+     * @param bool $convertInlineStylesToAttributes Whether to convert inline styles to attributes
      * @param bool $flattenGroups                   Whether to flatten nested group elements
      * @param bool $minifySvgCoordinates            Whether to minify coordinate values within the SVG
      * @param bool $minifyTransformations           Whether to minify transformation attributes
@@ -125,7 +130,10 @@ final readonly class SvgOptimizerFacade
      * @param bool $removeDefaultAttributes         Whether to remove default attributes from elements
      * @param bool $removeDeprecatedAttributes      Whether to remove the xlink namespace
      * @param bool $removeDoctype                   Whether to remove the DOCTYPE declaration
+     * @param bool $removeDuplicateElements         Whether to remove duplicate elements
      * @param bool $removeEmptyAttributes           Whether to remove empty attributes from elements
+     * @param bool $removeEmptyGroups               Whether to remove empty groups
+     * @param bool $removeEmptyTextAttributes       Whether to remove empty text attributes
      * @param bool $removeEnableBackgroundAttribute Whether to remove the enable-background attribute
      * @param bool $removeInkscapeFootprints        Whether to remove Inkscape-specific footprints
      * @param bool $removeInvisibleCharacters       Whether to remove invisible characters
@@ -133,7 +141,9 @@ final readonly class SvgOptimizerFacade
      * @param bool $removeTitleAndDesc              Whether to remove the <title> and <desc> elements
      * @param bool $removeUnnecessaryWhitespace     Whether to remove unnecessary whitespace
      * @param bool $removeUnsafeElements            Whether to remove unsafe elements
+     * @param bool $removeUnusedMasks               Whether to remove unused masks
      * @param bool $removeUnusedNamespaces          Whether to remove unused namespaces
+     * @param bool $removeWidthHeightAttributes     Whether to remove width and height attributes
      * @param bool $sortAttributes                  Whether to sort attributes
      *
      * @return $this The SvgOptimizerFacade instance
@@ -150,7 +160,10 @@ final readonly class SvgOptimizerFacade
         bool $removeDefaultAttributes = true,
         bool $removeDeprecatedAttributes = true,
         bool $removeDoctype = true,
+        bool $removeDuplicateElements = true,
         bool $removeEmptyAttributes = true,
+        bool $removeEmptyGroups = true,
+        bool $removeEmptyTextAttributes = true,
         bool $removeEnableBackgroundAttribute = true,
         bool $removeInkscapeFootprints = true,
         bool $removeInvisibleCharacters = true,
@@ -175,7 +188,10 @@ final readonly class SvgOptimizerFacade
             RemoveDefaultAttributes::class => $removeDefaultAttributes,
             RemoveDeprecatedAttributes::class => $removeDeprecatedAttributes,
             RemoveDoctype::class => $removeDoctype,
+            RemoveDuplicateElements::class => $removeDuplicateElements,
             RemoveEmptyAttributes::class => $removeEmptyAttributes,
+            RemoveEmptyGroups::class => $removeEmptyGroups,
+            RemoveEmptyTextElements::class => $removeEmptyTextAttributes,
             RemoveEnableBackgroundAttribute::class => $removeEnableBackgroundAttribute,
             RemoveInkscapeFootprints::class => $removeInkscapeFootprints,
             RemoveInvisibleCharacters::class => $removeInvisibleCharacters,

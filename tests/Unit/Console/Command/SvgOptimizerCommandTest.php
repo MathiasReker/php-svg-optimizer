@@ -39,7 +39,10 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDoctype;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDuplicateElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyGroups;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
@@ -113,6 +116,9 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ConvertInlineStylesToAttributes::class)]
 #[CoversClass(RemoveUnusedMasks::class)]
 #[CoversClass(RemoveWidthHeightAttributes::class)]
+#[CoversClass(RemoveDuplicateElements::class)]
+#[CoversClass(RemoveEmptyGroups::class)]
+#[CoversClass(RemoveEmptyTextElements::class)]
 final class SvgOptimizerCommandTest extends TestCase
 {
     private string $tempDir;
