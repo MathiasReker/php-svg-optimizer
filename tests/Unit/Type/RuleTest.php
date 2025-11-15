@@ -70,4 +70,66 @@ final class RuleTest extends TestCase
             );
         }
     }
+
+    public function testAllConfigKeysAreUnique(): void
+    {
+        $keys = array_map(
+            static fn (Rule $rule): string => $rule->configKey(),
+            Rule::cases()
+        );
+
+        $duplicateKeys = array_diff_key($keys, array_unique($keys));
+
+        self::assertSame(
+            [],
+            $duplicateKeys,
+            'Duplicate config keys detected: ' . implode(', ', $duplicateKeys)
+        );
+    }
+
+    public function testAllEnumValuesAreUnique(): void
+    {
+        $values = array_map(
+            static fn (Rule $rule) => $rule->value,
+            Rule::cases()
+        );
+
+        self::assertSame(
+            $values,
+            array_unique($values),
+            'Duplicate enum values detected (duplicate rule classes).'
+        );
+    }
+
+    public function testConfigKeyMatchesNamingConvention(): void
+    {
+        foreach (Rule::cases() as $case) {
+            $key = $case->configKey();
+
+            self::assertMatchesRegularExpression(
+                '/^[a-z]+[A-Za-z0-9]*$/',
+                $key,
+                \sprintf('Config key "%s" for %s does not follow camelCase.', $key, $case->name)
+            );
+        }
+    }
+
+    public function testRuleClassIsInstantiable(): void
+    {
+        foreach (Rule::cases() as $case) {
+            $class = $case->value;
+
+            self::assertTrue(
+                class_exists($class),
+                \sprintf('Rule class "%s" does not exist', $class)
+            );
+
+            $reflection = new \ReflectionClass($class);
+
+            self::assertFalse(
+                $reflection->isAbstract(),
+                \sprintf('Rule class "%s" must not be abstract', $class)
+            );
+        }
+    }
 }

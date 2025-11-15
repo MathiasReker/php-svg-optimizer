@@ -63,4 +63,49 @@ final class MetaDataAggregatorTest extends TestCase
         $metaDataAggregator->addFileData(500, 400);
         self::assertSame(2, $metaDataAggregator->getOptimizedFileCount());
     }
+
+    public function testHasOptimizedFilesReturnsFalseInitially(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+        self::assertFalse($metaDataAggregator->hasOptimizedFiles());
+    }
+
+    public function testHasOptimizedFilesReturnsTrueAfterAddingFileData(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+        $metaDataAggregator->addFileData(1_000, 800);
+
+        self::assertTrue($metaDataAggregator->hasOptimizedFiles());
+    }
+
+    public function testNoSavingsResultsInZeroSavedBytesAndPercentage(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+        $metaDataAggregator->addFileData(500, 500);
+
+        self::assertSame(0, $metaDataAggregator->getSavedBytes());
+        self::assertSame(0.0, $metaDataAggregator->getSavedPercentage());
+    }
+
+    public function testMultipleFilesCalculateSavedPercentageCorrectly(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+        $metaDataAggregator->addFileData(1_000, 800); // 200 saved
+        $metaDataAggregator->addFileData(2_000, 1_500); // 500 saved
+
+        self::assertSame(3_000, $metaDataAggregator->getTotalOriginalSize());
+        self::assertSame(2_300, $metaDataAggregator->getTotalOptimizedSize());
+        self::assertSame(700, $metaDataAggregator->getSavedBytes());
+        self::assertSame(23.333_333_333_333_332, $metaDataAggregator->getSavedPercentage());
+    }
+
+    public function testAddFileDataWithNegativeValues(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+        $metaDataAggregator->addFileData(-100, -50);
+
+        self::assertSame(-100, $metaDataAggregator->getTotalOriginalSize());
+        self::assertSame(-50, $metaDataAggregator->getTotalOptimizedSize());
+        self::assertSame(-50, $metaDataAggregator->getSavedBytes());
+    }
 }

@@ -249,4 +249,9 @@ final class RemoveWidthHeightAttributesTest extends TestCase
                 XML,
         ];
     }
+
+    public function testRuleIsMarkedAsRisky(): void
+    {
+        self::assertTrue(RemoveWidthHeightAttributes::isRisky());
+    }
 }

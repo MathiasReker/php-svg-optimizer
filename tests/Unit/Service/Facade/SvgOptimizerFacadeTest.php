@@ -24,23 +24,12 @@ use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEmptyTagsToSelfClosing;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDoctype;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -51,30 +40,19 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgOptimizerFacade::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(DomDocumentWrapper::class)]
-#[CoversClass(XmlFormatter::class)]
 #[CoversClass(AbstractProvider::class)]
 #[CoversClass(StringProvider::class)]
-#[CoversClass(AbstractXmlProcessor::class)]
-#[CoversClass(ConvertColorsToHex::class)]
-#[CoversClass(ConvertEmptyTagsToSelfClosing::class)]
-#[CoversClass(FlattenGroups::class)]
-#[CoversClass(MinifySvgCoordinates::class)]
-#[CoversClass(MinifyTransformations::class)]
-#[CoversClass(RemoveComments::class)]
-#[CoversClass(RemoveDefaultAttributes::class)]
-#[CoversClass(RemoveDeprecatedAttributes::class)]
-#[CoversClass(RemoveDoctype::class)]
-#[CoversClass(RemoveEmptyAttributes::class)]
-#[CoversClass(RemoveEnableBackgroundAttribute::class)]
-#[CoversClass(RemoveInkscapeFootprints::class)]
-#[CoversClass(RemoveInvisibleCharacters::class)]
-#[CoversClass(RemoveMetadata::class)]
-#[CoversClass(RemoveTitleAndDesc::class)]
-#[CoversClass(RemoveUnnecessaryWhitespace::class)]
-#[CoversClass(RemoveUnusedNamespaces::class)]
-#[CoversClass(SortAttributes::class)]
 #[CoversClass(SvgValidator::class)]
+#[CoversClass(XmlFormatter::class)]
+#[CoversClass(ConvertColorsToHex::class)]
+#[CoversClass(RemoveWidthHeightAttributes::class)]
 #[CoversClass(FileProvider::class)]
+#[CoversClass(RemoveEnableBackgroundAttribute::class)]
+#[CoversClass(RemoveComments::class)]
+#[CoversClass(RemoveTitleAndDesc::class)]
+#[CoversClass(AbstractXmlProcessor::class)]
+#[CoversClass(ConvertCssClassesToAttributes::class)]
+#[CoversClass(ConvertEmptyTagsToSelfClosing::class)]
 final class SvgOptimizerFacadeTest extends TestCase
 {
     private string $sampleSvg;
@@ -109,10 +87,7 @@ final class SvgOptimizerFacadeTest extends TestCase
             ->saveToFile($file);
 
         self::assertFileExists($file);
-
-        $contents = file_get_contents($file);
-        self::assertIsString($contents);
-        self::assertStringContainsString('<svg', $contents);
+        self::assertStringContainsString('<svg', (string) file_get_contents($file));
 
         unlink($file);
     }
@@ -125,6 +100,147 @@ final class SvgOptimizerFacadeTest extends TestCase
     {
         $this->expectException(FileNotFoundException::class);
         SvgOptimizerFacade::fromFile('/nonexistent/path.svg');
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     */
+    public function testWithRulesConfiguresRules(): void
+    {
+        $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)
+            ->withRules(true, true, true);
+
+        $svgOptimizerFacade->optimize();
+
+        $content = $svgOptimizerFacade->getContent();
+        self::assertNotEmpty($content);
+        self::assertStringContainsString('<svg', $content);
+        self::assertStringNotContainsString('<!--', $content);
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     */
+    public function testAllowRiskyEnablesRiskyRules(): void
+    {
+        $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)
+            ->allowRisky();
+
+        self::assertSame($svgOptimizerFacade, $svgOptimizerFacade->allowRisky());
+
+        $svgOptimizerFacade->withRules(true, false, false);
+
+        $svgOptimizerFacade->optimize();
+
+        self::assertNotEmpty($svgOptimizerFacade->getContent());
+    }
+
+    /**
+     * @throws \LogicException
+     * @throws RiskyRulesNotAllowedException
+     */
+    public function testGetContentReturnsSvg(): void
+    {
+        $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)->optimize();
+
+        $content = $svgOptimizerFacade->getContent();
+        self::assertStringContainsString('<svg', $content);
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     */
+    public function testOptimizeThrowsExceptionForRiskyRules(): void
+    {
+        $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)
+            ->withRules(false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true);
+
+        $this->expectException(RiskyRulesNotAllowedException::class);
+        $svgOptimizerFacade->optimize();
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     */
+    public function testAllowRiskyFalseDoesNotEnableRiskyRules(): void
+    {
+        $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)
+            ->withRules(false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)
+            ->allowRisky(false);
+
+        $this->expectException(RiskyRulesNotAllowedException::class);
+        $svgOptimizerFacade->optimize();
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     */
+    public function testWithRulesDefaultDoesNotApplyAnyRules(): void
+    {
+        $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)->withRules();
+        $svgOptimizerFacade->optimize();
+
+        $content = $svgOptimizerFacade->getContent();
+        self::assertStringContainsString('<svg', $content);
+        self::assertStringContainsString('<title>', $content);
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     */
+    public function testMultipleRulesApplied(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg"><title>T</title><!-- c --></svg>';
+
+        $svgOptimizerFacade = SvgOptimizerFacade::fromString($svg)
+            ->withRules(false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, true)
+            ->optimize();
+
+        $content = $svgOptimizerFacade->getContent();
+
+        self::assertStringNotContainsString('<!--', $content);
+        self::assertStringNotContainsString('<title>', $content);
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     */
+    public function testMethodChaining(): void
+    {
+        $file = sys_get_temp_dir() . '/chained-test.svg';
+
+        SvgOptimizerFacade::fromString($this->sampleSvg)
+            ->allowRisky()
+            ->withRules(true, false, false)
+            ->optimize()
+            ->saveToFile($file);
+
+        self::assertFileExists($file);
+        unlink($file);
+    }
+
+    /**
+     * @throws IOException
+     * @throws FileNotFoundException
+     */
+    public function testFromStringAndFromFileReturnInstances(): void
+    {
+        $file = sys_get_temp_dir() . '/instance-test.svg';
+        file_put_contents($file, $this->sampleSvg);
+
+        $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg);
+        $b = SvgOptimizerFacade::fromFile($file);
+
+        self::assertNotSame($svgOptimizerFacade, $b);
+
+        unlink($file);
     }
 
     protected function setUp(): void

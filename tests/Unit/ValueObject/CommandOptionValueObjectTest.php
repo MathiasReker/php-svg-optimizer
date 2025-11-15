@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObject;
 
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -19,6 +20,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(OptionValueObject::class)]
+#[CoversClass(CommandOptionsValueObject::class)]
 final class CommandOptionValueObjectTest extends TestCase
 {
     private const string TITLE = 'process';
@@ -35,6 +37,54 @@ final class CommandOptionValueObjectTest extends TestCase
     public function testGetDescription(): void
     {
         self::assertSame(self::DESCRIPTION, $this->commandOptionValueObject->getDescription());
+    }
+
+    public function testDryRunFlag(): void
+    {
+        $commandOptionsValueObject = new CommandOptionsValueObject(
+            true,
+            '',
+            false
+        );
+
+        self::assertTrue($commandOptionsValueObject->isDryRun());
+    }
+
+    public function testConfigPath(): void
+    {
+        $path = '/path/to/config.json';
+
+        $commandOptionsValueObject = new CommandOptionsValueObject(
+            false,
+            $path,
+            false
+        );
+
+        self::assertSame($path, $commandOptionsValueObject->getConfigPath());
+    }
+
+    public function testAllowRiskyFlag(): void
+    {
+        $commandOptionsValueObject = new CommandOptionsValueObject(
+            false,
+            '',
+            true
+        );
+
+        self::assertTrue($commandOptionsValueObject->allowRisky());
+    }
+
+    public function testAllValuesAreStoredCorrectly(): void
+    {
+        $commandOptionsValueObject = new CommandOptionsValueObject(
+            true,
+            '/config.json',
+            true
+        );
+
+        self::assertTrue($commandOptionsValueObject->isDryRun());
+        self::assertSame('/config.json', $commandOptionsValueObject->getConfigPath());
+        self::assertTrue($commandOptionsValueObject->allowRisky());
     }
 
     #[\Override]

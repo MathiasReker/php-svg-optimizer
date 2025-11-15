@@ -67,6 +67,87 @@ final class SvgOptimizer
     }
 
     /**
+     * Get metadata related to the SVG content.
+     *
+     * @return MetaDataValueObject The metadata containing information about the SVG file sizes
+     *
+     * @throws \LogicException If metadata is requested before optimization
+     */
+    public function getMetaData(): MetaDataValueObject
+    {
+        if (false === $this->isOptimized) {
+            throw new \LogicException('Metadata is not available before optimization.');
+        }
+
+        return $this->svgProvider->getMetaData();
+    }
+
+    /**
+     * Check if there are any optimization rules configured.
+     *
+     * @return bool True if there are rules, false otherwise
+     */
+    public function hasRules(): bool
+    {
+        return $this->getRulesCount() > 0;
+    }
+
+    /**
+     * Get the number of optimization rules added to the optimizer.
+     *
+     * @return int The number of optimization rules
+     */
+    public function getRulesCount(): int
+    {
+        return \count($this->rules);
+    }
+
+    /**
+     * Checks whether risky optimization rules are allowed.
+     *
+     * @return bool True if risky rules are allowed, false otherwise
+     */
+    public function isRiskyRulesAllowed(): bool
+    {
+        return $this->allowRisky;
+    }
+
+    /**
+     * Enables the use of risky optimization rules.
+     *
+     * Risky rules are disabled by default because they may alter the SVG in ways
+     * that impact compatibility, rendering behavior, or semantic meaning. Call
+     * this method explicitly to allow such rules to run.
+     *
+     * @return $this
+     */
+    public function allowRisky(): self
+    {
+        $this->allowRisky = true;
+
+        return $this;
+    }
+
+    /**
+     * Determines whether any of the configured rules are classified as risky.
+     *
+     * A rule is considered risky if its class implements SvgOptimizerRuleInterface::isRisky()
+     * and that method returns true.
+     *
+     * @return bool True if one or more configured rules are risky, false otherwise
+     */
+    public function hasRiskyRules(): bool
+    {
+        foreach ($this->rules as $rule) {
+            if ($rule::isRisky()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Optimize the SVG content by applying all added optimization rules.
      *
      * @return $this The current instance of SvgOptimizer for method chaining
@@ -131,22 +212,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Get metadata related to the SVG content.
-     *
-     * @return MetaDataValueObject The metadata containing information about the SVG file sizes
-     *
-     * @throws \LogicException If metadata is requested before optimization
-     */
-    public function getMetaData(): MetaDataValueObject
-    {
-        if (false === $this->isOptimized) {
-            throw new \LogicException('Metadata is not available before optimization.');
-        }
-
-        return $this->svgProvider->getMetaData();
-    }
-
-    /**
      * Get the optimized SVG content.
      *
      * @return string The optimized SVG content, or an empty string if not yet optimized
@@ -154,83 +219,6 @@ final class SvgOptimizer
     public function getContent(): string
     {
         return $this->domDocumentContent;
-    }
-
-    /**
-     * Enables the use of risky optimization rules.
-     *
-     * Risky rules are disabled by default because they may alter the SVG in ways
-     * that impact compatibility, rendering behavior, or semantic meaning. Call
-     * this method explicitly to allow such rules to run.
-     *
-     * @return $this
-     */
-    public function allowRisky(): self
-    {
-        $this->allowRisky = true;
-
-        return $this;
-    }
-
-    /**
-     * Checks whether risky optimization rules are allowed.
-     *
-     * @return bool True if risky rules are allowed, false otherwise
-     */
-    public function isRiskyRulesAllowed(): bool
-    {
-        return $this->allowRisky;
-    }
-
-    /**
-     * Determines whether any of the configured rules are classified as risky.
-     *
-     * A rule is considered risky if its class implements SvgOptimizerRuleInterface::isRisky()
-     * and that method returns true.
-     *
-     * @return bool True if one or more configured rules are risky, false otherwise
-     */
-    public function hasRiskyRules(): bool
-    {
-        foreach ($this->rules as $rule) {
-            if ($rule::isRisky()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Save the optimized SVG content to a file.
-     *
-     * @param string $outputPath The path to save the optimized SVG content to
-     */
-    public function saveToFile(string $outputPath): self
-    {
-        $this->svgProvider->saveToFile($outputPath);
-
-        return $this;
-    }
-
-    /**
-     * Check if there are any optimization rules configured.
-     *
-     * @return bool True if there are rules, false otherwise
-     */
-    public function hasRules(): bool
-    {
-        return $this->getRulesCount() > 0;
-    }
-
-    /**
-     * Get the number of optimization rules added to the optimizer.
-     *
-     * @return int The number of optimization rules
-     */
-    public function getRulesCount(): int
-    {
-        return \count($this->rules);
     }
 
     /**
@@ -255,5 +243,17 @@ final class SvgOptimizer
     public function addRule(SvgOptimizerRuleInterface $svgOptimizerRule): void
     {
         $this->rules[] = $svgOptimizerRule;
+    }
+
+    /**
+     * Save the optimized SVG content to a file.
+     *
+     * @param string $outputPath The path to save the optimized SVG content to
+     */
+    public function saveToFile(string $outputPath): self
+    {
+        $this->svgProvider->saveToFile($outputPath);
+
+        return $this;
     }
 }

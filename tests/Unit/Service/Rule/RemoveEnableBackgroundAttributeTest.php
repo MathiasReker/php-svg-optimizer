@@ -146,4 +146,9 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
                 XML,
         ];
     }
+
+    public function testRuleIsMarkedAsRisky(): void
+    {
+        self::assertTrue(RemoveEnableBackgroundAttribute::isRisky());
+    }
 }

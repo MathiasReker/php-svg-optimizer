@@ -36,6 +36,7 @@ final class OptionTest extends TestCase
         yield [Option::HELP, '-h'];
         yield [Option::CONFIG, '-c'];
         yield [Option::DRY_RUN, '-d'];
+        yield [Option::ALLOW_RISKY, '-r'];
         yield [Option::QUIET, '-q'];
         yield [Option::VERSION, '-v'];
     }
@@ -54,6 +55,7 @@ final class OptionTest extends TestCase
         yield [Option::HELP, '--help'];
         yield [Option::CONFIG, '--config'];
         yield [Option::DRY_RUN, '--dry-run'];
+        yield [Option::ALLOW_RISKY, '--allow-risky'];
         yield [Option::QUIET, '--quiet'];
         yield [Option::VERSION, '--version'];
     }
@@ -72,6 +74,7 @@ final class OptionTest extends TestCase
         yield [Option::HELP, 'Display help for the command.'];
         yield [Option::CONFIG, 'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.'];
         yield [Option::DRY_RUN, 'Only calculate potential savings without modifying the files.'];
+        yield [Option::ALLOW_RISKY, 'Explicitly enables risky rules, allowing them to be applied.'];
         yield [Option::QUIET, 'Suppress all output except errors.'];
         yield [Option::VERSION, 'Display the version of the library.'];
     }
@@ -90,6 +93,7 @@ final class OptionTest extends TestCase
         yield [Option::HELP, 'help'];
         yield [Option::CONFIG, 'config'];
         yield [Option::DRY_RUN, 'dry-run'];
+        yield [Option::ALLOW_RISKY, 'allow-risky'];
         yield [Option::QUIET, 'quiet'];
         yield [Option::VERSION, 'version'];
     }

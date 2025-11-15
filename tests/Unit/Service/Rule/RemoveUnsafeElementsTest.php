@@ -499,4 +499,9 @@ final class RemoveUnsafeElementsTest extends TestCase
                 XML,
         ];
     }
+
+    public function testRuleIsMarkedAsRisky(): void
+    {
+        self::assertTrue(RemoveUnsafeElements::isRisky());
+    }
 }

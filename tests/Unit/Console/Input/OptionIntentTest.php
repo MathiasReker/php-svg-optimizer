@@ -130,4 +130,54 @@ final class OptionIntentTest extends TestCase
         $optionIntent = new OptionIntent($argumentParser);
         self::assertSame('', $optionIntent->getConfigPath());
     }
+
+    public function testAllowRiskyOptionIsSet(): void
+    {
+        $args = ['vendor/bin/svg-optimizer', '--allow-risky'];
+        $argumentParser = new ArgumentParser($args);
+
+        $optionIntent = new OptionIntent($argumentParser);
+        self::assertTrue($optionIntent->allowRisky());
+    }
+
+    public function testAllowRiskyOptionIsNotSet(): void
+    {
+        $args = ['vendor/bin/svg-optimizer'];
+        $argumentParser = new ArgumentParser($args);
+
+        $optionIntent = new OptionIntent($argumentParser);
+        self::assertFalse($optionIntent->allowRisky());
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testMultipleOptionsSet(): void
+    {
+        $args = ['vendor/bin/svg-optimizer', '--dry-run', '--quiet', '--allow-risky', '--config=/path/to/config'];
+        $argumentParser = new ArgumentParser($args);
+
+        $optionIntent = new OptionIntent($argumentParser);
+        self::assertTrue($optionIntent->isDryRun());
+        self::assertTrue($optionIntent->isQuiet());
+        self::assertTrue($optionIntent->allowRisky());
+        self::assertSame('/path/to/config', $optionIntent->getConfigPath());
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testNoOptionsSet(): void
+    {
+        $args = ['vendor/bin/svg-optimizer'];
+        $argumentParser = new ArgumentParser($args);
+
+        $optionIntent = new OptionIntent($argumentParser);
+        self::assertFalse($optionIntent->isDryRun());
+        self::assertFalse($optionIntent->isQuiet());
+        self::assertFalse($optionIntent->isHelp());
+        self::assertFalse($optionIntent->isVersion());
+        self::assertFalse($optionIntent->allowRisky());
+        self::assertSame('', $optionIntent->getConfigPath());
+    }
 }
