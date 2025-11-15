@@ -30,6 +30,12 @@ final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor impl
      */
     private const string INVISIBLE_CHARACTERS_REGEX = '/&#x(?:200B|200C|200D|2028|2029|AD|0A|0D|09|D);/u';
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Remove invisible characters from the SVG document.
      *

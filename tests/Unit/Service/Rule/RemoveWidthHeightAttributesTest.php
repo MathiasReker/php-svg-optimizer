@@ -42,7 +42,8 @@ final class RemoveWidthHeightAttributesTest extends TestCase
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
         $svgOptimizer->addRule(new RemoveWidthHeightAttributes());
 
-        $actual = $svgOptimizer->optimize()->getContent();
+        $actual = $svgOptimizer->allowRisky()->optimize()->getContent();
+
         self::assertSame($expected, $actual);
     }
 

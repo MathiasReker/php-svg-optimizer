@@ -19,6 +19,7 @@ enum Option: string
     case HELP = 'help';
     case CONFIG = 'config';
     case DRY_RUN = 'dry-run';
+    case ALLOW_RISKY = 'allow-risky';
     case QUIET = 'quiet';
     case VERSION = 'version';
 
@@ -31,6 +32,7 @@ enum Option: string
             self::HELP->value => '-h',
             self::CONFIG->value => '-c',
             self::DRY_RUN->value => '-d',
+            self::ALLOW_RISKY->value => '-r',
             self::QUIET->value => '-q',
             self::VERSION->value => '-v',
         };
@@ -45,6 +47,7 @@ enum Option: string
             self::HELP->value => '--help',
             self::CONFIG->value => '--config',
             self::DRY_RUN->value => '--dry-run',
+            self::ALLOW_RISKY->value => '--allow-risky',
             self::QUIET->value => '--quiet',
             self::VERSION->value => '--version',
         };
@@ -59,6 +62,7 @@ enum Option: string
             self::HELP->value => 'Display help for the command.',
             self::CONFIG->value => 'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.',
             self::DRY_RUN->value => 'Only calculate potential savings without modifying the files.',
+            self::ALLOW_RISKY->value => 'Explicitly enables risky rules, allowing them to be applied.',
             self::QUIET->value => 'Suppress all output except errors.',
             self::VERSION->value => 'Display the version of the library.',
         };

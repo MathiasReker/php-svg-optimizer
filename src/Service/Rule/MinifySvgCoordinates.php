@@ -64,6 +64,12 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         '//svg:svg' => ['viewBox', 'enable-background'],
     ];
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Optimize the SVG document by minifying the coordinates of specific elements.
      *

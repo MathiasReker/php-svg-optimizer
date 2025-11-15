@@ -25,6 +25,7 @@ final readonly class CommandOptionsValueObject
     public function __construct(
         private bool $dryRun,
         private string $configPath,
+        private bool $allowRisky,
     ) {}
 
     /**
@@ -45,5 +46,10 @@ final readonly class CommandOptionsValueObject
     public function getConfigPath(): string
     {
         return $this->configPath;
+    }
+
+    public function allowRisky(): bool
+    {
+        return $this->allowRisky;
     }
 }

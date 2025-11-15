@@ -31,6 +31,12 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
      */
     private const string PROPERTY_NAME_REGEX = '/^[a-z_-][a-z0-9_-]*$/i';
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Optimizes the given \DOMDocument by converting inline styles to SVG attributes.
      *

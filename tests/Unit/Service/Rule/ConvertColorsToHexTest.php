@@ -433,5 +433,28 @@ final class ConvertColorsToHexTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><text>rgb(255,255,255)</text></svg>
                 XML,
         ];
+
+        yield "Don't modify text nodes or non-color attributes" => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <text style="fill:url(#svgid_1_);">color</text>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><text style="fill:url(#svgid_1_);">color</text></svg>
+                XML,
+        ];
+
+        yield "Don't modify url() or non-color style values" => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect width="100" height="100" style="fill:url(#svgid_1_);" />
+                    <circle cx="50" cy="50" r="40" style="stroke:url(#MyGradient);" />
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" style="fill:url(#svgid_1_);"/><circle cx="50" cy="50" r="40" style="stroke:url(#MyGradient);"/></svg>
+                XML,
+        ];
     }
 }

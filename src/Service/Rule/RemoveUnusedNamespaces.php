@@ -36,6 +36,12 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
      */
     private const string ELEMENT_PATTERN_TEMPLATE = '/%s:[a-zA-Z0-9\-]+/';
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Optimize the given \DOMDocument by removing unused namespaces.
      *

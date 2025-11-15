@@ -31,6 +31,12 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
      */
     private const string ENABLE_BACKGROUND_ATTRIBUTE = 'enable-background';
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return true;
+    }
+
     /**
      * Optimizes the given SVG document by removing or cleaning up the `enable-background` attribute.
      *

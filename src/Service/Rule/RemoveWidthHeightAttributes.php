@@ -18,6 +18,12 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
  */
 final readonly class RemoveWidthHeightAttributes implements SvgOptimizerRuleInterface
 {
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return true;
+    }
+
     /**
      * Optimizes the SVG \DOMDocument by removing `width` and `height` attributes
      * from the root <svg> element if they exist.

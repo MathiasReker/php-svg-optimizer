@@ -19,6 +19,14 @@ namespace MathiasReker\PhpSvgOptimizer\Contract\Service\Rule;
 interface SvgOptimizerRuleInterface
 {
     /**
+     * Indicates whether this optimization rule is considered risky.
+     *
+     * A "risky" rule is one that may alter the visual appearance or behavior
+     * of the SVG in some cases, even if it successfully reduces file size.
+     */
+    public static function isRisky(): bool;
+
+    /**
      * Apply optimization rules to the given \DOMDocument instance.
      *
      * This method modifies the provided $domDocument instance in place,

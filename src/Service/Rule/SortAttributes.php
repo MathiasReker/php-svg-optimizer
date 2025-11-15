@@ -33,6 +33,12 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
         'width',
     ];
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Sort element attributes for better compression and optimization.
      *

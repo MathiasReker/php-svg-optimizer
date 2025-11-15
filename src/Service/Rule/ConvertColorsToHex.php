@@ -66,6 +66,12 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      */
     private const int BITWISE_SHIFT = 4;
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Convert RGB color values to shorthand HEX colors if possible.
      *
@@ -139,16 +145,26 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     private function processColorAttributesInStyle(string $styleValue): string
     {
         foreach (self::COLOR_ATTRIBUTES as $attribute) {
-            if (1 === preg_match('/\b' . preg_quote($attribute, '/') . '\s*:\s*([^;]+)/', $styleValue, $matches)) {
-                $colorValue = trim($matches[1]);
+            // Match only the known color attributes (e.g., fill, stroke, color, etc.)
+            $pattern = \sprintf('/\b%s\s*:\s*([^;]+)/i', preg_quote($attribute, '/'));
 
-                if ($this->isRgbColor($colorValue)) {
-                    $convertedColor = $this->convertRgbToHex($colorValue);
-                    $styleValue = str_replace($colorValue, $convertedColor, $styleValue);
-                }
+            $styleValue = preg_replace_callback(
+                $pattern,
+                function (array $matches): string {
+                    $colorValue = trim($matches[1]);
 
-                $styleValue = str_replace($colorValue, mb_strtolower($colorValue), $styleValue);
-            }
+                    if ($this->isRgbColor($colorValue)) {
+                        return str_replace($colorValue, $this->convertRgbToHex($colorValue), $matches[0]);
+                    }
+
+                    if ($this->isHexColor($colorValue)) {
+                        return str_replace($colorValue, mb_strtolower($colorValue), $matches[0]);
+                    }
+
+                    return $matches[0];
+                },
+                $styleValue
+            ) ?? $styleValue;
         }
 
         return $styleValue;
@@ -222,6 +238,20 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     }
 
     /**
+     * Check if the given value is a HEX color.
+     *
+     * This method checks if the given value is a HEX color in the format #RRGGBB.
+     *
+     * @param string $value The value to check
+     *
+     * @return bool True if the value is a HEX color, false otherwise
+     */
+    private function isHexColor(string $value): bool
+    {
+        return 1 === preg_match(self::HEX_REGEX, $value);
+    }
+
+    /**
      * Process nodes containing color values.
      *
      * This method processes the given \DOMNodeList to find and convert RGB colors to HEX format.
@@ -239,20 +269,6 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
                 $node->nodeValue = mb_strtolower($value);
             }
         }
-    }
-
-    /**
-     * Check if the given value is a HEX color.
-     *
-     * This method checks if the given value is a HEX color in the format #RRGGBB.
-     *
-     * @param string $value The value to check
-     *
-     * @return bool True if the value is a HEX color, false otherwise
-     */
-    private function isHexColor(string $value): bool
-    {
-        return 1 === preg_match(self::HEX_REGEX, $value);
     }
 
     #[\Override]

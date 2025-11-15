@@ -37,6 +37,11 @@ final class SvgOptimizer
     private string $domDocumentContent = '';
 
     /**
+     * Indicates whether risky optimization rules are allowed.
+     */
+    private bool $allowRisky = false;
+
+    /**
      * The SVG validator used to check the validity of the SVG content.
      *
      * @var SvgValidator The SVG validator
@@ -107,6 +112,10 @@ final class SvgOptimizer
         $originalContent = $this->svgProvider->optimize(clone $domDocument)->getOutputContent();
 
         foreach ($this->rules as $rule) {
+            if ($rule::isRisky() && !$this->allowRisky) {
+                return;
+            }
+
             $rule->optimize($domDocument);
 
             if ($rule->shouldCheckSize()) {
@@ -145,6 +154,51 @@ final class SvgOptimizer
     public function getContent(): string
     {
         return $this->domDocumentContent;
+    }
+
+    /**
+     * Enables the use of risky optimization rules.
+     *
+     * Risky rules are disabled by default because they may alter the SVG in ways
+     * that impact compatibility, rendering behavior, or semantic meaning. Call
+     * this method explicitly to allow such rules to run.
+     *
+     * @return $this
+     */
+    public function allowRisky(): self
+    {
+        $this->allowRisky = true;
+
+        return $this;
+    }
+
+    /**
+     * Checks whether risky optimization rules are allowed.
+     *
+     * @return bool True if risky rules are allowed, false otherwise
+     */
+    public function isRiskyRulesAllowed(): bool
+    {
+        return $this->allowRisky;
+    }
+
+    /**
+     * Determines whether any of the configured rules are classified as risky.
+     *
+     * A rule is considered risky if its class implements SvgOptimizerRuleInterface::isRisky()
+     * and that method returns true.
+     *
+     * @return bool True if one or more configured rules are risky, false otherwise
+     */
+    public function hasRiskyRules(): bool
+    {
+        foreach ($this->rules as $rule) {
+            if ($rule::isRisky()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

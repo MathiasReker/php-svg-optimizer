@@ -33,6 +33,7 @@ parameters:
       classesAllowedToBeExtended:
         - RuntimeException
         - InvalidArgumentException
+        - Exception
         - MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider
         - MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor
         - MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream

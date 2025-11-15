@@ -18,6 +18,12 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
  */
 final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterface
 {
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Optimize the SVG by removing empty text-related elements recursively.
      *

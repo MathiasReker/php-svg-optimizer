@@ -14,6 +14,8 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 
 /**
+ * Handles command-line options and determines user intent for the SVG optimizer CLI.
+ *
  * @no-named-arguments
  */
 final readonly class OptionIntent
@@ -21,16 +23,18 @@ final readonly class OptionIntent
     /**
      * Constructor for OptionIntent.
      *
-     * @param ArgumentParser $argumentParser The argument parser to check for options
+     * @param ArgumentParser $argumentParser the argument parser to check for options
      */
     public function __construct(
         private ArgumentParser $argumentParser,
     ) {}
 
     /**
-     * Check if the given option is present in the command-line arguments.
+     * Check if the dry-run option is set.
      *
-     * @return bool True if the option is present, false otherwise
+     * When set, the optimizer will only calculate potential savings without modifying files.
+     *
+     * @return bool true if the dry-run option is present, false otherwise
      */
     public function isDryRun(): bool
     {
@@ -40,7 +44,9 @@ final readonly class OptionIntent
     /**
      * Check if the quiet option is set.
      *
-     * @return bool True if the quiet option is set, false otherwise
+     * When set, suppresses all output except errors.
+     *
+     * @return bool true if the quiet option is present, false otherwise
      */
     public function isQuiet(): bool
     {
@@ -50,7 +56,9 @@ final readonly class OptionIntent
     /**
      * Check if the help option is set.
      *
-     * @return bool True if the help option is set, false otherwise
+     * When set, displays help information for the CLI command.
+     *
+     * @return bool true if the help option is present, false otherwise
      */
     public function isHelp(): bool
     {
@@ -60,7 +68,9 @@ final readonly class OptionIntent
     /**
      * Check if the version option is set.
      *
-     * @return bool True if the version option is set, false otherwise
+     * When set, displays the version of the php-svg-optimizer library.
+     *
+     * @return bool true if the version option is present, false otherwise
      */
     public function isVersion(): bool
     {
@@ -68,14 +78,30 @@ final readonly class OptionIntent
     }
 
     /**
-     * Get the value of the specified option.
+     * Get the value of the configuration file path option.
      *
-     * @throws \InvalidArgumentException if the option does not exist
+     * Allows the user to provide a path to a JSON file with custom optimization rules.
+     *
+     * @return string the path to the configuration file, or an empty string if not set
+     *
+     * @throws \InvalidArgumentException
      */
     public function getConfigPath(): string
     {
         return $this->argumentParser->hasOption(Option::CONFIG)
             ? $this->argumentParser->getOption(Option::CONFIG)
             : '';
+    }
+
+    /**
+     * Check if the allow-risky option is set.
+     *
+     * Explicitly enables risky rules, allowing them to be applied during SVG optimization.
+     *
+     * @return bool true if risky rules are allowed, false otherwise
+     */
+    public function allowRisky(): bool
+    {
+        return $this->argumentParser->hasOption(Option::ALLOW_RISKY);
     }
 }

@@ -18,6 +18,12 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
  */
 final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
 {
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Optimizes the SVG \DOMDocument by removing unused masks and empty <defs> elements.
      *

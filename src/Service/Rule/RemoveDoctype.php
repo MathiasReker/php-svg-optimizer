@@ -30,6 +30,12 @@ final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOp
      */
     private const string DOCTYPE_REGEX = '/<!DOCTYPE[^>]*>/i';
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Optimizes the given \DOMDocument by removing the DOCTYPE declaration.
      *

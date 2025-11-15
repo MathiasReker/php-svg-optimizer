@@ -18,6 +18,12 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
  */
 final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
 {
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Optimize the SVG by removing empty <g> elements recursively.
      *

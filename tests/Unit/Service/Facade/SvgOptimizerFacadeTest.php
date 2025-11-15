@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Facade;
 
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
+use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
@@ -80,6 +81,7 @@ final class SvgOptimizerFacadeTest extends TestCase
 
     /**
      * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
      */
     public function testOptimizeReturnsService(): void
     {
@@ -92,6 +94,7 @@ final class SvgOptimizerFacadeTest extends TestCase
 
     /**
      * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
      */
     public function testSaveToFileWritesOptimizedSvg(): void
     {

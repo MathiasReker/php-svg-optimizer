@@ -48,7 +48,9 @@ final readonly class CommandDispatcher
      *
      * This method processes the command line arguments and executes the appropriate command.
      *
+     * @throws \ValueError
      * @throws \RuntimeException If the application is not run in a CLI environment or if an error occurs during command execution
+     * @throws \LogicException
      */
     public function run(): void
     {
@@ -88,9 +90,9 @@ final readonly class CommandDispatcher
         try {
             $commandOptionsValueObject = new CommandOptionsValueObject(
                 $optionIntent->isDryRun(),
-                $optionIntent->getConfigPath()
+                $optionIntent->getConfigPath(),
+                $optionIntent->allowRisky()
             );
-
             $command = (new CommandFactory($stream, $argumentParser))->create($commandOptionsValueObject);
             $command->run();
         } catch (\InvalidArgumentException $invalidArgumentException) {

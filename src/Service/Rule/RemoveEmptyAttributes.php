@@ -25,6 +25,12 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
      */
     private const string MULTIPLE_SPACES_REGEX = '/\s+/';
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Optimizes the provided \DOMDocument by removing empty or whitespace-only attributes.
      *

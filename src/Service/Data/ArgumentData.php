@@ -64,6 +64,11 @@ final readonly class ArgumentData
                 Option::QUIET->getFull(),
                 Option::QUIET->getDescription()
             ),
+            Option::ALLOW_RISKY->value => new ArgumentOptionValueObject(
+                Option::ALLOW_RISKY->getShorthand(),
+                Option::ALLOW_RISKY->getFull(),
+                Option::ALLOW_RISKY->getDescription()
+            ),
             Option::VERSION->value => new ArgumentOptionValueObject(
                 Option::VERSION->getShorthand(),
                 Option::VERSION->getFull(),
@@ -100,6 +105,14 @@ final readonly class ArgumentData
                     '%s %s %s /path/to/file.svg',
                     self::BINARY_PATH,
                     Option::QUIET->getFull(),
+                    Command::PROCESS->value,
+                )
+            ),
+            new ExampleCommandValueObject(
+                \sprintf(
+                    '%s %s %s /path/to/file.svg',
+                    self::BINARY_PATH,
+                    Option::ALLOW_RISKY->getFull(),
                     Command::PROCESS->value,
                 )
             ),

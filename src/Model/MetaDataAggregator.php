@@ -94,4 +94,14 @@ final class MetaDataAggregator
     {
         return $this->optimizedFileCount;
     }
+
+    /**
+     * Determines whether any SVG files were successfully optimized.
+     *
+     * @return bool True if one or more files were optimized, false otherwise
+     */
+    public function hasOptimizedFiles(): bool
+    {
+        return $this->optimizedFileCount > 0;
+    }
 }

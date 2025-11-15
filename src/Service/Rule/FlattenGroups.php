@@ -18,6 +18,12 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
  */
 final readonly class FlattenGroups implements SvgOptimizerRuleInterface
 {
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Optimize the SVG document by flattening groups.
      *

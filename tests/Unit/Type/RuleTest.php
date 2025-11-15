@@ -13,7 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Type;
 
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -22,63 +21,53 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Rule::class)]
 final class RuleTest extends TestCase
 {
-    #[DataProvider('provideDefaultValueCases')]
-    public function testDefaultValue(Rule $rule, bool $expected): void
+    public function testEnumValuesMatchRuleClasses(): void
     {
-        self::assertSame($expected, $rule->defaultValue());
+        foreach (Rule::cases() as $case) {
+            self::assertTrue(
+                class_exists($case->value),
+                \sprintf('Class %s does not exist for enum case %s', $case->value, $case->name)
+            );
+        }
     }
 
-    /**
-     * @return iterable<array{Rule, bool}>
-     */
-    public static function provideDefaultValueCases(): iterable
+    public function testConfigKeysAreCorrect(): void
     {
-        yield [Rule::CONVERT_COLORS_TO_HEX, true];
-        yield [Rule::FLATTEN_GROUPS, false];
-        yield [Rule::MINIFY_SVG_COORDINATES, true];
-        yield [Rule::MINIFY_TRANSFORMATIONS, true];
-        yield [Rule::REMOVE_COMMENTS, true];
-        yield [Rule::REMOVE_DEFAULT_ATTRIBUTES, true];
-        yield [Rule::REMOVE_DEPRECATED_ATTRIBUTES, true];
-        yield [Rule::REMOVE_DOCTYPE, true];
-        yield [Rule::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE, true];
-        yield [Rule::REMOVE_EMPTY_ATTRIBUTES, true];
-        yield [Rule::REMOVE_METADATA, true];
-        yield [Rule::REMOVE_TITLE_AND_DESC, true];
-        yield [Rule::REMOVE_UNNECESSARY_WHITESPACE, true];
-        yield [Rule::SORT_ATTRIBUTES, true];
-        yield [Rule::REMOVE_UNSAFE_ELEMENTS, false];
-    }
+        $expected = [
+            Rule::CONVERT_COLORS_TO_HEX->name => 'convertColorsToHex',
+            Rule::CONVERT_CSS_CLASSES_TO_ATTRIBUTES->name => 'convertCssClassesToAttributes',
+            Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->name => 'convertEmptyTagsToSelfClosing',
+            Rule::CONVERT_INLINE_STYLES_TO_ATTRIBUTES->name => 'convertInlineStylesToAttributes',
+            Rule::FLATTEN_GROUPS->name => 'flattenGroups',
+            Rule::MINIFY_SVG_COORDINATES->name => 'minifySvgCoordinates',
+            Rule::MINIFY_TRANSFORMATIONS->name => 'minifyTransformations',
+            Rule::REMOVE_COMMENTS->name => 'removeComments',
+            Rule::REMOVE_DEFAULT_ATTRIBUTES->name => 'removeDefaultAttributes',
+            Rule::REMOVE_DEPRECATED_ATTRIBUTES->name => 'removeDeprecatedAttributes',
+            Rule::REMOVE_DOCTYPE->name => 'removeDoctype',
+            Rule::REMOVE_DUPLICATE_ELEMENTS->name => 'removeDuplicateElements',
+            Rule::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE->name => 'removeEnableBackgroundAttribute',
+            Rule::REMOVE_EMPTY_GROUPS->name => 'removeEmptyGroups',
+            Rule::REMOVE_EMPTY_TEXT_ELEMENTS->name => 'removeEmptyTextElements',
+            Rule::REMOVE_EMPTY_ATTRIBUTES->name => 'removeEmptyAttributes',
+            Rule::REMOVE_INKSCAPE_FOOTPRINTS->name => 'removeInkscapeFootprints',
+            Rule::REMOVE_INVISIBLE_CHARACTERS->name => 'removeInvisibleCharacters',
+            Rule::REMOVE_METADATA->name => 'removeMetadata',
+            Rule::REMOVE_TITLE_AND_DESC->name => 'removeTitleAndDesc',
+            Rule::REMOVE_UNNECESSARY_WHITESPACE->name => 'removeUnnecessaryWhitespace',
+            Rule::REMOVE_UNSAFE_ELEMENTS->name => 'removeUnsafeElements',
+            Rule::REMOVE_UNUSED_MASKS->name => 'removeUnusedMasks',
+            Rule::REMOVE_UNUSED_NAMESPACES->name => 'removeUnusedNamespaces',
+            Rule::REMOVE_WIDTH_HEIGHT_ATTRIBUTES->name => 'removeWidthHeightAttributes',
+            Rule::SORT_ATTRIBUTES->name => 'sortAttributes',
+        ];
 
-    #[DataProvider('provideEnumValuesCases')]
-    public function testEnumValues(Rule $rule, string $expectedValue): void
-    {
-        self::assertSame($expectedValue, $rule->value);
-    }
-
-    /**
-     * @return iterable<array{Rule, string}>
-     */
-    public static function provideEnumValuesCases(): iterable
-    {
-        yield [Rule::CONVERT_COLORS_TO_HEX, 'convertColorsToHex'];
-        yield [Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING, 'convertEmptyTagsToSelfClosing'];
-        yield [Rule::FLATTEN_GROUPS, 'flattenGroups'];
-        yield [Rule::MINIFY_SVG_COORDINATES, 'minifySvgCoordinates'];
-        yield [Rule::MINIFY_TRANSFORMATIONS, 'minifyTransformations'];
-        yield [Rule::REMOVE_COMMENTS, 'removeComments'];
-        yield [Rule::REMOVE_DEFAULT_ATTRIBUTES, 'removeDefaultAttributes'];
-        yield [Rule::REMOVE_DEPRECATED_ATTRIBUTES, 'removeDeprecatedAttributes'];
-        yield [Rule::REMOVE_DOCTYPE, 'removeDoctype'];
-        yield [Rule::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE, 'removeEnableBackgroundAttribute'];
-        yield [Rule::REMOVE_EMPTY_ATTRIBUTES, 'removeEmptyAttributes'];
-        yield [Rule::REMOVE_INKSCAPE_FOOTPRINTS, 'removeInkscapeFootprints'];
-        yield [Rule::REMOVE_INVISIBLE_CHARACTERS, 'removeInvisibleCharacters'];
-        yield [Rule::REMOVE_METADATA, 'removeMetadata'];
-        yield [Rule::REMOVE_TITLE_AND_DESC, 'removeTitleAndDesc'];
-        yield [Rule::REMOVE_UNNECESSARY_WHITESPACE, 'removeUnnecessaryWhitespace'];
-        yield [Rule::REMOVE_UNSAFE_ELEMENTS, 'removeUnsafeElements'];
-        yield [Rule::REMOVE_UNUSED_NAMESPACES, 'removeUnusedNamespaces'];
-        yield [Rule::SORT_ATTRIBUTES, 'sortAttributes'];
+        foreach (Rule::cases() as $case) {
+            self::assertSame(
+                $expected[$case->name],
+                $case->configKey(),
+                \sprintf('Config key mismatch for %s', $case->name)
+            );
+        }
     }
 }

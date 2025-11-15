@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
+use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\SvgFileProcessor;
 use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
@@ -70,12 +71,16 @@ final readonly class Command implements CommandInterface
      */
     public function run(): void
     {
-        foreach ($this->paths as $path) {
-            $this->processPath($path);
-        }
+        try {
+            foreach ($this->paths as $path) {
+                $this->processPath($path);
+            }
 
-        if ($this->metaDataAggregator->getOptimizedFileCount() > 0) {
-            $this->printSummary();
+            if ($this->metaDataAggregator->hasOptimizedFiles()) {
+                $this->printSummary();
+            }
+        } catch (RiskyRulesNotAllowedException) {
+            $this->outputManager->printError('Risky rules are disabled. Use --allow-risky to enable it.');
         }
     }
 
@@ -86,6 +91,7 @@ final readonly class Command implements CommandInterface
      *
      * @throws \LogicException
      * @throws \ValueError
+     * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     private function processPath(string $path): void
     {

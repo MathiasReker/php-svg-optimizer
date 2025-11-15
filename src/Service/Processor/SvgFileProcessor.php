@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
+use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
@@ -49,6 +50,7 @@ final readonly class SvgFileProcessor
      * @throws \JsonException
      * @throws \LogicException
      * @throws \ValueError
+     * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     public function processPath(string $path): void
     {
@@ -68,65 +70,35 @@ final readonly class SvgFileProcessor
      * @throws \JsonException
      * @throws \LogicException
      * @throws \ValueError
+     * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     private function processDirectory(string $directory): void
     {
-        $filePaths = (new Finder())
+        $paths = (new Finder())
             ->in($directory)
             ->files()
             ->withExtension(self::SVG_EXTENSION)
             ->find();
 
-        foreach ($filePaths as $filePath) {
-            $this->optimizeSvg($filePath);
+        foreach ($paths as $path) {
+            $this->optimizeSvg($path);
         }
     }
 
     /**
-     * Optimize a single SVG file.
+     * Processes a given path, which may represent a directory or a single SVG file.
      *
      * @throws \RuntimeException
      * @throws \JsonException
      * @throws \LogicException
      * @throws \ValueError
+     * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     private function optimizeSvg(string $filePath): void
     {
-        $config = '' !== $this->commandOptionsValueObject->getConfigPath()
-            ? ConfigLoader::loadConfig($this->commandOptionsValueObject->getConfigPath())
-            : [];
-
-        $rules = array_combine(
-            array_map(static fn (Rule $rule): string => $rule->value, Rule::cases()),
-            array_map(static fn (Rule $rule): bool => $config[$rule->value] ?? $rule->defaultValue(), Rule::cases()),
-        );
-
         $svgOptimizerFacade = SvgOptimizerFacade::fromFile($filePath)
-            ->withRules(
-                $rules[Rule::CONVERT_COLORS_TO_HEX->value],
-                $rules[Rule::CONVERT_CSS_CLASSES_TO_ATTRIBUTES->value],
-                $rules[Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->value],
-                $rules[Rule::CONVERT_INLINE_STYLES_TO_ATTRIBUTES->value],
-                $rules[Rule::FLATTEN_GROUPS->value],
-                $rules[Rule::MINIFY_SVG_COORDINATES->value],
-                $rules[Rule::MINIFY_TRANSFORMATIONS->value],
-                $rules[Rule::REMOVE_COMMENTS->value],
-                $rules[Rule::REMOVE_DEFAULT_ATTRIBUTES->value],
-                $rules[Rule::REMOVE_DEPRECATED_ATTRIBUTES->value],
-                $rules[Rule::REMOVE_DOCTYPE->value],
-                $rules[Rule::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE->value],
-                $rules[Rule::REMOVE_EMPTY_ATTRIBUTES->value],
-                $rules[Rule::REMOVE_INKSCAPE_FOOTPRINTS->value],
-                $rules[Rule::REMOVE_INVISIBLE_CHARACTERS->value],
-                $rules[Rule::REMOVE_METADATA->value],
-                $rules[Rule::REMOVE_TITLE_AND_DESC->value],
-                $rules[Rule::REMOVE_UNNECESSARY_WHITESPACE->value],
-                $rules[Rule::REMOVE_UNSAFE_ELEMENTS->value],
-                $rules[Rule::REMOVE_UNUSED_MASKS->value],
-                $rules[Rule::REMOVE_UNUSED_NAMESPACES->value],
-                $rules[Rule::REMOVE_WIDTH_HEIGHT_ATTRIBUTES->value],
-                $rules[Rule::SORT_ATTRIBUTES->value],
-            )
+            ->allowRisky($this->commandOptionsValueObject->allowRisky())
+            ->withRules(...array_map(fn (Rule $rule) => $this->getConfig()[$rule->configKey()] ?? false, Rule::cases()))
             ->optimize();
 
         if (!$this->commandOptionsValueObject->isDryRun()) {
@@ -134,12 +106,27 @@ final readonly class SvgFileProcessor
         }
 
         $metaDataValueObject = $svgOptimizerFacade->getMetaData();
-
-        $this->metaDataAggregator->addFileData(
-            $metaDataValueObject->getOriginalSize(),
-            $metaDataValueObject->getOptimizedSize(),
-        );
-
+        $this->metaDataAggregator->addFileData($metaDataValueObject->getOriginalSize(), $metaDataValueObject->getOptimizedSize());
         $this->outputManager->printOptimizationResult($filePath, $metaDataValueObject->getSavedPercentage());
+    }
+
+    /**
+     * Retrieve the configuration array for rule options.
+     *
+     * If a configuration file path is provided via command-line options,
+     * the configuration is loaded from that file. Otherwise, an empty
+     * configuration array is returned.
+     *
+     * @return array<string, bool> The configuration array for rule flags
+     *
+     * @throws \JsonException            If the configuration file contains invalid JSON
+     * @throws \ValueError
+     * @throws \InvalidArgumentException
+     */
+    private function getConfig(): array
+    {
+        return '' !== $this->commandOptionsValueObject->getConfigPath()
+            ? ConfigLoader::loadConfig($this->commandOptionsValueObject->getConfigPath())
+            : [];
     }
 }

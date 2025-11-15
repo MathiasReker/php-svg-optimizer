@@ -38,6 +38,12 @@ final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor 
      */
     private const string SELF_CLOSING_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*?)\s*\/>/';
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Convert empty tags to self-closing tags in the SVG document.
      *
