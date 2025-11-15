@@ -79,6 +79,12 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
         'inkscape' => 'http://www.inkscape.org/namespaces/inkscape',
     ];
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Remove the Inkspace footprints from the SVG document.
      *

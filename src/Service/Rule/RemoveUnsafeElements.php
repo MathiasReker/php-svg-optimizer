@@ -135,6 +135,12 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         'style',
     ];
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return true;
+    }
+
     /**
      * Optimize the SVG document by removing unsafe elements and attributes.
      *

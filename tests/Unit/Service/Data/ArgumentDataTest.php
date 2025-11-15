@@ -34,7 +34,7 @@ final class ArgumentDataTest extends TestCase
     /**
      * The expected number of examples in the argument data.
      */
-    private const int EXPECTED_EXAMPLES_COUNT = 3;
+    private const int EXPECTED_EXAMPLES_COUNT = 4;
 
     /**
      * An example command that should be present in the argument data.

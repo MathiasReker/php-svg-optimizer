@@ -62,6 +62,7 @@ Options:
 -h , --help               Display help for the command.
 -c , --config             Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.
 -d , --dry-run            Only calculate potential savings without modifying the files.
+-r , --allow-risky        Explicitly enables risky rules, allowing them to be applied.
 -q , --quiet              Suppress all output except errors.
 -v , --version            Display the version of the library.
 
@@ -74,7 +75,7 @@ Process                   Provide a list of directories or files to process.
 ```bash
 vendor/bin/svg-optimizer --dry-run process /path/to/svgs
 vendor/bin/svg-optimizer --config=config.json process /path/to/file.svg
-vendor/bin/svg-optimizer --config='{"removeUnsafeElements": true}' process /path/to/file.svg
+vendor/bin/svg-optimizer --config='{"removeUnsafeElements": true}' --allow-risky process /path/to/file.svg
 vendor/bin/svg-optimizer --quiet process /path/to/file.svg
 ```
 
@@ -97,7 +98,7 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
     "removeEmptyAttributes": true,
     "removeEmptyGroups": true,
     "removeEmptyTextElements": true,
-    "removeEnableBackgroundAttribute": true,
+    "removeEnableBackgroundAttribute": false,
     "removeInkscapeFootprints": true,
     "removeInvisibleCharacters": true,
     "removeMetadata": true,
@@ -113,9 +114,8 @@ vendor/bin/svg-optimizer --quiet process /path/to/file.svg
 
 ## Package
 
-> To ensure robustness when using the library, it's crucial to handle exceptions, as invalid or malformed SVG files
-> could lead to runtime errors. Catching these exceptions will allow you to manage potential issues gracefully and
-> prevent your application from crashing.
+> To follow best practices in production environments, it is recommended to catch exceptions when using this library.
+> Doing so ensures that your application can handle unexpected input gracefully and avoid unintended crashes.
 
 ### Example specifying rules
 
@@ -146,7 +146,7 @@ try {
             removeEmptyAttributes: true,
             removeEmptyGroups: true,
             removeEmptyTextElements: true,
-            removeEnableBackgroundAttribute: true,
+            removeEnableBackgroundAttribute: false,
             removeInkscapeFootprints: true,
             removeInvisibleCharacters: true,
             removeMetadata: true,
@@ -235,6 +235,40 @@ use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 try {
     $svgOptimizer = SvgOptimizerFacade::fromString('<svg>...</svg>')
         ->optimize();
+
+    echo sprintf('Content: ', $svgOptimizer->getContent(), \PHP_EOL);
+
+    $metaData = $svgOptimizer->getMetaData();
+
+    echo sprintf('Optimized size: %d bytes%s', $metaData->getOptimizedSize(), \PHP_EOL);
+    echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
+    echo sprintf('Size reduction: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
+    echo sprintf('Reduction percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
+} catch (\Exception $exception) {
+    echo $exception->getMessage();
+}
+```
+
+### Example applying risky rules
+
+```php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
+
+try {
+    $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
+        ->withRules(
+            removeWidthHeightAttributes: true,
+            removeUnsafeElements: true,
+        )
+        ->allowRisky()
+        ->optimize()
+        ->saveToFile('path/to/output.svg');
 
     echo sprintf('Content: ', $svgOptimizer->getContent(), \PHP_EOL);
 
@@ -360,7 +394,7 @@ Removes empty text elements:
 $svgOptimizer->withRules(removeEmptyTextElements: true);
 ```
 
-Removes the `enable-background` attribute from the SVG:
+Removes the `enable-background` attribute from the SVG (**risky**):
 
 ```php
 $svgOptimizer->withRules(removeEnableBackgroundAttribute: true);
@@ -446,7 +480,7 @@ $svgOptimizer->withRules(
     removeEmptyAttributes: true,
     removeEmptyGroups: true,
     removeEmptyTextElements: true,
-    removeEnableBackgroundAttribute: true,
+    removeEnableBackgroundAttribute: false,
     removeInkscapeFootprints: true,
     removeInvisibleCharacters: true,
     removeMetadata: true,
@@ -458,6 +492,14 @@ $svgOptimizer->withRules(
     removeWidthHeightAttributes: false,
     sortAttributes: true,
 );
+```
+
+#### `allowRisky` Method
+
+By default, risky rules are not applied even if you add them unless explicitly allowed.
+
+```php
+$svgOptimizer->allowRisky();
 ```
 
 #### `optimize` Method
@@ -548,7 +590,6 @@ various scenarios to verify the correct behavior and edge cases for your rule.
 
 - **Register the rule** in the SVG optimizer builder located at `/src/Service/Facade/SvgOptimizerFacade.php`.
 - **Add your rule to the rule enum** in `/src/Type/Rule.php`.
-- **Include the rule in the processor** by updating `/src/Processor/SvgFileProcessor.php`.
 
 ### 4. **Update Documentation**
 

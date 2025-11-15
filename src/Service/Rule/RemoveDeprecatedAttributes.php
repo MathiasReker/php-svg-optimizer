@@ -59,6 +59,12 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
         'xml:lang' => 'lang',
     ];
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Optimizes the given SVG document by removing deprecated attributes and replacing
      * outdated attributes with their modern equivalents.

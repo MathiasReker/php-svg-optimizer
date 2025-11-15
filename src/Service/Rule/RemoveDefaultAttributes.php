@@ -28,6 +28,12 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
         'stroke' => 'none',
     ];
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Remove default attributes from the SVG document.
      *

@@ -31,6 +31,12 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
      */
     private const string CLASS_SELECTOR_PATTERN = '/\.([a-zA-Z0-9_-]+)\s*\{([^}]+)}/';
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Optimizes the given \DOMDocument by converting CSS classes to inline SVG attributes.
      *

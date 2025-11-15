@@ -147,7 +147,8 @@ final class SvgOptimizerCommandTest extends TestCase
 
         $commandOptionsValueObject = new CommandOptionsValueObject(
             false,
-            ''
+            '',
+            false
         );
 
         $constructor->invoke($command, [$svgFile], $commandOptionsValueObject, $outputManager);
@@ -181,7 +182,8 @@ final class SvgOptimizerCommandTest extends TestCase
 
         $commandOptionsValueObject = new CommandOptionsValueObject(
             false,
-            ''
+            '',
+            false
         );
 
         $constructor->invoke($command, [], $commandOptionsValueObject, $outputManager);
@@ -212,7 +214,11 @@ final class SvgOptimizerCommandTest extends TestCase
         $originalContent = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
         file_put_contents($svgFile, $originalContent);
 
-        $command = new Command([$svgFile], new CommandOptionsValueObject(true, ''), new OutputManager(new MemoryStream()));
+        $command = new Command(
+            [$svgFile],
+            new CommandOptionsValueObject(true, '', false),
+            new OutputManager(new MemoryStream())
+        );
         $command->run();
 
         $newContent = file_get_contents($svgFile);

@@ -88,9 +88,9 @@ final readonly class CommandDispatcher
         try {
             $commandOptionsValueObject = new CommandOptionsValueObject(
                 $optionIntent->isDryRun(),
-                $optionIntent->getConfigPath()
+                $optionIntent->getConfigPath(),
+                $optionIntent->allowRisky()
             );
-
             $command = (new CommandFactory($stream, $argumentParser))->create($commandOptionsValueObject);
             $command->run();
         } catch (\InvalidArgumentException $invalidArgumentException) {

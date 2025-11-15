@@ -50,6 +50,12 @@ final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor im
      */
     private const string WHITESPACE_REGEX = '/\s+/';
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Remove unnecessary whitespace from the SVG document.
      *

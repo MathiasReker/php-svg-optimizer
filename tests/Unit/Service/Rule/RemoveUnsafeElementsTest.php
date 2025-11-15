@@ -42,7 +42,7 @@ final class RemoveUnsafeElementsTest extends TestCase
         $svgOptimizer = new SvgOptimizer(new StringProvider($inputSvg));
         $svgOptimizer->addRule(new RemoveUnsafeElements());
 
-        $actual = $svgOptimizer->optimize()->getContent();
+        $actual = $svgOptimizer->allowRisky()->optimize()->getContent();
 
         self::assertSame($expectedSvg, $actual);
     }

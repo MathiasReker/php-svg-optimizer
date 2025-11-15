@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Facade;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
+use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
@@ -105,10 +106,19 @@ final readonly class SvgOptimizerFacade
      *
      * @return $this The SvgOptimizerFacade instance
      *
-     * @throws SvgValidationException If the SVG content is invalid
+     * @throws SvgValidationException        If the SVG content is invalid
+     * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     public function optimize(): self
     {
+        if ($this->svgOptimizer->hasRiskyRules() && !$this->svgOptimizer->isRiskyRulesAllowed()) {
+            throw new RiskyRulesNotAllowedException('Risky optimization rules are disabled. Enable them to use these rules.');
+        }
+
+        if (!$this->svgOptimizer->hasRules()) {
+            $this->withRules();
+        }
+
         $this->svgOptimizer->optimize();
 
         return $this;
@@ -149,32 +159,32 @@ final readonly class SvgOptimizerFacade
      * @return $this The SvgOptimizerFacade instance
      */
     public function withRules(
-        bool $convertColorsToHex = true,
-        bool $convertCssClassesToAttributes = true,
-        bool $convertEmptyTagsToSelfClosing = true,
-        bool $convertInlineStylesToAttributes = true,
-        bool $flattenGroups = true,
-        bool $minifySvgCoordinates = true,
-        bool $minifyTransformations = true,
-        bool $removeComments = true,
-        bool $removeDefaultAttributes = true,
-        bool $removeDeprecatedAttributes = true,
-        bool $removeDoctype = true,
-        bool $removeDuplicateElements = true,
-        bool $removeEmptyAttributes = true,
-        bool $removeEmptyGroups = true,
-        bool $removeEmptyTextAttributes = true,
-        bool $removeEnableBackgroundAttribute = true,
-        bool $removeInkscapeFootprints = true,
-        bool $removeInvisibleCharacters = true,
-        bool $removeMetadata = true,
-        bool $removeTitleAndDesc = true,
-        bool $removeUnnecessaryWhitespace = true,
+        bool $convertColorsToHex = false,
+        bool $convertCssClassesToAttributes = false,
+        bool $convertEmptyTagsToSelfClosing = false,
+        bool $convertInlineStylesToAttributes = false,
+        bool $flattenGroups = false,
+        bool $minifySvgCoordinates = false,
+        bool $minifyTransformations = false,
+        bool $removeComments = false,
+        bool $removeDefaultAttributes = false,
+        bool $removeDeprecatedAttributes = false,
+        bool $removeDoctype = false,
+        bool $removeDuplicateElements = false,
+        bool $removeEmptyAttributes = false,
+        bool $removeEmptyGroups = false,
+        bool $removeEmptyTextAttributes = false,
+        bool $removeEnableBackgroundAttribute = false,
+        bool $removeInkscapeFootprints = false,
+        bool $removeInvisibleCharacters = false,
+        bool $removeMetadata = false,
+        bool $removeTitleAndDesc = false,
+        bool $removeUnnecessaryWhitespace = false,
         bool $removeUnsafeElements = false,
-        bool $removeUnusedMasks = true,
-        bool $removeUnusedNamespaces = true,
+        bool $removeUnusedMasks = false,
+        bool $removeUnusedNamespaces = false,
         bool $removeWidthHeightAttributes = false,
-        bool $sortAttributes = true,
+        bool $sortAttributes = false,
     ): self {
         $rules = [
             ConvertColorsToHex::class => $convertColorsToHex,
@@ -244,5 +254,24 @@ final readonly class SvgOptimizerFacade
     public function getContent(): string
     {
         return $this->svgOptimizer->getContent();
+    }
+
+    /**
+     * Enables or disables the use of risky optimization rules.
+     *
+     * Risky rules can potentially change the visual rendering of the SVG.
+     * Use with caution.
+     *
+     * @param bool $allow Whether to allow risky rules (default: true)
+     *
+     * @return $this The SvgOptimizerFacade instance
+     */
+    public function allowRisky(bool $allow = true): self
+    {
+        if ($allow) {
+            $this->svgOptimizer->allowRisky();
+        }
+
+        return $this;
     }
 }

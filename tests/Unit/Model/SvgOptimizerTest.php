@@ -50,6 +50,11 @@ final class SvgOptimizerTest extends TestCase
             {
                 return false;
             }
+
+            public static function isRisky(): bool
+            {
+                return false;
+            }
         };
 
         $svgOptimizer->addRule($rule);
@@ -69,6 +74,11 @@ final class SvgOptimizerTest extends TestCase
             }
 
             public function shouldCheckSize(): bool
+            {
+                return false;
+            }
+
+            public static function isRisky(): bool
             {
                 return false;
             }
@@ -213,6 +223,11 @@ final class SvgOptimizerTest extends TestCase
             {
                 return false;
             }
+
+            public static function isRisky(): bool
+            {
+                return false;
+            }
         };
 
         $ruleClassDisabled = new class implements SvgOptimizerRuleInterface {
@@ -221,6 +236,11 @@ final class SvgOptimizerTest extends TestCase
             }
 
             public function shouldCheckSize(): bool
+            {
+                return false;
+            }
+
+            public static function isRisky(): bool
             {
                 return false;
             }

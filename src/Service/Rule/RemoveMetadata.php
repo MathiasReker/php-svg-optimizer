@@ -21,6 +21,12 @@ final readonly class RemoveMetadata implements SvgOptimizerRuleInterface
 {
     use RemoveElementsByTagNameTrait;
 
+    #[\Override]
+    public static function isRisky(): bool
+    {
+        return false;
+    }
+
     /**
      * Remove the metadata elements from the SVG document.
      *
