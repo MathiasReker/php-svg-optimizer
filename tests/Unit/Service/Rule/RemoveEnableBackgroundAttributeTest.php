@@ -145,10 +145,60 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background="invalid value"><rect x="10" y="10" width="30" height="30"/></svg>
                 XML,
         ];
-    }
 
-    public function testRuleIsMarkedAsRisky(): void
-    {
-        self::assertTrue(RemoveEnableBackgroundAttribute::isRisky());
+        yield 'Removes enable-background from style attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" style="enable-background:new 0 0 100 50;">
+                    <rect x="10" y="10" width="30" height="30"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><rect x="10" y="10" width="30" height="30"/></svg>
+                XML,
+        ];
+
+        yield 'Removes enable-background from mixed style attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" style="fill:red; enable-background:new 0 0 100 50;">
+                    <rect x="10" y="10" width="30" height="30"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" style="fill:red;"><rect x="10" y="10" width="30" height="30"/></svg>
+                XML,
+        ];
+
+        yield 'Removes enable-background in style if dimensions do not match' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" style="enable-background:new 0 0 200 100;">
+                    <rect x="10" y="10" width="30" height="30"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><rect x="10" y="10" width="30" height="30"/></svg>
+                XML,
+        ];
+
+        yield 'Removes enable-background in style if invalid value' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" style="enable-background:invalid value;">
+                    <rect x="10" y="10" width="30" height="30"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><rect x="10" y="10" width="30" height="30"/></svg>
+                XML,
+        ];
+
+        yield 'Removes enable-background from style if it matches dimensions' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" style="enable-background:new 0 0 100 50;">
+                    <rect x="10" y="10" width="30" height="30"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><rect x="10" y="10" width="30" height="30"/></svg>
+                XML,
+        ];
     }
 }

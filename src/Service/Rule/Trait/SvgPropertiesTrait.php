@@ -17,7 +17,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 trait SvgPropertiesTrait
 {
     private const array SVG_PROPERTIES = [
-        // Painting & coloring
         'fill',
         'fill-opacity',
         'fill-rule',
@@ -29,23 +28,15 @@ trait SvgPropertiesTrait
         'stroke-miterlimit',
         'stroke-dasharray',
         'stroke-dashoffset',
-
-        // Opacity & visibility
         'opacity',
         'visibility',
-
-        // Markers
         'marker-start',
         'marker-mid',
         'marker-end',
-
-        // Filters / masking / clipping
         'mask',
         'clip-path',
         'clip-rule',
         'filter',
-
-        // Rendering hints & effects
         'shape-rendering',
         'vector-effect',
         'color-interpolation',
@@ -54,20 +45,14 @@ trait SvgPropertiesTrait
         'image-rendering',
         'pointer-events',
         'text-rendering',
-
-        // Gradients / stops
         'stop-color',
         'stop-opacity',
-
-        // Text properties supported as SVG presentation attributes
         'text-anchor',
         'alignment-baseline',
         'dominant-baseline',
         'letter-spacing',
         'word-spacing',
         'kerning',
-
-        // Additional presentation / alignment properties
         'cursor',
         'direction',
         'display',

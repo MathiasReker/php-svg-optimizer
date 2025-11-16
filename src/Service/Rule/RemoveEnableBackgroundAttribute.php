@@ -47,6 +47,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
     {
         $domXPath = new \DOMXPath($domDocument);
         $this->processEnableBackgroundAttributes($domXPath);
+        $this->processStyleAttributes($domXPath);
     }
 
     /**
@@ -65,10 +66,8 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
         foreach ($elements as $element) {
             if ($element instanceof \DOMElement) {
                 $enableBackgroundValue = $element->getAttribute(self::ENABLE_BACKGROUND_ATTRIBUTE);
-
                 $width = $element->getAttribute('width');
                 $height = $element->getAttribute('height');
-
                 $cleanedValue = $this->cleanupEnableBackgroundValue($enableBackgroundValue, $width, $height);
 
                 if ('' === trim($cleanedValue)) {
@@ -100,6 +99,74 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
         }
 
         return $value;
+    }
+
+    /**
+     * Processes the `style` attribute and removes the `enable-background` property if present.
+     *
+     * @param \DOMXPath $domXPath The \DOMXPath instance used to query the SVG elements
+     */
+    private function processStyleAttributes(\DOMXPath $domXPath): void
+    {
+        $elements = $domXPath->query('//*[@style]');
+        if (false === $elements) {
+            return;
+        }
+
+        foreach ($elements as $element) {
+            if (!$element instanceof \DOMElement) {
+                continue;
+            }
+
+            $style = $element->getAttribute('style');
+
+            if (!$this->hasEnableBackground($style)) {
+                continue;
+            }
+
+            $cleanedStyle = $this->removeEnableBackgroundFromStyle($style);
+
+            $this->updateStyleAttribute($element, $cleanedStyle);
+        }
+    }
+
+    /**
+     * Checks if the style contains the 'enable-background' property.
+     *
+     * @param string $style The style string
+     *
+     * @return bool True if 'enable-background' exists, otherwise false
+     */
+    private function hasEnableBackground(string $style): bool
+    {
+        return str_contains($style, self::ENABLE_BACKGROUND_ATTRIBUTE);
+    }
+
+    /**
+     * Removes the 'enable-background' property from the style string.
+     *
+     * @param string $style The original style string
+     *
+     * @return string The cleaned style string
+     */
+    private function removeEnableBackgroundFromStyle(string $style): string
+    {
+        return preg_replace('/\s*enable-background\s*:\s*[^;]+;\s*/', '', $style) ?? '';
+    }
+
+    /**
+     * Updates the style attribute on the element.
+     *
+     * @param \DOMElement $domElement   The DOM element
+     * @param string      $cleanedStyle The cleaned style string
+     */
+    private function updateStyleAttribute(\DOMElement $domElement, string $cleanedStyle): void
+    {
+        if ('' === trim($cleanedStyle)) {
+            $domElement->removeAttribute('style');
+        } else {
+            $domElement->setAttribute('style', $cleanedStyle);
+        }
     }
 
     #[\Override]
