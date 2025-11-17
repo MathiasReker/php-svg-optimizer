@@ -25,9 +25,9 @@ echo ">"
 
 type_effect "> # You're ready to optimize your SVG files!"
 type_effect "> # Run the following command to process the SVG files in a directory:"
-type_effect "> vendor/bin/svg-optimizer process php-svg-optimizer/dev/resources/svg"
+type_effect "> vendor/bin/svg-optimizer -a process php-svg-optimizer/dev/resources/svg"
 
-vendor/bin/svg-optimizer process php-svg-optimizer/dev/resources/svg
+vendor/bin/svg-optimizer -a process php-svg-optimizer/dev/resources/svg
 
 echo ">"
 echo ">"
