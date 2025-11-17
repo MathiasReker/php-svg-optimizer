@@ -91,7 +91,8 @@ final readonly class CommandDispatcher
             $commandOptionsValueObject = new CommandOptionsValueObject(
                 $optionIntent->isDryRun(),
                 $optionIntent->getConfigPath(),
-                $optionIntent->allowRisky()
+                $optionIntent->allowRisky(),
+                $optionIntent->withAllRules(),
             );
             $command = (new CommandFactory($stream, $argumentParser))->create($commandOptionsValueObject);
             $command->run();

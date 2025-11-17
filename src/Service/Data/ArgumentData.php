@@ -20,7 +20,7 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 /**
  * @no-named-arguments
  */
-final readonly class ArgumentData
+final class ArgumentData
 {
     /**
      * The path to the binary.
@@ -31,10 +31,10 @@ final readonly class ArgumentData
     private array $options;
 
     /** @var array<string, OptionValueObject> */
-    private array $commands;
+    private readonly array $commands;
 
     /** @var list<ExampleCommandValueObject> */
-    private array $examples;
+    private readonly array $examples;
 
     /**
      * Constructor for ArgumentData.
@@ -43,38 +43,13 @@ final readonly class ArgumentData
      */
     public function __construct()
     {
-        $this->options = [
-            Option::HELP->value => new ArgumentOptionValueObject(
-                Option::HELP->getShorthand(),
-                Option::HELP->getFull(),
-                Option::HELP->getDescription()
-            ),
-            Option::CONFIG->value => new ArgumentOptionValueObject(
-                Option::CONFIG->getShorthand(),
-                Option::CONFIG->getFull(),
-                Option::CONFIG->getDescription()
-            ),
-            Option::DRY_RUN->value => new ArgumentOptionValueObject(
-                Option::DRY_RUN->getShorthand(),
-                Option::DRY_RUN->getFull(),
-                Option::DRY_RUN->getDescription()
-            ),
-            Option::QUIET->value => new ArgumentOptionValueObject(
-                Option::QUIET->getShorthand(),
-                Option::QUIET->getFull(),
-                Option::QUIET->getDescription()
-            ),
-            Option::ALLOW_RISKY->value => new ArgumentOptionValueObject(
-                Option::ALLOW_RISKY->getShorthand(),
-                Option::ALLOW_RISKY->getFull(),
-                Option::ALLOW_RISKY->getDescription()
-            ),
-            Option::VERSION->value => new ArgumentOptionValueObject(
-                Option::VERSION->getShorthand(),
-                Option::VERSION->getFull(),
-                Option::VERSION->getDescription()
-            ),
-        ];
+        foreach (Option::cases() as $option) {
+            $this->options[$option->value] = new ArgumentOptionValueObject(
+                $option->getShorthand(),
+                $option->getFull(),
+                $option->getDescription()
+            );
+        }
 
         $this->commands = [
             Command::PROCESS->value => new OptionValueObject(
@@ -94,7 +69,7 @@ final readonly class ArgumentData
             ),
             new ExampleCommandValueObject(
                 \sprintf(
-                    '%s %s config.json %s /path/to/file.svg',
+                    '%s %s=config.json %s /path/to/file.svg',
                     self::BINARY_PATH,
                     Option::CONFIG->getFull(),
                     Command::PROCESS->value,
@@ -113,6 +88,14 @@ final readonly class ArgumentData
                     '%s %s %s /path/to/file.svg',
                     self::BINARY_PATH,
                     Option::ALLOW_RISKY->getFull(),
+                    Command::PROCESS->value,
+                )
+            ),
+            new ExampleCommandValueObject(
+                \sprintf(
+                    '%s %s %s /path/to/file.svg',
+                    self::BINARY_PATH,
+                    Option::WITH_ALL_RULES->getFull(),
                     Command::PROCESS->value,
                 )
             ),
@@ -168,7 +151,8 @@ final readonly class ArgumentData
      */
     public function getOption(string $option): ArgumentOptionValueObject
     {
-        return $this->options[$option] ?? throw new \InvalidArgumentException(\sprintf('Option "%s" not found.', $option));
+        return $this->options[$option]
+            ?? throw new \InvalidArgumentException(\sprintf('Option "%s" not found.', $option));
     }
 
     /**

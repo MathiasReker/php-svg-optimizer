@@ -44,7 +44,8 @@ final class CommandOptionValueObjectTest extends TestCase
         $commandOptionsValueObject = new CommandOptionsValueObject(
             true,
             '',
-            false
+            false,
+            false,
         );
 
         self::assertTrue($commandOptionsValueObject->isDryRun());
@@ -57,7 +58,8 @@ final class CommandOptionValueObjectTest extends TestCase
         $commandOptionsValueObject = new CommandOptionsValueObject(
             false,
             $path,
-            false
+            false,
+            false,
         );
 
         self::assertSame($path, $commandOptionsValueObject->getConfigPath());
@@ -68,7 +70,8 @@ final class CommandOptionValueObjectTest extends TestCase
         $commandOptionsValueObject = new CommandOptionsValueObject(
             false,
             '',
-            true
+            true,
+            false,
         );
 
         self::assertTrue($commandOptionsValueObject->allowRisky());
@@ -79,7 +82,8 @@ final class CommandOptionValueObjectTest extends TestCase
         $commandOptionsValueObject = new CommandOptionsValueObject(
             true,
             '/config.json',
-            true
+            true,
+            false,
         );
 
         self::assertTrue($commandOptionsValueObject->isDryRun());

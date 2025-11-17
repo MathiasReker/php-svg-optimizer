@@ -98,6 +98,7 @@ final readonly class SvgFileProcessor
     {
         $svgOptimizerFacade = SvgOptimizerFacade::fromFile($filePath)
             ->allowRisky($this->commandOptionsValueObject->allowRisky())
+            ->withAllRules($this->commandOptionsValueObject->withAllRules())
             ->withRules(...array_map(fn (Rule $rule) => $this->getConfig()[$rule->configKey()] ?? false, Rule::cases()))
             ->optimize();
 

@@ -46,7 +46,8 @@ final class SvgFileProcessorTest extends TestCase
         $commandOptionsValueObject = new CommandOptionsValueObject(
             false,
             '',
-            true
+            true,
+            false,
         );
 
         $svgFileProcessor = new SvgFileProcessor(
@@ -80,7 +81,8 @@ final class SvgFileProcessorTest extends TestCase
         $commandOptionsValueObject = new CommandOptionsValueObject(
             true,
             '',
-            false
+            false,
+            false,
         );
 
         $svgFileProcessor = new SvgFileProcessor(
@@ -110,7 +112,8 @@ final class SvgFileProcessorTest extends TestCase
         $commandOptionsValueObject = new CommandOptionsValueObject(
             true,
             '',
-            false
+            false,
+            false,
         );
 
         $svgFileProcessor = new SvgFileProcessor(
@@ -137,7 +140,8 @@ final class SvgFileProcessorTest extends TestCase
         $commandOptionsValueObject = new CommandOptionsValueObject(
             true,
             '',
-            true
+            true,
+            false,
         );
 
         $svgFileProcessor = new SvgFileProcessor(

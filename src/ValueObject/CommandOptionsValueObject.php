@@ -17,15 +17,18 @@ namespace MathiasReker\PhpSvgOptimizer\ValueObject;
 final readonly class CommandOptionsValueObject
 {
     /**
-     * Constructor for CommandOptionsValueObject.
+     * Constructor of CommandOptionsValueObject.
      *
-     * @param bool   $dryRun     Indicates if the command should run in dry-run mode
-     * @param string $configPath The path to the configuration file
+     * @param bool   $dryRun       if true, the command will run in dry-run mode, calculating potential changes without modifying files
+     * @param string $configPath   Path to a JSON configuration file defining custom optimization rules. Ignored if not provided.
+     * @param bool   $allowRisky   Whether risky optimization rules are allowed. Risky rules may change the visual output of SVGs.
+     * @param bool   $withAllRules If true, all available optimization rules will be applied. Non-risky rules only unless $allowRisky is also true.
      */
     public function __construct(
         private bool $dryRun,
         private string $configPath,
         private bool $allowRisky,
+        private bool $withAllRules,
     ) {}
 
     /**
@@ -48,8 +51,27 @@ final readonly class CommandOptionsValueObject
         return $this->configPath;
     }
 
+    /**
+     * Determines whether risky optimization rules are allowed.
+     *
+     * Risky rules may change the visual output of SVGs.
+     *
+     * @return bool true if risky rules are allowed; false otherwise
+     */
     public function allowRisky(): bool
     {
         return $this->allowRisky;
+    }
+
+    /**
+     * Determines if all available optimization rules should be applied.
+     *
+     * If true, all rules will be applied. Risky rules will only be applied if `allowRisky()` is true.
+     *
+     * @return bool true if all rules should be applied, false otherwise
+     */
+    public function withAllRules(): bool
+    {
+        return $this->withAllRules;
     }
 }

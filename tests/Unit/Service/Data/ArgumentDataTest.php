@@ -34,7 +34,7 @@ final class ArgumentDataTest extends TestCase
     /**
      * The expected number of examples in the argument data.
      */
-    private const int EXPECTED_EXAMPLES_COUNT = 4;
+    private const int EXPECTED_EXAMPLES_COUNT = 5;
 
     /**
      * An example command that should be present in the argument data.
@@ -135,7 +135,7 @@ final class ArgumentDataTest extends TestCase
         $examples = $this->argumentData->getExamples();
 
         self::assertStringContainsString(self::EXAMPLE_COMMAND, $examples[0]->getCommand());
-        self::assertStringContainsString('vendor/bin/svg-optimizer --config config.json process /path/to/file.svg', $examples[1]->getCommand());
+        self::assertStringContainsString('vendor/bin/svg-optimizer --config=config.json process /path/to/file.svg', $examples[1]->getCommand());
         self::assertStringContainsString('vendor/bin/svg-optimizer --quiet process /path/to/file.svg', $examples[2]->getCommand());
     }
 
@@ -213,12 +213,14 @@ final class ArgumentDataTest extends TestCase
     public function testGetExamplesReturnsExpectedCommands(): void
     {
         $examples = $this->argumentData->getExamples();
-        self::assertCount(4, $examples);
+
+        self::assertCount(5, $examples);
 
         self::assertStringContainsString('--dry-run process /path/to/svgs', $examples[0]->getCommand());
-        self::assertStringContainsString('--config config.json process /path/to/file.svg', $examples[1]->getCommand());
+        self::assertStringContainsString('--config=config.json process /path/to/file.svg', $examples[1]->getCommand());
         self::assertStringContainsString('--quiet process /path/to/file.svg', $examples[2]->getCommand());
         self::assertStringContainsString('--allow-risky process /path/to/file.svg', $examples[3]->getCommand());
+        self::assertStringContainsString('--with-all-rules process /path/to/file.svg', $examples[4]->getCommand());
     }
 
     public function testGetFormatReturnsExpectedString(): void

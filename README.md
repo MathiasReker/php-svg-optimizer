@@ -63,6 +63,7 @@ Options:
 -c , --config             Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.
 -d , --dry-run            Only calculate potential savings without modifying the files.
 -r , --allow-risky        Explicitly enables risky rules, allowing them to be applied.
+-a , --with-all-rules     Enable all non-risky rules. Use --allow-risky to include risky rules as well.
 -q , --quiet              Suppress all output except errors.
 -v , --version            Display the version of the library.
 
@@ -77,6 +78,7 @@ vendor/bin/svg-optimizer --dry-run process /path/to/svgs
 vendor/bin/svg-optimizer --config=config.json process /path/to/file.svg
 vendor/bin/svg-optimizer --config='{"removeUnsafeElements": true}' --allow-risky process /path/to/file.svg
 vendor/bin/svg-optimizer --quiet process /path/to/file.svg
+vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
 ```
 
 #### Config file example:
@@ -179,6 +181,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 try {
     $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
         ->optimize()
+        ->withAllRules()
         ->saveToFile('path/to/output.svg');
 
     $metaData = $svgOptimizer->getMetaData();
@@ -206,6 +209,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 
 try {
     $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
+        ->withAllRules()
         ->optimize();
 
     echo sprintf('Get content: ', $svgOptimizer->getContent(), \PHP_EOL);
@@ -234,6 +238,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 
 try {
     $svgOptimizer = SvgOptimizerFacade::fromString('<svg>...</svg>')
+        ->withAllRules()
         ->optimize();
 
     echo sprintf('Content: ', $svgOptimizer->getContent(), \PHP_EOL);
@@ -492,6 +497,14 @@ $svgOptimizer->withRules(
     removeWidthHeightAttributes: false,
     sortAttributes: true,
 );
+```
+
+#### `withAllRules` Method
+
+Enable all non-risky rules.
+
+```php
+$svgOptimizer->withAllRules();
 ```
 
 #### `allowRisky` Method

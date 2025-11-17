@@ -26,7 +26,8 @@ final class CommandOptionsValueObjectTest extends TestCase
         $commandOptionsValueObject = new CommandOptionsValueObject(
             true,
             '/path/to/config.json',
-            false
+            false,
+            false,
         );
 
         self::assertTrue($commandOptionsValueObject->isDryRun());

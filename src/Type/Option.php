@@ -20,6 +20,7 @@ enum Option: string
     case CONFIG = 'config';
     case DRY_RUN = 'dry-run';
     case ALLOW_RISKY = 'allow-risky';
+    case WITH_ALL_RULES = 'with-all-rules';
     case QUIET = 'quiet';
     case VERSION = 'version';
 
@@ -33,6 +34,7 @@ enum Option: string
             self::CONFIG->value => '-c',
             self::DRY_RUN->value => '-d',
             self::ALLOW_RISKY->value => '-r',
+            self::WITH_ALL_RULES->value => '-a',
             self::QUIET->value => '-q',
             self::VERSION->value => '-v',
         };
@@ -48,6 +50,7 @@ enum Option: string
             self::CONFIG->value => '--config',
             self::DRY_RUN->value => '--dry-run',
             self::ALLOW_RISKY->value => '--allow-risky',
+            self::WITH_ALL_RULES->value => '--with-all-rules',
             self::QUIET->value => '--quiet',
             self::VERSION->value => '--version',
         };
@@ -63,6 +66,7 @@ enum Option: string
             self::CONFIG->value => 'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.',
             self::DRY_RUN->value => 'Only calculate potential savings without modifying the files.',
             self::ALLOW_RISKY->value => 'Explicitly enables risky rules, allowing them to be applied.',
+            self::WITH_ALL_RULES->value => 'Enable all non-risky rules. Use --allow-risky to include risky rules as well.',
             self::QUIET->value => 'Suppress all output except errors.',
             self::VERSION->value => 'Display the version of the library.',
         };

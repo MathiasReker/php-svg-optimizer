@@ -19,32 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEmptyTagsToSelfClosing;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDoctype;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDuplicateElements;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyGroups;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedMasks;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
+use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 
 /**
@@ -115,10 +90,6 @@ final readonly class SvgOptimizerFacade
             throw new RiskyRulesNotAllowedException('Risky optimization rules are disabled. Enable them to use these rules.');
         }
 
-        if (!$this->svgOptimizer->hasRules()) {
-            $this->withRules();
-        }
-
         $this->svgOptimizer->optimize();
 
         return $this;
@@ -187,35 +158,64 @@ final readonly class SvgOptimizerFacade
         bool $sortAttributes = false,
     ): self {
         $rules = [
-            ConvertColorsToHex::class => $convertColorsToHex,
-            ConvertCssClassesToAttributes::class => $convertCssClassesToAttributes,
-            ConvertEmptyTagsToSelfClosing::class => $convertEmptyTagsToSelfClosing,
-            ConvertInlineStylesToAttributes::class => $convertInlineStylesToAttributes,
-            FlattenGroups::class => $flattenGroups,
-            MinifySvgCoordinates::class => $minifySvgCoordinates,
-            MinifyTransformations::class => $minifyTransformations,
-            RemoveComments::class => $removeComments,
-            RemoveDefaultAttributes::class => $removeDefaultAttributes,
-            RemoveDeprecatedAttributes::class => $removeDeprecatedAttributes,
-            RemoveDoctype::class => $removeDoctype,
-            RemoveDuplicateElements::class => $removeDuplicateElements,
-            RemoveEmptyAttributes::class => $removeEmptyAttributes,
-            RemoveEmptyGroups::class => $removeEmptyGroups,
-            RemoveEmptyTextElements::class => $removeEmptyTextAttributes,
-            RemoveEnableBackgroundAttribute::class => $removeEnableBackgroundAttribute,
-            RemoveInkscapeFootprints::class => $removeInkscapeFootprints,
-            RemoveInvisibleCharacters::class => $removeInvisibleCharacters,
-            RemoveMetadata::class => $removeMetadata,
-            RemoveTitleAndDesc::class => $removeTitleAndDesc,
-            RemoveUnnecessaryWhitespace::class => $removeUnnecessaryWhitespace,
-            RemoveUnsafeElements::class => $removeUnsafeElements,
-            RemoveUnusedMasks::class => $removeUnusedMasks,
-            RemoveUnusedNamespaces::class => $removeUnusedNamespaces,
-            RemoveWidthHeightAttributes::class => $removeWidthHeightAttributes,
-            SortAttributes::class => $sortAttributes,
+            Rule::CONVERT_COLORS_TO_HEX->value => $convertColorsToHex,
+            Rule::CONVERT_CSS_CLASSES_TO_ATTRIBUTES->value => $convertCssClassesToAttributes,
+            Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->value => $convertEmptyTagsToSelfClosing,
+            Rule::CONVERT_INLINE_STYLES_TO_ATTRIBUTES->value => $convertInlineStylesToAttributes,
+            Rule::FLATTEN_GROUPS->value => $flattenGroups,
+            Rule::MINIFY_SVG_COORDINATES->value => $minifySvgCoordinates,
+            Rule::MINIFY_TRANSFORMATIONS->value => $minifyTransformations,
+            Rule::REMOVE_COMMENTS->value => $removeComments,
+            Rule::REMOVE_DEFAULT_ATTRIBUTES->value => $removeDefaultAttributes,
+            Rule::REMOVE_DEPRECATED_ATTRIBUTES->value => $removeDeprecatedAttributes,
+            Rule::REMOVE_DOCTYPE->value => $removeDoctype,
+            Rule::REMOVE_DUPLICATE_ELEMENTS->value => $removeDuplicateElements,
+            Rule::REMOVE_EMPTY_ATTRIBUTES->value => $removeEmptyAttributes,
+            Rule::REMOVE_EMPTY_GROUPS->value => $removeEmptyGroups,
+            Rule::REMOVE_EMPTY_TEXT_ELEMENTS->value => $removeEmptyTextAttributes,
+            Rule::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE->value => $removeEnableBackgroundAttribute,
+            Rule::REMOVE_INKSCAPE_FOOTPRINTS->value => $removeInkscapeFootprints,
+            Rule::REMOVE_INVISIBLE_CHARACTERS->value => $removeInvisibleCharacters,
+            Rule::REMOVE_METADATA->value => $removeMetadata,
+            Rule::REMOVE_TITLE_AND_DESC->value => $removeTitleAndDesc,
+            Rule::REMOVE_UNNECESSARY_WHITESPACE->value => $removeUnnecessaryWhitespace,
+            Rule::REMOVE_UNSAFE_ELEMENTS->value => $removeUnsafeElements,
+            Rule::REMOVE_UNUSED_MASKS->value => $removeUnusedMasks,
+            Rule::REMOVE_UNUSED_NAMESPACES->value => $removeUnusedNamespaces,
+            Rule::REMOVE_WIDTH_HEIGHT_ATTRIBUTES->value => $removeWidthHeightAttributes,
+            Rule::SORT_ATTRIBUTES->value => $sortAttributes,
         ];
 
         $this->svgOptimizer->configureRules($rules);
+
+        return $this;
+    }
+
+    /**
+     * Enables all available optimization rules for the SVG optimizer.
+     *
+     * This method will activate every rule that is either non-risky or, if risky rules
+     * are allowed, will also include risky rules. It provides a convenient way to ensure
+     * that the SVG content is fully optimized according to all applicable rules.
+     *
+     * @return $this The SvgOptimizerFacade instance
+     */
+    public function withAllRules(bool $withAllRules = true): self
+    {
+        if ($withAllRules) {
+            $rules = array_fill_keys(
+                array_map(
+                    static fn (Rule $rule) => $rule->value,
+                    array_filter(
+                        Rule::cases(),
+                        fn (Rule $rule): bool => !$rule->value::isRisky() || $this->svgOptimizer->isRiskyRulesAllowed()
+                    )
+                ),
+                true
+            );
+
+            $this->svgOptimizer->configureRules($rules);
+        }
 
         return $this;
     }
@@ -262,13 +262,13 @@ final readonly class SvgOptimizerFacade
      * Risky rules can potentially change the visual rendering of the SVG.
      * Use with caution.
      *
-     * @param bool $allow Whether to allow risky rules (default: true)
+     * @param bool $allowRisky Whether to allow risky rules (default: true)
      *
      * @return $this The SvgOptimizerFacade instance
      */
-    public function allowRisky(bool $allow = true): self
+    public function allowRisky(bool $allowRisky = true): self
     {
-        if ($allow) {
+        if ($allowRisky) {
             $this->svgOptimizer->allowRisky();
         }
 

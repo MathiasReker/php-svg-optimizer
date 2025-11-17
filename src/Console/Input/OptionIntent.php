@@ -104,4 +104,14 @@ final readonly class OptionIntent
     {
         return $this->argumentParser->hasOption(Option::ALLOW_RISKY);
     }
+
+    /**
+     * Checks whether the command should apply all available optimization rules.
+     *
+     * @return bool true if all optimization rules should be applied; false otherwise
+     */
+    public function withAllRules(): bool
+    {
+        return $this->argumentParser->hasOption(Option::WITH_ALL_RULES);
+    }
 }
