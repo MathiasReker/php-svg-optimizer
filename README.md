@@ -25,7 +25,7 @@ performance.
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^7.4    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^8.0    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
@@ -180,8 +180,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 
 try {
     $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
-        ->optimize()
         ->withAllRules()
+        ->optimize()
         ->saveToFile('path/to/output.svg');
 
     $metaData = $svgOptimizer->getMetaData();
