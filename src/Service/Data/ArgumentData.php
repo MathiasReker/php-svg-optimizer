@@ -61,8 +61,9 @@ final class ArgumentData
         $this->examples = [
             new ExampleCommandValueObject(
                 \sprintf(
-                    '%s %s %s /path/to/svgs',
+                    '%s %s %s %s /path/to/svgs',
                     self::BINARY_PATH,
+                    Option::WITH_ALL_RULES->getFull(),
                     Option::DRY_RUN->getFull(),
                     Command::PROCESS->value,
                 )
@@ -77,16 +78,18 @@ final class ArgumentData
             ),
             new ExampleCommandValueObject(
                 \sprintf(
-                    '%s %s %s /path/to/file.svg',
+                    '%s %s %s %s /path/to/file.svg',
                     self::BINARY_PATH,
                     Option::QUIET->getFull(),
+                    Option::WITH_ALL_RULES->getFull(),
                     Command::PROCESS->value,
                 )
             ),
             new ExampleCommandValueObject(
                 \sprintf(
-                    '%s %s %s /path/to/file.svg',
+                    '%s %s %s %s /path/to/file.svg',
                     self::BINARY_PATH,
+                    Option::WITH_ALL_RULES->getFull(),
                     Option::ALLOW_RISKY->getFull(),
                     Command::PROCESS->value,
                 )

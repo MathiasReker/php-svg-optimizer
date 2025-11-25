@@ -74,10 +74,10 @@ Process                   Provide a list of directories or files to process.
 #### Examples:
 
 ```bash
-vendor/bin/svg-optimizer --dry-run process /path/to/svgs
+vendor/bin/svg-optimizer --dry-run --with--all-rules process /path/to/svgs
 vendor/bin/svg-optimizer --config=config.json process /path/to/file.svg
 vendor/bin/svg-optimizer --config='{"removeUnsafeElements": true}' --allow-risky process /path/to/file.svg
-vendor/bin/svg-optimizer --quiet process /path/to/file.svg
+vendor/bin/svg-optimizer --quiet --with--all-rules process /path/to/file.svg
 vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
 ```
 
@@ -501,7 +501,7 @@ $svgOptimizer->withRules(
 
 #### `withAllRules` Method
 
-Enable all non-risky rules.
+Enable all rules. Risky rules remain disabled unless `allowRisky()` is explicitly set.
 
 ```php
 $svgOptimizer->withAllRules();
@@ -591,8 +591,7 @@ The library implements the Strategy Pattern, where strategies are encapsulated a
 ### 1. **Create the Rule**
 
 Create a new **final readonly class** in the `/src/Service/Rule` directory and implement
-the `SvgOptimizerRuleInterface`. This
-interface will define the logic for your rule.
+the `SvgOptimizerRuleInterface`. This interface will define the logic for your rule.
 
 ### 2. **Write Tests**
 
@@ -601,8 +600,8 @@ various scenarios to verify the correct behavior and edge cases for your rule.
 
 ### 3. **Integrate the Rule**
 
-- **Register the rule** in the SVG optimizer builder located at `/src/Service/Facade/SvgOptimizerFacade.php`.
 - **Add your rule to the rule enum** in `/src/Type/Rule.php`.
+- **Register the rule** in the SVG optimizer builder located at `/src/Service/Facade/SvgOptimizerFacade.php`.
 
 ### 4. **Update Documentation**
 

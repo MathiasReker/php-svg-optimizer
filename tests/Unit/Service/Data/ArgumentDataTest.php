@@ -40,7 +40,7 @@ final class ArgumentDataTest extends TestCase
      * An example command that should be present in the argument data.
      * This is used to verify that the example commands are correctly set up.
      */
-    private const string EXAMPLE_COMMAND = 'vendor/bin/svg-optimizer --dry-run process /path/to/svgs';
+    private const string EXAMPLE_COMMAND = 'vendor/bin/svg-optimizer --with-all-rules --dry-run process /path/to/svgs';
 
     private ArgumentData $argumentData;
 
@@ -136,7 +136,7 @@ final class ArgumentDataTest extends TestCase
 
         self::assertStringContainsString(self::EXAMPLE_COMMAND, $examples[0]->getCommand());
         self::assertStringContainsString('vendor/bin/svg-optimizer --config=config.json process /path/to/file.svg', $examples[1]->getCommand());
-        self::assertStringContainsString('vendor/bin/svg-optimizer --quiet process /path/to/file.svg', $examples[2]->getCommand());
+        self::assertStringContainsString('vendor/bin/svg-optimizer --quiet --with-all-rules process /path/to/file.svg', $examples[2]->getCommand());
     }
 
     public function testGetOptionsContainsAllDefinedOptions(): void
@@ -218,7 +218,7 @@ final class ArgumentDataTest extends TestCase
 
         self::assertStringContainsString('--dry-run process /path/to/svgs', $examples[0]->getCommand());
         self::assertStringContainsString('--config=config.json process /path/to/file.svg', $examples[1]->getCommand());
-        self::assertStringContainsString('--quiet process /path/to/file.svg', $examples[2]->getCommand());
+        self::assertStringContainsString('--quiet --with-all-rules process /path/to/file.svg', $examples[2]->getCommand());
         self::assertStringContainsString('--allow-risky process /path/to/file.svg', $examples[3]->getCommand());
         self::assertStringContainsString('--with-all-rules process /path/to/file.svg', $examples[4]->getCommand());
     }
