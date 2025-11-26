@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b39d041d60065f9051112c98b238b6ca",
+    "content-hash": "443ce37f0d9dcabc8560f05820759e74",
     "packages": [],
     "packages-dev": [
         {
@@ -7111,16 +7111,16 @@
         },
         {
             "name": "symplify/phpstan-rules",
-            "version": "14.8.3",
+            "version": "14.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symplify/phpstan-rules.git",
-                "reference": "c2311f1d964377b16110736734d73346121936d0"
+                "reference": "6d018ca88ef697f7c1baf7466811be11652c3e91"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/c2311f1d964377b16110736734d73346121936d0",
-                "reference": "c2311f1d964377b16110736734d73346121936d0",
+                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/6d018ca88ef697f7c1baf7466811be11652c3e91",
+                "reference": "6d018ca88ef697f7c1baf7466811be11652c3e91",
                 "shasum": ""
             },
             "require": {
@@ -7152,7 +7152,7 @@
             "description": "Set of Symplify rules for PHPStan",
             "support": {
                 "issues": "https://github.com/symplify/phpstan-rules/issues",
-                "source": "https://github.com/symplify/phpstan-rules/tree/14.8.3"
+                "source": "https://github.com/symplify/phpstan-rules/tree/14.9.0"
             },
             "funding": [
                 {
@@ -7164,7 +7164,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-13T10:15:25+00:00"
+            "time": "2025-11-26T13:04:37+00:00"
         },
         {
             "name": "thecodingmachine/safe",
@@ -7614,5 +7614,5 @@
     "platform-overrides": {
         "php": "8.3"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
