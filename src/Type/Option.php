@@ -17,11 +17,17 @@ namespace MathiasReker\PhpSvgOptimizer\Type;
 enum Option: string
 {
     case HELP = 'help';
+
     case CONFIG = 'config';
+
     case DRY_RUN = 'dry-run';
+
     case ALLOW_RISKY = 'allow-risky';
+
     case WITH_ALL_RULES = 'with-all-rules';
+
     case QUIET = 'quiet';
+
     case VERSION = 'version';
 
     /**

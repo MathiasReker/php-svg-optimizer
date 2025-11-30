@@ -49,30 +49,55 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 enum Rule: string
 {
     case CONVERT_COLORS_TO_HEX = ConvertColorsToHex::class;
+
     case CONVERT_CSS_CLASSES_TO_ATTRIBUTES = ConvertCssClassesToAttributes::class;
+
     case CONVERT_EMPTY_TAGS_TO_SELF_CLOSING = ConvertEmptyTagsToSelfClosing::class;
+
     case CONVERT_INLINE_STYLES_TO_ATTRIBUTES = ConvertInlineStylesToAttributes::class;
+
     case FLATTEN_GROUPS = FlattenGroups::class;
+
     case MINIFY_SVG_COORDINATES = MinifySvgCoordinates::class;
+
     case MINIFY_TRANSFORMATIONS = MinifyTransformations::class;
+
     case REMOVE_COMMENTS = RemoveComments::class;
+
     case REMOVE_DEFAULT_ATTRIBUTES = RemoveDefaultAttributes::class;
+
     case REMOVE_DEPRECATED_ATTRIBUTES = RemoveDeprecatedAttributes::class;
+
     case REMOVE_DOCTYPE = RemoveDoctype::class;
+
     case REMOVE_DUPLICATE_ELEMENTS = RemoveDuplicateElements::class;
+
     case REMOVE_ENABLE_BACKGROUND_ATTRIBUTE = RemoveEnableBackgroundAttribute::class;
+
     case REMOVE_EMPTY_GROUPS = RemoveEmptyGroups::class;
+
     case REMOVE_EMPTY_TEXT_ELEMENTS = RemoveEmptyTextElements::class;
+
     case REMOVE_EMPTY_ATTRIBUTES = RemoveEmptyAttributes::class;
+
     case REMOVE_INKSCAPE_FOOTPRINTS = RemoveInkscapeFootprints::class;
+
     case REMOVE_INVISIBLE_CHARACTERS = RemoveInvisibleCharacters::class;
+
     case REMOVE_METADATA = RemoveMetadata::class;
+
     case REMOVE_TITLE_AND_DESC = RemoveTitleAndDesc::class;
+
     case REMOVE_UNNECESSARY_WHITESPACE = RemoveUnnecessaryWhitespace::class;
+
     case REMOVE_UNSAFE_ELEMENTS = RemoveUnsafeElements::class;
+
     case REMOVE_UNUSED_MASKS = RemoveUnusedMasks::class;
+
     case REMOVE_UNUSED_NAMESPACES = RemoveUnusedNamespaces::class;
+
     case REMOVE_WIDTH_HEIGHT_ATTRIBUTES = RemoveWidthHeightAttributes::class;
+
     case SORT_ATTRIBUTES = SortAttributes::class;
 
     public function configKey(): string
