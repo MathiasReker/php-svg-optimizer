@@ -116,7 +116,7 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
 
 ## Package
 
-> To follow best practices in production environments, it is recommended to catch exceptions when using this library.
+> It is recommended to catch exceptions when using this library.
 > Doing so ensures that your application can handle unexpected input gracefully and avoid unintended crashes.
 
 ### Example specifying rules
