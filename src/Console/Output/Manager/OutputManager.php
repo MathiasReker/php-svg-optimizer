@@ -114,6 +114,7 @@ final readonly class OutputManager
         int $optimizedSize,
         int $savedBytes,
         float $savedPercentage,
+        float $optimizationTime,
     ): void {
         $this->stream->writeln('');
         $this->stream->writeln('Summary:');
@@ -121,5 +122,6 @@ final readonly class OutputManager
         $this->stream->writeln(\sprintf('  Original total size:  %s', ByteFormatter::formatBytes($originalSize)));
         $this->stream->writeln(\sprintf('  Optimized total size: %s', ByteFormatter::formatBytes($optimizedSize)));
         $this->stream->writeln(\sprintf('  Space saved:          %s (%.2f%%)', ByteFormatter::formatBytes($savedBytes), $savedPercentage));
+        $this->stream->writeln(\sprintf('  Optimization time:    %.4f s', $optimizationTime));
     }
 }

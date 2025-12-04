@@ -137,7 +137,8 @@ final class SvgOptimizerTest extends TestCase
                     100,
                     50,
                     50,
-                    50.0
+                    50.0,
+                    0.001,
                 );
             }
 
@@ -168,6 +169,7 @@ final class SvgOptimizerTest extends TestCase
 
         self::assertSame(100, $metaDataValueObject->getOriginalSize());
         self::assertSame(50, $metaDataValueObject->getOptimizedSize());
+        self::assertSame(0.001, $metaDataValueObject->getOptimizationTime());
     }
 
     public function testSaveToFileReturnsSelf(): void
@@ -304,7 +306,8 @@ final class SvgOptimizerTest extends TestCase
                     100,
                     50,
                     50,
-                    50.0
+                    50.0,
+                    0.001,
                 );
             }
 

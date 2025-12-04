@@ -201,9 +201,7 @@ final class SvgOptimizer
 
             if ($rule->shouldCheckSize()) {
                 $newContent = $this->svgProvider->optimize($domDocument)->getOutputContent();
-                if (mb_strlen($newContent, '8bit') < mb_strlen($originalContent, '8bit')) {
-                    $originalContent = $newContent;
-                } else {
+                if (mb_strlen($newContent, '8bit') > mb_strlen($originalContent, '8bit')) {
                     // Revert DOM if it didn't improve size
                     $domDocument->loadXML($originalContent);
                 }

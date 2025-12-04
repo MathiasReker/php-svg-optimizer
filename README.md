@@ -25,7 +25,7 @@ performance.
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^8.0    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^8.1    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
@@ -569,6 +569,14 @@ Returns the percentage of bytes saved by the optimization process.
 
 ```php
 $svgOptimizer->getMetaData()->getSavedPercentage();
+```
+
+#### `getOptimizedTime` Method
+
+Returns the time taken to optimize the SVG file, in seconds.
+
+```php
+$svgOptimizer->getMetaData()->getOptimizedTime();
 ```
 
 ### Roadmap

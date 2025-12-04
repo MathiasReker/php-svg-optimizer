@@ -29,6 +29,8 @@ final class MetaDataValueObjectTest extends TestCase
 
     private const float SAVED_PERCENTAGE = 20.0;
 
+    private const float OPTIMIZATION_TIME = 0.001;
+
     private MetaDataValueObject $metaDataValueObject;
 
     public function testGetOriginalSize(): void
@@ -53,7 +55,7 @@ final class MetaDataValueObjectTest extends TestCase
 
     public function testZeroAndNegativeValues(): void
     {
-        $metaDataValueObject = new MetaDataValueObject(0, -1, -1, -100.0);
+        $metaDataValueObject = new MetaDataValueObject(0, -1, -1, -100.0, -0.1);
         self::assertSame(0, $metaDataValueObject->getOriginalSize());
         self::assertSame(-1, $metaDataValueObject->getOptimizedSize());
         self::assertSame(-1, $metaDataValueObject->getSavedBytes());
@@ -62,7 +64,7 @@ final class MetaDataValueObjectTest extends TestCase
 
     public function testLargeValues(): void
     {
-        $metaDataValueObject = new MetaDataValueObject(\PHP_INT_MAX, \PHP_INT_MAX - 1, 1, 0.000_000_1);
+        $metaDataValueObject = new MetaDataValueObject(\PHP_INT_MAX, \PHP_INT_MAX - 1, 1, 0.000_000_1, \PHP_FLOAT_MAX);
         self::assertSame(\PHP_INT_MAX, $metaDataValueObject->getOriginalSize());
         self::assertSame(\PHP_INT_MAX - 1, $metaDataValueObject->getOptimizedSize());
         self::assertSame(1, $metaDataValueObject->getSavedBytes());
@@ -71,11 +73,71 @@ final class MetaDataValueObjectTest extends TestCase
 
     public function testBoundaryValues(): void
     {
-        $metaDataValueObject = new MetaDataValueObject(\PHP_INT_MIN, \PHP_INT_MAX, 0, 0.0);
+        $metaDataValueObject = new MetaDataValueObject(\PHP_INT_MIN, \PHP_INT_MAX, 0, 0.0, 0.0);
         self::assertSame(\PHP_INT_MIN, $metaDataValueObject->getOriginalSize());
         self::assertSame(\PHP_INT_MAX, $metaDataValueObject->getOptimizedSize());
         self::assertSame(0, $metaDataValueObject->getSavedBytes());
         self::assertEqualsWithDelta(0.0, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+    }
+
+    public function testGetOptimizedTime(): void
+    {
+        self::assertEqualsWithDelta(self::OPTIMIZATION_TIME, $this->metaDataValueObject->getOptimizationTime(), 0.000_001);
+    }
+
+    public function testZeroOptimizedTime(): void
+    {
+        $metaDataValueObject = new MetaDataValueObject(
+            self::ORIGINAL_SIZE,
+            self::OPTIMIZED_SIZE,
+            self::SAVED_BYTES,
+            self::SAVED_PERCENTAGE,
+            0.0,
+        );
+
+        self::assertSame(0.0, $metaDataValueObject->getOptimizationTime());
+    }
+
+    public function testSmallOptimizedTime(): void
+    {
+        $smallTime = 0.000_001;
+        $metaDataValueObject = new MetaDataValueObject(
+            self::ORIGINAL_SIZE,
+            self::OPTIMIZED_SIZE,
+            self::SAVED_BYTES,
+            self::SAVED_PERCENTAGE,
+            $smallTime,
+        );
+
+        self::assertEqualsWithDelta($smallTime, $metaDataValueObject->getOptimizationTime(), 0.000_000_1);
+    }
+
+    public function testLargeOptimizedTime(): void
+    {
+        $largeTime = 12_345.678_9;
+        $metaDataValueObject = new MetaDataValueObject(
+            self::ORIGINAL_SIZE,
+            self::OPTIMIZED_SIZE,
+            self::SAVED_BYTES,
+            self::SAVED_PERCENTAGE,
+            $largeTime,
+        );
+
+        self::assertEqualsWithDelta($largeTime, $metaDataValueObject->getOptimizationTime(), 0.000_001);
+    }
+
+    public function testNegativeOptimizedTime(): void
+    {
+        $negativeTime = -0.5;
+        $metaDataValueObject = new MetaDataValueObject(
+            self::ORIGINAL_SIZE,
+            self::OPTIMIZED_SIZE,
+            self::SAVED_BYTES,
+            self::SAVED_PERCENTAGE,
+            $negativeTime,
+        );
+
+        self::assertEqualsWithDelta($negativeTime, $metaDataValueObject->getOptimizationTime(), 0.000_001);
     }
 
     #[\Override]
@@ -85,7 +147,8 @@ final class MetaDataValueObjectTest extends TestCase
             self::ORIGINAL_SIZE,
             self::OPTIMIZED_SIZE,
             self::SAVED_BYTES,
-            self::SAVED_PERCENTAGE
+            self::SAVED_PERCENTAGE,
+            self::OPTIMIZATION_TIME,
         );
     }
 }

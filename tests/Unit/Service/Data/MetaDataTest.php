@@ -36,6 +36,12 @@ final class MetaDataTest extends TestCase
     private const int OPTIMIZED_SIZE = 800;
 
     /**
+     * The time taken to optimize the SVG file in seconds.
+     * Used for testing purposes in unit tests.
+     */
+    private const float OPTIMIZED_TIME = 0.001;
+
+    /**
      * The size of the SVG file after optimization in bytes.
      * This is used to test the MetaData's methods.
      */
@@ -61,7 +67,7 @@ final class MetaDataTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Original size must be greater than 0. Given: 0');
 
-        new MetaData(self::ZERO_SIZE, self::OPTIMIZED_SIZE);
+        new MetaData(self::ZERO_SIZE, self::OPTIMIZED_SIZE, self::OPTIMIZED_TIME);
     }
 
     /**
@@ -69,12 +75,13 @@ final class MetaDataTest extends TestCase
      */
     public function testToValueObject(): void
     {
-        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE);
+        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, self::OPTIMIZED_TIME);
         $metaDataValueObject = $metaData->toValueObject();
 
         self::assertSame(self::ORIGINAL_SIZE, $metaDataValueObject->getOriginalSize());
         self::assertSame(self::OPTIMIZED_SIZE, $metaDataValueObject->getOptimizedSize());
         self::assertSame(self::EXPECTED_SAVED_BYTES, $metaDataValueObject->getSavedBytes());
+        self::assertSame(self::OPTIMIZED_TIME, $metaDataValueObject->getOptimizationTime());
         self::assertEqualsWithDelta(self::EXPECTED_SAVED_PERCENTAGE, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
@@ -84,7 +91,7 @@ final class MetaDataTest extends TestCase
      */
     public function testCalculateSavedBytes(): void
     {
-        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE);
+        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, self::OPTIMIZED_TIME);
 
         $reflectionClass = new \ReflectionClass($metaData);
         $reflectionMethod = $reflectionClass->getMethod('calculateSavedBytes');
@@ -100,7 +107,7 @@ final class MetaDataTest extends TestCase
      */
     public function testCalculateSavedPercentage(): void
     {
-        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE);
+        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, self::OPTIMIZED_TIME);
 
         $reflectionClass = new \ReflectionClass($metaData);
         $reflectionMethod = $reflectionClass->getMethod('calculateSavedPercentage');
@@ -108,5 +115,55 @@ final class MetaDataTest extends TestCase
         $savedPercentage = $reflectionMethod->invoke($metaData);
 
         self::assertEqualsWithDelta(self::EXPECTED_SAVED_PERCENTAGE, $savedPercentage, \PHP_FLOAT_EPSILON);
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testOptimizationTimeIsCorrectlyReturned(): void
+    {
+        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, self::OPTIMIZED_TIME);
+        $metaDataValueObject = $metaData->toValueObject();
+
+        self::assertSame(
+            self::OPTIMIZED_TIME,
+            $metaDataValueObject->getOptimizationTime(),
+            'Optimization time should match the value passed to MetaData.'
+        );
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testZeroOptimizationTime(): void
+    {
+        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, 0.0);
+        $metaDataValueObject = $metaData->toValueObject();
+
+        self::assertSame(0.0, $metaDataValueObject->getOptimizationTime());
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testSmallOptimizationTime(): void
+    {
+        $smallTime = 0.000_001;
+        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, $smallTime);
+        $metaDataValueObject = $metaData->toValueObject();
+
+        self::assertEqualsWithDelta($smallTime, $metaDataValueObject->getOptimizationTime(), 0.000_000_1);
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testLargeOptimizationTime(): void
+    {
+        $largeTime = 12_345.678_9;
+        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, $largeTime);
+        $metaDataValueObject = $metaData->toValueObject();
+
+        self::assertEqualsWithDelta($largeTime, $metaDataValueObject->getOptimizationTime(), 0.000_001);
     }
 }

@@ -35,8 +35,8 @@ final class MetaDataAggregatorTest extends TestCase
     {
         $metaDataAggregator = new MetaDataAggregator();
 
-        $metaDataAggregator->addFileData(1_000, 800);
-        $metaDataAggregator->addFileData(500, 400);
+        $metaDataAggregator->addFileData(1_000, 800, 0.1);
+        $metaDataAggregator->addFileData(500, 400, 0.1);
 
         self::assertSame(1_500, $metaDataAggregator->getTotalOriginalSize());
         self::assertSame(1_200, $metaDataAggregator->getTotalOptimizedSize());
@@ -57,10 +57,10 @@ final class MetaDataAggregatorTest extends TestCase
 
         self::assertSame(0, $metaDataAggregator->getOptimizedFileCount());
 
-        $metaDataAggregator->addFileData(1_000, 800);
+        $metaDataAggregator->addFileData(1_000, 800, 0.1);
         self::assertSame(1, $metaDataAggregator->getOptimizedFileCount());
 
-        $metaDataAggregator->addFileData(500, 400);
+        $metaDataAggregator->addFileData(500, 400, 0.1);
         self::assertSame(2, $metaDataAggregator->getOptimizedFileCount());
     }
 
@@ -73,7 +73,7 @@ final class MetaDataAggregatorTest extends TestCase
     public function testHasOptimizedFilesReturnsTrueAfterAddingFileData(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
-        $metaDataAggregator->addFileData(1_000, 800);
+        $metaDataAggregator->addFileData(1_000, 800, 0.1);
 
         self::assertTrue($metaDataAggregator->hasOptimizedFiles());
     }
@@ -81,7 +81,7 @@ final class MetaDataAggregatorTest extends TestCase
     public function testNoSavingsResultsInZeroSavedBytesAndPercentage(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
-        $metaDataAggregator->addFileData(500, 500);
+        $metaDataAggregator->addFileData(500, 500, 0.1);
 
         self::assertSame(0, $metaDataAggregator->getSavedBytes());
         self::assertSame(0.0, $metaDataAggregator->getSavedPercentage());
@@ -90,8 +90,8 @@ final class MetaDataAggregatorTest extends TestCase
     public function testMultipleFilesCalculateSavedPercentageCorrectly(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
-        $metaDataAggregator->addFileData(1_000, 800); // 200 saved
-        $metaDataAggregator->addFileData(2_000, 1_500); // 500 saved
+        $metaDataAggregator->addFileData(1_000, 800, 0.1); // 200 saved
+        $metaDataAggregator->addFileData(2_000, 1_500, 0.1); // 500 saved
 
         self::assertSame(3_000, $metaDataAggregator->getTotalOriginalSize());
         self::assertSame(2_300, $metaDataAggregator->getTotalOptimizedSize());
@@ -102,10 +102,53 @@ final class MetaDataAggregatorTest extends TestCase
     public function testAddFileDataWithNegativeValues(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
-        $metaDataAggregator->addFileData(-100, -50);
+        $metaDataAggregator->addFileData(-100, -50, -0.1);
 
         self::assertSame(-100, $metaDataAggregator->getTotalOriginalSize());
         self::assertSame(-50, $metaDataAggregator->getTotalOptimizedSize());
         self::assertSame(-50, $metaDataAggregator->getSavedBytes());
+    }
+
+    public function testInitialOptimizationTimeIsZero(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+        self::assertSame(0.0, $metaDataAggregator->getOptimizationTime());
+    }
+
+    public function testAddFileDataAccumulatesOptimizationTime(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+
+        $metaDataAggregator->addFileData(1_000, 800, 0.123_456);
+        $metaDataAggregator->addFileData(500, 400, 0.654_321);
+
+        self::assertSame(0.777_777, $metaDataAggregator->getOptimizationTime());
+    }
+
+    public function testAddFileDataHandlesZeroOptimizationTime(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+
+        $metaDataAggregator->addFileData(1_000, 800, 0.0);
+        self::assertSame(0.0, $metaDataAggregator->getOptimizationTime());
+    }
+
+    public function testMultipleFilesSumOptimizationTimeCorrectly(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+
+        $metaDataAggregator->addFileData(1_000, 900, 0.1);
+        $metaDataAggregator->addFileData(500, 400, 0.2);
+        $metaDataAggregator->addFileData(200, 150, 0.05);
+
+        self::assertSame(0.35, round($metaDataAggregator->getOptimizationTime(), 2));
+    }
+
+    public function testNegativeOptimizationTime(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+
+        $metaDataAggregator->addFileData(1_000, 900, -0.1);
+        self::assertSame(-0.1, $metaDataAggregator->getOptimizationTime());
     }
 }

@@ -32,14 +32,20 @@ final class MetaDataAggregator
     private int $optimizedFileCount = 0;
 
     /**
+     * The total optimization time for all SVG files processed, in seconds.
+     */
+    private float $totalOptimizationTime = 0.0;
+
+    /**
      * Constructor for MetaDataAggregator.
      *
      * Initializes the total sizes to zero.
      */
-    public function addFileData(int $originalSize, int $optimizedSize): void
+    public function addFileData(int $originalSize, int $optimizedSize, float $optimizationTime): void
     {
         $this->totalOriginalSize += $originalSize;
         $this->totalOptimizedSize += $optimizedSize;
+        $this->totalOptimizationTime += $optimizationTime;
         ++$this->optimizedFileCount;
     }
 
@@ -85,6 +91,16 @@ final class MetaDataAggregator
     public function getSavedBytes(): int
     {
         return $this->totalOriginalSize - $this->totalOptimizedSize;
+    }
+
+    /**
+     * Returns the total optimization time for all SVG files processed, in seconds.
+     *
+     * @return float Time in seconds
+     */
+    public function getOptimizationTime(): float
+    {
+        return $this->totalOptimizationTime;
     }
 
     /**

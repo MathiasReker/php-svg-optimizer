@@ -107,7 +107,11 @@ final readonly class SvgFileProcessor
         }
 
         $metaDataValueObject = $svgOptimizerFacade->getMetaData();
-        $this->metaDataAggregator->addFileData($metaDataValueObject->getOriginalSize(), $metaDataValueObject->getOptimizedSize());
+        $this->metaDataAggregator->addFileData(
+            $metaDataValueObject->getOriginalSize(),
+            $metaDataValueObject->getOptimizedSize(),
+            $metaDataValueObject->getOptimizationTime(),
+        );
         $this->outputManager->printOptimizationResult($filePath, $metaDataValueObject->getSavedPercentage());
     }
 

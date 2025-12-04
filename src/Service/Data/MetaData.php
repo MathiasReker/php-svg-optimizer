@@ -21,14 +21,16 @@ final readonly class MetaData
     /**
      * Constructor for MetaData.
      *
-     * @param int $originalSize  The original size of the SVG file in bytes
-     * @param int $optimizedSize The optimized size of the SVG file in bytes
+     * @param int   $originalSize     The original size of the SVG file in bytes
+     * @param int   $optimizedSize    The optimized size of the SVG file in bytes
+     * @param float $optimizationTime The time it took to optimize the SVG file in seconds
      *
      * @throws \InvalidArgumentException If the original size is less than or equal to 0
      */
     public function __construct(
         private int $originalSize,
         private int $optimizedSize,
+        private float $optimizationTime,
     ) {
         if ($this->originalSize <= 0) {
             throw new \InvalidArgumentException(\sprintf('Original size must be greater than 0. Given: %d', $this->originalSize));
@@ -46,7 +48,8 @@ final readonly class MetaData
             $this->originalSize,
             $this->optimizedSize,
             $this->calculateSavedBytes(),
-            $this->calculateSavedPercentage()
+            $this->calculateSavedPercentage(),
+            $this->optimizationTime,
         );
     }
 

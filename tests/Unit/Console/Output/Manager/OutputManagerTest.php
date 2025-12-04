@@ -135,7 +135,8 @@ final class OutputManagerTest extends TestCase
             10_240,
             5_120,
             5_120,
-            50.0
+            50.0,
+            0.001,
         );
         $output = $this->memoryStream->getContent();
 
@@ -145,6 +146,7 @@ final class OutputManagerTest extends TestCase
         self::assertStringContainsString('Optimized total size:', $output);
         self::assertStringContainsString('Space saved:', $output);
         self::assertStringContainsString('(50.00%)', $output);
+        self::assertStringContainsString('Optimization time:', $output);
     }
 
     /**

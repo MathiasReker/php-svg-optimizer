@@ -19,16 +19,18 @@ final readonly class MetaDataValueObject
     /**
      * Constructor for MetaDataValueObject.
      *
-     * @param int   $originalSize    The original size of the SVG file in bytes
-     * @param int   $optimizedSize   The optimized size of the SVG file in bytes
-     * @param int   $savedBytes      The number of bytes saved through optimization
-     * @param float $savedPercentage The percentage of bytes saved through optimization
+     * @param int   $originalSize     The original size of the SVG file in bytes
+     * @param int   $optimizedSize    The optimized size of the SVG file in bytes
+     * @param int   $savedBytes       The number of bytes saved through optimization
+     * @param float $savedPercentage  The percentage of bytes saved through optimization
+     * @param float $optimizationTime The time it took to optimize the SVG file in seconds
      */
     public function __construct(
         private int $originalSize,
         private int $optimizedSize,
         private int $savedBytes,
         private float $savedPercentage,
+        private float $optimizationTime,
     ) {}
 
     /**
@@ -69,5 +71,15 @@ final readonly class MetaDataValueObject
     public function getSavedPercentage(): float
     {
         return $this->savedPercentage;
+    }
+
+    /**
+     * Get the optimization time.
+     *
+     * @return float The time it took to optimize the SVG file in seconds
+     */
+    public function getOptimizationTime(): float
+    {
+        return $this->optimizationTime;
     }
 }

@@ -33,9 +33,9 @@ return (new PhpCsFixer\Config())
         ],
 
         // Migration Rules
-        '@PHP83Migration' => true,
-        '@PHP82Migration:risky' => true,
-        '@PHPUnit100Migration:risky' => true,
+        '@PHP8x3Migration' => true,
+        '@PHP8x2Migration:risky' => true,
+        '@PHPUnit10x0Migration:risky' => true,
 
         // Doctrine Rules
         '@DoctrineAnnotation' => true,
@@ -64,7 +64,7 @@ return (new PhpCsFixer\Config())
         'no_useless_printf' => true,
 
         // PER-CS3.0 Rules
-        '@PER-CS3.0:risky' => true,
+        '@PER-CS3x0:risky' => true,
 
         // PHP-CS-Fixer Rules
         '@PhpCsFixer' => true,

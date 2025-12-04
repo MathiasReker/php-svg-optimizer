@@ -117,6 +117,7 @@ final readonly class Command implements CommandInterface
             $this->metaDataAggregator->getTotalOptimizedSize(),
             $this->metaDataAggregator->getSavedBytes(),
             $this->metaDataAggregator->getSavedPercentage(),
+            $this->metaDataAggregator->getOptimizationTime(),
         );
     }
 }
