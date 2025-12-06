@@ -133,7 +133,7 @@ jobs:
         with:
           php-version: '8.5'
 
-      - run: composer install --no-dev --optimize-autouloader --no-interaction --no-progress
+      - run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
       - run: php vendor/bin/svg-optimizer -a -q process /path/to/svgs
 ```
