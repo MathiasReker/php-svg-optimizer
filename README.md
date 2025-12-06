@@ -114,6 +114,29 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
 }
 ```
 
+### Example Workflow for GitHub Actions
+
+```bash
+name: Optimize SVGs
+
+on: [push, pull_request]
+
+jobs:
+  run-optimizer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+
+      - run: composer install --no-dev --optimize-autouloader --no-interaction --no-progress
+
+      - run: php vendor/bin/svg-optimizer -a -q process /path/to/svgs
+```
+
 ## Package
 
 > It is recommended to catch exceptions when using this library.
@@ -190,6 +213,7 @@ try {
     echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
     echo sprintf('Size reduction: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
     echo sprintf('Reduction percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
+    echo sprintf('Processing time: %s seconds%s', $metaData->getOptimizationTime(), \PHP_EOL);
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
@@ -220,6 +244,7 @@ try {
     echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
     echo sprintf('Size reduction: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
     echo sprintf('Reduction percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
+    echo sprintf('Processing time: %s seconds%s', $metaData->getOptimizationTime(), \PHP_EOL);
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
@@ -249,6 +274,7 @@ try {
     echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
     echo sprintf('Size reduction: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
     echo sprintf('Reduction percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
+    echo sprintf('Processing time: %s seconds%s', $metaData->getOptimizationTime(), \PHP_EOL);
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
@@ -283,6 +309,7 @@ try {
     echo sprintf('Original size: %d bytes%s', $metaData->getOriginalSize(), \PHP_EOL);
     echo sprintf('Size reduction: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
     echo sprintf('Reduction percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
+    echo sprintf('Processing time: %s seconds%s', $metaData->getOptimizationTime(), \PHP_EOL);
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }

@@ -22,4 +22,4 @@ COLOR="red"
 curl -s -o dev/artifacts/coverage.svg \
   "https://img.shields.io/badge/code_coverage-${PERCENT_INT}%25-${COLOR}?style=flat"
 
-php bin/svg-optimizer -q process dev/artifacts
+php bin/svg-optimizer -a -q process dev/artifacts

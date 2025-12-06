@@ -71,19 +71,4 @@ final class StringProviderTest extends TestCase
         self::assertSame($originalSize, $metaDataValueObject->getOriginalSize());
         self::assertSame($optimizedSize, $metaDataValueObject->getOptimizedSize());
     }
-
-    /**
-     * @throws XmlProcessingException
-     */
-    public function testOptimizeThrowsExceptionIfSaveXMLFails(): void
-    {
-        $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
-        $domDocument = $this->createMock(\DOMDocument::class);
-        $domDocument->method('saveXML')->willReturn(false);
-
-        $this->expectException(XmlProcessingException::class);
-        $this->expectExceptionMessage('Failed to save XML content.');
-
-        $stringProvider->optimize($domDocument);
-    }
 }

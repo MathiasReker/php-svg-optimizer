@@ -97,4 +97,55 @@ final class OptionTest extends TestCase
         yield [Option::QUIET, 'quiet'];
         yield [Option::VERSION, 'version'];
     }
+
+    public function testShorthandValues(): void
+    {
+        self::assertSame('-h', Option::HELP->getShorthand());
+        self::assertSame('-c', Option::CONFIG->getShorthand());
+        self::assertSame('-d', Option::DRY_RUN->getShorthand());
+        self::assertSame('-r', Option::ALLOW_RISKY->getShorthand());
+        self::assertSame('-a', Option::WITH_ALL_RULES->getShorthand());
+        self::assertSame('-q', Option::QUIET->getShorthand());
+        self::assertSame('-v', Option::VERSION->getShorthand());
+    }
+
+    public function testFullValues(): void
+    {
+        self::assertSame('--help', Option::HELP->getFull());
+        self::assertSame('--config', Option::CONFIG->getFull());
+        self::assertSame('--dry-run', Option::DRY_RUN->getFull());
+        self::assertSame('--allow-risky', Option::ALLOW_RISKY->getFull());
+        self::assertSame('--with-all-rules', Option::WITH_ALL_RULES->getFull());
+        self::assertSame('--quiet', Option::QUIET->getFull());
+        self::assertSame('--version', Option::VERSION->getFull());
+    }
+
+    public function testDescriptionValues(): void
+    {
+        self::assertSame('Display help for the command.', Option::HELP->getDescription());
+        self::assertSame(
+            'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.',
+            Option::CONFIG->getDescription()
+        );
+        self::assertSame(
+            'Only calculate potential savings without modifying the files.',
+            Option::DRY_RUN->getDescription()
+        );
+        self::assertSame(
+            'Explicitly enables risky rules, allowing them to be applied.',
+            Option::ALLOW_RISKY->getDescription()
+        );
+        self::assertSame(
+            'Enable all non-risky rules. Use --allow-risky to include risky rules as well.',
+            Option::WITH_ALL_RULES->getDescription()
+        );
+        self::assertSame(
+            'Suppress all output except errors.',
+            Option::QUIET->getDescription()
+        );
+        self::assertSame(
+            'Display the version of the library.',
+            Option::VERSION->getDescription()
+        );
+    }
 }

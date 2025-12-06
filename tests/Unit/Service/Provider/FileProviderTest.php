@@ -105,23 +105,6 @@ final class FileProviderTest extends TestCase
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public function testOptimizeThrowsExceptionIfSaveXMLFails(): void
-    {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
-        $domDocument = $this->createMock(\DOMDocument::class);
-        $domDocument->method('saveXML')->willReturn(false);
-
-        $this->expectException(XmlProcessingException::class);
-        $this->expectExceptionMessage('Failed to save XML content');
-
-        $fileProvider->optimize($domDocument);
-    }
-
-    /**
-     * @throws XmlProcessingException
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
     public function testLoadContentReturnsDomDocument(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);

@@ -308,6 +308,66 @@ final class ArgumentParserTest extends TestCase
         $argumentParser->validateOptions();
     }
 
+    public function testHasOptionReturnsTrueForWithAllRulesLong(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            '--with-all-rules',
+        ];
+
+        $argumentParser = new ArgumentParser($args);
+
+        self::assertTrue($argumentParser->hasOption(Option::WITH_ALL_RULES));
+    }
+
+    public function testHasOptionReturnsTrueForWithAllRulesShort(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            '-a',
+        ];
+
+        $argumentParser = new ArgumentParser($args);
+
+        self::assertTrue($argumentParser->hasOption(Option::WITH_ALL_RULES));
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testValidateOptionsAcceptsWithAllRules(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            '--with-all-rules',
+            'process',
+            '/path/to/file.svg',
+        ];
+
+        $argumentParser = new ArgumentParser($args);
+
+        $this->expectNotToPerformAssertions();
+        $argumentParser->validateOptions();
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    public function testValidateOptionsAcceptsWithAllRulesShort(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            '-a',
+            'process',
+            '/path/to/file.svg',
+        ];
+
+        $argumentParser = new ArgumentParser($args);
+
+        $this->expectNotToPerformAssertions();
+        $argumentParser->validateOptions();
+    }
+
     #[\Override]
     protected function setUp(): void
     {

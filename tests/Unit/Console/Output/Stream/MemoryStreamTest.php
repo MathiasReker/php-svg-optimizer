@@ -48,52 +48,6 @@ final class MemoryStreamTest extends TestCase
 
     /**
      * @throws \RuntimeException
-     * @throws \ReflectionException
-     */
-    public function testConstructorThrowsIfStreamFails(): void
-    {
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Unable to open memory stream.');
-
-        $mock = $this->getMockBuilder(MemoryStream::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods([])
-            ->getMock();
-
-        $reflectionClass = new \ReflectionClass(MemoryStream::class);
-        $reflectionProperty = $reflectionClass->getProperty('stream');
-        $reflectionProperty->setValue($mock, false);
-
-        throw new \RuntimeException('Unable to open memory stream.');
-    }
-
-    /**
-     * @throws \RuntimeException
-     */
-    public function testGetContentsThrowsIfReadingFails(): void
-    {
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Failed to read from memory stream.');
-
-        $mock = $this->getMockBuilder(MemoryStream::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getContent'])
-            ->getMock();
-
-        $mock->method('getContent')->willReturnCallback(
-            static function (): never {
-                /*
-                 * @phpstan-ignore-next-line
-                 */
-                throw new \RuntimeException('Failed to read from memory stream.');
-            }
-        );
-
-        $mock->getContent();
-    }
-
-    /**
-     * @throws \RuntimeException
      */
     public function testMultipleWritesAndGetContent(): void
     {
