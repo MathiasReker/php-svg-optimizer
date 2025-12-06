@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "42d71ba0620bcbfb929cea7b8fb69f86",
+    "content-hash": "7ef73dc85188e271c0b42b6f6212a78a",
     "packages": [],
     "packages-dev": [
         {
@@ -2577,16 +2577,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "12.5.0",
+            "version": "12.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "fef037fe50d20ce826cdbd741b7a2afcdec5f45b"
+                "reference": "e33a5132ea24119400f6ce5bce6665922e968bad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/fef037fe50d20ce826cdbd741b7a2afcdec5f45b",
-                "reference": "fef037fe50d20ce826cdbd741b7a2afcdec5f45b",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/e33a5132ea24119400f6ce5bce6665922e968bad",
+                "reference": "e33a5132ea24119400f6ce5bce6665922e968bad",
                 "shasum": ""
             },
             "require": {
@@ -2654,7 +2654,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.0"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.1"
             },
             "funding": [
                 {
@@ -2678,7 +2678,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-12-05T04:59:40+00:00"
+            "time": "2025-12-06T12:19:17+00:00"
         },
         {
             "name": "povils/phpmnd",
@@ -6204,16 +6204,16 @@
         },
         {
             "name": "symplify/phpstan-rules",
-            "version": "14.8.3",
+            "version": "14.9.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symplify/phpstan-rules.git",
-                "reference": "c2311f1d964377b16110736734d73346121936d0"
+                "reference": "3d9c46502852d89688242afef2621d005d9bccc2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/c2311f1d964377b16110736734d73346121936d0",
-                "reference": "c2311f1d964377b16110736734d73346121936d0",
+                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/3d9c46502852d89688242afef2621d005d9bccc2",
+                "reference": "3d9c46502852d89688242afef2621d005d9bccc2",
                 "shasum": ""
             },
             "require": {
@@ -6245,7 +6245,7 @@
             "description": "Set of Symplify rules for PHPStan",
             "support": {
                 "issues": "https://github.com/symplify/phpstan-rules/issues",
-                "source": "https://github.com/symplify/phpstan-rules/tree/14.8.3"
+                "source": "https://github.com/symplify/phpstan-rules/tree/14.9.3"
             },
             "funding": [
                 {
@@ -6257,7 +6257,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-13T10:15:25+00:00"
+            "time": "2025-12-02T13:11:47+00:00"
         },
         {
             "name": "theseer/tokenizer",

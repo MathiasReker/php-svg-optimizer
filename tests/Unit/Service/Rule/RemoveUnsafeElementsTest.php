@@ -37,13 +37,12 @@ final class RemoveUnsafeElementsTest extends TestCase
      * @throws SvgValidationException
      */
     #[DataProvider('provideOptimizeCases')]
-    public function testOptimize(string $inputSvg, string $expectedSvg): void
+    public function testOptimize(string $content, string $expectedSvg): void
     {
-        $svgOptimizer = new SvgOptimizer(new StringProvider($inputSvg));
+        $svgOptimizer = new SvgOptimizer(new StringProvider($content));
         $svgOptimizer->addRule(new RemoveUnsafeElements());
 
         $actual = $svgOptimizer->allowRisky()->optimize()->getContent();
-
         self::assertSame($expectedSvg, $actual);
     }
 

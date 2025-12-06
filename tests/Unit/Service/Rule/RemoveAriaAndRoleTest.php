@@ -13,8 +13,11 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveAriaAndRole;
+use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -25,6 +28,9 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RemoveAriaAndRole::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(StringProvider::class)]
+#[CoversClass(SvgValidator::class)]
+#[CoversClass(DomDocumentWrapper::class)]
+#[CoversClass(XmlFormatter::class)]
 final class RemoveAriaAndRoleTest extends TestCase
 {
     /**
@@ -140,7 +146,6 @@ final class RemoveAriaAndRoleTest extends TestCase
             '<svg><path d="M0 0L10 10"/></svg>',
         ];
 
-        // New test cases
         yield 'Removes aria-activedescendant attribute' => [
             '<svg aria-activedescendant="item1"><rect width="50" height="50"/></svg>',
             '<svg><rect width="50" height="50"/></svg>',

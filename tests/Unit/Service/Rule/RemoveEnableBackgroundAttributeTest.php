@@ -43,7 +43,6 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
         $svgOptimizer->addRule(new RemoveEnableBackgroundAttribute());
 
         $actual = $svgOptimizer->allowRisky()->optimize()->getContent();
-
         self::assertSame($expected, $actual);
     }
 

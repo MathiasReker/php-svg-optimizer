@@ -38,8 +38,8 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
     /**
      * @throws SvgValidationException
      */
-    #[DataProvider('provideOptimizeRemovesUnnecessaryWhitespaceCases')]
-    public function testOptimizeRemovesUnnecessaryWhitespace(string $content, string $expected): void
+    #[DataProvider('provideOptimizeCases')]
+    public function testOptimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
         $svgOptimizer->addRule(new RemoveUnnecessaryWhitespace());
@@ -51,7 +51,7 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideOptimizeRemovesUnnecessaryWhitespaceCases(): iterable
+    public static function provideOptimizeCases(): iterable
     {
         yield 'Removes Unnecessary Whitespace' => [
             <<<'XML'

@@ -22,8 +22,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Option::class)]
 final class OptionTest extends TestCase
 {
-    #[DataProvider('provideGetShorthandCases')]
-    public function testGetShorthand(Option $option, string $shorthand): void
+    #[DataProvider('provideOptimizeCases')]
+    public function testOptimize(Option $option, string $shorthand): void
     {
         self::assertSame($shorthand, $option->getShorthand());
     }
@@ -31,7 +31,7 @@ final class OptionTest extends TestCase
     /**
      * @return iterable<array{Option, string}>
      */
-    public static function provideGetShorthandCases(): iterable
+    public static function provideOptimizeCases(): iterable
     {
         yield [Option::HELP, '-h'];
         yield [Option::CONFIG, '-c'];

@@ -25,7 +25,7 @@ final readonly class RemoveAriaAndRole implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove all ARIA attributes and the 'role' attribute from the SVG elements.
+     * Remove all 'aria' attributes and the 'role' attribute from the SVG elements.
      *
      * @param \DOMDocument $domDocument The SVG \DOMDocument to optimize
      */
@@ -41,7 +41,8 @@ final readonly class RemoveAriaAndRole implements SvgOptimizerRuleInterface
             /** @var list<\DOMAttr> $attrs */
             $attrs = iterator_to_array($node->attributes, false);
             foreach ($attrs as $attr) {
-                if (0 === strcasecmp($attr->name, 'role') || 0 === strcasecmp(mb_substr($attr->name, 0, 5), 'aria-')) {
+                if (0 === strcasecmp($attr->name, 'role')
+                    || 0 === strcasecmp(mb_substr($attr->name, 0, 5), 'aria-')) {
                     $node->removeAttribute($attr->name);
                 }
             }
