@@ -41,6 +41,7 @@ final class RuleTest extends TestCase
             Rule::FLATTEN_GROUPS->name => 'flattenGroups',
             Rule::MINIFY_SVG_COORDINATES->name => 'minifySvgCoordinates',
             Rule::MINIFY_TRANSFORMATIONS->name => 'minifyTransformations',
+            Rule::REMOVE_ARIA_AND_ROLE->name => 'removeAriaAndRole',
             Rule::REMOVE_COMMENTS->name => 'removeComments',
             Rule::REMOVE_DEFAULT_ATTRIBUTES->name => 'removeDefaultAttributes',
             Rule::REMOVE_DEPRECATED_ATTRIBUTES->name => 'removeDeprecatedAttributes',

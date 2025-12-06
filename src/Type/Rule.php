@@ -18,6 +18,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveAriaAndRole;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
@@ -61,6 +62,8 @@ enum Rule: string
     case MINIFY_SVG_COORDINATES = MinifySvgCoordinates::class;
 
     case MINIFY_TRANSFORMATIONS = MinifyTransformations::class;
+
+    case REMOVE_ARIA_AND_ROLE = RemoveAriaAndRole::class;
 
     case REMOVE_COMMENTS = RemoveComments::class;
 
@@ -110,6 +113,7 @@ enum Rule: string
             self::FLATTEN_GROUPS->value => 'flattenGroups',
             self::MINIFY_SVG_COORDINATES->value => 'minifySvgCoordinates',
             self::MINIFY_TRANSFORMATIONS->value => 'minifyTransformations',
+            self::REMOVE_ARIA_AND_ROLE->value => 'removeAriaAndRole',
             self::REMOVE_COMMENTS->value => 'removeComments',
             self::REMOVE_DEFAULT_ATTRIBUTES->value => 'removeDefaultAttributes',
             self::REMOVE_DEPRECATED_ATTRIBUTES->value => 'removeDeprecatedAttributes',

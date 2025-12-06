@@ -92,6 +92,7 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
     "flattenGroups": true,
     "minifySvgCoordinates": true,
     "minifyTransformations": true,
+    "removeAriaAndRole": true,
     "removeComments": true,
     "removeDefaultAttributes": true,
     "removeDeprecatedAttributes": true,
@@ -163,6 +164,7 @@ try {
             flattenGroups: true,
             minifySvgCoordinates: true,
             minifyTransformations: true,
+            removeAriaAndRole: true,
             removeComments: true,
             removeDefaultAttributes: true,
             removeDeprecatedAttributes: true,
@@ -378,6 +380,11 @@ Minifies transformation attributes by removing redundant values:
 $svgOptimizer->withRules(minifyTransformations: true);
 ```
 
+Removes all aria- and role attributes:
+```php
+$svgOptimizer->withRules(removeAriaAndRole: true);
+```
+
 Removes all comments from the SVG:
 
 ```php
@@ -504,6 +511,7 @@ $svgOptimizer->withRules(
     flattenGroups: true,
     minifySvgCoordinates: true,
     minifyTransformations: true,
+    removeAriaAndRole: true,
     removeComments: true,
     removeDefaultAttributes: true,
     removeDeprecatedAttributes: true,

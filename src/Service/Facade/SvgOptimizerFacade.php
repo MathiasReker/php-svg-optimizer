@@ -107,6 +107,7 @@ final readonly class SvgOptimizerFacade
      * @param bool $flattenGroups                   Whether to flatten nested group elements
      * @param bool $minifySvgCoordinates            Whether to minify coordinate values within the SVG
      * @param bool $minifyTransformations           Whether to minify transformation attributes
+     * @param bool $removeAriaAndRole               Whether to remove aria and role attributes
      * @param bool $removeComments                  Whether to remove XML comments from the SVG
      * @param bool $removeDefaultAttributes         Whether to remove default attributes from elements
      * @param bool $removeDeprecatedAttributes      Whether to remove the xlink namespace
@@ -137,6 +138,7 @@ final readonly class SvgOptimizerFacade
         bool $flattenGroups = false,
         bool $minifySvgCoordinates = false,
         bool $minifyTransformations = false,
+        bool $removeAriaAndRole = false,
         bool $removeComments = false,
         bool $removeDefaultAttributes = false,
         bool $removeDeprecatedAttributes = false,
@@ -165,6 +167,7 @@ final readonly class SvgOptimizerFacade
             Rule::FLATTEN_GROUPS->value => $flattenGroups,
             Rule::MINIFY_SVG_COORDINATES->value => $minifySvgCoordinates,
             Rule::MINIFY_TRANSFORMATIONS->value => $minifyTransformations,
+            Rule::REMOVE_ARIA_AND_ROLE->value => $removeAriaAndRole,
             Rule::REMOVE_COMMENTS->value => $removeComments,
             Rule::REMOVE_DEFAULT_ATTRIBUTES->value => $removeDefaultAttributes,
             Rule::REMOVE_DEPRECATED_ATTRIBUTES->value => $removeDeprecatedAttributes,
