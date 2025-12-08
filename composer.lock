@@ -4437,16 +4437,16 @@
         },
         {
             "name": "shipmonk/phpstan-rules",
-            "version": "4.3.0",
+            "version": "4.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/shipmonk-rnd/phpstan-rules.git",
-                "reference": "d8ef02e33ee3b109c952a76eaf554d5966bb2a70"
+                "reference": "791c9e8ce21672f5a48a55452eb20327ee463e8a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shipmonk-rnd/phpstan-rules/zipball/d8ef02e33ee3b109c952a76eaf554d5966bb2a70",
-                "reference": "d8ef02e33ee3b109c952a76eaf554d5966bb2a70",
+                "url": "https://api.github.com/repos/shipmonk-rnd/phpstan-rules/zipball/791c9e8ce21672f5a48a55452eb20327ee463e8a",
+                "reference": "791c9e8ce21672f5a48a55452eb20327ee463e8a",
                 "shasum": ""
             },
             "require": {
@@ -4490,9 +4490,9 @@
             ],
             "support": {
                 "issues": "https://github.com/shipmonk-rnd/phpstan-rules/issues",
-                "source": "https://github.com/shipmonk-rnd/phpstan-rules/tree/4.3.0"
+                "source": "https://github.com/shipmonk-rnd/phpstan-rules/tree/4.3.1"
             },
-            "time": "2025-12-01T11:58:01+00:00"
+            "time": "2025-12-08T13:45:36+00:00"
         },
         {
             "name": "spaze/phpstan-disallowed-calls",
@@ -6568,5 +6568,5 @@
     "platform-overrides": {
         "php": "8.3"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
