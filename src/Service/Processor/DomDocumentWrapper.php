@@ -29,6 +29,11 @@ final readonly class DomDocumentWrapper
      */
     private const string DEFAULT_ENCODING = 'UTF-8';
 
+    private const int LOAD_FLAGS =
+        \LIBXML_NONET |
+        \LIBXML_NOCDATA |
+        \LIBXML_NOEMPTYTAG;
+
     /**
      * Saves the current \DOMDocument content as an XML string.
      *
@@ -62,7 +67,7 @@ final readonly class DomDocumentWrapper
      */
     public function loadFromFile(string $filePath): \DOMDocument
     {
-        return $this->loadDomDocument(static fn (\DOMDocument $domDocument): bool => $domDocument->load($filePath));
+        return $this->loadDomDocument(static fn (\DOMDocument $domDocument): bool => $domDocument->load($filePath, self::LOAD_FLAGS));
     }
 
     /**
@@ -100,9 +105,12 @@ final readonly class DomDocumentWrapper
         $domDocument->formatOutput = false;
         $domDocument->preserveWhiteSpace = false;
 
-        // Security: Prevent XXE
+        // Security: Harden XXE
         $domDocument->resolveExternals = false;
         $domDocument->substituteEntities = false;
+        $domDocument->validateOnParse = false;
+        $domDocument->strictErrorChecking = true;
+        $domDocument->recover = false;
 
         return $domDocument;
     }
@@ -121,7 +129,7 @@ final readonly class DomDocumentWrapper
         return $this->loadDomDocument(
             static fn (\DOMDocument $domDocument): bool => $domDocument->loadXML(
                 $content,
-                \LIBXML_NONET | \LIBXML_NOENT | \LIBXML_NOCDATA | \LIBXML_NOEMPTYTAG
+                self::LOAD_FLAGS
             )
         );
     }
