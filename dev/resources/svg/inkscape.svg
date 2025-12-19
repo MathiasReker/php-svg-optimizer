@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (https://inkscape.org/) -->
+<svg
+  width="360"
+  height="220"
+  viewBox="0 0 360 220"
+  version="1.1"
+  id="svg5"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:svg="http://www.w3.org/2000/svg"
+  xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+  xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+>
+  <sodipodi:namedview
+    id="namedview7"
+    pagecolor="#ffffff"
+    bordercolor="#666666"
+    borderopacity="1.0"
+    inkscape:pageopacity="0.0"
+    inkscape:pageshadow="2"
+    inkscape:zoom="1"
+    inkscape:cx="180"
+    inkscape:cy="110"
+    inkscape:current-layer="layer1"
+  />
+
+  <defs id="defs2" />
+
+  <g
+    inkscape:label="Layer 1"
+    inkscape:groupmode="layer"
+    id="layer1"
+  >
+    <!-- Background -->
+    <rect
+      id="rect10"
+      x="0"
+      y="0"
+      width="360"
+      height="220"
+      rx="12"
+      style="fill:#f3f4f6;fill-opacity:1;stroke:none"
+    />
+
+    <!-- Card -->
+    <g id="g20" transform="translate(24,24)">
+      <rect
+        id="rect22"
+        x="0"
+        y="0"
+        width="312"
+        height="120"
+        rx="10"
+        style="fill:#ffffff;stroke:#d1d5db;stroke-width:1"
+      />
+
+      <!-- Title -->
+      <text
+        id="text30"
+        x="16"
+        y="32"
+        style="font-size:18px;font-family:Sans;fill:#111827"
+      >
+        Inkscape Sample
+      </text>
+
+      <!-- Subtitle -->
+      <text
+        id="text34"
+        x="16"
+        y="56"
+        style="font-size:13px;font-family:Sans;fill:#4b5563"
+      >
+        Typical Inkscape SVG
+      </text>
+
+      <!-- Button -->
+      <g id="g40" transform="translate(16,76)">
+        <rect
+          id="rect42"
+          x="0"
+          y="0"
+          width="104"
+          height="32"
+          rx="6"
+          style="fill:#10b981"
+        />
+        <text
+          id="text46"
+          x="52"
+          y="21"
+          text-anchor="middle"
+          style="font-size:13px;font-family:Sans;fill:#ffffff"
+        >
+          Action
+        </text>
+      </g>
+    </g>
+  </g>
+</svg>

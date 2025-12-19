@@ -82,4 +82,9 @@ interface SvgProviderInterface
      * @param string $path The path to save the optimized SVG content to
      */
     public function saveToFile(string $path): self;
+
+    /**
+     * todo.
+     */
+    public function resetOptimizationTime(): void;
 }

@@ -156,6 +156,8 @@ final class SvgOptimizer
      */
     public function optimize(): self
     {
+        $this->svgProvider->resetOptimizationTime();
+
         $content = $this->svgProvider->getInputContent();
 
         if (!$this->svgValidator->isValid($content)) {

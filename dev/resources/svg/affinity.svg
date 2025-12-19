@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generator: Affinity Designer -->
+<svg
+  width="360"
+  height="220"
+  viewBox="0 0 360 220"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+>
+  <title>Affinity Designer Sample</title>
+
+  <g id="Document" data-name="Document">
+    <!-- Background -->
+    <rect
+      id="Background"
+      data-name="Background"
+      x="0"
+      y="0"
+      width="360"
+      height="220"
+      rx="12"
+      fill="#F3F4F6"
+    />
+
+    <!-- Card -->
+    <g id="Card" data-name="Card" transform="translate(24 24)">
+      <rect
+        id="Card-Shape"
+        data-name="Card Shape"
+        width="312"
+        height="120"
+        rx="10"
+        fill="#FFFFFF"
+        stroke="#D1D5DB"
+        stroke-width="1"
+      />
+
+      <!-- Title -->
+      <text
+        id="Title"
+        data-name="Title"
+        x="16"
+        y="32"
+        fill="#111827"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="18"
+      >
+        Affinity Sample
+      </text>
+
+      <!-- Subtitle -->
+      <text
+        id="Subtitle"
+        data-name="Subtitle"
+        x="16"
+        y="56"
+        fill="#4B5563"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="13"
+      >
+        Typical Affinity Designer SVG
+      </text>
+
+      <!-- Button -->
+      <g id="Button" data-name="Primary Button" transform="translate(16 76)">
+        <rect
+          id="Button-Background"
+          data-name="Button Background"
+          width="104"
+          height="32"
+          rx="6"
+          fill="#6366F1"
+        />
+        <text
+          id="Button-Label"
+          data-name="Button Label"
+          x="52"
+          y="21"
+          text-anchor="middle"
+          fill="#FFFFFF"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="13"
+        >
+          Action
+        </text>
+      </g>
+    </g>
+  </g>
+</svg>

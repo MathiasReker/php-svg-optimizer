@@ -102,7 +102,7 @@ abstract class AbstractProvider implements SvgProviderInterface
         $callback();
         $end = microtime(true);
 
-        $this->optimizationTime = $end - $start;
+        $this->optimizationTime += ($end - $start);
     }
 
     /**
@@ -131,6 +131,14 @@ abstract class AbstractProvider implements SvgProviderInterface
      * Abstract method to get the input content.
      */
     abstract public function getInputContent(): string;
+
+    /**
+     * Reset optimization time.
+     */
+    final public function resetOptimizationTime(): void
+    {
+        $this->optimizationTime = 0.0;
+    }
 
     /**
      * Save the optimized SVG content to a file.

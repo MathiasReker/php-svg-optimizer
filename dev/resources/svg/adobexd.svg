@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generator: Adobe XD -->
+<svg
+  width="360"
+  height="200"
+  viewBox="0 0 360 200"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+>
+  <title>Adobe XD Sample</title>
+
+  <g id="Artboard" fill="none" fill-rule="evenodd">
+    <!-- Background -->
+    <rect width="360" height="200" rx="12" fill="#F9FAFB"/>
+
+    <!-- Card -->
+    <g id="Card" transform="translate(24 24)">
+      <rect
+        width="312"
+        height="120"
+        rx="10"
+        fill="#FFFFFF"
+        stroke="#E5E7EB"
+      />
+
+      <!-- Title -->
+      <text
+        x="16"
+        y="32"
+        fill="#111827"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="18"
+      >
+        Adobe XD Sample
+      </text>
+
+      <!-- Subtitle -->
+      <text
+        x="16"
+        y="56"
+        fill="#6B7280"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="13"
+      >
+        Typical XD SVG export
+      </text>
+
+      <!-- Button -->
+      <g id="PrimaryButton" transform="translate(16 76)">
+        <rect
+          width="104"
+          height="32"
+          rx="6"
+          fill="#6366F1"
+        />
+        <text
+          x="52"
+          y="21"
+          text-anchor="middle"
+          fill="#FFFFFF"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="13"
+        >
+          Action
+        </text>
+      </g>
+    </g>
+  </g>
+</svg>

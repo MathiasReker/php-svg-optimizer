@@ -146,6 +146,11 @@ final class SvgOptimizerTest extends TestCase
             {
                 return $this;
             }
+
+            public function resetOptimizationTime(): void
+            {
+                // TODO: Implement resetOptimizationTime() method.
+            }
         };
 
         $svgOptimizer = new SvgOptimizer($invalidProvider);
@@ -314,6 +319,11 @@ final class SvgOptimizerTest extends TestCase
             public function saveToFile(string $path): SvgProviderInterface
             {
                 return $this;
+            }
+
+            public function resetOptimizationTime(): void
+            {
+                // TODO: Implement resetOptimizationTime() method.
             }
         };
     }

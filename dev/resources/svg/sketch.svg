@@ -1,0 +1,42 @@
+<svg width="360" height="200" viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg">
+  <title>Sketch Sample</title>
+  <desc>Sample SVG similar to Sketch export</desc>
+
+  <g fill="none" fill-rule="evenodd">
+    <!-- Background -->
+    <rect width="360" height="200" rx="12" fill="#F2F4F7"/>
+
+    <!-- Card -->
+    <g transform="translate(24 24)">
+      <rect width="312" height="100" rx="8" fill="#FFFFFF" stroke="#E4E7EC"/>
+
+      <!-- Header -->
+      <text x="16" y="28"
+            font-family="Helvetica, Arial, sans-serif"
+            font-size="16"
+            fill="#101828">
+        Sketch Sample
+      </text>
+
+      <!-- Subtitle -->
+      <text x="16" y="52"
+            font-family="Helvetica, Arial, sans-serif"
+            font-size="13"
+            fill="#475467">
+        Exported-style SVG
+      </text>
+
+      <!-- Button -->
+      <g transform="translate(16 68)">
+        <rect width="96" height="28" rx="6" fill="#2E90FA"/>
+        <text x="48" y="19"
+              text-anchor="middle"
+              font-family="Helvetica, Arial, sans-serif"
+              font-size="12"
+              fill="#FFFFFF">
+          Action
+        </text>
+      </g>
+    </g>
+  </g>
+</svg>
