@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Model;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
+use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
@@ -91,6 +92,7 @@ final class SvgOptimizerTest extends TestCase
 
     /**
      * @throws SvgValidationException
+     * @throws XmlProcessingException
      */
     public function testOptimizeReturnsSelfAndContentIsSet(): void
     {
@@ -104,6 +106,7 @@ final class SvgOptimizerTest extends TestCase
 
     /**
      * @throws SvgValidationException
+     * @throws XmlProcessingException
      */
     public function testOptimizeThrowsExceptionOnInvalidSvg(): void
     {
@@ -147,9 +150,9 @@ final class SvgOptimizerTest extends TestCase
                 return $this;
             }
 
-            public function resetOptimizationTime(): void
+            public function serialize(\DOMDocument $domDocument): string
             {
-                // TODO: Implement resetOptimizationTime() method.
+                return '';
             }
         };
 
@@ -163,6 +166,7 @@ final class SvgOptimizerTest extends TestCase
 
     /**
      * @throws \LogicException
+     * @throws XmlProcessingException
      */
     public function testGetMetaDataReturnsProviderMetaData(): void
     {
@@ -194,6 +198,7 @@ final class SvgOptimizerTest extends TestCase
 
     /**
      * @throws SvgValidationException
+     * @throws XmlProcessingException
      */
     public function testOptimizeWithNoRules(): void
     {
@@ -321,9 +326,9 @@ final class SvgOptimizerTest extends TestCase
                 return $this;
             }
 
-            public function resetOptimizationTime(): void
+            public function serialize(\DOMDocument $domDocument): string
             {
-                // TODO: Implement resetOptimizationTime() method.
+                return '';
             }
         };
     }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
+use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
@@ -39,6 +40,7 @@ final class ConvertEmptyTagsToSelfClosingTest extends TestCase
 {
     /**
      * @throws SvgValidationException
+     * @throws XmlProcessingException
      */
     #[DataProvider('provideOptimizeCases')]
     public function testOptimize(string $content, string $expected): void

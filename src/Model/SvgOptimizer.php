@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Model;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
+use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 
@@ -153,11 +154,10 @@ final class SvgOptimizer
      * @return $this The current instance of SvgOptimizer for method chaining
      *
      * @throws SvgValidationException If the SVG content is not valid
+     * @throws XmlProcessingException If an error occurs while processing the SVG XML
      */
     public function optimize(): self
     {
-        $this->svgProvider->resetOptimizationTime();
-
         $content = $this->svgProvider->getInputContent();
 
         if (!$this->svgValidator->isValid($content)) {
@@ -189,23 +189,26 @@ final class SvgOptimizer
      * size are retained, while preserving improvements from earlier rules.
      *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     *
+     * @throws XmlProcessingException
      */
     private function applyRules(\DOMDocument $domDocument): void
     {
-        $originalContent = $this->svgProvider->optimize(clone $domDocument)->getOutputContent();
+        $originalContent = $this->svgProvider->serialize($domDocument);
 
         foreach ($this->rules as $rule) {
             if ($rule::isRisky() && !$this->allowRisky) {
-                return;
+                continue;
             }
 
             $rule->optimize($domDocument);
 
             if ($rule->shouldCheckSize()) {
-                $newContent = $this->svgProvider->optimize($domDocument)->getOutputContent();
+                $newContent = $this->svgProvider->serialize($domDocument);
                 if (mb_strlen($newContent, '8bit') > mb_strlen($originalContent, '8bit')) {
-                    // Revert DOM if it didn't improve size
                     $domDocument->loadXML($originalContent);
+                } else {
+                    $originalContent = $newContent;
                 }
             }
         }

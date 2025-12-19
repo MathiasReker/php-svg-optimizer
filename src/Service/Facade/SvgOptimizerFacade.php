@@ -16,6 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
+use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
@@ -83,6 +84,7 @@ final readonly class SvgOptimizerFacade
      *
      * @throws SvgValidationException        If the SVG content is invalid
      * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
+     * @throws XmlProcessingException
      */
     public function optimize(): self
     {

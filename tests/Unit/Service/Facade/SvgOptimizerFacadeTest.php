@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
+use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
@@ -60,6 +61,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     /**
      * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
      */
     public function testOptimizeReturnsService(): void
     {
@@ -73,6 +75,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     /**
      * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
      */
     public function testSaveToFileWritesOptimizedSvg(): void
     {
@@ -105,6 +108,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     /**
      * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
      */
     public function testWithRulesConfiguresRules(): void
     {
@@ -122,6 +126,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     /**
      * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
      */
     public function testAllowRiskyEnablesRiskyRules(): void
     {
@@ -140,6 +145,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     /**
      * @throws \LogicException
      * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
      */
     public function testGetContentReturnsSvg(): void
     {
@@ -152,6 +158,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     /**
      * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
      */
     public function testOptimizeThrowsExceptionForRiskyRules(): void
     {
@@ -165,6 +172,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     /**
      * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
      */
     public function testAllowRiskyFalseDoesNotEnableRiskyRules(): void
     {
@@ -179,6 +187,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     /**
      * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
      */
     public function testWithRulesDefaultDoesNotApplyAnyRules(): void
     {
@@ -193,6 +202,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     /**
      * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
      */
     public function testMultipleRulesApplied(): void
     {
@@ -211,6 +221,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     /**
      * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
      */
     public function testMethodChaining(): void
     {

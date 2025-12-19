@@ -133,14 +133,6 @@ abstract class AbstractProvider implements SvgProviderInterface
     abstract public function getInputContent(): string;
 
     /**
-     * Reset optimization time.
-     */
-    final public function resetOptimizationTime(): void
-    {
-        $this->optimizationTime = 0.0;
-    }
-
-    /**
      * Save the optimized SVG content to a file.
      *
      * @param string $path The path to save the optimized SVG content to
@@ -187,5 +179,26 @@ abstract class AbstractProvider implements SvgProviderInterface
     final public function getOutputContent(): string
     {
         return $this->outputContent;
+    }
+
+    /**
+     * Serialize a \DOMDocument to a string without the XML declaration.
+     *
+     * @param \DOMDocument $domDocument The \DOMDocument to serialize
+     *
+     * @return string The serialized XML content
+     *
+     * @throws XmlProcessingException If the XML content cannot be processed
+     */
+    final public function serialize(\DOMDocument $domDocument): string
+    {
+        $content = $this->domDocumentWrapper->saveToString($domDocument);
+        $content = preg_replace(self::XML_DECLARATION_REGEX, '', $content);
+
+        if (null === $content) {
+            throw new XmlProcessingException('Failed to process XML content.');
+        }
+
+        return $content;
     }
 }

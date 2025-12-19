@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Contract\Service\Provider;
 
+use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 
 /**
@@ -84,7 +85,13 @@ interface SvgProviderInterface
     public function saveToFile(string $path): self;
 
     /**
-     * todo.
+     * Serializes the given \DOMDocument to a string without the XML declaration.
+     *
+     * @param \DOMDocument $domDocument The \DOMDocument instance to serialize
+     *
+     * @return string The serialized XML content
+     *
+     * @throws XmlProcessingException If the XML content cannot be processed
      */
-    public function resetOptimizationTime(): void;
+    public function serialize(\DOMDocument $domDocument): string;
 }
