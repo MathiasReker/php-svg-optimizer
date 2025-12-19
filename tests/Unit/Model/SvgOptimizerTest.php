@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Model;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
@@ -93,6 +94,7 @@ final class SvgOptimizerTest extends TestCase
     /**
      * @throws SvgValidationException
      * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
      */
     public function testOptimizeReturnsSelfAndContentIsSet(): void
     {
@@ -107,6 +109,7 @@ final class SvgOptimizerTest extends TestCase
     /**
      * @throws SvgValidationException
      * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
      */
     public function testOptimizeThrowsExceptionOnInvalidSvg(): void
     {
@@ -167,6 +170,7 @@ final class SvgOptimizerTest extends TestCase
     /**
      * @throws \LogicException
      * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
      */
     public function testGetMetaDataReturnsProviderMetaData(): void
     {
@@ -199,6 +203,7 @@ final class SvgOptimizerTest extends TestCase
     /**
      * @throws SvgValidationException
      * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
      */
     public function testOptimizeWithNoRules(): void
     {

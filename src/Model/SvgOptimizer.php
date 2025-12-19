@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Model;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
@@ -153,11 +154,16 @@ final class SvgOptimizer
      *
      * @return $this The current instance of SvgOptimizer for method chaining
      *
-     * @throws SvgValidationException If the SVG content is not valid
-     * @throws XmlProcessingException If an error occurs while processing the SVG XML
+     * @throws SvgValidationException        If the SVG content is not valid
+     * @throws XmlProcessingException        If an error occurs while processing the SVG XML
+     * @throws RiskyRulesNotAllowedException
      */
     public function optimize(): self
     {
+        if ($this->hasRiskyRules() && !$this->allowRisky) {
+            throw new RiskyRulesNotAllowedException('Risky optimization rules are disabled. Enable them to use these rules.');
+        }
+
         $content = $this->svgProvider->getInputContent();
 
         if (!$this->svgValidator->isValid($content)) {

@@ -84,7 +84,6 @@ return (new PhpCsFixer\Config())
         PhpCsFixerCustomFixers\Fixer\PhpdocVarAnnotationToAssertFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\PhpdocTypesTrimFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\PhpdocTypesCommaSpacesFixer::name() => true,
-        PhpCsFixerCustomFixers\Fixer\PhpdocTagNoNamedArgumentsFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\PhpdocSingleLineVarFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\PhpdocSelfAccessorFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\PhpdocParamTypeFixer::name() => true,

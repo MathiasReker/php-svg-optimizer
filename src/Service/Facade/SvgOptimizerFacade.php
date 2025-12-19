@@ -88,10 +88,6 @@ final readonly class SvgOptimizerFacade
      */
     public function optimize(): self
     {
-        if ($this->svgOptimizer->hasRiskyRules() && !$this->svgOptimizer->isRiskyRulesAllowed()) {
-            throw new RiskyRulesNotAllowedException('Risky optimization rules are disabled. Enable them to use these rules.');
-        }
-
         $this->svgOptimizer->optimize();
 
         return $this;
@@ -205,22 +201,20 @@ final readonly class SvgOptimizerFacade
      *
      * @return $this The SvgOptimizerFacade instance
      */
-    public function withAllRules(bool $withAllRules = true): self
+    public function withAllRules(bool $enable = true): self
     {
-        if ($withAllRules) {
-            $rules = array_fill_keys(
-                array_map(
-                    static fn (Rule $rule) => $rule->value,
-                    array_filter(
-                        Rule::cases(),
-                        fn (Rule $rule): bool => !$rule->value::isRisky() || $this->svgOptimizer->isRiskyRulesAllowed()
-                    )
-                ),
-                true
-            );
-
-            $this->svgOptimizer->configureRules($rules);
+        if (!$enable) {
+            return $this;
         }
+
+        $rules = [];
+        foreach (Rule::cases() as $rule) {
+            if (!$rule->value::isRisky() || $this->svgOptimizer->isRiskyRulesAllowed()) {
+                $rules[$rule->value] = true;
+            }
+        }
+
+        $this->svgOptimizer->configureRules($rules);
 
         return $this;
     }
