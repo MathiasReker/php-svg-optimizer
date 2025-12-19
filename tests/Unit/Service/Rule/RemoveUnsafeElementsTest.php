@@ -501,6 +501,27 @@ final class RemoveUnsafeElementsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
                 XML,
         ];
+
+        yield 'Removes unsafe elements inside pattern' => [
+            <<<'XML'
+                    <svg xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <pattern id="safePattern" width="10" height="10">
+                                <circle cx="5" cy="5" r="2" fill="blue"/>
+                            </pattern>
+                            <pattern id="unsafePattern" width="10" height="10">
+                                <image href="http://evil.com/image.svg"/>
+                                <script>alert('xss')</script>
+                            </pattern>
+                        </defs>
+                        <rect width="50" height="50" fill="url(#safePattern)"/>
+                        <rect width="50" height="50" fill="url(#unsafePattern)"/>
+                    </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><defs><pattern id="safePattern" width="10" height="10"><circle cx="5" cy="5" r="2" fill="blue"/></pattern><pattern id="unsafePattern" width="10" height="10"/></defs><rect width="50" height="50" fill="url(#safePattern)"/><rect width="50" height="50" fill="url(#unsafePattern)"/></svg>
+                XML,
+        ];
     }
 
     public function testRuleIsMarkedAsRisky(): void

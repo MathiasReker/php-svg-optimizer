@@ -128,6 +128,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         'marker-mid',
         'marker-end',
         'begin',
+        'pattern',
         'end',
         'from',
         'to',
