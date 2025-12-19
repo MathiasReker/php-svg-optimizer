@@ -41,17 +41,53 @@ To install the library, run:
 composer require mathiasreker/php-svg-optimizer
 ```
 
+![Demo GIF](dev/artifacts/demo.gif)
+
 ### Using the Library
 
-You can use this library either as a **command-line tool (CLI)** or as a **standalone package**.
+You can use this library in two main ways:
+
+1. Command-Line Interface (CLI): Run the optimizer directly from your terminal to process SVG files quickly. This is
+   ideal for batch processing or integrating into build scripts.
+
+2. Standalone Package: Use it as a PHP package in your project to optimize SVGs programmatically. This allows you to
+   integrate SVG optimization directly into your application workflow or custom scripts.
+
+### Rules
+
+| Rule                              | Description                                                                                                                                                           | Risky? |
+|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
+| `convertColorsToHex`              | Converts all color values (e.g., `rgb()`) to hexadecimal (`#RRGGBB`) and uses shorthand where possible. Standardizes colors and slightly reduces file size.           | ❌      |
+| `convertCssClassesToAttributes`   | Replaces CSS class references with inline attributes so styles are applied directly to elements. Useful when external CSS may not be available.                       | ❌      |
+| `convertEmptyTagsToSelfClosing`   | Converts empty tags into self-closing format (`<tag />`) to save space and improve readability.                                                                       | ❌      |
+| `convertInlineStylesToAttributes` | Splits inline `style` attributes into individual element attributes. Improves compatibility with SVG renderers that do not fully support CSS styles.                  | ❌      |
+| `flattenGroups`                   | Moves all child elements of nested `<g>` groups directly into the parent, removing unnecessary grouping. Simplifies the SVG structure and reduces file size.          | ❌      |
+| `minifySvgCoordinates`            | Reduces decimal precision in coordinates (e.g., `12.0000` → `12`) to shrink file size without noticeable visual differences.                                          | ❌      |
+| `minifyTransformations`           | Optimizes `transform` attributes by removing redundant values or simplifying transforms. Reduces file size and improves parsing efficiency.                           | ❌      |
+| `removeAriaAndRole`               | Removes ARIA (`aria-*`) and `role` attributes that may be unnecessary in static SVGs. Reduces file size and avoids redundant accessibility information if not needed. | ❌      |
+| `removeComments`                  | Removes all comments except legal ones, reducing file size and eliminating unnecessary developer notes.                                                               | ❌      |
+| `removeDefaultAttributes`         | Deletes attributes that have default values (e.g., `stroke="none"` if not needed). Saves space without affecting rendering.                                           | ❌      |
+| `removeDeprecatedAttributes`      | Removes attributes that are deprecated in SVG 2.0, helping modernize the SVG for current standards.                                                                   | ❌      |
+| `removeDoctype`                   | Removes the `<!DOCTYPE>` declaration, which is unnecessary for inline or web-embedded SVGs.                                                                           | ❌      |
+| `removeDuplicateElements`         | Deletes identical duplicate elements to reduce file size without affecting the visual output.                                                                         | ❌      |
+| `removeEmptyAttributes`           | Removes attributes with empty values (`attr=""`) to reduce clutter and file size.                                                                                     | ❌      |
+| `removeEmptyGroups`               | Deletes `<g>` elements that have no child elements. Simplifies the SVG tree and reduces size.                                                                         | ❌      |
+| `removeEmptyTextElements`         | Removes `<text>` elements that contain no content. Reduces file size and unnecessary nodes.                                                                           | ❌      |
+| `removeEnableBackgroundAttribute` | Removes the `enable-background` attribute from `<svg>`. May improve performance but could affect filters or animations that depend on it.                             | ✅      |
+| `removeInkscapeFootprints`        | Deletes Inkscape-specific metadata and elements (e.g., `inkscape:label` or hidden layers). Cleans up SVGs exported from Inkscape.                                     | ❌      |
+| `removeInvisibleCharacters`       | Strips invisible Unicode characters (e.g., zero-width spaces) that may accidentally appear in SVGs.                                                                   | ❌      |
+| `removeMetadata`                  | Removes `<metadata>` tags, which often contain author info or editor data, reducing file size.                                                                        | ❌      |
+| `removeTitleAndDesc`              | Removes `<title>` and `<desc>` tags. Reduces file size but also removes accessibility descriptions, so safe only if not required.                                     | ❌      |
+| `removeUnnecessaryWhitespace`     | Cleans up extra spaces, tabs, and line breaks. Improves readability and reduces file size.                                                                            | ❌      |
+| `removeUnsafeElements`            | Removes potentially unsafe elements, such as `<script>` or external references (`<image xlink:href="...">`). Useful for security, but may break interactive SVGs.     | ✅      |
+| `removeUnusedMasks`               | Deletes `<mask>` elements that are defined but never used. Reduces file size and complexity.                                                                          | ❌      |
+| `removeUnusedNamespaces`          | Removes XML namespaces that are declared but not used. Cleans up the SVG and reduces size.                                                                            | ❌      |
+| `removeWidthHeightAttributes`     | Removes the `width` and `height` attributes from the `<svg>` element to rely on `viewBox` scaling. Allows flexible resizing but may break fixed-layout designs.       | ✅      |
+| `sortAttributes`                  | Sorts element attributes alphabetically to improve consistency, readability, and version control diffs.                                                               | ❌      |
 
 ---
 
 ## CLI tool
-
-#### Usage
-
-![Demo GIF](dev/artifacts/demo.gif)
 
 ```bash
 vendor/bin/svg-optimizer [options] process <path1> <path2> ...
@@ -381,6 +417,7 @@ $svgOptimizer->withRules(minifyTransformations: true);
 ```
 
 Removes all aria- and role attributes:
+
 ```php
 $svgOptimizer->withRules(removeAriaAndRole: true);
 ```
@@ -698,7 +735,7 @@ the [LICENSE](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/LIC
 
 ### Disclaimer
 
-Although the tool has been thoroughly tested and is built in a way that avoids risky changes, its use is at your own
-risk. We cannot guarantee that it will be fully compatible with all SVG files or workflows. It is highly recommended to
-test the tool with sample SVG files and ensure compatibility with your specific use case before using it in a production
-environment.
+Use of this tool is entirely at your own risk. The authors and maintainers make no warranties regarding the correctness,
+reliability, or suitability of the tool for any particular purpose. Users are solely responsible for verifying the
+results and ensuring that files are properly backed up before use. It is strongly recommended to test the tool on
+non-critical files and confirm compatibility with your workflow prior to deploying it in any production environment.
