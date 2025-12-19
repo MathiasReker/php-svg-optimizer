@@ -6,13 +6,7 @@ type_effect() {
   echo "$1" | pv -qL 10
 }
 
-type_effect "> # Welcome to PHP SVG Optimizer!"
-sleep 1
-
-type_effect "> # See how easy it is to optimize SVG files"
-sleep 1
-
-type_effect "> # Let's start by installing the library"
+type_effect "> # Install the library"
 sleep 1
 
 cd .. || { echo "Failed to change directory"; exit 1; }
@@ -23,8 +17,7 @@ composer require mathiasreker/php-svg-optimizer
 echo ">"
 echo ">"
 
-type_effect "> # You're ready to optimize your SVG files!"
-type_effect "> # Run the following command to process the SVG files in a directory:"
+type_effect "> # Optimize the SVG files"
 type_effect "> vendor/bin/svg-optimizer -a process php-svg-optimizer/dev/resources/svg"
 
 vendor/bin/svg-optimizer -a process php-svg-optimizer/dev/resources/svg
@@ -32,6 +25,6 @@ vendor/bin/svg-optimizer -a process php-svg-optimizer/dev/resources/svg
 echo ">"
 echo ">"
 
-type_effect "> # That's it! Your SVG files are now optimized"
+type_effect "> # Done!"
 
 sleep 2
