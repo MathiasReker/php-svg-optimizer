@@ -53,40 +53,6 @@ You can use this library in two main ways:
 2. Standalone Package: Use it as a PHP package in your project to optimize SVGs programmatically. This allows you to
    integrate SVG optimization directly into your application workflow or custom scripts.
 
-### Rules
-
-| Rule                              | Description                                                                                                                                                           | Risky? |
-|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
-| `convertColorsToHex`              | Converts all color values (e.g., `rgb()`) to hexadecimal (`#RRGGBB`) and uses shorthand where possible. Standardizes colors and slightly reduces file size.           | ❌      |
-| `convertCssClassesToAttributes`   | Replaces CSS class references with inline attributes so styles are applied directly to elements. Useful when external CSS may not be available.                       | ❌      |
-| `convertEmptyTagsToSelfClosing`   | Converts empty tags into self-closing format (`<tag />`) to save space and improve readability.                                                                       | ❌      |
-| `convertInlineStylesToAttributes` | Splits inline `style` attributes into individual element attributes. Improves compatibility with SVG renderers that do not fully support CSS styles.                  | ❌      |
-| `flattenGroups`                   | Moves all child elements of nested `<g>` groups directly into the parent, removing unnecessary grouping. Simplifies the SVG structure and reduces file size.          | ❌      |
-| `minifySvgCoordinates`            | Reduces decimal precision in coordinates (e.g., `12.0000` → `12`) to shrink file size without noticeable visual differences.                                          | ❌      |
-| `minifyTransformations`           | Optimizes `transform` attributes by removing redundant values or simplifying transforms. Reduces file size and improves parsing efficiency.                           | ❌      |
-| `removeAriaAndRole`               | Removes ARIA (`aria-*`) and `role` attributes that may be unnecessary in static SVGs. Reduces file size and avoids redundant accessibility information if not needed. | ❌      |
-| `removeComments`                  | Removes all comments except legal ones, reducing file size and eliminating unnecessary developer notes.                                                               | ❌      |
-| `removeDefaultAttributes`         | Deletes attributes that have default values (e.g., `stroke="none"` if not needed). Saves space without affecting rendering.                                           | ❌      |
-| `removeDeprecatedAttributes`      | Removes attributes that are deprecated in SVG 2.0, helping modernize the SVG for current standards.                                                                   | ❌      |
-| `removeDoctype`                   | Removes the `<!DOCTYPE>` declaration, which is unnecessary for inline or web-embedded SVGs.                                                                           | ❌      |
-| `removeDuplicateElements`         | Deletes identical duplicate elements to reduce file size without affecting the visual output.                                                                         | ❌      |
-| `removeEmptyAttributes`           | Removes attributes with empty values (`attr=""`) to reduce clutter and file size.                                                                                     | ❌      |
-| `removeEmptyGroups`               | Deletes `<g>` elements that have no child elements. Simplifies the SVG tree and reduces size.                                                                         | ❌      |
-| `removeEmptyTextElements`         | Removes `<text>` elements that contain no content. Reduces file size and unnecessary nodes.                                                                           | ❌      |
-| `removeEnableBackgroundAttribute` | Removes the `enable-background` attribute from `<svg>`. May improve performance but could affect filters or animations that depend on it.                             | ✅      |
-| `removeInkscapeFootprints`        | Deletes Inkscape-specific metadata and elements (e.g., `inkscape:label` or hidden layers). Cleans up SVGs exported from Inkscape.                                     | ❌      |
-| `removeInvisibleCharacters`       | Strips invisible Unicode characters (e.g., zero-width spaces) that may accidentally appear in SVGs.                                                                   | ❌      |
-| `removeMetadata`                  | Removes `<metadata>` tags, which often contain author info or editor data, reducing file size.                                                                        | ❌      |
-| `removeTitleAndDesc`              | Removes `<title>` and `<desc>` tags. Reduces file size but also removes accessibility descriptions, so safe only if not required.                                     | ❌      |
-| `removeUnnecessaryWhitespace`     | Cleans up extra spaces, tabs, and line breaks. Improves readability and reduces file size.                                                                            | ❌      |
-| `removeUnsafeElements`            | Removes potentially unsafe elements, such as `<script>` or external references (`<image xlink:href="...">`). Useful for security, but may break interactive SVGs.     | ✅      |
-| `removeUnusedMasks`               | Deletes `<mask>` elements that are defined but never used. Reduces file size and complexity.                                                                          | ❌      |
-| `removeUnusedNamespaces`          | Removes XML namespaces that are declared but not used. Cleans up the SVG and reduces size.                                                                            | ❌      |
-| `removeWidthHeightAttributes`     | Removes the `width` and `height` attributes from the `<svg>` element to rely on `viewBox` scaling. Allows flexible resizing but may break fixed-layout designs.       | ✅      |
-| `sortAttributes`                  | Sorts element attributes alphabetically to improve consistency, readability, and version control diffs.                                                               | ❌      |
-
----
-
 ## CLI tool
 
 ```bash
@@ -164,13 +130,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.5'
-
       - run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
-
       - run: php vendor/bin/svg-optimizer -a -q process /path/to/svgs
 ```
 
@@ -374,164 +337,176 @@ rules should be enabled or disabled.
 
 ##### Parameters:
 
-Converts `rgb()` color values to hexadecimal format:
+Converts all color values (e.g., `rgb()`) to hexadecimal (`#RRGGBB`) and uses shorthand where possible. Standardizes
+colors and slightly reduces file size:
 
 ```php
 $svgOptimizer->withRules(convertColorsToHex: true);
 ```
 
-Converts css classes to attributes:
+Replaces CSS class references with inline attributes so styles are applied directly to elements. Useful when external
+CSS may not be available:
 
 ```php
 $svgOptimizer->withRules(convertCssClassesToAttributes: true);
 ```
 
-Converts empty tags to self-closing tags:
+Converts empty tags into self-closing format (`<tag />`) to save space and improve readability:
 
 ```php
 $svgOptimizer->withRules(convertEmptyTagsToSelfClosing: true);
 ```
 
-Converts inline styles to attributes:
+Splits inline `style` attributes into individual element attributes. Improves compatibility with SVG renderers that do
+not fully support CSS styles:
 
 ```php
 $svgOptimizer->withRules(convertInlineStylesToAttributes: true);
 ```
 
-Flattens nested `<g>` elements, moving their child elements up to the parent node:
+Moves all child elements of nested `<g>` groups directly into the parent, removing unnecessary grouping. Simplifies the
+SVG structure and reduces file size:
 
 ```php
 $svgOptimizer->withRules(flattenGroups: true);
 ```
 
-Minifies coordinate values by removing unnecessary precision:
+Reduces decimal precision in coordinates (e.g., `12.0000` → `12`) to shrink file size without noticeable visual
+differences:
 
 ```php
 $svgOptimizer->withRules(minifySvgCoordinates: true);
 ```
 
-Minifies transformation attributes by removing redundant values:
+Optimizes `transform` attributes by removing redundant values or simplifying transforms. Reduces file size and improves
+parsing efficiency:
 
 ```php
 $svgOptimizer->withRules(minifyTransformations: true);
 ```
 
-Removes all aria- and role attributes:
+Removes ARIA (`aria-*`) and `role` attributes that may be unnecessary in static SVGs. Reduces file size and avoids
+redundant accessibility information if not needed:
 
 ```php
 $svgOptimizer->withRules(removeAriaAndRole: true);
 ```
 
-Removes all comments from the SVG:
+Removes all comments except legal ones, reducing file size and eliminating unnecessary developer notes:
 
 ```php
 $svgOptimizer->withRules(removeComments: true);
 ```
 
-Removes default attribute values that match common defaults:
+Deletes attributes that have default values (e.g., `stroke="none"` if not needed). Saves space without affecting
+rendering:
 
 ```php
 $svgOptimizer->withRules(removeDefaultAttributes: true);
 ```
 
-Removes deprecated attributes from the SVG:
+Removes attributes that are deprecated in SVG 2.0, helping modernize the SVG for current standards:
 
 ```php
 $svgOptimizer->withRules(removeDeprecatedAttributes: true);
 ```
 
-Removes the SVG doctype declaration:
+Removes the `<!DOCTYPE>` declaration, which is unnecessary for inline or web-embedded SVGs:
 
 ```php
 $svgOptimizer->withRules(removeDoctype: true);
 ```
 
-Removes duplicate elements from the SVG:
+Deletes identical duplicate elements to reduce file size without affecting the visual output:
 
 ```php
 $svgOptimizer->withRules(removeDuplicateElements: true);
 ```
 
-Removes empty attributes from the SVG:
+Removes attributes with empty values (`attr=""`) to reduce clutter and file size:
 
 ```php
 $svgOptimizer->withRules(removeEmptyAttributes: true);
 ```
 
-Removes empty `<g>` groups:
+Deletes `<g>` elements that have no child elements. Simplifies the SVG tree and reduces size:
 
 ```php
 $svgOptimizer->withRules(removeEmptyGroups: true);
 ```
 
-Removes empty text elements:
+Removes `<text>` elements that contain no content. Reduces file size and unnecessary nodes:
 
 ```php
 $svgOptimizer->withRules(removeEmptyTextElements: true);
 ```
 
-Removes the `enable-background` attribute from the SVG (**risky**):
+Removes the `enable-background` attribute from `<svg>`. May improve performance but could affect filters or animations
+that depend on it (**risky**):
 
 ```php
 $svgOptimizer->withRules(removeEnableBackgroundAttribute: true);
 ```
 
-Removes Inkspace-specific footprints from the SVG:
+Deletes Inkscape-specific metadata and elements (e.g., `inkscape:label` or hidden layers). Cleans up SVGs exported from
+Inkscape:
 
 ```php
 $svgOptimizer->withRules(removeInkscapeFootprints: true);
 ```
 
-Removes invisible characters from the SVG:
+Strips invisible Unicode characters (e.g., zero-width spaces) that may accidentally appear in SVGs:
 
 ```php
 $svgOptimizer->withRules(removeInvisibleCharacters: true);
 ```
 
-Removes `<metadata>` tags from the SVG:
+Removes `<metadata>` tags, which often contain author info or editor data, reducing file size:
 
 ```php
 $svgOptimizer->withRules(removeMetadata: true);
 ```
 
-Removes `<title>` and `<desc>` tags from the SVG:
+Removes `<title>` and `<desc>` tags. Reduces file size but also removes accessibility descriptions, so safe only if not
+required:
 
 ```php
 $svgOptimizer->withRules(removeTitleAndDesc: true);
 ```
 
-Cleans up unnecessary whitespace in the SVG:
+Cleans up extra spaces, tabs, and line breaks. Improves readability and reduces file size:
 
 ```php
 $svgOptimizer->withRules(removeUnnecessaryWhitespace: true);
 ```
 
-Removes unused namespaces from the SVG:
+Removes XML namespaces that are declared but not used. Cleans up the SVG and reduces size:
 
 ```php
 $svgOptimizer->withRules(removeUnusedNamespaces: true);
 ```
 
-Removes the width and height attributes from the `<svg>` element, allowing the SVG to scale automatically based on its
-viewBox (**risky**):
+Removes the `width` and `height` attributes from the `<svg>` element to rely on `viewBox` scaling. Allows flexible
+resizing but may break fixed-layout designs (**risky**):
 
 ```php
 $svgOptimizer->withRules(removeWidthHeightAttributes: false);
 ```
 
-Removes unsafe elements from the SVG (**risky**):
+Removes potentially unsafe elements, such as `<script>` or external references (`<image xlink:href="...">`). Useful for
+security, but may break interactive SVGs (**risky**):
 
 ```php
 $svgOptimizer->withRules(removeUnsafeElements: true);
 ```
 
-Removes `<mask>` elements that are not referenced or used anywhere in the SVG:
+Deletes `<mask>` elements that are defined but never used. Reduces file size and complexity:
 
 ```php
 $svgOptimizer->withRules(removeUnusedMasks: true);
 ```
 
-Sorts attributes within each element:
+Sorts element attributes alphabetically to improve consistency, readability, and version control diffs:
 
 ```php
 $svgOptimizer->withRules(sortAttributes: true);
