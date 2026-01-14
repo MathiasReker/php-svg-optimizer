@@ -16,6 +16,7 @@ use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
 return RectorConfig::configure()
     ->withPhpSets(php83: true)
     ->withIndent()
+    ->withImportNames()
     ->withPreparedSets(
         deadCode: true,
         codeQuality: true,

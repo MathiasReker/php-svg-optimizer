@@ -131,25 +131,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Determines whether any of the configured rules are classified as risky.
-     *
-     * A rule is considered risky if its class implements SvgOptimizerRuleInterface::isRisky()
-     * and that method returns true.
-     *
-     * @return bool True if one or more configured rules are risky, false otherwise
-     */
-    public function hasRiskyRules(): bool
-    {
-        foreach ($this->rules as $rule) {
-            if ($rule::isRisky()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Optimize the SVG content by applying all added optimization rules.
      *
      * @return $this The current instance of SvgOptimizer for method chaining
@@ -177,6 +158,25 @@ final class SvgOptimizer
         $this->isOptimized = true;
 
         return $this;
+    }
+
+    /**
+     * Determines whether any of the configured rules are classified as risky.
+     *
+     * A rule is considered risky if its class implements SvgOptimizerRuleInterface::isRisky()
+     * and that method returns true.
+     *
+     * @return bool True if one or more configured rules are risky, false otherwise
+     */
+    public function hasRiskyRules(): bool
+    {
+        foreach ($this->rules as $rule) {
+            if ($rule::isRisky()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
