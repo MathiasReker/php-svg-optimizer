@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5a2ab83d99e6d7b1562356cd1b72d9e4",
+    "content-hash": "d87705158defc4f8769ffa40b2abee93",
     "packages": [],
     "packages-dev": [
         {
@@ -6206,23 +6206,23 @@
         },
         {
             "name": "symplify/phpstan-rules",
-            "version": "14.9.0",
+            "version": "14.9.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symplify/phpstan-rules.git",
-                "reference": "6d018ca88ef697f7c1baf7466811be11652c3e91"
+                "reference": "5ea4bbd9357cba253aada506dd96d37d7069ac3b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/6d018ca88ef697f7c1baf7466811be11652c3e91",
-                "reference": "6d018ca88ef697f7c1baf7466811be11652c3e91",
+                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/5ea4bbd9357cba253aada506dd96d37d7069ac3b",
+                "reference": "5ea4bbd9357cba253aada506dd96d37d7069ac3b",
                 "shasum": ""
             },
             "require": {
                 "nette/utils": "^3.2|^4.0",
                 "php": "^7.4|^8.0",
-                "phpstan/phpstan": "^2.1.22",
-                "webmozart/assert": "^1.11"
+                "phpstan/phpstan": "^2.1.33",
+                "webmozart/assert": "^1.12 || ^2.0"
             },
             "type": "phpstan-extension",
             "extra": {
@@ -6247,7 +6247,7 @@
             "description": "Set of Symplify rules for PHPStan",
             "support": {
                 "issues": "https://github.com/symplify/phpstan-rules/issues",
-                "source": "https://github.com/symplify/phpstan-rules/tree/14.9.0"
+                "source": "https://github.com/symplify/phpstan-rules/tree/14.9.11"
             },
             "funding": [
                 {
@@ -6259,7 +6259,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-26T13:04:37+00:00"
+            "time": "2026-01-05T13:53:59+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -6498,23 +6498,23 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "1.12.1",
+            "version": "2.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webmozarts/assert.git",
-                "reference": "9be6926d8b485f55b9229203f962b51ed377ba68"
+                "reference": "ce6a2f100c404b2d32a1dd1270f9b59ad4f57649"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozarts/assert/zipball/9be6926d8b485f55b9229203f962b51ed377ba68",
-                "reference": "9be6926d8b485f55b9229203f962b51ed377ba68",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/ce6a2f100c404b2d32a1dd1270f9b59ad4f57649",
+                "reference": "ce6a2f100c404b2d32a1dd1270f9b59ad4f57649",
                 "shasum": ""
             },
             "require": {
                 "ext-ctype": "*",
                 "ext-date": "*",
                 "ext-filter": "*",
-                "php": "^7.2 || ^8.0"
+                "php": "^8.2"
             },
             "suggest": {
                 "ext-intl": "",
@@ -6524,7 +6524,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.10-dev"
+                    "dev-feature/2-0": "2.0-dev"
                 }
             },
             "autoload": {
@@ -6540,6 +6540,10 @@
                 {
                     "name": "Bernhard Schussek",
                     "email": "bschussek@gmail.com"
+                },
+                {
+                    "name": "Woody Gilk",
+                    "email": "woody.gilk@gmail.com"
                 }
             ],
             "description": "Assertions to validate method input/output with nice error messages.",
@@ -6550,9 +6554,9 @@
             ],
             "support": {
                 "issues": "https://github.com/webmozarts/assert/issues",
-                "source": "https://github.com/webmozarts/assert/tree/1.12.1"
+                "source": "https://github.com/webmozarts/assert/tree/2.1.2"
             },
-            "time": "2025-10-29T15:56:20+00:00"
+            "time": "2026-01-13T14:02:24+00:00"
         }
     ],
     "aliases": [],
@@ -6570,5 +6574,5 @@
     "platform-overrides": {
         "php": "8.3"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
