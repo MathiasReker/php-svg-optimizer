@@ -26,6 +26,10 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
      */
     private const array DEFAULT_SVG_ATTRIBUTES = [
         'stroke' => 'none',
+        'stroke-width' => '1',
+        'stroke-linecap' => 'butt',
+        'stroke-linejoin' => 'miter',
+        'stroke-miterlimit' => '4',
     ];
 
     #[\Override]
