@@ -237,10 +237,10 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     {
         $attributesToRemove = [];
 
-        /** @var \DOMAttr $attr */
-        foreach ($domElement->attributes ?? [] as $attr) {
-            if ($attr->namespaceURI === $namespaceUri && null !== $attr->localName) {
-                $attributesToRemove[] = $attr->localName;
+        /** @var \DOMAttr $attribute */
+        foreach ($domElement->attributes as $attribute) {
+            if ($attribute->namespaceURI === $namespaceUri && null !== $attribute->localName) {
+                $attributesToRemove[] = $attribute->localName;
             }
         }
 
