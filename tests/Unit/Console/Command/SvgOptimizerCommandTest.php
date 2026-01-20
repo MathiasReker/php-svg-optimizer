@@ -63,6 +63,7 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -129,7 +130,8 @@ final class SvgOptimizerCommandTest extends TestCase
      * @throws \LogicException
      * @throws \ValueError
      */
-    public function testRunWithValidSvgFile(): void
+    #[Test]
+    public function runWithValidSvgFile(): void
     {
         $svgFile = $this->tempDir . '/test.svg';
         file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
@@ -169,7 +171,8 @@ final class SvgOptimizerCommandTest extends TestCase
      * @throws \LogicException
      * @throws \ValueError
      */
-    public function testRunWithNoInputFiles(): void
+    #[Test]
+    public function runWithNoInputFiles(): void
     {
         $reflectionClass = new \ReflectionClass(Command::class);
         $constructor = $reflectionClass->getConstructor();
@@ -210,7 +213,8 @@ final class SvgOptimizerCommandTest extends TestCase
      * @throws \RuntimeException
      * @throws \ValueError
      */
-    public function testRunWithDryRunOption(): void
+    #[Test]
+    public function runWithDryRunOption(): void
     {
         $svgFile = $this->tempDir . '/test.svg';
         $originalContent = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';

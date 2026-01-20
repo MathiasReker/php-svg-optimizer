@@ -80,9 +80,9 @@ final readonly class CommandDispatcher
 
         if ($optionIntent->isVersion()) {
             $outputManager->printVersion(
-                Application::NAME->value,
-                Application::VERSION->value,
-                Application::AUTHOR->value
+                Application::Name->value,
+                Application::Version->value,
+                Application::Author->value
             );
             exit(0);
         }

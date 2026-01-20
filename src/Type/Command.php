@@ -16,7 +16,7 @@ namespace MathiasReker\PhpSvgOptimizer\Type;
  */
 enum Command: string
 {
-    case PROCESS = 'process';
+    case Process = 'process';
 
     /**
      * Get the title for the command.
@@ -24,7 +24,7 @@ enum Command: string
     public function getTitle(): string
     {
         return match ($this->value) {
-            self::PROCESS->value => 'Process',
+            self::Process->value => 'Process',
         };
     }
 
@@ -34,7 +34,7 @@ enum Command: string
     public function getDescription(): string
     {
         return match ($this->value) {
-            self::PROCESS->value => 'Provide a list of directories or files to process.',
+            self::Process->value => 'Provide a list of directories or files to process.',
         };
     }
 }

@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Formatter;
 
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,43 +22,50 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ByteFormatter::class)]
 final class ByteFormatterTest extends TestCase
 {
-    public function testFormatBytesReturnsBytesForLessThanOneKilobyte(): void
+    #[Test]
+    public function formatBytesReturnsBytesForLessThanOneKilobyte(): void
     {
         self::assertSame('512 B', ByteFormatter::formatBytes(512));
         self::assertSame('0 B', ByteFormatter::formatBytes(0));
     }
 
-    public function testFormatBytesReturnsKilobytes(): void
+    #[Test]
+    public function formatBytesReturnsKilobytes(): void
     {
         self::assertSame('1.00 KB', ByteFormatter::formatBytes(1_024));
         self::assertSame('1.50 KB', ByteFormatter::formatBytes(1_536));
     }
 
-    public function testFormatBytesReturnsMegabytes(): void
+    #[Test]
+    public function formatBytesReturnsMegabytes(): void
     {
         $bytes = 2 * 1_024 * 1_024; // 2 MB
         self::assertSame('2.00 MB', ByteFormatter::formatBytes($bytes));
     }
 
-    public function testFormatBytesReturnsGigabytes(): void
+    #[Test]
+    public function formatBytesReturnsGigabytes(): void
     {
         $bytes = 3 * 1_024 * 1_024 * 1_024; // 3 GB
         self::assertSame('3.00 GB', ByteFormatter::formatBytes($bytes));
     }
 
-    public function testFormatBytesReturnsTerabytes(): void
+    #[Test]
+    public function formatBytesReturnsTerabytes(): void
     {
         $bytes = 4 * 1_024 * 1_024 * 1_024 * 1_024; // 4 TB
         self::assertSame('4.00 TB', ByteFormatter::formatBytes($bytes));
     }
 
-    public function testFormatBytesRoundsToTwoDecimals(): void
+    #[Test]
+    public function formatBytesRoundsToTwoDecimals(): void
     {
         self::assertSame('1.95 KB', ByteFormatter::formatBytes(2_000));
         self::assertSame('1.91 MB', ByteFormatter::formatBytes(2_000_000));
     }
 
-    public function testFormatBytesDoesNotExceedDefinedUnits(): void
+    #[Test]
+    public function formatBytesDoesNotExceedDefinedUnits(): void
     {
         // 1024^5 = 1 PB (Petabyte) → just beyond TB (last in units list)
         $bytes = 1_024 ** 5;

@@ -22,6 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -42,7 +43,8 @@ final class RemoveEmptyTextElementsTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      */
     #[DataProvider('provideOptimizeCases')]
-    public function testOptimize(string $content, string $expected): void
+    #[Test]
+    public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
         $svgOptimizer->addRule(new RemoveEmptyTextElements());

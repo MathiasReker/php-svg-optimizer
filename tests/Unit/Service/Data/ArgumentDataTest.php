@@ -18,6 +18,7 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -44,42 +45,46 @@ final class ArgumentDataTest extends TestCase
 
     private ArgumentData $argumentData;
 
-    public function testGetOptions(): void
+    #[Test]
+    public function getOptions(): void
     {
         $options = $this->argumentData->getOptions();
 
-        self::assertArrayHasKey(Option::HELP->value, $options);
-        $helpOption = $options[Option::HELP->value];
+        self::assertArrayHasKey(Option::Help->value, $options);
+        $helpOption = $options[Option::Help->value];
 
-        self::assertSame(Option::HELP->getShorthand(), $helpOption->getShorthand());
-        self::assertSame(Option::HELP->getFull(), $helpOption->getFull());
-        self::assertSame(Option::HELP->getDescription(), $helpOption->getDescription());
+        self::assertSame(Option::Help->getShorthand(), $helpOption->getShorthand());
+        self::assertSame(Option::Help->getFull(), $helpOption->getFull());
+        self::assertSame(Option::Help->getDescription(), $helpOption->getDescription());
     }
 
-    public function testGetCommands(): void
+    #[Test]
+    public function getCommands(): void
     {
         $commands = $this->argumentData->getCommands();
 
-        self::assertArrayHasKey(Command::PROCESS->value, $commands);
-        $processCommand = $commands[Command::PROCESS->value];
+        self::assertArrayHasKey(Command::Process->value, $commands);
+        $processCommand = $commands[Command::Process->value];
 
-        self::assertSame(Command::PROCESS->getTitle(), $processCommand->getTitle());
-        self::assertSame(Command::PROCESS->getDescription(), $processCommand->getDescription());
+        self::assertSame(Command::Process->getTitle(), $processCommand->getTitle());
+        self::assertSame(Command::Process->getDescription(), $processCommand->getDescription());
     }
 
     /**
      * @throws \InvalidArgumentException If the option does not exist
      */
-    public function testGetOption(): void
+    #[Test]
+    public function getOption(): void
     {
-        $argumentOptionValueObject = $this->argumentData->getOption(Option::HELP->value);
+        $argumentOptionValueObject = $this->argumentData->getOption(Option::Help->value);
 
-        self::assertSame(Option::HELP->getShorthand(), $argumentOptionValueObject->getShorthand());
-        self::assertSame(Option::HELP->getFull(), $argumentOptionValueObject->getFull());
-        self::assertSame(Option::HELP->getDescription(), $argumentOptionValueObject->getDescription());
+        self::assertSame(Option::Help->getShorthand(), $argumentOptionValueObject->getShorthand());
+        self::assertSame(Option::Help->getFull(), $argumentOptionValueObject->getFull());
+        self::assertSame(Option::Help->getDescription(), $argumentOptionValueObject->getDescription());
     }
 
-    public function testGetExamples(): void
+    #[Test]
+    public function getExamples(): void
     {
         $examples = $this->argumentData->getExamples();
 
@@ -89,7 +94,8 @@ final class ArgumentDataTest extends TestCase
         self::assertSame(self::EXAMPLE_COMMAND, $example->getCommand());
     }
 
-    public function testGetFormat(): void
+    #[Test]
+    public function getFormat(): void
     {
         $format = $this->argumentData->getFormat();
 
@@ -99,7 +105,8 @@ final class ArgumentDataTest extends TestCase
     /**
      * @throws \InvalidArgumentException If the option does not exist
      */
-    public function testGetOptionThrowsForUnknownOption(): void
+    #[Test]
+    public function getOptionThrowsForUnknownOption(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Option "unknown" not found.');
@@ -110,19 +117,21 @@ final class ArgumentDataTest extends TestCase
     /**
      * @throws \InvalidArgumentException If the option does not exist
      */
-    public function testGetOptionByNameReturnsCorrectOption(): void
+    #[Test]
+    public function getOptionByNameReturnsCorrectOption(): void
     {
-        $argumentOptionValueObject = $this->argumentData->getOptionByName(Option::HELP->getFull());
-        self::assertSame(Option::HELP->getFull(), $argumentOptionValueObject->getFull());
+        $argumentOptionValueObject = $this->argumentData->getOptionByName(Option::Help->getFull());
+        self::assertSame(Option::Help->getFull(), $argumentOptionValueObject->getFull());
 
-        $dryRunOption = $this->argumentData->getOptionByName(Option::DRY_RUN->getShorthand());
-        self::assertSame(Option::DRY_RUN->getFull(), $dryRunOption->getFull());
+        $dryRunOption = $this->argumentData->getOptionByName(Option::DryRun->getShorthand());
+        self::assertSame(Option::DryRun->getFull(), $dryRunOption->getFull());
     }
 
     /**
      * @throws \InvalidArgumentException If the option does not exist
      */
-    public function testGetOptionByNameThrowsForUnknownName(): void
+    #[Test]
+    public function getOptionByNameThrowsForUnknownName(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Option "nonexistent" not found.');
@@ -130,7 +139,8 @@ final class ArgumentDataTest extends TestCase
         $this->argumentData->getOptionByName('nonexistent');
     }
 
-    public function testExamplesContainCorrectCommands(): void
+    #[Test]
+    public function examplesContainCorrectCommands(): void
     {
         $examples = $this->argumentData->getExamples();
 
@@ -139,7 +149,8 @@ final class ArgumentDataTest extends TestCase
         self::assertStringContainsString('vendor/bin/svg-optimizer --quiet --with-all-rules process /path/to/file.svg', $examples[2]->getCommand());
     }
 
-    public function testGetOptionsContainsAllDefinedOptions(): void
+    #[Test]
+    public function getOptionsContainsAllDefinedOptions(): void
     {
         $options = $this->argumentData->getOptions();
 
@@ -148,14 +159,16 @@ final class ArgumentDataTest extends TestCase
         }
     }
 
-    public function testGetCommandsContainsOnlyProcess(): void
+    #[Test]
+    public function getCommandsContainsOnlyProcess(): void
     {
         $commands = $this->argumentData->getCommands();
         self::assertCount(1, $commands);
-        self::assertArrayHasKey(Command::PROCESS->value, $commands);
+        self::assertArrayHasKey(Command::Process->value, $commands);
     }
 
-    public function testGetOptionsContainsAllOptions(): void
+    #[Test]
+    public function getOptionsContainsAllOptions(): void
     {
         $options = $this->argumentData->getOptions();
         foreach (Option::cases() as $option) {
@@ -166,16 +179,18 @@ final class ArgumentDataTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetOptionReturnsCorrectOption(): void
+    #[Test]
+    public function getOptionReturnsCorrectOption(): void
     {
-        $argumentOptionValueObject = $this->argumentData->getOption(Option::HELP->value);
-        self::assertSame(Option::HELP->getFull(), $argumentOptionValueObject->getFull());
+        $argumentOptionValueObject = $this->argumentData->getOption(Option::Help->value);
+        self::assertSame(Option::Help->getFull(), $argumentOptionValueObject->getFull());
     }
 
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetOptionThrowsExceptionForUnknownOption(): void
+    #[Test]
+    public function getOptionThrowsExceptionForUnknownOption(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Option "unknown" not found.');
@@ -185,32 +200,36 @@ final class ArgumentDataTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetOptionByNameReturnsCorrectOptionByShorthand(): void
+    #[Test]
+    public function getOptionByNameReturnsCorrectOptionByShorthand(): void
     {
-        $argumentOptionValueObject = $this->argumentData->getOptionByName(Option::DRY_RUN->getShorthand());
-        self::assertSame(Option::DRY_RUN->getFull(), $argumentOptionValueObject->getFull());
+        $argumentOptionValueObject = $this->argumentData->getOptionByName(Option::DryRun->getShorthand());
+        self::assertSame(Option::DryRun->getFull(), $argumentOptionValueObject->getFull());
     }
 
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetOptionByNameReturnsCorrectOptionByFullName(): void
+    #[Test]
+    public function getOptionByNameReturnsCorrectOptionByFullName(): void
     {
-        $argumentOptionValueObject = $this->argumentData->getOptionByName(Option::HELP->getFull());
-        self::assertSame(Option::HELP->getFull(), $argumentOptionValueObject->getFull());
+        $argumentOptionValueObject = $this->argumentData->getOptionByName(Option::Help->getFull());
+        self::assertSame(Option::Help->getFull(), $argumentOptionValueObject->getFull());
     }
 
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetOptionByNameThrowsExceptionForUnknownName(): void
+    #[Test]
+    public function getOptionByNameThrowsExceptionForUnknownName(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Option "nonexistent" not found.');
         $this->argumentData->getOptionByName('nonexistent');
     }
 
-    public function testGetExamplesReturnsExpectedCommands(): void
+    #[Test]
+    public function getExamplesReturnsExpectedCommands(): void
     {
         $examples = $this->argumentData->getExamples();
 
@@ -223,7 +242,8 @@ final class ArgumentDataTest extends TestCase
         self::assertStringContainsString('--with-all-rules process /path/to/file.svg', $examples[4]->getCommand());
     }
 
-    public function testGetFormatReturnsExpectedString(): void
+    #[Test]
+    public function getFormatReturnsExpectedString(): void
     {
         $format = $this->argumentData->getFormat();
         self::assertSame('vendor/bin/svg-optimizer [options] process <path1> <path2> ...', $format);

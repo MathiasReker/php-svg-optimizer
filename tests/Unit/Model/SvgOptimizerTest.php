@@ -21,6 +21,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -36,7 +37,8 @@ final class SvgOptimizerTest extends TestCase
 {
     private SvgProviderInterface $svgProvider;
 
-    public function testAddRuleAndGetRulesCount(): void
+    #[Test]
+    public function addRuleAndGetRulesCount(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
@@ -63,7 +65,8 @@ final class SvgOptimizerTest extends TestCase
         self::assertSame(1, $svgOptimizer->getRulesCount());
     }
 
-    public function testHasRules(): void
+    #[Test]
+    public function hasRules(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
@@ -96,7 +99,8 @@ final class SvgOptimizerTest extends TestCase
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
      */
-    public function testOptimizeReturnsSelfAndContentIsSet(): void
+    #[Test]
+    public function optimizeReturnsSelfAndContentIsSet(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
@@ -111,7 +115,8 @@ final class SvgOptimizerTest extends TestCase
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
      */
-    public function testOptimizeThrowsExceptionOnInvalidSvg(): void
+    #[Test]
+    public function optimizeThrowsExceptionOnInvalidSvg(): void
     {
         $invalidProvider = new class implements SvgProviderInterface {
             public function getInputContent(): string
@@ -172,7 +177,8 @@ final class SvgOptimizerTest extends TestCase
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
      */
-    public function testGetMetaDataReturnsProviderMetaData(): void
+    #[Test]
+    public function getMetaDataReturnsProviderMetaData(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
@@ -185,7 +191,8 @@ final class SvgOptimizerTest extends TestCase
         self::assertSame(0.001, $metaDataValueObject->getOptimizationTime());
     }
 
-    public function testSaveToFileReturnsSelf(): void
+    #[Test]
+    public function saveToFileReturnsSelf(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
@@ -194,7 +201,8 @@ final class SvgOptimizerTest extends TestCase
         self::assertSame($svgOptimizer, $result);
     }
 
-    public function testGetContentReturnsEmptyStringBeforeOptimize(): void
+    #[Test]
+    public function getContentReturnsEmptyStringBeforeOptimize(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
         self::assertSame('', $svgOptimizer->getContent());
@@ -205,7 +213,8 @@ final class SvgOptimizerTest extends TestCase
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
      */
-    public function testOptimizeWithNoRules(): void
+    #[Test]
+    public function optimizeWithNoRules(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
         $result = $svgOptimizer->optimize();
@@ -214,7 +223,8 @@ final class SvgOptimizerTest extends TestCase
         self::assertSame('<svg>optimized</svg>', $svgOptimizer->getContent());
     }
 
-    public function testSaveToFileChainingWithDifferentPaths(): void
+    #[Test]
+    public function saveToFileChainingWithDifferentPaths(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
@@ -225,7 +235,8 @@ final class SvgOptimizerTest extends TestCase
         self::assertSame($svgOptimizer, $result2);
     }
 
-    public function testConfigureRulesAddsOnlyEnabledRules(): void
+    #[Test]
+    public function configureRulesAddsOnlyEnabledRules(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
@@ -279,7 +290,8 @@ final class SvgOptimizerTest extends TestCase
     /**
      * @throws \LogicException
      */
-    public function testGetMetaDataThrowsIfCalledBeforeOptimize(): void
+    #[Test]
+    public function getMetaDataThrowsIfCalledBeforeOptimize(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 

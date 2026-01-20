@@ -22,6 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -41,7 +42,8 @@ final class RemoveUnsafeElementsTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      */
     #[DataProvider('provideOptimizeCases')]
-    public function testOptimize(string $content, string $expectedSvg): void
+    #[Test]
+    public function optimize(string $content, string $expectedSvg): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
         $svgOptimizer->addRule(new RemoveUnsafeElements());
@@ -524,7 +526,8 @@ final class RemoveUnsafeElementsTest extends TestCase
         ];
     }
 
-    public function testRuleIsMarkedAsRisky(): void
+    #[Test]
+    public function ruleIsMarkedAsRisky(): void
     {
         self::assertTrue(RemoveUnsafeElements::isRisky());
     }

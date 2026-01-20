@@ -19,6 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -37,7 +38,8 @@ final class ConcreteProviderTest extends TestCase
     /**
      * @throws XmlProcessingException
      */
-    public function testOptimizeTrimsXmlContent(): void
+    #[Test]
+    public function optimizeTrimsXmlContent(): void
     {
         $input = "<?xml version=\"1.0\"?>\n<svg>  hello  </svg>";
         $provider = $this->getConcreteProvider($input);
@@ -79,7 +81,8 @@ final class ConcreteProviderTest extends TestCase
      * @throws XmlProcessingException
      * @throws \InvalidArgumentException
      */
-    public function testGetMetaDataWithMbStrlen(): void
+    #[Test]
+    public function getMetaDataWithMbStrlen(): void
     {
         $input = "<?xml version=\"1.0\"?>\n<svg>✓漢</svg>";
         $provider = $this->getConcreteProvider($input);
@@ -96,7 +99,8 @@ final class ConcreteProviderTest extends TestCase
      * @throws XmlProcessingException
      * @throws IOException
      */
-    public function testSaveToFileWritesCorrectly(): void
+    #[Test]
+    public function saveToFileWritesCorrectly(): void
     {
         $input = '<svg>saved</svg>';
         $provider = $this->getConcreteProvider($input);
@@ -113,7 +117,8 @@ final class ConcreteProviderTest extends TestCase
      * @throws XmlProcessingException
      * @throws IOException
      */
-    public function testSaveToFileThrowsWhenDirectoryFails(): void
+    #[Test]
+    public function saveToFileThrowsWhenDirectoryFails(): void
     {
         $this->expectException(IOException::class);
 
@@ -134,7 +139,8 @@ final class ConcreteProviderTest extends TestCase
      * @throws XmlProcessingException
      * @throws IOException
      */
-    public function testSaveToFileCreatesDirectory(): void
+    #[Test]
+    public function saveToFileCreatesDirectory(): void
     {
         $input = '<svg>dir creation</svg>';
         $provider = $this->getConcreteProvider($input);

@@ -38,7 +38,7 @@ final readonly class OptionIntent
      */
     public function isDryRun(): bool
     {
-        return $this->argumentParser->hasOption(Option::DRY_RUN);
+        return $this->argumentParser->hasOption(Option::DryRun);
     }
 
     /**
@@ -50,7 +50,7 @@ final readonly class OptionIntent
      */
     public function isQuiet(): bool
     {
-        return $this->argumentParser->hasOption(Option::QUIET);
+        return $this->argumentParser->hasOption(Option::Quiet);
     }
 
     /**
@@ -62,7 +62,7 @@ final readonly class OptionIntent
      */
     public function isHelp(): bool
     {
-        return $this->argumentParser->hasOption(Option::HELP);
+        return $this->argumentParser->hasOption(Option::Help);
     }
 
     /**
@@ -74,7 +74,7 @@ final readonly class OptionIntent
      */
     public function isVersion(): bool
     {
-        return $this->argumentParser->hasOption(Option::VERSION);
+        return $this->argumentParser->hasOption(Option::Version);
     }
 
     /**
@@ -88,8 +88,8 @@ final readonly class OptionIntent
      */
     public function getConfigPath(): string
     {
-        return $this->argumentParser->hasOption(Option::CONFIG)
-            ? $this->argumentParser->getOption(Option::CONFIG)
+        return $this->argumentParser->hasOption(Option::Config)
+            ? $this->argumentParser->getOption(Option::Config)
             : '';
     }
 
@@ -102,7 +102,7 @@ final readonly class OptionIntent
      */
     public function allowRisky(): bool
     {
-        return $this->argumentParser->hasOption(Option::ALLOW_RISKY);
+        return $this->argumentParser->hasOption(Option::AllowRisky);
     }
 
     /**
@@ -112,6 +112,6 @@ final readonly class OptionIntent
      */
     public function withAllRules(): bool
     {
-        return $this->argumentParser->hasOption(Option::WITH_ALL_RULES);
+        return $this->argumentParser->hasOption(Option::WithAllRules);
     }
 }

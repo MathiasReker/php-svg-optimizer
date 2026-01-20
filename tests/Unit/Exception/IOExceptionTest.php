@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Exception;
 
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,7 +22,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(IOException::class)]
 final class IOExceptionTest extends TestCase
 {
-    public function testCanBeInstantiated(): void
+    #[Test]
+    public function canBeInstantiated(): void
     {
         $ioException = new IOException('IO operation failed', 500);
 

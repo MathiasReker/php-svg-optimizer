@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output\Stream;
 
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -24,7 +25,8 @@ final class MemoryStreamTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testConstructorOpensMemoryStreamSuccessfully(): void
+    #[Test]
+    public function constructorOpensMemoryStreamSuccessfully(): void
     {
         $this->expectNotToPerformAssertions();
 
@@ -34,7 +36,8 @@ final class MemoryStreamTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testWriteAndGetContents(): void
+    #[Test]
+    public function writeAndGetContents(): void
     {
         $memoryStream = new MemoryStream();
         $memoryStream->write('Hello');
@@ -49,7 +52,8 @@ final class MemoryStreamTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testMultipleWritesAndGetContent(): void
+    #[Test]
+    public function multipleWritesAndGetContent(): void
     {
         $memoryStream = new MemoryStream();
         $memoryStream->write('Line 1');
@@ -68,7 +72,8 @@ final class MemoryStreamTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testGetContentInitiallyEmpty(): void
+    #[Test]
+    public function getContentInitiallyEmpty(): void
     {
         $memoryStream = new MemoryStream();
 
@@ -80,7 +85,8 @@ final class MemoryStreamTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testGetContentConsistentUnlessChanged(): void
+    #[Test]
+    public function getContentConsistentUnlessChanged(): void
     {
         $memoryStream = new MemoryStream();
         $memoryStream->writeln('Snapshot');
@@ -101,7 +107,8 @@ final class MemoryStreamTest extends TestCase
      * @throws \RuntimeException
      * @throws \ReflectionException
      */
-    public function testWriteAndManualRewind(): void
+    #[Test]
+    public function writeAndManualRewind(): void
     {
         $memoryStream = new MemoryStream();
         $memoryStream->write('Testing');
@@ -119,7 +126,8 @@ final class MemoryStreamTest extends TestCase
      * @throws \RuntimeException
      * @throws \ReflectionException
      */
-    public function testStreamIsClosedOnDestruct(): void
+    #[Test]
+    public function streamIsClosedOnDestruct(): void
     {
         $memoryStream = new MemoryStream();
 
@@ -135,7 +143,8 @@ final class MemoryStreamTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testWriteEmptyString(): void
+    #[Test]
+    public function writeEmptyString(): void
     {
         $memoryStream = new MemoryStream();
         $memoryStream->write('');
@@ -145,7 +154,8 @@ final class MemoryStreamTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testWriteBinaryData(): void
+    #[Test]
+    public function writeBinaryData(): void
     {
         $memoryStream = new MemoryStream();
         $binaryData = "\x00\xFF\x00\xFF";
@@ -157,7 +167,8 @@ final class MemoryStreamTest extends TestCase
      * @throws \RuntimeException
      * @throws \ReflectionException
      */
-    public function testGetContentAfterStreamClosedThrows(): void
+    #[Test]
+    public function getContentAfterStreamClosedThrows(): void
     {
         $memoryStream = new MemoryStream();
 

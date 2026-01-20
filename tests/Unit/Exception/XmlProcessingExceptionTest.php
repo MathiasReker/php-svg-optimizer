@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Exception;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,7 +22,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(XmlProcessingException::class)]
 final class XmlProcessingExceptionTest extends TestCase
 {
-    public function testExceptionCanBeInstantiated(): void
+    #[Test]
+    public function exceptionCanBeInstantiated(): void
     {
         $xmlProcessingException = new XmlProcessingException('Test message', 123);
 

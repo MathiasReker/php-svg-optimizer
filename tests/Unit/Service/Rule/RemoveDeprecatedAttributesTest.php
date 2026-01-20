@@ -23,6 +23,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -43,7 +44,8 @@ final class RemoveDeprecatedAttributesTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      */
     #[DataProvider('provideOptimizeCases')]
-    public function testOptimize(string $content, string $expected): void
+    #[Test]
+    public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
         $svgOptimizer->addRule(new RemoveDeprecatedAttributes());
@@ -219,7 +221,8 @@ final class RemoveDeprecatedAttributesTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testReplaceAttributesSkipsNonDomElementNodes(): void
+    #[Test]
+    public function replaceAttributesSkipsNonDomElementNodes(): void
     {
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>');
@@ -246,7 +249,8 @@ final class RemoveDeprecatedAttributesTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testRemoveAttributesSkipsNonDomElementNodes(): void
+    #[Test]
+    public function removeAttributesSkipsNonDomElementNodes(): void
     {
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>');
@@ -269,7 +273,8 @@ final class RemoveDeprecatedAttributesTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testRemoveNamespaceFromSvgTagsRemovesXlinkNamespace(): void
+    #[Test]
+    public function removeNamespaceFromSvgTagsRemovesXlinkNamespace(): void
     {
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>');
@@ -287,7 +292,8 @@ final class RemoveDeprecatedAttributesTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testRemoveNamespaceFromSvgTagsDoesNothingIfNoXlink(): void
+    #[Test]
+    public function removeNamespaceFromSvgTagsDoesNothingIfNoXlink(): void
     {
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"></svg>');

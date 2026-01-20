@@ -22,6 +22,7 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -46,7 +47,8 @@ final class OutputManagerTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testPrintError(): void
+    #[Test]
+    public function printError(): void
     {
         $this->outputManager->printError('Something went wrong');
         $output = $this->memoryStream->getContent();
@@ -57,7 +59,8 @@ final class OutputManagerTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testPrintVersion(): void
+    #[Test]
+    public function printVersion(): void
     {
         $this->outputManager->printVersion('PHP SVG Optimizer', '1.2.3', 'Mathias Reker');
         $output = $this->memoryStream->getContent();
@@ -71,7 +74,8 @@ final class OutputManagerTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testPrintOptimizationResult(): void
+    #[Test]
+    public function printOptimizationResult(): void
     {
         $this->outputManager->printOptimizationResult('file.svg', 42.567_89);
         $output = $this->memoryStream->getContent();
@@ -82,7 +86,8 @@ final class OutputManagerTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testPrintHelp(): void
+    #[Test]
+    public function printHelp(): void
     {
         $this->outputManager->printHelp();
         $output = $this->memoryStream->getContent();
@@ -104,7 +109,8 @@ final class OutputManagerTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testPrintHelpIncludesOptions(): void
+    #[Test]
+    public function printHelpIncludesOptions(): void
     {
         $this->outputManager->printHelp();
         $output = $this->memoryStream->getContent();
@@ -116,7 +122,8 @@ final class OutputManagerTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testPrintHelpIncludesCommands(): void
+    #[Test]
+    public function printHelpIncludesCommands(): void
     {
         $this->outputManager->printHelp();
         $output = $this->memoryStream->getContent();
@@ -128,7 +135,8 @@ final class OutputManagerTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testPrintTotalSummary(): void
+    #[Test]
+    public function printTotalSummary(): void
     {
         $this->outputManager->printTotalSummary(
             3,

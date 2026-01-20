@@ -16,6 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,7 +32,8 @@ final class ConcreteXmlProcessorTest extends TestCase
      *
      * @throws XmlProcessingException
      */
-    public function testProcessValidSvgContent(): void
+    #[Test]
+    public function processValidSvgContent(): void
     {
         $svg = '<svg><rect width="100" height="100" style="fill:blue;"/></svg>';
         $domDocument = new \DOMDocument();
@@ -57,7 +59,8 @@ final class ConcreteXmlProcessorTest extends TestCase
      *
      * @throws XmlProcessingException
      */
-    public function testProcessWithCallbackReturningNonStringThrows(): void
+    #[Test]
+    public function processWithCallbackReturningNonStringThrows(): void
     {
         $svg = '<svg><rect width="100" height="100"/></svg>';
         $domDocument = new \DOMDocument();
@@ -81,7 +84,8 @@ final class ConcreteXmlProcessorTest extends TestCase
     /**
      * @throws XmlProcessingException
      */
-    public function testProcessInvalidContentThrows(): void
+    #[Test]
+    public function processInvalidContentThrows(): void
     {
         $svg = '<svg></svg>';
         $domDocument = new \DOMDocument();

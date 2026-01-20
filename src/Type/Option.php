@@ -16,19 +16,19 @@ namespace MathiasReker\PhpSvgOptimizer\Type;
  */
 enum Option: string
 {
-    case HELP = 'help';
+    case Help = 'help';
 
-    case CONFIG = 'config';
+    case Config = 'config';
 
-    case DRY_RUN = 'dry-run';
+    case DryRun = 'dry-run';
 
-    case ALLOW_RISKY = 'allow-risky';
+    case AllowRisky = 'allow-risky';
 
-    case WITH_ALL_RULES = 'with-all-rules';
+    case WithAllRules = 'with-all-rules';
 
-    case QUIET = 'quiet';
+    case Quiet = 'quiet';
 
-    case VERSION = 'version';
+    case Version = 'version';
 
     /**
      * Get the shorthand for the option.
@@ -36,13 +36,13 @@ enum Option: string
     public function getShorthand(): string
     {
         return match ($this->value) {
-            self::HELP->value => '-h',
-            self::CONFIG->value => '-c',
-            self::DRY_RUN->value => '-d',
-            self::ALLOW_RISKY->value => '-r',
-            self::WITH_ALL_RULES->value => '-a',
-            self::QUIET->value => '-q',
-            self::VERSION->value => '-v',
+            self::Help->value => '-h',
+            self::Config->value => '-c',
+            self::DryRun->value => '-d',
+            self::AllowRisky->value => '-r',
+            self::WithAllRules->value => '-a',
+            self::Quiet->value => '-q',
+            self::Version->value => '-v',
         };
     }
 
@@ -52,13 +52,13 @@ enum Option: string
     public function getFull(): string
     {
         return match ($this->value) {
-            self::HELP->value => '--help',
-            self::CONFIG->value => '--config',
-            self::DRY_RUN->value => '--dry-run',
-            self::ALLOW_RISKY->value => '--allow-risky',
-            self::WITH_ALL_RULES->value => '--with-all-rules',
-            self::QUIET->value => '--quiet',
-            self::VERSION->value => '--version',
+            self::Help->value => '--help',
+            self::Config->value => '--config',
+            self::DryRun->value => '--dry-run',
+            self::AllowRisky->value => '--allow-risky',
+            self::WithAllRules->value => '--with-all-rules',
+            self::Quiet->value => '--quiet',
+            self::Version->value => '--version',
         };
     }
 
@@ -68,13 +68,13 @@ enum Option: string
     public function getDescription(): string
     {
         return match ($this->value) {
-            self::HELP->value => 'Display help for the command.',
-            self::CONFIG->value => 'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.',
-            self::DRY_RUN->value => 'Only calculate potential savings without modifying the files.',
-            self::ALLOW_RISKY->value => 'Explicitly enables risky rules, allowing them to be applied.',
-            self::WITH_ALL_RULES->value => 'Enable all non-risky rules. Use --allow-risky to include risky rules as well.',
-            self::QUIET->value => 'Suppress all output except errors.',
-            self::VERSION->value => 'Display the version of the library.',
+            self::Help->value => 'Display help for the command.',
+            self::Config->value => 'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.',
+            self::DryRun->value => 'Only calculate potential savings without modifying the files.',
+            self::AllowRisky->value => 'Explicitly enables risky rules, allowing them to be applied.',
+            self::WithAllRules->value => 'Enable all non-risky rules. Use --allow-risky to include risky rules as well.',
+            self::Quiet->value => 'Suppress all output except errors.',
+            self::Version->value => 'Display the version of the library.',
         };
     }
 }

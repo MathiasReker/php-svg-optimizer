@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Formatter;
 
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,7 +22,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(XmlFormatter::class)]
 final class XmlFormatterTest extends TestCase
 {
-    public function testRemoveLineFeedsAndTabs(): void
+    #[Test]
+    public function removeLineFeedsAndTabs(): void
     {
         $input = "<svg>\n\t<rect/>\r\n</svg>";
         $expected = '<svg><rect/></svg>';
@@ -30,7 +32,8 @@ final class XmlFormatterTest extends TestCase
         self::assertSame($expected, $actual);
     }
 
-    public function testRemoveWhitespaceBetweenTags(): void
+    #[Test]
+    public function removeWhitespaceBetweenTags(): void
     {
         $input = '<svg>   <rect>   </rect>   <circle/>   </svg>';
         $expected = '<svg><rect></rect><circle/></svg>';
@@ -39,7 +42,8 @@ final class XmlFormatterTest extends TestCase
         self::assertSame($expected, $actual);
     }
 
-    public function testRemoveLineFeedsAndTabsDoesNotAffectSpaces(): void
+    #[Test]
+    public function removeLineFeedsAndTabsDoesNotAffectSpaces(): void
     {
         $input = '<svg>   <rect>Text content</rect>   </svg>';
         $expected = $input;
@@ -48,7 +52,8 @@ final class XmlFormatterTest extends TestCase
         self::assertSame($expected, $actual);
     }
 
-    public function testRemoveWhitespaceBetweenTagsPreservesInnerTextSpacing(): void
+    #[Test]
+    public function removeWhitespaceBetweenTagsPreservesInnerTextSpacing(): void
     {
         $input = '<svg><text> Some   spaced  text </text></svg>';
         $expected = '<svg><text> Some   spaced  text </text></svg>';

@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Filesystem;
 
 use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -23,14 +24,16 @@ final class FinderTest extends TestCase
 {
     private string $tempDir;
 
-    public function testReturnsEmptyArrayForInvalidDirectory(): void
+    #[Test]
+    public function returnsEmptyArrayForInvalidDirectory(): void
     {
         $finder = (new Finder())->in('/non/existing/path');
 
         self::assertSame([], $finder->find());
     }
 
-    public function testFindsFilesWithSpecificExtension(): void
+    #[Test]
+    public function findsFilesWithSpecificExtension(): void
     {
         $svg = $this->tempDir . '/icon.svg';
         $txt = $this->tempDir . '/note.txt';
@@ -49,7 +52,8 @@ final class FinderTest extends TestCase
         self::assertSame(realpath($svg), $result[0]);
     }
 
-    public function testFindsFilesCaseInsensitiveExtension(): void
+    #[Test]
+    public function findsFilesCaseInsensitiveExtension(): void
     {
         $svg = $this->tempDir . '/icon.SVG';
         file_put_contents($svg, '<svg></svg>');
@@ -65,7 +69,8 @@ final class FinderTest extends TestCase
         self::assertSame(realpath($svg), $result[0]);
     }
 
-    public function testFindsFilesRecursively(): void
+    #[Test]
+    public function findsFilesRecursively(): void
     {
         $nestedDir = $this->tempDir . '/nested';
         mkdir($nestedDir, 0o777, true);
@@ -88,7 +93,8 @@ final class FinderTest extends TestCase
         self::assertContains(realpath($svg2), $result);
     }
 
-    public function testFindIgnoresDirectoriesWhenOnlyFiles(): void
+    #[Test]
+    public function findIgnoresDirectoriesWhenOnlyFiles(): void
     {
         $dirPath = $this->tempDir . '/subdir';
         mkdir($dirPath);
@@ -103,7 +109,8 @@ final class FinderTest extends TestCase
         self::assertSame([], $result);
     }
 
-    public function testFindReturnsEmptyWhenExtensionDoesNotMatch(): void
+    #[Test]
+    public function findReturnsEmptyWhenExtensionDoesNotMatch(): void
     {
         $file = $this->tempDir . '/file.txt';
         file_put_contents($file, 'some content');
@@ -116,7 +123,8 @@ final class FinderTest extends TestCase
         self::assertSame([], $finder->find());
     }
 
-    public function testNotReturnsDirectoriesIfFilesNotSet(): void
+    #[Test]
+    public function notReturnsDirectoriesIfFilesNotSet(): void
     {
         $subDir = $this->tempDir . '/subfolder';
         mkdir($subDir);
@@ -129,7 +137,8 @@ final class FinderTest extends TestCase
         self::assertNotContains(realpath($subDir), $results);
     }
 
-    public function testFindsAllFilesWhenNoExtensionSet(): void
+    #[Test]
+    public function findsAllFilesWhenNoExtensionSet(): void
     {
         $svg = $this->tempDir . '/icon.svg';
         $txt = $this->tempDir . '/note.txt';
@@ -148,7 +157,8 @@ final class FinderTest extends TestCase
         self::assertContains(realpath($txt), $results);
     }
 
-    public function testSkipsFilesWithInvalidRealPath(): void
+    #[Test]
+    public function skipsFilesWithInvalidRealPath(): void
     {
         $brokenLink = $this->tempDir . '/broken.svg';
         symlink('/nonexistent/path.svg', $brokenLink);
@@ -163,7 +173,8 @@ final class FinderTest extends TestCase
         self::assertNotContains($brokenLink, $results);
     }
 
-    public function testWithExtensionMatchesMixedCase(): void
+    #[Test]
+    public function withExtensionMatchesMixedCase(): void
     {
         $svgUpper = $this->tempDir . '/IMAGE.SvG';
         file_put_contents($svgUpper, '<svg></svg>');

@@ -33,6 +33,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -63,7 +64,8 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
      */
-    public function testOptimizeReturnsService(): void
+    #[Test]
+    public function optimizeReturnsService(): void
     {
         $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg);
         $result = $svgOptimizerFacade->optimize();
@@ -77,7 +79,8 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
      */
-    public function testSaveToFileWritesOptimizedSvg(): void
+    #[Test]
+    public function saveToFileWritesOptimizedSvg(): void
     {
         $file = sys_get_temp_dir() . '/optimized-test.svg';
 
@@ -99,7 +102,8 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public function testFromFileThrowsExceptionOnInvalidPath(): void
+    #[Test]
+    public function fromFileThrowsExceptionOnInvalidPath(): void
     {
         $this->expectException(FileNotFoundException::class);
         SvgOptimizerFacade::fromFile('/nonexistent/path.svg');
@@ -110,7 +114,8 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
      */
-    public function testWithRulesConfiguresRules(): void
+    #[Test]
+    public function withRulesConfiguresRules(): void
     {
         $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)
             ->withRules(true, true, true);
@@ -128,7 +133,8 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
      */
-    public function testAllowRiskyEnablesRiskyRules(): void
+    #[Test]
+    public function allowRiskyEnablesRiskyRules(): void
     {
         $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)
             ->allowRisky();
@@ -147,7 +153,8 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
      */
-    public function testGetContentReturnsSvg(): void
+    #[Test]
+    public function getContentReturnsSvg(): void
     {
         $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)->optimize();
 
@@ -160,7 +167,8 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
      */
-    public function testOptimizeThrowsExceptionForRiskyRules(): void
+    #[Test]
+    public function optimizeThrowsExceptionForRiskyRules(): void
     {
         $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)
             ->withRules(false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true);
@@ -174,7 +182,8 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
      */
-    public function testAllowRiskyFalseDoesNotEnableRiskyRules(): void
+    #[Test]
+    public function allowRiskyFalseDoesNotEnableRiskyRules(): void
     {
         $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)
             ->withRules(false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)
@@ -189,7 +198,8 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
      */
-    public function testWithRulesDefaultDoesNotApplyAnyRules(): void
+    #[Test]
+    public function withRulesDefaultDoesNotApplyAnyRules(): void
     {
         $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)->withRules();
         $svgOptimizerFacade->optimize();
@@ -204,7 +214,8 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
      */
-    public function testMultipleRulesApplied(): void
+    #[Test]
+    public function multipleRulesApplied(): void
     {
         $svg = '<svg xmlns="http://www.w3.org/2000/svg"><title>T</title><!-- c --></svg>';
 
@@ -223,7 +234,8 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
      */
-    public function testMethodChaining(): void
+    #[Test]
+    public function methodChaining(): void
     {
         $file = sys_get_temp_dir() . '/chained-test.svg';
 
@@ -241,7 +253,8 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws IOException
      * @throws FileNotFoundException
      */
-    public function testFromStringAndFromFileReturnInstances(): void
+    #[Test]
+    public function fromStringAndFromFileReturnInstances(): void
     {
         $file = sys_get_temp_dir() . '/instance-test.svg';
         file_put_contents($file, $this->sampleSvg);

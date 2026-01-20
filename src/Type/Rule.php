@@ -49,90 +49,90 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
  */
 enum Rule: string
 {
-    case CONVERT_COLORS_TO_HEX = ConvertColorsToHex::class;
+    case ConvertColorsToHex = ConvertColorsToHex::class;
 
-    case CONVERT_CSS_CLASSES_TO_ATTRIBUTES = ConvertCssClassesToAttributes::class;
+    case ConvertCssClassesToAttributes = ConvertCssClassesToAttributes::class;
 
-    case CONVERT_EMPTY_TAGS_TO_SELF_CLOSING = ConvertEmptyTagsToSelfClosing::class;
+    case ConvertEmptyTagsToSelfClosing = ConvertEmptyTagsToSelfClosing::class;
 
-    case CONVERT_INLINE_STYLES_TO_ATTRIBUTES = ConvertInlineStylesToAttributes::class;
+    case ConvertInlineStylesToAttributes = ConvertInlineStylesToAttributes::class;
 
-    case FLATTEN_GROUPS = FlattenGroups::class;
+    case FlattenGroups = FlattenGroups::class;
 
-    case MINIFY_SVG_COORDINATES = MinifySvgCoordinates::class;
+    case MinifySvgCoordinates = MinifySvgCoordinates::class;
 
-    case MINIFY_TRANSFORMATIONS = MinifyTransformations::class;
+    case MinifyTransformations = MinifyTransformations::class;
 
-    case REMOVE_ARIA_AND_ROLE = RemoveAriaAndRole::class;
+    case RemoveAriaAndRole = RemoveAriaAndRole::class;
 
-    case REMOVE_COMMENTS = RemoveComments::class;
+    case RemoveComments = RemoveComments::class;
 
-    case REMOVE_DEFAULT_ATTRIBUTES = RemoveDefaultAttributes::class;
+    case RemoveDefaultAttributes = RemoveDefaultAttributes::class;
 
-    case REMOVE_DEPRECATED_ATTRIBUTES = RemoveDeprecatedAttributes::class;
+    case RemoveDeprecatedAttributes = RemoveDeprecatedAttributes::class;
 
-    case REMOVE_DOCTYPE = RemoveDoctype::class;
+    case RemoveDoctype = RemoveDoctype::class;
 
-    case REMOVE_DUPLICATE_ELEMENTS = RemoveDuplicateElements::class;
+    case RemoveDuplicateElements = RemoveDuplicateElements::class;
 
-    case REMOVE_ENABLE_BACKGROUND_ATTRIBUTE = RemoveEnableBackgroundAttribute::class;
+    case RemoveEnableBackgroundAttribute = RemoveEnableBackgroundAttribute::class;
 
-    case REMOVE_EMPTY_GROUPS = RemoveEmptyGroups::class;
+    case RemoveEmptyGroups = RemoveEmptyGroups::class;
 
-    case REMOVE_EMPTY_TEXT_ELEMENTS = RemoveEmptyTextElements::class;
+    case RemoveEmptyTextElements = RemoveEmptyTextElements::class;
 
-    case REMOVE_EMPTY_ATTRIBUTES = RemoveEmptyAttributes::class;
+    case RemoveEmptyAttributes = RemoveEmptyAttributes::class;
 
-    case REMOVE_INKSCAPE_FOOTPRINTS = RemoveInkscapeFootprints::class;
+    case RemoveInkscapeFootprints = RemoveInkscapeFootprints::class;
 
-    case REMOVE_INVISIBLE_CHARACTERS = RemoveInvisibleCharacters::class;
+    case RemoveInvisibleCharacters = RemoveInvisibleCharacters::class;
 
-    case REMOVE_METADATA = RemoveMetadata::class;
+    case RemoveMetadata = RemoveMetadata::class;
 
-    case REMOVE_TITLE_AND_DESC = RemoveTitleAndDesc::class;
+    case RemoveTitleAndDesc = RemoveTitleAndDesc::class;
 
-    case REMOVE_UNNECESSARY_WHITESPACE = RemoveUnnecessaryWhitespace::class;
+    case RemoveUnnecessaryWhitespace = RemoveUnnecessaryWhitespace::class;
 
-    case REMOVE_UNSAFE_ELEMENTS = RemoveUnsafeElements::class;
+    case RemoveUnsafeElements = RemoveUnsafeElements::class;
 
-    case REMOVE_UNUSED_MASKS = RemoveUnusedMasks::class;
+    case RemoveUnusedMasks = RemoveUnusedMasks::class;
 
-    case REMOVE_UNUSED_NAMESPACES = RemoveUnusedNamespaces::class;
+    case RemoveUnusedNamespaces = RemoveUnusedNamespaces::class;
 
-    case REMOVE_WIDTH_HEIGHT_ATTRIBUTES = RemoveWidthHeightAttributes::class;
+    case RemoveWidthHeightAttributes = RemoveWidthHeightAttributes::class;
 
-    case SORT_ATTRIBUTES = SortAttributes::class;
+    case SortAttributes = SortAttributes::class;
 
     public function configKey(): string
     {
         return match ($this->value) {
-            self::CONVERT_COLORS_TO_HEX->value => 'convertColorsToHex',
-            self::CONVERT_CSS_CLASSES_TO_ATTRIBUTES->value => 'convertCssClassesToAttributes',
-            self::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->value => 'convertEmptyTagsToSelfClosing',
-            self::CONVERT_INLINE_STYLES_TO_ATTRIBUTES->value => 'convertInlineStylesToAttributes',
-            self::FLATTEN_GROUPS->value => 'flattenGroups',
-            self::MINIFY_SVG_COORDINATES->value => 'minifySvgCoordinates',
-            self::MINIFY_TRANSFORMATIONS->value => 'minifyTransformations',
-            self::REMOVE_ARIA_AND_ROLE->value => 'removeAriaAndRole',
-            self::REMOVE_COMMENTS->value => 'removeComments',
-            self::REMOVE_DEFAULT_ATTRIBUTES->value => 'removeDefaultAttributes',
-            self::REMOVE_DEPRECATED_ATTRIBUTES->value => 'removeDeprecatedAttributes',
-            self::REMOVE_DOCTYPE->value => 'removeDoctype',
-            self::REMOVE_DUPLICATE_ELEMENTS->value => 'removeDuplicateElements',
-            self::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE->value => 'removeEnableBackgroundAttribute',
-            self::REMOVE_EMPTY_GROUPS->value => 'removeEmptyGroups',
-            self::REMOVE_EMPTY_TEXT_ELEMENTS->value => 'removeEmptyTextElements',
-            self::REMOVE_EMPTY_ATTRIBUTES->value => 'removeEmptyAttributes',
-            self::REMOVE_INKSCAPE_FOOTPRINTS->value => 'removeInkscapeFootprints',
-            self::REMOVE_INVISIBLE_CHARACTERS->value => 'removeInvisibleCharacters',
-            self::REMOVE_METADATA->value => 'removeMetadata',
-            self::REMOVE_TITLE_AND_DESC->value => 'removeTitleAndDesc',
-            self::REMOVE_UNNECESSARY_WHITESPACE->value => 'removeUnnecessaryWhitespace',
-            self::REMOVE_UNSAFE_ELEMENTS->value => 'removeUnsafeElements',
-            self::REMOVE_UNUSED_MASKS->value => 'removeUnusedMasks',
-            self::REMOVE_UNUSED_NAMESPACES->value => 'removeUnusedNamespaces',
-            self::REMOVE_WIDTH_HEIGHT_ATTRIBUTES->value => 'removeWidthHeightAttributes',
-            self::SORT_ATTRIBUTES->value => 'sortAttributes',
+            self::ConvertColorsToHex->value => 'convertColorsToHex',
+            self::ConvertCssClassesToAttributes->value => 'convertCssClassesToAttributes',
+            self::ConvertEmptyTagsToSelfClosing->value => 'convertEmptyTagsToSelfClosing',
+            self::ConvertInlineStylesToAttributes->value => 'convertInlineStylesToAttributes',
+            self::FlattenGroups->value => 'flattenGroups',
+            self::MinifySvgCoordinates->value => 'minifySvgCoordinates',
+            self::MinifyTransformations->value => 'minifyTransformations',
+            self::RemoveAriaAndRole->value => 'removeAriaAndRole',
+            self::RemoveComments->value => 'removeComments',
+            self::RemoveDefaultAttributes->value => 'removeDefaultAttributes',
+            self::RemoveDeprecatedAttributes->value => 'removeDeprecatedAttributes',
+            self::RemoveDoctype->value => 'removeDoctype',
+            self::RemoveDuplicateElements->value => 'removeDuplicateElements',
+            self::RemoveEnableBackgroundAttribute->value => 'removeEnableBackgroundAttribute',
+            self::RemoveEmptyGroups->value => 'removeEmptyGroups',
+            self::RemoveEmptyTextElements->value => 'removeEmptyTextElements',
+            self::RemoveEmptyAttributes->value => 'removeEmptyAttributes',
+            self::RemoveInkscapeFootprints->value => 'removeInkscapeFootprints',
+            self::RemoveInvisibleCharacters->value => 'removeInvisibleCharacters',
+            self::RemoveMetadata->value => 'removeMetadata',
+            self::RemoveTitleAndDesc->value => 'removeTitleAndDesc',
+            self::RemoveUnnecessaryWhitespace->value => 'removeUnnecessaryWhitespace',
+            self::RemoveUnsafeElements->value => 'removeUnsafeElements',
+            self::RemoveUnusedMasks->value => 'removeUnusedMasks',
+            self::RemoveUnusedNamespaces->value => 'removeUnusedNamespaces',
+            self::RemoveWidthHeightAttributes->value => 'removeWidthHeightAttributes',
+            self::SortAttributes->value => 'sortAttributes',
         };
     }
 }

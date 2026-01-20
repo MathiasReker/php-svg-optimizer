@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Type;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -23,7 +24,8 @@ use PHPUnit\Framework\TestCase;
 final class OptionTest extends TestCase
 {
     #[DataProvider('provideOptimizeCases')]
-    public function testOptimize(Option $option, string $shorthand): void
+    #[Test]
+    public function optimize(Option $option, string $shorthand): void
     {
         self::assertSame($shorthand, $option->getShorthand());
     }
@@ -33,16 +35,17 @@ final class OptionTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
-        yield [Option::HELP, '-h'];
-        yield [Option::CONFIG, '-c'];
-        yield [Option::DRY_RUN, '-d'];
-        yield [Option::ALLOW_RISKY, '-r'];
-        yield [Option::QUIET, '-q'];
-        yield [Option::VERSION, '-v'];
+        yield [Option::Help, '-h'];
+        yield [Option::Config, '-c'];
+        yield [Option::DryRun, '-d'];
+        yield [Option::AllowRisky, '-r'];
+        yield [Option::Quiet, '-q'];
+        yield [Option::Version, '-v'];
     }
 
     #[DataProvider('provideGetFullCases')]
-    public function testGetFull(Option $option, string $full): void
+    #[Test]
+    public function getFull(Option $option, string $full): void
     {
         self::assertSame($full, $option->getFull());
     }
@@ -52,16 +55,17 @@ final class OptionTest extends TestCase
      */
     public static function provideGetFullCases(): iterable
     {
-        yield [Option::HELP, '--help'];
-        yield [Option::CONFIG, '--config'];
-        yield [Option::DRY_RUN, '--dry-run'];
-        yield [Option::ALLOW_RISKY, '--allow-risky'];
-        yield [Option::QUIET, '--quiet'];
-        yield [Option::VERSION, '--version'];
+        yield [Option::Help, '--help'];
+        yield [Option::Config, '--config'];
+        yield [Option::DryRun, '--dry-run'];
+        yield [Option::AllowRisky, '--allow-risky'];
+        yield [Option::Quiet, '--quiet'];
+        yield [Option::Version, '--version'];
     }
 
     #[DataProvider('provideGetDescriptionCases')]
-    public function testGetDescription(Option $option, string $description): void
+    #[Test]
+    public function getDescription(Option $option, string $description): void
     {
         self::assertSame($description, $option->getDescription());
     }
@@ -71,16 +75,17 @@ final class OptionTest extends TestCase
      */
     public static function provideGetDescriptionCases(): iterable
     {
-        yield [Option::HELP, 'Display help for the command.'];
-        yield [Option::CONFIG, 'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.'];
-        yield [Option::DRY_RUN, 'Only calculate potential savings without modifying the files.'];
-        yield [Option::ALLOW_RISKY, 'Explicitly enables risky rules, allowing them to be applied.'];
-        yield [Option::QUIET, 'Suppress all output except errors.'];
-        yield [Option::VERSION, 'Display the version of the library.'];
+        yield [Option::Help, 'Display help for the command.'];
+        yield [Option::Config, 'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.'];
+        yield [Option::DryRun, 'Only calculate potential savings without modifying the files.'];
+        yield [Option::AllowRisky, 'Explicitly enables risky rules, allowing them to be applied.'];
+        yield [Option::Quiet, 'Suppress all output except errors.'];
+        yield [Option::Version, 'Display the version of the library.'];
     }
 
     #[DataProvider('provideEnumValuesCases')]
-    public function testEnumValues(Option $option, string $value): void
+    #[Test]
+    public function enumValues(Option $option, string $value): void
     {
         self::assertSame($value, $option->value);
     }
@@ -90,62 +95,65 @@ final class OptionTest extends TestCase
      */
     public static function provideEnumValuesCases(): iterable
     {
-        yield [Option::HELP, 'help'];
-        yield [Option::CONFIG, 'config'];
-        yield [Option::DRY_RUN, 'dry-run'];
-        yield [Option::ALLOW_RISKY, 'allow-risky'];
-        yield [Option::QUIET, 'quiet'];
-        yield [Option::VERSION, 'version'];
+        yield [Option::Help, 'help'];
+        yield [Option::Config, 'config'];
+        yield [Option::DryRun, 'dry-run'];
+        yield [Option::AllowRisky, 'allow-risky'];
+        yield [Option::Quiet, 'quiet'];
+        yield [Option::Version, 'version'];
     }
 
-    public function testShorthandValues(): void
+    #[Test]
+    public function shorthandValues(): void
     {
-        self::assertSame('-h', Option::HELP->getShorthand());
-        self::assertSame('-c', Option::CONFIG->getShorthand());
-        self::assertSame('-d', Option::DRY_RUN->getShorthand());
-        self::assertSame('-r', Option::ALLOW_RISKY->getShorthand());
-        self::assertSame('-a', Option::WITH_ALL_RULES->getShorthand());
-        self::assertSame('-q', Option::QUIET->getShorthand());
-        self::assertSame('-v', Option::VERSION->getShorthand());
+        self::assertSame('-h', Option::Help->getShorthand());
+        self::assertSame('-c', Option::Config->getShorthand());
+        self::assertSame('-d', Option::DryRun->getShorthand());
+        self::assertSame('-r', Option::AllowRisky->getShorthand());
+        self::assertSame('-a', Option::WithAllRules->getShorthand());
+        self::assertSame('-q', Option::Quiet->getShorthand());
+        self::assertSame('-v', Option::Version->getShorthand());
     }
 
-    public function testFullValues(): void
+    #[Test]
+    public function fullValues(): void
     {
-        self::assertSame('--help', Option::HELP->getFull());
-        self::assertSame('--config', Option::CONFIG->getFull());
-        self::assertSame('--dry-run', Option::DRY_RUN->getFull());
-        self::assertSame('--allow-risky', Option::ALLOW_RISKY->getFull());
-        self::assertSame('--with-all-rules', Option::WITH_ALL_RULES->getFull());
-        self::assertSame('--quiet', Option::QUIET->getFull());
-        self::assertSame('--version', Option::VERSION->getFull());
+        self::assertSame('--help', Option::Help->getFull());
+        self::assertSame('--config', Option::Config->getFull());
+        self::assertSame('--dry-run', Option::DryRun->getFull());
+        self::assertSame('--allow-risky', Option::AllowRisky->getFull());
+        self::assertSame('--with-all-rules', Option::WithAllRules->getFull());
+        self::assertSame('--quiet', Option::Quiet->getFull());
+        self::assertSame('--version', Option::Version->getFull());
     }
 
-    public function testDescriptionValues(): void
+    #[Test]
+    public function descriptionValues(): void
     {
-        self::assertSame('Display help for the command.', Option::HELP->getDescription());
+        self::assertSame('Display help for the command.', Option::Help->getDescription());
         self::assertSame(
             'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.',
-            Option::CONFIG->getDescription()
+            Option::Config->getDescription()
         );
         self::assertSame(
             'Only calculate potential savings without modifying the files.',
-            Option::DRY_RUN->getDescription()
+            Option::DryRun->getDescription()
         );
         self::assertSame(
             'Explicitly enables risky rules, allowing them to be applied.',
-            Option::ALLOW_RISKY->getDescription()
+            Option::AllowRisky->getDescription()
         );
         self::assertSame(
             'Enable all non-risky rules. Use --allow-risky to include risky rules as well.',
-            Option::WITH_ALL_RULES->getDescription()
+            Option::WithAllRules->getDescription()
         );
         self::assertSame(
             'Suppress all output except errors.',
-            Option::QUIET->getDescription()
+            Option::Quiet->getDescription()
         );
         self::assertSame(
             'Display the version of the library.',
-            Option::VERSION->getDescription()
+            Option::Version->getDescription()
         );
     }
 }

@@ -20,6 +20,7 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -35,7 +36,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(OptionValueObject::class)]
 final class OptionIntentTest extends TestCase
 {
-    public function testIsDryRunOptionIsSet(): void
+    #[Test]
+    public function isDryRunOptionIsSet(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--dry-run'];
         $argumentParser = new ArgumentParser($args);
@@ -44,7 +46,8 @@ final class OptionIntentTest extends TestCase
         self::assertTrue($optionIntent->isDryRun());
     }
 
-    public function testIsDryRunOptionIsNotSet(): void
+    #[Test]
+    public function isDryRunOptionIsNotSet(): void
     {
         $args = ['vendor/bin/svg-optimizer'];
         $argumentParser = new ArgumentParser($args);
@@ -53,7 +56,8 @@ final class OptionIntentTest extends TestCase
         self::assertFalse($optionIntent->isDryRun());
     }
 
-    public function testIsQuietOptionIsSet(): void
+    #[Test]
+    public function isQuietOptionIsSet(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--quiet'];
         $argumentParser = new ArgumentParser($args);
@@ -62,7 +66,8 @@ final class OptionIntentTest extends TestCase
         self::assertTrue($optionIntent->isQuiet());
     }
 
-    public function testIsQuietOptionIsNotSet(): void
+    #[Test]
+    public function isQuietOptionIsNotSet(): void
     {
         $args = ['vendor/bin/svg-optimizer'];
         $argumentParser = new ArgumentParser($args);
@@ -71,7 +76,8 @@ final class OptionIntentTest extends TestCase
         self::assertFalse($optionIntent->isQuiet());
     }
 
-    public function testIsHelpOptionIsSet(): void
+    #[Test]
+    public function isHelpOptionIsSet(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--help'];
         $argumentParser = new ArgumentParser($args);
@@ -80,7 +86,8 @@ final class OptionIntentTest extends TestCase
         self::assertTrue($optionIntent->isHelp());
     }
 
-    public function testIsHelpOptionIsNotSet(): void
+    #[Test]
+    public function isHelpOptionIsNotSet(): void
     {
         $args = ['vendor/bin/svg-optimizer'];
         $argumentParser = new ArgumentParser($args);
@@ -89,7 +96,8 @@ final class OptionIntentTest extends TestCase
         self::assertFalse($optionIntent->isHelp());
     }
 
-    public function testIsVersionOptionIsSet(): void
+    #[Test]
+    public function isVersionOptionIsSet(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--version'];
         $argumentParser = new ArgumentParser($args);
@@ -98,7 +106,8 @@ final class OptionIntentTest extends TestCase
         self::assertTrue($optionIntent->isVersion());
     }
 
-    public function testIsVersionOptionIsNotSet(): void
+    #[Test]
+    public function isVersionOptionIsNotSet(): void
     {
         $args = ['vendor/bin/svg-optimizer'];
         $argumentParser = new ArgumentParser($args);
@@ -110,7 +119,8 @@ final class OptionIntentTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetConfigPathOptionIsSet(): void
+    #[Test]
+    public function getConfigPathOptionIsSet(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--config=/path/to/config'];
         $argumentParser = new ArgumentParser($args);
@@ -122,7 +132,8 @@ final class OptionIntentTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetConfigPathOptionIsNotSet(): void
+    #[Test]
+    public function getConfigPathOptionIsNotSet(): void
     {
         $args = ['vendor/bin/svg-optimizer'];
         $argumentParser = new ArgumentParser($args);
@@ -131,7 +142,8 @@ final class OptionIntentTest extends TestCase
         self::assertSame('', $optionIntent->getConfigPath());
     }
 
-    public function testAllowRiskyOptionIsSet(): void
+    #[Test]
+    public function allowRiskyOptionIsSet(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--allow-risky'];
         $argumentParser = new ArgumentParser($args);
@@ -140,7 +152,8 @@ final class OptionIntentTest extends TestCase
         self::assertTrue($optionIntent->allowRisky());
     }
 
-    public function testAllowRiskyOptionIsNotSet(): void
+    #[Test]
+    public function allowRiskyOptionIsNotSet(): void
     {
         $args = ['vendor/bin/svg-optimizer'];
         $argumentParser = new ArgumentParser($args);
@@ -152,7 +165,8 @@ final class OptionIntentTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testMultipleOptionsSet(): void
+    #[Test]
+    public function multipleOptionsSet(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--dry-run', '--quiet', '--allow-risky', '--config=/path/to/config'];
         $argumentParser = new ArgumentParser($args);
@@ -167,7 +181,8 @@ final class OptionIntentTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testNoOptionsSet(): void
+    #[Test]
+    public function noOptionsSet(): void
     {
         $args = ['vendor/bin/svg-optimizer'];
         $argumentParser = new ArgumentParser($args);

@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObject;
 
 use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -29,22 +30,26 @@ final class ArgumentOptionValueObjectTest extends TestCase
 
     private ArgumentOptionValueObject $argumentOptionValueObject;
 
-    public function testGetShorthand(): void
+    #[Test]
+    public function getShorthand(): void
     {
         self::assertSame(self::SHORTHAND, $this->argumentOptionValueObject->getShorthand());
     }
 
-    public function testGetFull(): void
+    #[Test]
+    public function getFull(): void
     {
         self::assertSame(self::FULL, $this->argumentOptionValueObject->getFull());
     }
 
-    public function testGetDescription(): void
+    #[Test]
+    public function getDescription(): void
     {
         self::assertSame(self::DESCRIPTION, $this->argumentOptionValueObject->getDescription());
     }
 
-    public function testHasName(): void
+    #[Test]
+    public function hasName(): void
     {
         self::assertTrue($this->argumentOptionValueObject->hasName(self::SHORTHAND));
         self::assertTrue($this->argumentOptionValueObject->hasName(self::FULL));

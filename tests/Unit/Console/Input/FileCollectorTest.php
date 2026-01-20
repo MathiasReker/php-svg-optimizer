@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 use MathiasReker\PhpSvgOptimizer\Console\Input\FileCollector;
 use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -25,7 +26,8 @@ final class FileCollectorTest extends TestCase
 {
     private string $tempDir;
 
-    public function testReturnsEmptyArrayForNonExistentPath(): void
+    #[Test]
+    public function returnsEmptyArrayForNonExistentPath(): void
     {
         $fileCollector = new FileCollector();
         $result = $fileCollector->collectSvgFiles(['/path/does/not/exist']);
@@ -33,7 +35,8 @@ final class FileCollectorTest extends TestCase
         self::assertSame([], $result);
     }
 
-    public function testCollectsSingleSvgFile(): void
+    #[Test]
+    public function collectsSingleSvgFile(): void
     {
         $svgFile = $this->tempDir . '/icon.svg';
         file_put_contents($svgFile, '<svg></svg>');
@@ -45,7 +48,8 @@ final class FileCollectorTest extends TestCase
         self::assertSame(realpath($svgFile), $result[0]);
     }
 
-    public function testIgnoresNonSvgFiles(): void
+    #[Test]
+    public function ignoresNonSvgFiles(): void
     {
         $txtFile = $this->tempDir . '/note.txt';
         file_put_contents($txtFile, 'text');
@@ -56,7 +60,8 @@ final class FileCollectorTest extends TestCase
         self::assertSame([], $result);
     }
 
-    public function testCollectsSvgFilesFromDirectory(): void
+    #[Test]
+    public function collectsSvgFilesFromDirectory(): void
     {
         $svg1 = $this->tempDir . '/file1.svg';
         $svg2 = $this->tempDir . '/nested/file2.svg';
@@ -75,7 +80,8 @@ final class FileCollectorTest extends TestCase
         self::assertContains(realpath($svg2), $result);
     }
 
-    public function testRemovesDuplicateFiles(): void
+    #[Test]
+    public function removesDuplicateFiles(): void
     {
         $svgFile = $this->tempDir . '/duplicate.svg';
         file_put_contents($svgFile, '<svg></svg>');

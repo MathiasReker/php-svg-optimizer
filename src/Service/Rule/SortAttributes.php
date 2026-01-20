@@ -140,7 +140,7 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
 
         ksort($otherAttributes, \SORT_STRING);
 
-        return array_merge($priorityAttributes, $otherAttributes);
+        return [...$priorityAttributes, ...$otherAttributes];
     }
 
     #[\Override]

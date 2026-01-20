@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Type;
 
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,7 +22,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Rule::class)]
 final class RuleTest extends TestCase
 {
-    public function testEnumValuesMatchRuleClasses(): void
+    #[Test]
+    public function enumValuesMatchRuleClasses(): void
     {
         foreach (Rule::cases() as $case) {
             self::assertTrue(
@@ -31,36 +33,37 @@ final class RuleTest extends TestCase
         }
     }
 
-    public function testConfigKeysAreCorrect(): void
+    #[Test]
+    public function configKeysAreCorrect(): void
     {
         $expected = [
-            Rule::CONVERT_COLORS_TO_HEX->name => 'convertColorsToHex',
-            Rule::CONVERT_CSS_CLASSES_TO_ATTRIBUTES->name => 'convertCssClassesToAttributes',
-            Rule::CONVERT_EMPTY_TAGS_TO_SELF_CLOSING->name => 'convertEmptyTagsToSelfClosing',
-            Rule::CONVERT_INLINE_STYLES_TO_ATTRIBUTES->name => 'convertInlineStylesToAttributes',
-            Rule::FLATTEN_GROUPS->name => 'flattenGroups',
-            Rule::MINIFY_SVG_COORDINATES->name => 'minifySvgCoordinates',
-            Rule::MINIFY_TRANSFORMATIONS->name => 'minifyTransformations',
-            Rule::REMOVE_ARIA_AND_ROLE->name => 'removeAriaAndRole',
-            Rule::REMOVE_COMMENTS->name => 'removeComments',
-            Rule::REMOVE_DEFAULT_ATTRIBUTES->name => 'removeDefaultAttributes',
-            Rule::REMOVE_DEPRECATED_ATTRIBUTES->name => 'removeDeprecatedAttributes',
-            Rule::REMOVE_DOCTYPE->name => 'removeDoctype',
-            Rule::REMOVE_DUPLICATE_ELEMENTS->name => 'removeDuplicateElements',
-            Rule::REMOVE_ENABLE_BACKGROUND_ATTRIBUTE->name => 'removeEnableBackgroundAttribute',
-            Rule::REMOVE_EMPTY_GROUPS->name => 'removeEmptyGroups',
-            Rule::REMOVE_EMPTY_TEXT_ELEMENTS->name => 'removeEmptyTextElements',
-            Rule::REMOVE_EMPTY_ATTRIBUTES->name => 'removeEmptyAttributes',
-            Rule::REMOVE_INKSCAPE_FOOTPRINTS->name => 'removeInkscapeFootprints',
-            Rule::REMOVE_INVISIBLE_CHARACTERS->name => 'removeInvisibleCharacters',
-            Rule::REMOVE_METADATA->name => 'removeMetadata',
-            Rule::REMOVE_TITLE_AND_DESC->name => 'removeTitleAndDesc',
-            Rule::REMOVE_UNNECESSARY_WHITESPACE->name => 'removeUnnecessaryWhitespace',
-            Rule::REMOVE_UNSAFE_ELEMENTS->name => 'removeUnsafeElements',
-            Rule::REMOVE_UNUSED_MASKS->name => 'removeUnusedMasks',
-            Rule::REMOVE_UNUSED_NAMESPACES->name => 'removeUnusedNamespaces',
-            Rule::REMOVE_WIDTH_HEIGHT_ATTRIBUTES->name => 'removeWidthHeightAttributes',
-            Rule::SORT_ATTRIBUTES->name => 'sortAttributes',
+            Rule::ConvertColorsToHex->name => 'convertColorsToHex',
+            Rule::ConvertCssClassesToAttributes->name => 'convertCssClassesToAttributes',
+            Rule::ConvertEmptyTagsToSelfClosing->name => 'convertEmptyTagsToSelfClosing',
+            Rule::ConvertInlineStylesToAttributes->name => 'convertInlineStylesToAttributes',
+            Rule::FlattenGroups->name => 'flattenGroups',
+            Rule::MinifySvgCoordinates->name => 'minifySvgCoordinates',
+            Rule::MinifyTransformations->name => 'minifyTransformations',
+            Rule::RemoveAriaAndRole->name => 'removeAriaAndRole',
+            Rule::RemoveComments->name => 'removeComments',
+            Rule::RemoveDefaultAttributes->name => 'removeDefaultAttributes',
+            Rule::RemoveDeprecatedAttributes->name => 'removeDeprecatedAttributes',
+            Rule::RemoveDoctype->name => 'removeDoctype',
+            Rule::RemoveDuplicateElements->name => 'removeDuplicateElements',
+            Rule::RemoveEnableBackgroundAttribute->name => 'removeEnableBackgroundAttribute',
+            Rule::RemoveEmptyGroups->name => 'removeEmptyGroups',
+            Rule::RemoveEmptyTextElements->name => 'removeEmptyTextElements',
+            Rule::RemoveEmptyAttributes->name => 'removeEmptyAttributes',
+            Rule::RemoveInkscapeFootprints->name => 'removeInkscapeFootprints',
+            Rule::RemoveInvisibleCharacters->name => 'removeInvisibleCharacters',
+            Rule::RemoveMetadata->name => 'removeMetadata',
+            Rule::RemoveTitleAndDesc->name => 'removeTitleAndDesc',
+            Rule::RemoveUnnecessaryWhitespace->name => 'removeUnnecessaryWhitespace',
+            Rule::RemoveUnsafeElements->name => 'removeUnsafeElements',
+            Rule::RemoveUnusedMasks->name => 'removeUnusedMasks',
+            Rule::RemoveUnusedNamespaces->name => 'removeUnusedNamespaces',
+            Rule::RemoveWidthHeightAttributes->name => 'removeWidthHeightAttributes',
+            Rule::SortAttributes->name => 'sortAttributes',
         ];
 
         foreach (Rule::cases() as $case) {
@@ -72,7 +75,8 @@ final class RuleTest extends TestCase
         }
     }
 
-    public function testAllConfigKeysAreUnique(): void
+    #[Test]
+    public function allConfigKeysAreUnique(): void
     {
         $keys = array_map(
             static fn (Rule $rule): string => $rule->configKey(),
@@ -88,7 +92,8 @@ final class RuleTest extends TestCase
         );
     }
 
-    public function testAllEnumValuesAreUnique(): void
+    #[Test]
+    public function allEnumValuesAreUnique(): void
     {
         $values = array_map(
             static fn (Rule $rule) => $rule->value,
@@ -102,7 +107,8 @@ final class RuleTest extends TestCase
         );
     }
 
-    public function testConfigKeyMatchesNamingConvention(): void
+    #[Test]
+    public function configKeyMatchesNamingConvention(): void
     {
         foreach (Rule::cases() as $case) {
             $key = $case->configKey();
@@ -115,7 +121,8 @@ final class RuleTest extends TestCase
         }
     }
 
-    public function testRuleClassIsInstantiable(): void
+    #[Test]
+    public function ruleClassIsInstantiable(): void
     {
         foreach (Rule::cases() as $case) {
             $class = $case->value;

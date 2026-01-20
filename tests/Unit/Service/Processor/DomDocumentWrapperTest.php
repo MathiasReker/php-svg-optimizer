@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -29,7 +30,8 @@ final class DomDocumentWrapperTest extends TestCase
     /**
      * @throws XmlProcessingException
      */
-    public function testSaveToStringValid(): void
+    #[Test]
+    public function saveToStringValid(): void
     {
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<root><child>Test</child></root>');
@@ -42,7 +44,8 @@ final class DomDocumentWrapperTest extends TestCase
     /**
      * @throws XmlProcessingException
      */
-    public function testSaveToStringWithLineFeedsAndTabs(): void
+    #[Test]
+    public function saveToStringWithLineFeedsAndTabs(): void
     {
         $domDocument = new \DOMDocument();
         $domDocument->loadXML("<root>\n\t<child>\n\t\tTest\n\t</child>\n</root>");
@@ -57,7 +60,8 @@ final class DomDocumentWrapperTest extends TestCase
     /**
      * @throws XmlProcessingException
      */
-    public function testLoadFromFileValid(): void
+    #[Test]
+    public function loadFromFileValid(): void
     {
         $filePath = __DIR__ . '/test.xml';
 
@@ -77,7 +81,8 @@ final class DomDocumentWrapperTest extends TestCase
     /**
      * @throws XmlProcessingException
      */
-    public function testLoadFromStringValid(): void
+    #[Test]
+    public function loadFromStringValid(): void
     {
         $content = '<root><child>Test</child></root>';
         $domDocument = $this->domDocumentWrapper->loadFromString($content);
@@ -108,7 +113,8 @@ final class DomDocumentWrapperTest extends TestCase
     /**
      * @throws XmlProcessingException
      */
-    public function testLoadFromStringWithLineFeedsAndTabs(): void
+    #[Test]
+    public function loadFromStringWithLineFeedsAndTabs(): void
     {
         $content = "<root>\n\t<child>Test</child>\n</root>";
         $domDocument = $this->domDocumentWrapper->loadFromString($content);
@@ -123,7 +129,8 @@ final class DomDocumentWrapperTest extends TestCase
     /**
      * @throws XmlProcessingException
      */
-    public function testSaveToStringRemovesCarriageReturns(): void
+    #[Test]
+    public function saveToStringRemovesCarriageReturns(): void
     {
         $domDocument = new \DOMDocument();
         $domDocument->loadXML("<root>\r\n\t<child>\r\n\t\tTest\r\n\t</child>\r\n</root>");
@@ -137,7 +144,8 @@ final class DomDocumentWrapperTest extends TestCase
     /**
      * @throws XmlProcessingException
      */
-    public function testLoadFromStringInvalidThrowsException(): void
+    #[Test]
+    public function loadFromStringInvalidThrowsException(): void
     {
         $this->expectException(XmlProcessingException::class);
         $this->expectExceptionMessage('Failed to load DOMDocument.');

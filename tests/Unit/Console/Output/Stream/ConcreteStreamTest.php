@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output\Stream;
 
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -24,7 +25,8 @@ final class ConcreteStreamTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testWriteAppendsToStream(): void
+    #[Test]
+    public function writeAppendsToStream(): void
     {
         $stream = new class extends AbstractStream {
             public function __construct()
@@ -58,7 +60,8 @@ final class ConcreteStreamTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testWritelnAppendsWithNewline(): void
+    #[Test]
+    public function writelnAppendsWithNewline(): void
     {
         $stream = new class extends AbstractStream {
             public function __construct()

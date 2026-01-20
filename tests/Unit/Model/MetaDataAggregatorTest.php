@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Model;
 
 use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,7 +22,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MetaDataAggregator::class)]
 final class MetaDataAggregatorTest extends TestCase
 {
-    public function testInitialStateIsZero(): void
+    #[Test]
+    public function initialStateIsZero(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
 
@@ -31,7 +33,8 @@ final class MetaDataAggregatorTest extends TestCase
         self::assertSame(0.0, $metaDataAggregator->getSavedPercentage());
     }
 
-    public function testAddFileDataAccumulatesSizes(): void
+    #[Test]
+    public function addFileDataAccumulatesSizes(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
 
@@ -44,14 +47,16 @@ final class MetaDataAggregatorTest extends TestCase
         self::assertSame(20.0, $metaDataAggregator->getSavedPercentage());
     }
 
-    public function testGetSavedPercentageHandlesZeroDivision(): void
+    #[Test]
+    public function getSavedPercentageHandlesZeroDivision(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
 
         self::assertSame(0.0, $metaDataAggregator->getSavedPercentage());
     }
 
-    public function testOptimizedFileCountIncrementsCorrectly(): void
+    #[Test]
+    public function optimizedFileCountIncrementsCorrectly(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
 
@@ -64,13 +69,15 @@ final class MetaDataAggregatorTest extends TestCase
         self::assertSame(2, $metaDataAggregator->getOptimizedFileCount());
     }
 
-    public function testHasOptimizedFilesReturnsFalseInitially(): void
+    #[Test]
+    public function hasOptimizedFilesReturnsFalseInitially(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
         self::assertFalse($metaDataAggregator->hasOptimizedFiles());
     }
 
-    public function testHasOptimizedFilesReturnsTrueAfterAddingFileData(): void
+    #[Test]
+    public function hasOptimizedFilesReturnsTrueAfterAddingFileData(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
         $metaDataAggregator->addFileData(1_000, 800, 0.1);
@@ -78,7 +85,8 @@ final class MetaDataAggregatorTest extends TestCase
         self::assertTrue($metaDataAggregator->hasOptimizedFiles());
     }
 
-    public function testNoSavingsResultsInZeroSavedBytesAndPercentage(): void
+    #[Test]
+    public function noSavingsResultsInZeroSavedBytesAndPercentage(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
         $metaDataAggregator->addFileData(500, 500, 0.1);
@@ -87,7 +95,8 @@ final class MetaDataAggregatorTest extends TestCase
         self::assertSame(0.0, $metaDataAggregator->getSavedPercentage());
     }
 
-    public function testMultipleFilesCalculateSavedPercentageCorrectly(): void
+    #[Test]
+    public function multipleFilesCalculateSavedPercentageCorrectly(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
         $metaDataAggregator->addFileData(1_000, 800, 0.1); // 200 saved
@@ -99,7 +108,8 @@ final class MetaDataAggregatorTest extends TestCase
         self::assertSame(23.333_333_333_333_332, $metaDataAggregator->getSavedPercentage());
     }
 
-    public function testAddFileDataWithNegativeValues(): void
+    #[Test]
+    public function addFileDataWithNegativeValues(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
         $metaDataAggregator->addFileData(-100, -50, -0.1);
@@ -109,13 +119,15 @@ final class MetaDataAggregatorTest extends TestCase
         self::assertSame(-50, $metaDataAggregator->getSavedBytes());
     }
 
-    public function testInitialOptimizationTimeIsZero(): void
+    #[Test]
+    public function initialOptimizationTimeIsZero(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
         self::assertSame(0.0, $metaDataAggregator->getOptimizationTime());
     }
 
-    public function testAddFileDataAccumulatesOptimizationTime(): void
+    #[Test]
+    public function addFileDataAccumulatesOptimizationTime(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
 
@@ -125,7 +137,8 @@ final class MetaDataAggregatorTest extends TestCase
         self::assertSame(0.777_777, $metaDataAggregator->getOptimizationTime());
     }
 
-    public function testAddFileDataHandlesZeroOptimizationTime(): void
+    #[Test]
+    public function addFileDataHandlesZeroOptimizationTime(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
 
@@ -133,7 +146,8 @@ final class MetaDataAggregatorTest extends TestCase
         self::assertSame(0.0, $metaDataAggregator->getOptimizationTime());
     }
 
-    public function testMultipleFilesSumOptimizationTimeCorrectly(): void
+    #[Test]
+    public function multipleFilesSumOptimizationTimeCorrectly(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
 
@@ -144,7 +158,8 @@ final class MetaDataAggregatorTest extends TestCase
         self::assertSame(0.35, round($metaDataAggregator->getOptimizationTime(), 2));
     }
 
-    public function testNegativeOptimizationTime(): void
+    #[Test]
+    public function negativeOptimizationTime(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
 

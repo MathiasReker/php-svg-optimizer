@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output\Stream;
 
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -24,7 +25,8 @@ final class StdoutStreamTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testConstructorOpensStdoutSuccessfully(): void
+    #[Test]
+    public function constructorOpensStdoutSuccessfully(): void
     {
         $this->expectNotToPerformAssertions();
         new StdoutStream();
@@ -33,7 +35,8 @@ final class StdoutStreamTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testWriteAndWritelnToMemoryStream(): void
+    #[Test]
+    public function writeAndWritelnToMemoryStream(): void
     {
         /**
          * @phpstan-ignore-next-line
@@ -72,7 +75,8 @@ final class StdoutStreamTest extends TestCase
     /**
      * @throws \RuntimeException
      */
-    public function testMultipleWrites(): void
+    #[Test]
+    public function multipleWrites(): void
     {
         /**
          * @phpstan-ignore-next-line
@@ -116,7 +120,8 @@ final class StdoutStreamTest extends TestCase
      * @throws \RuntimeException
      * @throws \ReflectionException
      */
-    public function testStreamClosedOnDestruct(): void
+    #[Test]
+    public function streamClosedOnDestruct(): void
     {
         $stdoutStream = new StdoutStream();
 

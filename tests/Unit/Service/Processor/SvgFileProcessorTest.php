@@ -18,6 +18,7 @@ use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\SvgFileProcessor;
 use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 use PHPUnit\Framework\Attributes\CoversNothing;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -41,7 +42,8 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \RuntimeException
      * @throws \ValueError
      */
-    public function testProcessSingleSvgFile(): void
+    #[Test]
+    public function processSingleSvgFile(): void
     {
         $commandOptionsValueObject = new CommandOptionsValueObject(
             false,
@@ -73,7 +75,8 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \RuntimeException
      * @throws \ValueError
      */
-    public function testProcessDirectory(): void
+    #[Test]
+    public function processDirectory(): void
     {
         $file2 = $this->tempDir . '/file2.svg';
         file_put_contents($file2, '<svg><rect width="10" height="10"></rect></svg>');
@@ -103,7 +106,8 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \RuntimeException
      * @throws \ValueError
      */
-    public function testProcessInvalidPathPrintsError(): void
+    #[Test]
+    public function processInvalidPathPrintsError(): void
     {
         $memoryStream = new MemoryStream();
         $outputManager = new OutputManager($memoryStream);
@@ -135,7 +139,8 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \RuntimeException
      * @throws \ValueError
      */
-    public function testProcessWithRiskyRulesAllowed(): void
+    #[Test]
+    public function processWithRiskyRulesAllowed(): void
     {
         $commandOptionsValueObject = new CommandOptionsValueObject(
             true,

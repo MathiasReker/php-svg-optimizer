@@ -20,6 +20,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -42,7 +43,8 @@ final class FileProviderTest extends TestCase
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public function testGetInputContent(): void
+    #[Test]
+    public function getInputContent(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
         $content = $fileProvider->getInputContent();
@@ -56,7 +58,8 @@ final class FileProviderTest extends TestCase
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public function testOptimize(): void
+    #[Test]
+    public function optimize(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
         $domDocument = new \DOMDocument();
@@ -75,7 +78,8 @@ final class FileProviderTest extends TestCase
      * @throws \InvalidArgumentException
      * @throws IOException
      */
-    public function testGetMetaData(): void
+    #[Test]
+    public function getMetaData(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
         $domDocument = new \DOMDocument();
@@ -92,7 +96,8 @@ final class FileProviderTest extends TestCase
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public function testGetInputContentThrowsExceptionIfFileDoesNotExist(): void
+    #[Test]
+    public function getInputContentThrowsExceptionIfFileDoesNotExist(): void
     {
         $this->expectException(FileNotFoundException::class);
         $this->expectExceptionMessage('Input file does not exist: nonexistent.svg');
@@ -105,7 +110,8 @@ final class FileProviderTest extends TestCase
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public function testLoadContentReturnsDomDocument(): void
+    #[Test]
+    public function loadContentReturnsDomDocument(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
 
@@ -121,7 +127,8 @@ final class FileProviderTest extends TestCase
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public function testGetOutputContentBeforeOptimizeReturnsEmptyString(): void
+    #[Test]
+    public function getOutputContentBeforeOptimizeReturnsEmptyString(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
 
@@ -135,7 +142,8 @@ final class FileProviderTest extends TestCase
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public function testOptimizeModifiesOutputContent(): void
+    #[Test]
+    public function optimizeModifiesOutputContent(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
 
@@ -157,7 +165,8 @@ final class FileProviderTest extends TestCase
      * @throws IOException
      * @throws \InvalidArgumentException
      */
-    public function testGetMetaDataReflectsOptimizedSize(): void
+    #[Test]
+    public function getMetaDataReflectsOptimizedSize(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
 
@@ -176,7 +185,8 @@ final class FileProviderTest extends TestCase
      * @throws IOException
      * @throws \InvalidArgumentException
      */
-    public function testProviderReturnsZeroBeforeOptimization(): void
+    #[Test]
+    public function providerReturnsZeroBeforeOptimization(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
         $metaDataValueObject = $fileProvider->getMetaData();
@@ -190,7 +200,8 @@ final class FileProviderTest extends TestCase
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public function testOptimizeWithMinimalSvg(): void
+    #[Test]
+    public function optimizeWithMinimalSvg(): void
     {
         file_put_contents(
             self::TEST_INPUT_FILE,
@@ -213,7 +224,8 @@ final class FileProviderTest extends TestCase
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public function testLoadContentThrowsXmlProcessingException(): void
+    #[Test]
+    public function loadContentThrowsXmlProcessingException(): void
     {
         file_put_contents(self::TEST_INPUT_FILE, '<svg><invalid></svg>'); // malformed XML
 
@@ -230,7 +242,8 @@ final class FileProviderTest extends TestCase
      * @throws \InvalidArgumentException
      * @throws \DivisionByZeroError
      */
-    public function testMetaDataSavedPercentageCalculation(): void
+    #[Test]
+    public function metaDataSavedPercentageCalculation(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
 
@@ -250,7 +263,8 @@ final class FileProviderTest extends TestCase
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public function testLoadContentThrowsXmlProcessingExceptionOnMalformedXml(): void
+    #[Test]
+    public function loadContentThrowsXmlProcessingExceptionOnMalformedXml(): void
     {
         file_put_contents(self::TEST_INPUT_FILE, '<svg><unclosed></svg>');
 
@@ -266,7 +280,8 @@ final class FileProviderTest extends TestCase
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public function testOptimizeUpdatesOutputContentWithAttributes(): void
+    #[Test]
+    public function optimizeUpdatesOutputContentWithAttributes(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
         $domDocument = new \DOMDocument();
@@ -289,7 +304,8 @@ final class FileProviderTest extends TestCase
      * @throws IOException
      * @throws \InvalidArgumentException
      */
-    public function testMetaDataReflectsMultipleOptimizations(): void
+    #[Test]
+    public function metaDataReflectsMultipleOptimizations(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
 
@@ -315,7 +331,8 @@ final class FileProviderTest extends TestCase
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public function testOptimizeThrowsTypeErrorOnInvalidInput(): void
+    #[Test]
+    public function optimizeThrowsTypeErrorOnInvalidInput(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
 

@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -29,17 +30,20 @@ final class CommandOptionValueObjectTest extends TestCase
 
     private OptionValueObject $commandOptionValueObject;
 
-    public function testGetTitle(): void
+    #[Test]
+    public function getTitle(): void
     {
         self::assertSame(self::TITLE, $this->commandOptionValueObject->getTitle());
     }
 
-    public function testGetDescription(): void
+    #[Test]
+    public function getDescription(): void
     {
         self::assertSame(self::DESCRIPTION, $this->commandOptionValueObject->getDescription());
     }
 
-    public function testDryRunFlag(): void
+    #[Test]
+    public function dryRunFlag(): void
     {
         $commandOptionsValueObject = new CommandOptionsValueObject(
             true,
@@ -51,7 +55,8 @@ final class CommandOptionValueObjectTest extends TestCase
         self::assertTrue($commandOptionsValueObject->isDryRun());
     }
 
-    public function testConfigPath(): void
+    #[Test]
+    public function configPath(): void
     {
         $path = '/path/to/config.json';
 
@@ -65,7 +70,8 @@ final class CommandOptionValueObjectTest extends TestCase
         self::assertSame($path, $commandOptionsValueObject->getConfigPath());
     }
 
-    public function testAllowRiskyFlag(): void
+    #[Test]
+    public function allowRiskyFlag(): void
     {
         $commandOptionsValueObject = new CommandOptionsValueObject(
             false,
@@ -77,7 +83,8 @@ final class CommandOptionValueObjectTest extends TestCase
         self::assertTrue($commandOptionsValueObject->allowRisky());
     }
 
-    public function testAllValuesAreStoredCorrectly(): void
+    #[Test]
+    public function allValuesAreStoredCorrectly(): void
     {
         $commandOptionsValueObject = new CommandOptionsValueObject(
             true,

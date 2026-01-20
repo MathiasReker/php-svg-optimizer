@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -28,7 +29,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \InvalidArgumentException
      * @throws \ValueError
      */
-    public function testLoadConfigWithValidJsonString(): void
+    #[Test]
+    public function loadConfigWithValidJsonString(): void
     {
         $jsonString = '{"key1": true, "key2": false}';
 
@@ -42,7 +44,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \InvalidArgumentException
      * @throws \ValueError
      */
-    public function testLoadConfigWithValidJsonFile(): void
+    #[Test]
+    public function loadConfigWithValidJsonFile(): void
     {
         $jsonContent = '{"key1": true, "key2": false}';
         file_put_contents($this->configFile, $jsonContent);
@@ -57,7 +60,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \InvalidArgumentException
      * @throws \ValueError
      */
-    public function testLoadConfigWithInvalidJsonString(): void
+    #[Test]
+    public function loadConfigWithInvalidJsonString(): void
     {
         $this->expectException(\JsonException::class);
 
@@ -71,7 +75,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \InvalidArgumentException
      * @throws \ValueError
      */
-    public function testLoadConfigWithInvalidJsonFile(): void
+    #[Test]
+    public function loadConfigWithInvalidJsonFile(): void
     {
         $invalidJsonContent = '{"key1": true, "key2": }';
         file_put_contents($this->configFile, $invalidJsonContent);
@@ -86,7 +91,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \InvalidArgumentException
      * @throws \ValueError
      */
-    public function testLoadConfigWithEmptyJsonContent(): void
+    #[Test]
+    public function loadConfigWithEmptyJsonContent(): void
     {
         file_put_contents($this->configFile, '');
 
@@ -100,7 +106,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \InvalidArgumentException
      * @throws \ValueError
      */
-    public function testLoadConfigWithBooleanAndNumericValues(): void
+    #[Test]
+    public function loadConfigWithBooleanAndNumericValues(): void
     {
         $jsonString = '{"flag": true, "disabled": 0, "enabled": 1}';
 
@@ -121,7 +128,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \InvalidArgumentException
      * @throws \ValueError
      */
-    public function testLoadConfigWithNonBooleanValues(): void
+    #[Test]
+    public function loadConfigWithNonBooleanValues(): void
     {
         $jsonString = '{"key1": "yes", "key2": 123, "key3": null}';
 
@@ -142,7 +150,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \InvalidArgumentException
      * @throws \ValueError
      */
-    public function testLoadConfigWithNumericKeys(): void
+    #[Test]
+    public function loadConfigWithNumericKeys(): void
     {
         $jsonString = '{"0": true, "1": false}';
 
@@ -159,7 +168,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \JsonException
      * @throws \ValueError
      */
-    public function testLoadConfigWithEmptyStringThrowsException(): void
+    #[Test]
+    public function loadConfigWithEmptyStringThrowsException(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Configuration must be a valid file path or a JSON string.');
@@ -172,7 +182,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \JsonException
      * @throws \ValueError
      */
-    public function testLoadConfigWithNestedJsonObject(): void
+    #[Test]
+    public function loadConfigWithNestedJsonObject(): void
     {
         $this->expectException(\JsonException::class);
         $this->expectExceptionMessage('Maximum stack depth exceeded');
@@ -187,7 +198,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \JsonException
      * @throws \ValueError
      */
-    public function testLoadConfigWithInvalidStringThrowsException(): void
+    #[Test]
+    public function loadConfigWithInvalidStringThrowsException(): void
     {
         $this->expectException(\JsonException::class);
 
@@ -199,7 +211,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \JsonException
      * @throws \ValueError
      */
-    public function testLoadConfigWithEmptyJsonObjectReturnsEmptyArray(): void
+    #[Test]
+    public function loadConfigWithEmptyJsonObjectReturnsEmptyArray(): void
     {
         $json = '{}';
         $result = ConfigLoader::loadConfig($json);
@@ -211,7 +224,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \JsonException
      * @throws \ValueError
      */
-    public function testItFailsOnTooDeeplyNestedJson(): void
+    #[Test]
+    public function itFailsOnTooDeeplyNestedJson(): void
     {
         $this->expectException(\JsonException::class);
 
@@ -225,7 +239,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \JsonException
      * @throws \ValueError
      */
-    public function testLoadConfigWithNonArrayJsonThrowsException(): void
+    #[Test]
+    public function loadConfigWithNonArrayJsonThrowsException(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Configuration must be a valid file path or a JSON string.');
@@ -238,7 +253,8 @@ final class ConfigLoaderTest extends TestCase
      * @throws \JsonException
      * @throws \ValueError
      */
-    public function testLoadConfigWithNonExistentFilePathThrowsJsonException(): void
+    #[Test]
+    public function loadConfigWithNonExistentFilePathThrowsJsonException(): void
     {
         $this->expectException(\JsonException::class);
 

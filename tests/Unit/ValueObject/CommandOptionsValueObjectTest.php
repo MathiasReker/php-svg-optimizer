@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObject;
 
 use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,7 +22,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(CommandOptionsValueObject::class)]
 final class CommandOptionsValueObjectTest extends TestCase
 {
-    public function testPropertiesAreAssignedCorrectly(): void
+    #[Test]
+    public function propertiesAreAssignedCorrectly(): void
     {
         $commandOptionsValueObject = new CommandOptionsValueObject(
             true,

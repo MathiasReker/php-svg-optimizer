@@ -21,6 +21,7 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
 use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -53,36 +54,40 @@ final class ArgumentParserTest extends TestCase
 
     private ArgumentParser $argumentParser;
 
-    public function testHasOptionReturnsFalseIfOptionDoesNotExist(): void
+    #[Test]
+    public function hasOptionReturnsFalseIfOptionDoesNotExist(): void
     {
-        $hasDryRunOption = $this->argumentParser->hasOption(Option::DRY_RUN);
+        $hasDryRunOption = $this->argumentParser->hasOption(Option::DryRun);
         self::assertFalse($hasDryRunOption);
     }
 
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetOptionReturnsCorrectValue(): void
+    #[Test]
+    public function getOptionReturnsCorrectValue(): void
     {
-        $configOptionValue = $this->argumentParser->getOption(Option::CONFIG);
+        $configOptionValue = $this->argumentParser->getOption(Option::Config);
         self::assertSame('config.json', $configOptionValue);
     }
 
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetOptionThrowsExceptionIfOptionDoesNotExist(): void
+    #[Test]
+    public function getOptionThrowsExceptionIfOptionDoesNotExist(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Option "dry-run" not found in the command-line arguments.');
 
-        $this->argumentParser->getOption(Option::DRY_RUN);
+        $this->argumentParser->getOption(Option::DryRun);
     }
 
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetNextPositionalArgumentIndexReturnsCorrectIndex(): void
+    #[Test]
+    public function getNextPositionalArgumentIndexReturnsCorrectIndex(): void
     {
         $index = $this->argumentParser->getArgumentIndex();
         self::assertSame(self::EXPECTED_POSITIONAL_ARGUMENT_INDEX, $index);
@@ -91,13 +96,15 @@ final class ArgumentParserTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetNextPositionalArgumentStartIndex(): void
+    #[Test]
+    public function getNextPositionalArgumentStartIndex(): void
     {
         $index = $this->argumentParser->getArgumentStartIndex();
         self::assertSame(self::EXPECTED_POSITIONAL_ARGUMENT_START_INDEX, $index);
     }
 
-    public function testHasOptionReturnsTrueForVersionOption(): void
+    #[Test]
+    public function hasOptionReturnsTrueForVersionOption(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',
@@ -106,11 +113,12 @@ final class ArgumentParserTest extends TestCase
 
         $argumentParser = new ArgumentParser($args);
 
-        $hasVersionOption = $argumentParser->hasOption(Option::VERSION);
+        $hasVersionOption = $argumentParser->hasOption(Option::Version);
         self::assertTrue($hasVersionOption);
     }
 
-    public function testHasOptionIgnoresNonOptionArguments(): void
+    #[Test]
+    public function hasOptionIgnoresNonOptionArguments(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',
@@ -120,10 +128,11 @@ final class ArgumentParserTest extends TestCase
 
         $argumentParser = new ArgumentParser($args);
 
-        self::assertFalse($argumentParser->hasOption(Option::CONFIG));
+        self::assertFalse($argumentParser->hasOption(Option::Config));
     }
 
-    public function testHasInvalidOptionArguments(): void
+    #[Test]
+    public function hasInvalidOptionArguments(): void
     {
         $args = [
             'foo',
@@ -132,13 +141,14 @@ final class ArgumentParserTest extends TestCase
 
         $argumentParser = new ArgumentParser($args);
 
-        self::assertFalse($argumentParser->hasOption(Option::CONFIG));
+        self::assertFalse($argumentParser->hasOption(Option::Config));
     }
 
     /**
      * @throws \InvalidArgumentException
      */
-    public function testEmptyConfigOption(): void
+    #[Test]
+    public function emptyConfigOption(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',
@@ -147,7 +157,7 @@ final class ArgumentParserTest extends TestCase
 
         $argumentParser = new ArgumentParser($args);
 
-        $value = $argumentParser->getOption(Option::CONFIG);
+        $value = $argumentParser->getOption(Option::Config);
 
         self::assertSame('', $value);
     }
@@ -155,7 +165,8 @@ final class ArgumentParserTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testInvalidOption(): void
+    #[Test]
+    public function invalidOption(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',
@@ -165,7 +176,7 @@ final class ArgumentParserTest extends TestCase
 
         $argumentParser = new ArgumentParser($args);
 
-        $value = $argumentParser->getOption(Option::CONFIG);
+        $value = $argumentParser->getOption(Option::Config);
 
         self::assertSame('', $value);
     }
@@ -173,7 +184,8 @@ final class ArgumentParserTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetOptionHandlesEqualsInValue(): void
+    #[Test]
+    public function getOptionHandlesEqualsInValue(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',
@@ -182,12 +194,13 @@ final class ArgumentParserTest extends TestCase
 
         $argumentParser = new ArgumentParser($args);
 
-        $value = $argumentParser->getOption(Option::CONFIG);
+        $value = $argumentParser->getOption(Option::Config);
 
         self::assertSame('foo=bar=baz', $value);
     }
 
-    public function testParseIsEmpty(): void
+    #[Test]
+    public function parseIsEmpty(): void
     {
         $argumentParser = new ArgumentParser([]);
 
@@ -197,7 +210,8 @@ final class ArgumentParserTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetPathsThrowsIfNoSvgFilesFound(): void
+    #[Test]
+    public function getPathsThrowsIfNoSvgFilesFound(): void
     {
         // Create temporary directory with no SVG files
         $tempDir = sys_get_temp_dir() . '/empty_dir_' . uniqid();
@@ -224,7 +238,8 @@ final class ArgumentParserTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testGetArgumentIndexThrowsExceptionWhenNoPositionalArg(): void
+    #[Test]
+    public function getArgumentIndexThrowsExceptionWhenNoPositionalArg(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--config=config.json', '--dry-run'];
 
@@ -236,7 +251,8 @@ final class ArgumentParserTest extends TestCase
         $argumentParser->getArgumentIndex();
     }
 
-    public function testHasOptionReturnsFalseOnInvalidOptionName(): void
+    #[Test]
+    public function hasOptionReturnsFalseOnInvalidOptionName(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',
@@ -247,13 +263,14 @@ final class ArgumentParserTest extends TestCase
 
         $argumentParser = new ArgumentParser($args);
 
-        self::assertFalse($argumentParser->hasOption(Option::CONFIG));
+        self::assertFalse($argumentParser->hasOption(Option::Config));
     }
 
     /**
      * @throws \InvalidArgumentException
      */
-    public function testValidateOptionsDoesNotThrowWithValidOptions(): void
+    #[Test]
+    public function validateOptionsDoesNotThrowWithValidOptions(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',
@@ -272,7 +289,8 @@ final class ArgumentParserTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testValidateOptionsThrowsExceptionForUnknownOption(): void
+    #[Test]
+    public function validateOptionsThrowsExceptionForUnknownOption(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',
@@ -292,7 +310,8 @@ final class ArgumentParserTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testValidateOptionsAcceptsShorthandOptions(): void
+    #[Test]
+    public function validateOptionsAcceptsShorthandOptions(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',
@@ -308,7 +327,8 @@ final class ArgumentParserTest extends TestCase
         $argumentParser->validateOptions();
     }
 
-    public function testHasOptionReturnsTrueForWithAllRulesLong(): void
+    #[Test]
+    public function hasOptionReturnsTrueForWithAllRulesLong(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',
@@ -317,10 +337,11 @@ final class ArgumentParserTest extends TestCase
 
         $argumentParser = new ArgumentParser($args);
 
-        self::assertTrue($argumentParser->hasOption(Option::WITH_ALL_RULES));
+        self::assertTrue($argumentParser->hasOption(Option::WithAllRules));
     }
 
-    public function testHasOptionReturnsTrueForWithAllRulesShort(): void
+    #[Test]
+    public function hasOptionReturnsTrueForWithAllRulesShort(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',
@@ -329,13 +350,14 @@ final class ArgumentParserTest extends TestCase
 
         $argumentParser = new ArgumentParser($args);
 
-        self::assertTrue($argumentParser->hasOption(Option::WITH_ALL_RULES));
+        self::assertTrue($argumentParser->hasOption(Option::WithAllRules));
     }
 
     /**
      * @throws \InvalidArgumentException
      */
-    public function testValidateOptionsAcceptsWithAllRules(): void
+    #[Test]
+    public function validateOptionsAcceptsWithAllRules(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',
@@ -353,7 +375,8 @@ final class ArgumentParserTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testValidateOptionsAcceptsWithAllRulesShort(): void
+    #[Test]
+    public function validateOptionsAcceptsWithAllRulesShort(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',

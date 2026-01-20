@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Type;
 
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,9 +22,10 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Command::class)]
 final class CommandTest extends TestCase
 {
-    public function testGetTitle(): void
+    #[Test]
+    public function getTitle(): void
     {
-        $command = Command::PROCESS;
+        $command = Command::Process;
 
         $expectedTitle = 'Process';
         $actualTitle = $command->getTitle();
@@ -31,9 +33,10 @@ final class CommandTest extends TestCase
         self::assertSame($expectedTitle, $actualTitle, 'The getTitle method should return the correct title.');
     }
 
-    public function testGetDescription(): void
+    #[Test]
+    public function getDescription(): void
     {
-        $command = Command::PROCESS;
+        $command = Command::Process;
 
         $expectedDescription = 'Provide a list of directories or files to process.';
         $actualDescription = $command->getDescription();

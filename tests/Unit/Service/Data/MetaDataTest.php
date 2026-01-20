@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Data;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -62,7 +63,8 @@ final class MetaDataTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testConstructorInvalidOriginalSize(): void
+    #[Test]
+    public function constructorInvalidOriginalSize(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Original size must be greater than 0. Given: 0');
@@ -73,7 +75,8 @@ final class MetaDataTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testToValueObject(): void
+    #[Test]
+    public function toValueObject(): void
     {
         $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, self::OPTIMIZED_TIME);
         $metaDataValueObject = $metaData->toValueObject();
@@ -89,7 +92,8 @@ final class MetaDataTest extends TestCase
      * @throws \ReflectionException
      * @throws \InvalidArgumentException
      */
-    public function testCalculateSavedBytes(): void
+    #[Test]
+    public function calculateSavedBytes(): void
     {
         $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, self::OPTIMIZED_TIME);
 
@@ -105,7 +109,8 @@ final class MetaDataTest extends TestCase
      * @throws \ReflectionException
      * @throws \InvalidArgumentException
      */
-    public function testCalculateSavedPercentage(): void
+    #[Test]
+    public function calculateSavedPercentage(): void
     {
         $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, self::OPTIMIZED_TIME);
 
@@ -120,7 +125,8 @@ final class MetaDataTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testOptimizationTimeIsCorrectlyReturned(): void
+    #[Test]
+    public function optimizationTimeIsCorrectlyReturned(): void
     {
         $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, self::OPTIMIZED_TIME);
         $metaDataValueObject = $metaData->toValueObject();
@@ -135,7 +141,8 @@ final class MetaDataTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testZeroOptimizationTime(): void
+    #[Test]
+    public function zeroOptimizationTime(): void
     {
         $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, 0.0);
         $metaDataValueObject = $metaData->toValueObject();
@@ -146,7 +153,8 @@ final class MetaDataTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testSmallOptimizationTime(): void
+    #[Test]
+    public function smallOptimizationTime(): void
     {
         $smallTime = 0.000_001;
         $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, $smallTime);
@@ -158,7 +166,8 @@ final class MetaDataTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      */
-    public function testLargeOptimizationTime(): void
+    #[Test]
+    public function largeOptimizationTime(): void
     {
         $largeTime = 12_345.678_9;
         $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, $largeTime);

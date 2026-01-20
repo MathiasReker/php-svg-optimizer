@@ -18,6 +18,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -35,7 +36,8 @@ final class StringProviderTest extends TestCase
     /**
      * @throws XmlProcessingException
      */
-    public function testOptimize(): void
+    #[Test]
+    public function optimize(): void
     {
         $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
         $domDocument = $stringProvider->loadContent();
@@ -45,7 +47,8 @@ final class StringProviderTest extends TestCase
         self::assertSame(self::TEST_INPUT_STRING, $stringProvider->getOutputContent());
     }
 
-    public function testGetInputContent(): void
+    #[Test]
+    public function getInputContent(): void
     {
         $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
 
@@ -56,7 +59,8 @@ final class StringProviderTest extends TestCase
      * @throws XmlProcessingException
      * @throws \InvalidArgumentException
      */
-    public function testGetMetaData(): void
+    #[Test]
+    public function getMetaData(): void
     {
         $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
         $domDocument = $stringProvider->loadContent();

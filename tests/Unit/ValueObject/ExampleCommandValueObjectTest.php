@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObject;
 
 use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -25,7 +26,8 @@ final class ExampleCommandValueObjectTest extends TestCase
 
     private ExampleCommandValueObject $exampleCommandValueObject;
 
-    public function testGetCommand(): void
+    #[Test]
+    public function getCommand(): void
     {
         self::assertSame(self::EXAMPLE_COMMAND, $this->exampleCommandValueObject->getCommand());
     }

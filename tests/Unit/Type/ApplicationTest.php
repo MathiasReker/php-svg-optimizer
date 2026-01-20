@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Type;
 
 use MathiasReker\PhpSvgOptimizer\Type\Application;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -23,7 +24,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Application::class)]
 final class ApplicationTest extends TestCase
 {
-    public function testEnumValuesAreNonEmpty(): void
+    #[Test]
+    public function enumValuesAreNonEmpty(): void
     {
         foreach (Application::cases() as $case) {
             self::assertNotEmpty($case->value);

@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Exception;
 
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,7 +22,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidationException::class)]
 final class SvgValidationExceptionTest extends TestCase
 {
-    public function testCanBeInstantiated(): void
+    #[Test]
+    public function canBeInstantiated(): void
     {
         $svgValidationException = new SvgValidationException('Invalid SVG detected', 100);
 

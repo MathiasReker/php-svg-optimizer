@@ -52,9 +52,9 @@ final class ArgumentData
         }
 
         $this->commands = [
-            Command::PROCESS->value => new OptionValueObject(
-                Command::PROCESS->getTitle(),
-                Command::PROCESS->getDescription()
+            Command::Process->value => new OptionValueObject(
+                Command::Process->getTitle(),
+                Command::Process->getDescription()
             ),
         ];
 
@@ -63,43 +63,43 @@ final class ArgumentData
                 \sprintf(
                     '%s %s %s %s /path/to/svgs',
                     self::BINARY_PATH,
-                    Option::WITH_ALL_RULES->getFull(),
-                    Option::DRY_RUN->getFull(),
-                    Command::PROCESS->value,
+                    Option::WithAllRules->getFull(),
+                    Option::DryRun->getFull(),
+                    Command::Process->value,
                 )
             ),
             new ExampleCommandValueObject(
                 \sprintf(
                     '%s %s=config.json %s /path/to/file.svg',
                     self::BINARY_PATH,
-                    Option::CONFIG->getFull(),
-                    Command::PROCESS->value,
+                    Option::Config->getFull(),
+                    Command::Process->value,
                 )
             ),
             new ExampleCommandValueObject(
                 \sprintf(
                     '%s %s %s %s /path/to/file.svg',
                     self::BINARY_PATH,
-                    Option::QUIET->getFull(),
-                    Option::WITH_ALL_RULES->getFull(),
-                    Command::PROCESS->value,
+                    Option::Quiet->getFull(),
+                    Option::WithAllRules->getFull(),
+                    Command::Process->value,
                 )
             ),
             new ExampleCommandValueObject(
                 \sprintf(
                     '%s %s %s %s /path/to/file.svg',
                     self::BINARY_PATH,
-                    Option::WITH_ALL_RULES->getFull(),
-                    Option::ALLOW_RISKY->getFull(),
-                    Command::PROCESS->value,
+                    Option::WithAllRules->getFull(),
+                    Option::AllowRisky->getFull(),
+                    Command::Process->value,
                 )
             ),
             new ExampleCommandValueObject(
                 \sprintf(
                     '%s %s %s /path/to/file.svg',
                     self::BINARY_PATH,
-                    Option::WITH_ALL_RULES->getFull(),
-                    Command::PROCESS->value,
+                    Option::WithAllRules->getFull(),
+                    Command::Process->value,
                 )
             ),
         ];
@@ -178,7 +178,7 @@ final class ArgumentData
         return \sprintf(
             '%s [options] %s <path1> <path2> ...',
             self::BINARY_PATH,
-            Command::PROCESS->value,
+            Command::Process->value,
         );
     }
 }
