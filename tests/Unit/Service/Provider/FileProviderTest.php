@@ -54,45 +54,6 @@ final class FileProviderTest extends TestCase
     }
 
     /**
-     * @throws XmlProcessingException
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
-    #[Test]
-    public function optimize(): void
-    {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
-        $domDocument = new \DOMDocument();
-        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>');
-
-        $fileProvider->optimize($domDocument);
-
-        $outputContent = $fileProvider->getOutputContent();
-        self::assertStringContainsString('<svg', $outputContent);
-        self::assertStringContainsString('</svg>', $outputContent);
-    }
-
-    /**
-     * @throws XmlProcessingException
-     * @throws FileNotFoundException
-     * @throws \InvalidArgumentException
-     * @throws IOException
-     */
-    #[Test]
-    public function getMetaData(): void
-    {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
-        $domDocument = new \DOMDocument();
-        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>');
-
-        $fileProvider->optimize($domDocument);
-
-        $metaDataValueObject = $fileProvider->getMetaData();
-
-        self::assertSame(filesize(self::TEST_INPUT_FILE), $metaDataValueObject->getOriginalSize());
-    }
-
-    /**
      * @throws FileNotFoundException
      * @throws IOException
      */
@@ -163,6 +124,25 @@ final class FileProviderTest extends TestCase
      * @throws XmlProcessingException
      * @throws FileNotFoundException
      * @throws IOException
+     */
+    #[Test]
+    public function optimize(): void
+    {
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>');
+
+        $fileProvider->optimize($domDocument);
+
+        $outputContent = $fileProvider->getOutputContent();
+        self::assertStringContainsString('<svg', $outputContent);
+        self::assertStringContainsString('</svg>', $outputContent);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws IOException
      * @throws \InvalidArgumentException
      */
     #[Test]
@@ -178,6 +158,26 @@ final class FileProviderTest extends TestCase
         self::assertGreaterThan(0, $metaDataValueObject->getOriginalSize());
         self::assertGreaterThan(0, $metaDataValueObject->getOptimizedSize());
         self::assertGreaterThanOrEqual(0.0, $metaDataValueObject->getSavedPercentage());
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws FileNotFoundException
+     * @throws \InvalidArgumentException
+     * @throws IOException
+     */
+    #[Test]
+    public function getMetaData(): void
+    {
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>');
+
+        $fileProvider->optimize($domDocument);
+
+        $metaDataValueObject = $fileProvider->getMetaData();
+
+        self::assertSame(filesize(self::TEST_INPUT_FILE), $metaDataValueObject->getOriginalSize());
     }
 
     /**

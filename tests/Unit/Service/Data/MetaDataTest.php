@@ -73,22 +73,6 @@ final class MetaDataTest extends TestCase
     }
 
     /**
-     * @throws \InvalidArgumentException
-     */
-    #[Test]
-    public function toValueObject(): void
-    {
-        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, self::OPTIMIZED_TIME);
-        $metaDataValueObject = $metaData->toValueObject();
-
-        self::assertSame(self::ORIGINAL_SIZE, $metaDataValueObject->getOriginalSize());
-        self::assertSame(self::OPTIMIZED_SIZE, $metaDataValueObject->getOptimizedSize());
-        self::assertSame(self::EXPECTED_SAVED_BYTES, $metaDataValueObject->getSavedBytes());
-        self::assertSame(self::OPTIMIZED_TIME, $metaDataValueObject->getOptimizationTime());
-        self::assertEqualsWithDelta(self::EXPECTED_SAVED_PERCENTAGE, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
-    }
-
-    /**
      * @throws \ReflectionException
      * @throws \InvalidArgumentException
      */
@@ -136,6 +120,22 @@ final class MetaDataTest extends TestCase
             $metaDataValueObject->getOptimizationTime(),
             'Optimization time should match the value passed to MetaData.'
         );
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function toValueObject(): void
+    {
+        $metaData = new MetaData(self::ORIGINAL_SIZE, self::OPTIMIZED_SIZE, self::OPTIMIZED_TIME);
+        $metaDataValueObject = $metaData->toValueObject();
+
+        self::assertSame(self::ORIGINAL_SIZE, $metaDataValueObject->getOriginalSize());
+        self::assertSame(self::OPTIMIZED_SIZE, $metaDataValueObject->getOptimizedSize());
+        self::assertSame(self::EXPECTED_SAVED_BYTES, $metaDataValueObject->getSavedBytes());
+        self::assertSame(self::OPTIMIZED_TIME, $metaDataValueObject->getOptimizationTime());
+        self::assertEqualsWithDelta(self::EXPECTED_SAVED_PERCENTAGE, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
     /**

@@ -23,26 +23,6 @@ use PHPUnit\Framework\TestCase;
 final class XmlFormatterTest extends TestCase
 {
     #[Test]
-    public function removeLineFeedsAndTabs(): void
-    {
-        $input = "<svg>\n\t<rect/>\r\n</svg>";
-        $expected = '<svg><rect/></svg>';
-
-        $actual = XmlFormatter::removeLineFeedsAndTabs($input);
-        self::assertSame($expected, $actual);
-    }
-
-    #[Test]
-    public function removeWhitespaceBetweenTags(): void
-    {
-        $input = '<svg>   <rect>   </rect>   <circle/>   </svg>';
-        $expected = '<svg><rect></rect><circle/></svg>';
-
-        $actual = XmlFormatter::removeWhitespaceBetweenTags($input);
-        self::assertSame($expected, $actual);
-    }
-
-    #[Test]
     public function removeLineFeedsAndTabsDoesNotAffectSpaces(): void
     {
         $input = '<svg>   <rect>Text content</rect>   </svg>';
@@ -53,10 +33,30 @@ final class XmlFormatterTest extends TestCase
     }
 
     #[Test]
+    public function removeLineFeedsAndTabs(): void
+    {
+        $input = "<svg>\n\t<rect/>\r\n</svg>";
+        $expected = '<svg><rect/></svg>';
+
+        $actual = XmlFormatter::removeLineFeedsAndTabs($input);
+        self::assertSame($expected, $actual);
+    }
+
+    #[Test]
     public function removeWhitespaceBetweenTagsPreservesInnerTextSpacing(): void
     {
         $input = '<svg><text> Some   spaced  text </text></svg>';
         $expected = '<svg><text> Some   spaced  text </text></svg>';
+
+        $actual = XmlFormatter::removeWhitespaceBetweenTags($input);
+        self::assertSame($expected, $actual);
+    }
+
+    #[Test]
+    public function removeWhitespaceBetweenTags(): void
+    {
+        $input = '<svg>   <rect>   </rect>   <circle/>   </svg>';
+        $expected = '<svg><rect></rect><circle/></svg>';
 
         $actual = XmlFormatter::removeWhitespaceBetweenTags($input);
         self::assertSame($expected, $actual);

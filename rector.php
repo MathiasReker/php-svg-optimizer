@@ -14,6 +14,8 @@ use Rector\CodingStyle\Rector\Enum_\EnumCaseToPascalCaseRector;
 use Rector\CodingStyle\Rector\FuncCall\ArraySpreadInsteadOfArrayMergeRector;
 use Rector\Config\RectorConfig;
 use Rector\Php84\Rector\Param\ExplicitNullableParamTypeRector;
+use Rector\Php85\Rector\FuncCall\ArrayKeyExistsNullToEmptyStringRector;
+use Rector\Php85\Rector\Switch_\ColonAfterSwitchCaseRector;
 use Rector\PHPUnit\AnnotationsToAttributes\Rector\Class_\AnnotationWithValueToAttributeRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\AddSeeTestAnnotationRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
@@ -106,5 +108,7 @@ return RectorConfig::configure()
             AddSeeTestAnnotationRector::class,
             AddInstanceofAssertForNullableArgumentRector::class,
             ReplaceTestFunctionPrefixWithAttributeRector::class,
+            ArrayKeyExistsNullToEmptyStringRector::class,
+            ColonAfterSwitchCaseRector::class,
         ]
     );

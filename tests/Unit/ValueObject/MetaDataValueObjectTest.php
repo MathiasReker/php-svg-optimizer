@@ -35,6 +35,16 @@ final class MetaDataValueObjectTest extends TestCase
     private MetaDataValueObject $metaDataValueObject;
 
     #[Test]
+    public function zeroAndNegativeValues(): void
+    {
+        $metaDataValueObject = new MetaDataValueObject(0, -1, -1, -100.0, -0.1);
+        self::assertSame(0, $metaDataValueObject->getOriginalSize());
+        self::assertSame(-1, $metaDataValueObject->getOptimizedSize());
+        self::assertSame(-1, $metaDataValueObject->getSavedBytes());
+        self::assertEqualsWithDelta(-100.0, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+    }
+
+    #[Test]
     public function getOriginalSize(): void
     {
         self::assertSame(self::ORIGINAL_SIZE, $this->metaDataValueObject->getOriginalSize());
@@ -56,16 +66,6 @@ final class MetaDataValueObjectTest extends TestCase
     public function getSavedPercentage(): void
     {
         self::assertEqualsWithDelta(self::SAVED_PERCENTAGE, $this->metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
-    }
-
-    #[Test]
-    public function zeroAndNegativeValues(): void
-    {
-        $metaDataValueObject = new MetaDataValueObject(0, -1, -1, -100.0, -0.1);
-        self::assertSame(0, $metaDataValueObject->getOriginalSize());
-        self::assertSame(-1, $metaDataValueObject->getOptimizedSize());
-        self::assertSame(-1, $metaDataValueObject->getSavedBytes());
-        self::assertEqualsWithDelta(-100.0, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
     #[Test]

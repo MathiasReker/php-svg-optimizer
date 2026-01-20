@@ -43,46 +43,6 @@ final class OptionTest extends TestCase
         yield [Option::Version, '-v'];
     }
 
-    #[DataProvider('provideGetFullCases')]
-    #[Test]
-    public function getFull(Option $option, string $full): void
-    {
-        self::assertSame($full, $option->getFull());
-    }
-
-    /**
-     * @return iterable<array{Option, string}>
-     */
-    public static function provideGetFullCases(): iterable
-    {
-        yield [Option::Help, '--help'];
-        yield [Option::Config, '--config'];
-        yield [Option::DryRun, '--dry-run'];
-        yield [Option::AllowRisky, '--allow-risky'];
-        yield [Option::Quiet, '--quiet'];
-        yield [Option::Version, '--version'];
-    }
-
-    #[DataProvider('provideGetDescriptionCases')]
-    #[Test]
-    public function getDescription(Option $option, string $description): void
-    {
-        self::assertSame($description, $option->getDescription());
-    }
-
-    /**
-     * @return iterable<array{Option, string}>
-     */
-    public static function provideGetDescriptionCases(): iterable
-    {
-        yield [Option::Help, 'Display help for the command.'];
-        yield [Option::Config, 'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.'];
-        yield [Option::DryRun, 'Only calculate potential savings without modifying the files.'];
-        yield [Option::AllowRisky, 'Explicitly enables risky rules, allowing them to be applied.'];
-        yield [Option::Quiet, 'Suppress all output except errors.'];
-        yield [Option::Version, 'Display the version of the library.'];
-    }
-
     #[DataProvider('provideEnumValuesCases')]
     #[Test]
     public function enumValues(Option $option, string $value): void
@@ -127,6 +87,26 @@ final class OptionTest extends TestCase
         self::assertSame('--version', Option::Version->getFull());
     }
 
+    #[DataProvider('provideGetFullCases')]
+    #[Test]
+    public function getFull(Option $option, string $full): void
+    {
+        self::assertSame($full, $option->getFull());
+    }
+
+    /**
+     * @return iterable<array{Option, string}>
+     */
+    public static function provideGetFullCases(): iterable
+    {
+        yield [Option::Help, '--help'];
+        yield [Option::Config, '--config'];
+        yield [Option::DryRun, '--dry-run'];
+        yield [Option::AllowRisky, '--allow-risky'];
+        yield [Option::Quiet, '--quiet'];
+        yield [Option::Version, '--version'];
+    }
+
     #[Test]
     public function descriptionValues(): void
     {
@@ -155,5 +135,25 @@ final class OptionTest extends TestCase
             'Display the version of the library.',
             Option::Version->getDescription()
         );
+    }
+
+    #[DataProvider('provideGetDescriptionCases')]
+    #[Test]
+    public function getDescription(Option $option, string $description): void
+    {
+        self::assertSame($description, $option->getDescription());
+    }
+
+    /**
+     * @return iterable<array{Option, string}>
+     */
+    public static function provideGetDescriptionCases(): iterable
+    {
+        yield [Option::Help, 'Display help for the command.'];
+        yield [Option::Config, 'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.'];
+        yield [Option::DryRun, 'Only calculate potential savings without modifying the files.'];
+        yield [Option::AllowRisky, 'Explicitly enables risky rules, allowing them to be applied.'];
+        yield [Option::Quiet, 'Suppress all output except errors.'];
+        yield [Option::Version, 'Display the version of the library.'];
     }
 }

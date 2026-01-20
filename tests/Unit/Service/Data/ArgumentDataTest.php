@@ -45,29 +45,16 @@ final class ArgumentDataTest extends TestCase
 
     private ArgumentData $argumentData;
 
+    /**
+     * @throws \InvalidArgumentException If the option does not exist
+     */
     #[Test]
-    public function getOptions(): void
+    public function getOptionThrowsForUnknownOption(): void
     {
-        $options = $this->argumentData->getOptions();
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Option "unknown" not found.');
 
-        self::assertArrayHasKey(Option::Help->value, $options);
-        $helpOption = $options[Option::Help->value];
-
-        self::assertSame(Option::Help->getShorthand(), $helpOption->getShorthand());
-        self::assertSame(Option::Help->getFull(), $helpOption->getFull());
-        self::assertSame(Option::Help->getDescription(), $helpOption->getDescription());
-    }
-
-    #[Test]
-    public function getCommands(): void
-    {
-        $commands = $this->argumentData->getCommands();
-
-        self::assertArrayHasKey(Command::Process->value, $commands);
-        $processCommand = $commands[Command::Process->value];
-
-        self::assertSame(Command::Process->getTitle(), $processCommand->getTitle());
-        self::assertSame(Command::Process->getDescription(), $processCommand->getDescription());
+        $this->argumentData->getOption('unknown');
     }
 
     /**
@@ -81,37 +68,6 @@ final class ArgumentDataTest extends TestCase
         self::assertSame(Option::Help->getShorthand(), $argumentOptionValueObject->getShorthand());
         self::assertSame(Option::Help->getFull(), $argumentOptionValueObject->getFull());
         self::assertSame(Option::Help->getDescription(), $argumentOptionValueObject->getDescription());
-    }
-
-    #[Test]
-    public function getExamples(): void
-    {
-        $examples = $this->argumentData->getExamples();
-
-        self::assertCount(self::EXPECTED_EXAMPLES_COUNT, $examples);
-        $example = $examples[0];
-
-        self::assertSame(self::EXAMPLE_COMMAND, $example->getCommand());
-    }
-
-    #[Test]
-    public function getFormat(): void
-    {
-        $format = $this->argumentData->getFormat();
-
-        self::assertSame('vendor/bin/svg-optimizer [options] process <path1> <path2> ...', $format);
-    }
-
-    /**
-     * @throws \InvalidArgumentException If the option does not exist
-     */
-    #[Test]
-    public function getOptionThrowsForUnknownOption(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Option "unknown" not found.');
-
-        $this->argumentData->getOption('unknown');
     }
 
     /**
@@ -150,6 +106,17 @@ final class ArgumentDataTest extends TestCase
     }
 
     #[Test]
+    public function getExamples(): void
+    {
+        $examples = $this->argumentData->getExamples();
+
+        self::assertCount(self::EXPECTED_EXAMPLES_COUNT, $examples);
+        $example = $examples[0];
+
+        self::assertSame(self::EXAMPLE_COMMAND, $example->getCommand());
+    }
+
+    #[Test]
     public function getOptionsContainsAllDefinedOptions(): void
     {
         $options = $this->argumentData->getOptions();
@@ -160,11 +127,36 @@ final class ArgumentDataTest extends TestCase
     }
 
     #[Test]
+    public function getOptions(): void
+    {
+        $options = $this->argumentData->getOptions();
+
+        self::assertArrayHasKey(Option::Help->value, $options);
+        $helpOption = $options[Option::Help->value];
+
+        self::assertSame(Option::Help->getShorthand(), $helpOption->getShorthand());
+        self::assertSame(Option::Help->getFull(), $helpOption->getFull());
+        self::assertSame(Option::Help->getDescription(), $helpOption->getDescription());
+    }
+
+    #[Test]
     public function getCommandsContainsOnlyProcess(): void
     {
         $commands = $this->argumentData->getCommands();
         self::assertCount(1, $commands);
         self::assertArrayHasKey(Command::Process->value, $commands);
+    }
+
+    #[Test]
+    public function getCommands(): void
+    {
+        $commands = $this->argumentData->getCommands();
+
+        self::assertArrayHasKey(Command::Process->value, $commands);
+        $processCommand = $commands[Command::Process->value];
+
+        self::assertSame(Command::Process->getTitle(), $processCommand->getTitle());
+        self::assertSame(Command::Process->getDescription(), $processCommand->getDescription());
     }
 
     #[Test]
@@ -246,6 +238,14 @@ final class ArgumentDataTest extends TestCase
     public function getFormatReturnsExpectedString(): void
     {
         $format = $this->argumentData->getFormat();
+        self::assertSame('vendor/bin/svg-optimizer [options] process <path1> <path2> ...', $format);
+    }
+
+    #[Test]
+    public function getFormat(): void
+    {
+        $format = $this->argumentData->getFormat();
+
         self::assertSame('vendor/bin/svg-optimizer [options] process <path1> <path2> ...', $format);
     }
 

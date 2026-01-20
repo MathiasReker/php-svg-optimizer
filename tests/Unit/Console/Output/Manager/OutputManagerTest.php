@@ -87,6 +87,19 @@ final class OutputManagerTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
+    public function printHelpIncludesOptions(): void
+    {
+        $this->outputManager->printHelp();
+        $output = $this->memoryStream->getContent();
+
+        self::assertStringContainsString('Options:', $output);
+        self::assertMatchesRegularExpression('/\s+-h\s+--help\s+.+/', $output);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
     public function printHelp(): void
     {
         $this->outputManager->printHelp();
@@ -104,19 +117,6 @@ final class OutputManagerTest extends TestCase
         self::assertStringContainsString('--version', $output);
         self::assertStringContainsString('process', $output);
         self::assertStringContainsString('vendor/bin/svg-optimizer', $output);
-    }
-
-    /**
-     * @throws \RuntimeException
-     */
-    #[Test]
-    public function printHelpIncludesOptions(): void
-    {
-        $this->outputManager->printHelp();
-        $output = $this->memoryStream->getContent();
-
-        self::assertStringContainsString('Options:', $output);
-        self::assertMatchesRegularExpression('/\s+-h\s+--help\s+.+/', $output);
     }
 
     /**

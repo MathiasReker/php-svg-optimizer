@@ -33,20 +33,6 @@ final class StringProviderTest extends TestCase
 {
     private const string TEST_INPUT_STRING = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>';
 
-    /**
-     * @throws XmlProcessingException
-     */
-    #[Test]
-    public function optimize(): void
-    {
-        $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
-        $domDocument = $stringProvider->loadContent();
-
-        $stringProvider->optimize($domDocument);
-
-        self::assertSame(self::TEST_INPUT_STRING, $stringProvider->getOutputContent());
-    }
-
     #[Test]
     public function getInputContent(): void
     {
@@ -74,5 +60,19 @@ final class StringProviderTest extends TestCase
 
         self::assertSame($originalSize, $metaDataValueObject->getOriginalSize());
         self::assertSame($optimizedSize, $metaDataValueObject->getOptimizedSize());
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function optimize(): void
+    {
+        $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
+        $domDocument = $stringProvider->loadContent();
+
+        $stringProvider->optimize($domDocument);
+
+        self::assertSame(self::TEST_INPUT_STRING, $stringProvider->getOutputContent());
     }
 }
