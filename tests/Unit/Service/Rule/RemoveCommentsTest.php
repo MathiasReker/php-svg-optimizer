@@ -213,7 +213,7 @@ final class RemoveCommentsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" width="500px" height="50px" viewBox="0 0 500 50" enable-background="new 0 0 500 50" xml:space="preserve"></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" width="500px" height="50px" viewBox="0 0 500 50" enable-background="new 0 0 500 50" xml:space="preserve"></svg>
                 XML,
         ];
 

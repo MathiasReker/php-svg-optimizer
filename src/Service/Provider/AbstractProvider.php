@@ -24,13 +24,6 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 abstract class AbstractProvider implements SvgProviderInterface
 {
     /**
-     * Regex pattern for XML declaration.
-     *
-     * @see https://regex101.com/r/uWTo0N/1
-     */
-    private const string XML_DECLARATION_REGEX = '/^\s*<\?xml[^>]*\?>\s*/';
-
-    /**
      * Default directory permissions for newly created directories.
      */
     private const int DEFAULT_DIRECTORY_PERMISSION = 0o755;
@@ -68,21 +61,14 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Optimize the provided \DOMDocument instance.
      *
-     * @throws XmlProcessingException If the XML processing fails
+     * @throws XmlProcessingException
      */
     #[\Override]
     final public function optimize(\DOMDocument $domDocument): self
     {
         $this->runWithTiming(
             function () use ($domDocument): void {
-                $content = $this->domDocumentWrapper->saveToString($domDocument);
-                $content = preg_replace(self::XML_DECLARATION_REGEX, '', $content);
-
-                if (null === $content) {
-                    throw new XmlProcessingException('Failed to process XML content.');
-                }
-
-                $this->outputContent = trim($content);
+                $this->outputContent = $this->domDocumentWrapper->saveToString($domDocument);
             }
         );
 
@@ -187,18 +173,9 @@ abstract class AbstractProvider implements SvgProviderInterface
      * @param \DOMDocument $domDocument The \DOMDocument to serialize
      *
      * @return string The serialized XML content
-     *
-     * @throws XmlProcessingException If the XML content cannot be processed
      */
     final public function serialize(\DOMDocument $domDocument): string
     {
-        $content = $this->domDocumentWrapper->saveToString($domDocument);
-        $content = preg_replace(self::XML_DECLARATION_REGEX, '', $content);
-
-        if (null === $content) {
-            throw new XmlProcessingException('Failed to process XML content.');
-        }
-
-        return $content;
+        return $this->domDocumentWrapper->saveToString($domDocument);
     }
 }

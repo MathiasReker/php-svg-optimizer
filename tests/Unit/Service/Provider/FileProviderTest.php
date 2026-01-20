@@ -327,7 +327,6 @@ final class FileProviderTest extends TestCase
     }
 
     /**
-     * @throws XmlProcessingException
      * @throws FileNotFoundException
      * @throws IOException
      */

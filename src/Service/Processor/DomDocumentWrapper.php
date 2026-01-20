@@ -45,7 +45,11 @@ final readonly class DomDocumentWrapper
      */
     public function saveToString(\DOMDocument $domDocument): string
     {
-        $saveXML = $domDocument->saveXML();
+        if ($domDocument->documentElement instanceof \DOMElement) {
+            $saveXML = $domDocument->saveXML($domDocument->documentElement);
+        } else {
+            $saveXML = $domDocument->saveXML();
+        }
 
         if (false === $saveXML) {
             throw new XmlProcessingException('Failed to save XML content.');
