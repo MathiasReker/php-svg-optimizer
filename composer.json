@@ -34,7 +34,7 @@
         "marc-mabe/php-enum-phpstan": "^3.0",
         "odan/phpstan-rules": "^0.2",
         "phpstan/extension-installer": "^1.4",
-        "phpstan/phpstan": "2.1.33",
+        "phpstan/phpstan": "2.1.35",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-mockery": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
