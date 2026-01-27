@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgProperty;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgPropertiesTrait;
 
 /**
@@ -19,8 +21,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgPropertiesTrait;
  */
 final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRuleInterface
 {
-    use SvgPropertiesTrait;
-
     /**
      * Regular expression pattern for validating SVG/CSS property names.
      *
@@ -81,7 +81,7 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
      */
     private function convertStyles(\DOMElement $domElement): void
     {
-        $style = trim($domElement->getAttribute('style'));
+        $style = trim($domElement->getAttribute(SvgTag::Style->value));
         if ('' === $style || !str_contains($style, ':')) {
             return;
         }
@@ -95,9 +95,9 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
         }
 
         if ([] === $remaining) {
-            $domElement->removeAttribute('style');
+            $domElement->removeAttribute(SvgTag::Style->value);
         } else {
-            $domElement->setAttribute('style', implode('; ', $remaining));
+            $domElement->setAttribute(SvgTag::Style->value, implode('; ', $remaining));
         }
     }
 
@@ -129,7 +129,7 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
             return \sprintf('%s:%s', $prop, $value);
         }
 
-        if (\in_array($prop, self::SVG_PROPERTIES, true)) {
+        if (\in_array($prop, SvgProperty::values(), true)) {
             if (!$domElement->hasAttribute($prop)) {
                 $domElement->setAttribute($prop, $value);
             }

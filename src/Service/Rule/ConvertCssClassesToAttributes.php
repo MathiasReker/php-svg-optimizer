@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgProperty;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgPropertiesTrait;
 
 /**
@@ -19,8 +20,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgPropertiesTrait;
  */
 final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleInterface
 {
-    use SvgPropertiesTrait;
-
     /**
      * Regex pattern to match CSS class selectors and their declaration blocks.
      *
@@ -124,7 +123,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
             [$prop, $value] = array_map(trim(...), explode(':', $declaration, 2));
             $propLower = mb_strtolower($prop);
 
-            if (\in_array($propLower, self::SVG_PROPERTIES, true)) {
+            if (\in_array($propLower, SvgProperty::values(), true)) {
                 $convertible[$propLower] = $value;
             } else {
                 $nonConvertible[$propLower] = $value;
