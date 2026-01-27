@@ -38,17 +38,11 @@ final class StdoutStreamTest extends TestCase
     #[Test]
     public function writeAndWritelnToMemoryStream(): void
     {
-        /**
-         * @phpstan-ignore-next-line
-         */
         $stream = new class extends StdoutStream {
             public function __construct()
             {
                 parent::__construct();
 
-                /*
-                 * @phpstan-ignore-next-line
-                 */
                 $this->stream = fopen('php://memory', 'w+');
                 if (false === $this->stream) {
                     throw new \RuntimeException('Unable to open memory stream.');
@@ -78,17 +72,11 @@ final class StdoutStreamTest extends TestCase
     #[Test]
     public function multipleWrites(): void
     {
-        /**
-         * @phpstan-ignore-next-line
-         */
         $stream = new class extends StdoutStream {
             public function __construct()
             {
                 parent::__construct();
 
-                /*
-                 * @phpstan-ignore-next-line
-                 */
                 $this->stream = fopen('php://memory', 'w+');
                 if (false === $this->stream) {
                     throw new \RuntimeException('Unable to open memory stream.');
@@ -129,6 +117,7 @@ final class StdoutStreamTest extends TestCase
         $reflectionProperty = $reflectionClass->getProperty('stream');
 
         $resource = $reflectionProperty->getValue($stdoutStream);
+        \assert(\is_resource($resource));
 
         unset($stdoutStream);
 

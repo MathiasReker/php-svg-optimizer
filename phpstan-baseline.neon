@@ -1,0 +1,67 @@
+parameters:
+	ignoreErrors:
+		-
+			rawMessage: 'Class cognitive complexity is 49, keep it under 40'
+			identifier: complexity.classLike
+			count: 1
+			path: src/Service/Rule/RemoveUnsafeElements.php
+
+		-
+			rawMessage: 'Call to static method PHPUnit\Framework\Assert::assertSame() with array{true, false} and array<string, bool> will always evaluate to false.'
+			identifier: staticMethod.impossibleType
+			count: 1
+			path: tests/Unit/Console/Input/ConfigLoaderTest.php
+
+		-
+			rawMessage: 'Method MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream@anonymous/tests/Unit/Console/Output/Stream/ConcreteStreamTest.php:31::__construct() throws checked exception RuntimeException but it''s missing from the PHPDoc @throws tag.'
+			identifier: missingType.checkedException
+			count: 1
+			path: tests/Unit/Console/Output/Stream/ConcreteStreamTest.php
+
+		-
+			rawMessage: 'Method MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream@anonymous/tests/Unit/Console/Output/Stream/ConcreteStreamTest.php:63::__construct() throws checked exception RuntimeException but it''s missing from the PHPDoc @throws tag.'
+			identifier: missingType.checkedException
+			count: 1
+			path: tests/Unit/Console/Output/Stream/ConcreteStreamTest.php
+
+		-
+			rawMessage: 'Parameter #1 $stream of function rewind expects resource, mixed given.'
+			identifier: argument.type
+			count: 1
+			path: tests/Unit/Console/Output/Stream/MemoryStreamTest.php
+
+		-
+			rawMessage: Anonymous class is not allowed to extend "MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream".
+			identifier: ergebnis.noExtends
+			count: 2
+			path: tests/Unit/Console/Output/Stream/StdoutStreamTest.php
+
+		-
+			rawMessage: 'Property MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream::$stream (resource) does not accept resource|false.'
+			identifier: assign.propertyType
+			count: 2
+			path: tests/Unit/Console/Output/Stream/StdoutStreamTest.php
+
+		-
+			rawMessage: Cannot access property $tagName on DOMElement|null.
+			identifier: property.nonObject
+			count: 1
+			path: tests/Unit/Service/Provider/FileProviderTest.php
+
+		-
+			rawMessage: 'Cannot call method setAttribute() on DOMElement|null.'
+			identifier: method.nonObject
+			count: 2
+			path: tests/Unit/Service/Provider/FileProviderTest.php
+
+		-
+			rawMessage: 'Method MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Provider\FileProviderTest::optimizeThrowsTypeErrorOnInvalidInput() throws checked exception MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException but it''s missing from the PHPDoc @throws tag.'
+			identifier: missingType.checkedException
+			count: 1
+			path: tests/Unit/Service/Provider/FileProviderTest.php
+
+		-
+			rawMessage: 'Parameter #1 $domDocument of method MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider::optimize() expects DOMDocument, null given.'
+			identifier: argument.type
+			count: 1
+			path: tests/Unit/Service/Provider/FileProviderTest.php

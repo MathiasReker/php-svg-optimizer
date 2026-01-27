@@ -113,9 +113,6 @@ final class MemoryStreamTest extends TestCase
         $memoryStream = new MemoryStream();
         $memoryStream->write('Testing');
 
-        /*
-         * @phpstan-ignore-next-line
-         */
         rewind((new \ReflectionClass($memoryStream))->getProperty('stream')->getValue($memoryStream));
         $output = $memoryStream->getContent();
 
@@ -133,7 +130,9 @@ final class MemoryStreamTest extends TestCase
 
         $reflectionClass = new \ReflectionClass($memoryStream);
         $reflectionProperty = $reflectionClass->getProperty('stream');
+
         $resource = $reflectionProperty->getValue($memoryStream);
+        \assert(\is_resource($resource));
 
         unset($memoryStream);
 
@@ -174,11 +173,10 @@ final class MemoryStreamTest extends TestCase
 
         $reflectionClass = new \ReflectionClass($memoryStream);
         $reflectionProperty = $reflectionClass->getProperty('stream');
-        $resource = $reflectionProperty->getValue($memoryStream);
 
-        /*
-         * @phpstan-ignore-next-line
-         */
+        $resource = $reflectionProperty->getValue($memoryStream);
+        \assert(\is_resource($resource));
+
         fclose($resource);
 
         $this->expectException(\Error::class);

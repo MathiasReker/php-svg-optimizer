@@ -14,9 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 
 /**
- * @no-named-arguments
- *
- * @phpstan-ignore-next-line
+ * @no-named-argumentsy
  */
 final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 {

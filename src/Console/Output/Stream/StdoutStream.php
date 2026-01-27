@@ -27,7 +27,7 @@ class StdoutStream extends AbstractStream implements StreamInterface
     {
         $stream = fopen('php://stdout', 'w');
 
-        if (false === $stream) {
+        if (!\is_resource($stream)) {
             throw new \RuntimeException('Unable to open stdout stream.');
         }
 

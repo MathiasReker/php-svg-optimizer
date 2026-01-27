@@ -34,9 +34,6 @@ final class ConcreteStreamTest extends TestCase
                 $stream = fopen('php://memory', 'w+');
 
                 if (false === $stream) {
-                    /*
-                     * @phpstan-ignore-next-line
-                     */
                     throw new \RuntimeException('Unable to open memory stream.');
                 }
 
@@ -69,9 +66,6 @@ final class ConcreteStreamTest extends TestCase
                 $stream = fopen('php://memory', 'w+');
 
                 if (false === $stream) {
-                    /*
-                     * @phpstan-ignore-next-line
-                     */
                     throw new \RuntimeException('Unable to open memory stream.');
                 }
 

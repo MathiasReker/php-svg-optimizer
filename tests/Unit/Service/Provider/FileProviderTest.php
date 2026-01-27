@@ -78,9 +78,6 @@ final class FileProviderTest extends TestCase
 
         $domDocument = $fileProvider->loadContent();
 
-        /*
-         * @phpstan-ignore-next-line
-         */
         self::assertSame('svg', $domDocument->documentElement->tagName);
     }
 
@@ -109,10 +106,10 @@ final class FileProviderTest extends TestCase
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
 
         $domDocument = $fileProvider->loadContent();
-        /*
-         * @phpstan-ignore-next-line
-         */
-        $domDocument->documentElement->setAttribute('id', 'svg1');
+
+        if ($domDocument->documentElement instanceof \DOMElement) {
+            $domDocument->documentElement->setAttribute('id', 'svg1');
+        }
 
         $fileProvider->optimize($domDocument);
         $output = $fileProvider->getOutputContent();
@@ -286,9 +283,7 @@ final class FileProviderTest extends TestCase
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
-        /*
-         * @phpstan-ignore-next-line
-         */
+
         $domDocument->documentElement->setAttribute('data-test', 'value');
 
         $fileProvider->optimize($domDocument);
@@ -314,9 +309,6 @@ final class FileProviderTest extends TestCase
 
         $metaDataValueObject = $fileProvider->getMetaData();
 
-        /*
-         * @phpstan-ignore-next-line
-         */
         $domDocument->documentElement->setAttribute('class', 'test');
         $fileProvider->optimize($domDocument);
 
@@ -337,9 +329,6 @@ final class FileProviderTest extends TestCase
 
         $this->expectException(\TypeError::class);
 
-        /*
-         * @phpstan-ignore-next-line
-         */
         $fileProvider->optimize(null);
     }
 

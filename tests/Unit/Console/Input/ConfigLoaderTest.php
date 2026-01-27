@@ -36,7 +36,12 @@ final class ConfigLoaderTest extends TestCase
 
         $result = ConfigLoader::loadConfig($jsonString);
 
-        self::assertSame(['key1' => true, 'key2' => false], $result);
+        $expected = [
+            'key1' => true,
+            'key2' => false,
+        ];
+
+        self::assertSame($expected, $result);
     }
 
     /**
@@ -157,9 +162,6 @@ final class ConfigLoaderTest extends TestCase
 
         $result = ConfigLoader::loadConfig($jsonString);
 
-        /*
-         * @phpstan-ignore-next-line
-         */
         self::assertSame(['0' => true, '1' => false], $result);
     }
 
