@@ -151,16 +151,16 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
             $query = \sprintf('//%s:*', $prefix);
             $nodes = $domXPath->query($query);
 
-            if (!($nodes instanceof \DOMNodeList)) {
+            if (!$nodes instanceof \DOMNodeList) {
                 continue;
             }
 
             foreach (iterator_to_array($nodes, true) as $node) {
-                if (!($node instanceof \DOMElement)) {
+                if (!$node instanceof \DOMElement) {
                     continue;
                 }
 
-                if (!($node->parentNode instanceof \DOMNode)) {
+                if (!$node->parentNode instanceof \DOMNode) {
                     continue;
                 }
 
@@ -205,7 +205,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     private function processNodes(\DOMXPath $domXPath, string $namespaceUri): void
     {
         $nodes = $domXPath->query(self::ALL_NODES_XPATH_QUERY);
-        if (!($nodes instanceof \DOMNodeList)) {
+        if (!$nodes instanceof \DOMNodeList) {
             return;
         }
 

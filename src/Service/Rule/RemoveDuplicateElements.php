@@ -60,7 +60,7 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
             $this->normalizeAttributes($element);
 
             $parent = $element->parentNode;
-            if (!($parent instanceof \DOMElement)) {
+            if (!$parent instanceof \DOMElement) {
                 continue;
             }
 

@@ -155,7 +155,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
             )
         );
 
-        if (!($elements instanceof \DOMNodeList)) {
+        if (!$elements instanceof \DOMNodeList) {
             return;
         }
 
