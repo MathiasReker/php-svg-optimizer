@@ -40,7 +40,10 @@ final readonly class RemoveWidthHeightAttributes implements SvgOptimizerRuleInte
         if ($svg instanceof \DOMElement && str_contains(mb_strtolower($svg->nodeName), SvgTag::Svg->value)) {
             $remove = [];
             foreach ($svg->attributes as $attr) {
-                if (\in_array(mb_strtolower($attr->nodeName), [SvgAttribute::Width->value, SvgAttribute::Height->value], true)) {
+                if (\in_array(mb_strtolower($attr->nodeName), [
+                    SvgAttribute::Width->value,
+                    SvgAttribute::Height->value,
+                ], true)) {
                     $remove[] = $attr->nodeName;
                 }
             }

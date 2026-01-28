@@ -29,7 +29,13 @@ final readonly class ByteFormatter
             return \sprintf('%d B', $bytes);
         }
 
-        $units = ['KB', 'MB', 'GB', 'TB'];
+        $units = [
+            'KB',
+            'MB',
+            'GB',
+            'TB',
+        ];
+
         $i = 0;
 
         while ($bytes >= 1_024 && $i < \count($units)) {

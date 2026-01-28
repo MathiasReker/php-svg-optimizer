@@ -22,12 +22,12 @@ final readonly class DomDocumentWrapper
     /**
      * Default XML version used when saving the \DOMDocument.
      */
-    private const string DEFAULT_XML_VERSION = '1.0';
+    private const string XML_VERSION = '1.0';
 
     /**
      * Default encoding used when saving the \DOMDocument.
      */
-    private const string DEFAULT_ENCODING = 'UTF-8';
+    private const string ENCODING = 'UTF-8';
 
     private const int LOAD_FLAGS =
         \LIBXML_NONET |
@@ -105,7 +105,7 @@ final readonly class DomDocumentWrapper
      */
     private function createDomDocument(): \DOMDocument
     {
-        $domDocument = new \DOMDocument(self::DEFAULT_XML_VERSION, self::DEFAULT_ENCODING);
+        $domDocument = new \DOMDocument(self::XML_VERSION, self::ENCODING);
         $domDocument->formatOutput = false;
         $domDocument->preserveWhiteSpace = false;
 

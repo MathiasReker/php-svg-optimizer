@@ -26,7 +26,7 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Default directory permissions for newly created directories.
      */
-    private const int DEFAULT_DIRECTORY_PERMISSION = 0o755;
+    private const int DIRECTORY_PERMISSION = 0o755;
 
     /**
      * Holds the optimized SVG content.
@@ -155,7 +155,7 @@ abstract class AbstractProvider implements SvgProviderInterface
             return false;
         }
 
-        return mkdir($directoryPath, self::DEFAULT_DIRECTORY_PERMISSION, true);
+        return mkdir($directoryPath, self::DIRECTORY_PERMISSION, true);
     }
 
     /**

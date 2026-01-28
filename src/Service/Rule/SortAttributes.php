@@ -29,10 +29,10 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
      * alphabetically by their name.
      */
     private const array ATTRIBUTE_ORDER = [
-        'xmlns',
-        'id',
-        'height',
-        'width',
+        SvgAttribute::Xmlns->value,
+        SvgAttribute::Id->value,
+        SvgAttribute::Height->value,
+        SvgAttribute::Width->value,
     ];
 
     #[\Override]
