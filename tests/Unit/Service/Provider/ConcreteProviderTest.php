@@ -54,7 +54,7 @@ final class ConcreteProviderTest extends TestCase
 
     private function getConcreteProvider(string $inputContent): AbstractProvider
     {
-        return new class($inputContent) extends AbstractProvider {
+        return new class ($inputContent) extends AbstractProvider {
             public function __construct(
                 private readonly string $testInput,
             ) {

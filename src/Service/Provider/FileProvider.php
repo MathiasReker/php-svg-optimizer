@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Provider;
 
+use Override;
+use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
@@ -43,7 +45,7 @@ final class FileProvider extends AbstractProvider
      * @throws FileNotFoundException If the file does not exist
      * @throws IOException           If the file does not exist or cannot be read
      */
-    #[\Override]
+    #[Override]
     public function getInputContent(): string
     {
         if (!file_exists($this->inputFile) || !is_file($this->inputFile)) {
@@ -68,8 +70,8 @@ final class FileProvider extends AbstractProvider
      *
      * @throws XmlProcessingException If the XML processing fails
      */
-    #[\Override]
-    public function loadContent(): \DOMDocument
+    #[Override]
+    public function loadContent(): DOMDocument
     {
         return $this->domDocumentWrapper->loadFromFile($this->inputFile);
     }

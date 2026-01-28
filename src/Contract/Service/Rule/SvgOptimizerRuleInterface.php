@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Contract\Service\Rule;
 
+use DOMDocument;
+
 /**
  * Defines the contract for optimization rules that can be applied to an SVG document.
  *
@@ -33,9 +35,9 @@ interface SvgOptimizerRuleInterface
      * applying any defined optimization rules. The modifications should be
      * made directly on the $domDocument, and the method should not return any value.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
-    public function optimize(\DOMDocument $domDocument): void;
+    public function optimize(DOMDocument $domDocument): void;
 
     /**
      * If true, SvgOptimizer will only keep the rule's effect if it reduces size.

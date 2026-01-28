@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
  * @no-named-arguments
@@ -21,42 +22,41 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     /**
      * The XML namespace attribute for the `xlink` namespace.
      */
-    private const string XMLNS_ATTRIBUTE = 'xmlns:xlink';
+    private const string XMLNS_ATTRIBUTE = SvgAttribute::XmlnsXlink->value;
 
     /**
      * List of deprecated SVG attributes that should be removed from the document.
      * These attributes are no longer recommended for use in modern SVGs.
      */
     private const array ATTRIBUTES_TO_REMOVE = [
-        'baseProfile',
-        'contentScriptType',
-        'contentStyleType',
-        'cursor',
-        'currentView',
-        'externalResourcesRequired',
-        'requiredFeatures',
-        'useCurrentView',
-        'version',
-        'viewTarget',
-        'viewport',
-        'xlink:arcrole',
-        'xlink:show',
-        'xlink:type',
-        'xml:base',
-        'zoomAndPan',
-        'suspendRedraw',
-        'unsuspendRedraw',
-        'unsuspendRedrawAll',
+        SvgAttribute::BaseProfile->value,
+        SvgAttribute::ContentScriptType->value,
+        SvgAttribute::ContentStyleType->value,
+        SvgAttribute::Cursor->value,
+        SvgAttribute::CurrentView->value,
+        SvgAttribute::ExternalResourcesRequired->value,
+        SvgAttribute::RequiredFeatures->value,
+        SvgAttribute::UseCurrentView->value,
+        SvgAttribute::Version->value,
+        SvgAttribute::ViewTarget->value,
+        SvgAttribute::Viewport->value,
+        SvgAttribute::XlinkArcrole->value,
+        SvgAttribute::XlinkShow->value,
+        SvgAttribute::XlinkType->value,
+        SvgAttribute::XmlBase->value,
+        SvgAttribute::ZoomAndPan->value,
+        SvgAttribute::SuspendRedraw->value,
+        SvgAttribute::UnsuspendRedraw->value,
+        SvgAttribute::UnsuspendRedrawAll->value,
     ];
 
     /**
-     * List of attributes that need to be replaced with new names in the SVG document.
-     * This ensures compatibility with newer SVG standards.
+     * Attributes that should be replaced with modern equivalents.
      */
     private const array ATTRIBUTES_TO_REPLACE = [
-        'xlink:href' => 'href',
-        'xlink:title' => 'title',
-        'xml:lang' => 'lang',
+        SvgAttribute::XlinkHref->value => SvgAttribute::Href->value,
+        SvgAttribute::XlinkTitle->value => SvgAttribute::Title->value,
+        SvgAttribute::XmlLang->value => SvgAttribute::Lang->value,
     ];
 
     #[\Override]
@@ -79,7 +79,7 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $domXPath->registerNamespace('xlink', 'http://www.w3.org/1999/xlink');
+        $domXPath->registerNamespace(SvgAttribute::Xlink->value, 'http://www.w3.org/1999/xlink');
 
         $this->replaceAttributes($domXPath, self::ATTRIBUTES_TO_REPLACE);
         $this->removeNamespaceFromSvgTags($domDocument);

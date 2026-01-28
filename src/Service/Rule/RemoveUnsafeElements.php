@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
  * @no-named-argumentsy
@@ -19,42 +21,12 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 {
     /**
-     * List of dangerous SVG tags that should be removed.
-     *
-     * These tags are known to pose security risks and should not be present in the SVG content.
-     */
-    private const array ALWAYS_REMOVE_TAGS = [
-        'script',
-        'foreignObject',
-        'iframe',
-        'object',
-        'embed',
-    ];
-
-    private const array CONDITIONAL_TAGS = [
-        'image',
-        'use',
-        'link',
-        'tref',
-    ];
-
-    /**
      * List of dangerous attribute prefixes and exact names that should be removed.
      *
      * Attributes with these prefixes or exact names are considered unsafe and should not be present in the SVG content.
      */
     private const array DANGEROUS_ATTR_PREFIXES = [
         'on',
-    ];
-
-    /**
-     * List of dangerous attributes that should be removed if they match specific patterns.
-     *
-     * These attributes are known to pose security risks when they contain certain values.
-     */
-    private const array DANGEROUS_ATTRS_EXACT = [
-        'xlink:href',
-        'href',
     ];
 
     /**
@@ -110,29 +82,6 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      * @see https://regex101.com/r/Wpra41/1
      */
     private const string URL_PROTOCOL_OR_RELATIVE_REGEX = '~^(?:[a-z][a-z0-9+.-]*:|//)~i';
-
-    /**
-     * List of attributes that can contain URLs and should be checked for unsafe content.
-     *
-     * These attributes are commonly used in SVG files and may contain references to external resources.
-     */
-    private const array URL_ATTRIBUTES = [
-        'fill',
-        'stroke',
-        'filter',
-        'clip-path',
-        'mask',
-        'marker-start',
-        'marker-mid',
-        'marker-end',
-        'begin',
-        'pattern',
-        'end',
-        'from',
-        'to',
-        'values',
-        'style',
-    ];
 
     #[\Override]
     public static function isRisky(): bool
@@ -200,7 +149,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function removeAlwaysDangerousTags(\DOMDocument $domDocument): void
     {
-        foreach (self::ALWAYS_REMOVE_TAGS as $tag) {
+        foreach (SvgTag::dangerous() as $tag) {
             $this->removeAllElementsByTagName($domDocument, $tag);
         }
     }
@@ -238,7 +187,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function removeConditionallyDangerousTags(\DOMDocument $domDocument): void
     {
-        foreach (self::CONDITIONAL_TAGS as $tag) {
+        foreach (SvgTag::conditionalDangerous() as $tag) {
             $nodes = $domDocument->getElementsByTagName($tag);
 
             for ($i = $nodes->length - 1; $i >= 0; --$i) {
@@ -265,9 +214,11 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             return;
         }
 
-        foreach (['href', 'xlink:href'] as $attr) {
+        foreach (SvgAttribute::dangerousExact() as $attrCase) {
+            $attr = $attrCase;
             $value = $domNode->getAttribute($attr);
-            if ($this->isExactDangerousAttribute($attr, $value)) {
+
+            if ($this->isExactDangerousAttribute($attrCase, $value)) {
                 if ($domNode->parentNode instanceof \DOMNode) {
                     $domNode->parentNode->removeChild($domNode);
                 }
@@ -289,7 +240,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function isExactDangerousAttribute(string $name, string $value): bool
     {
-        return \in_array($name, self::DANGEROUS_ATTRS_EXACT, true)
+        return \in_array($name, SvgAttribute::dangerousExact(), true)
             && $this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX);
     }
 
@@ -373,17 +324,15 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             return true;
         }
 
-        if ('style' === $nameLower && $this->matchesPattern($value, self::STYLE_DANGEROUS_REGEX)) {
+        if (SvgAttribute::Style->value === $nameLower && $this->matchesPattern($value, self::STYLE_DANGEROUS_REGEX)) {
             return true;
         }
 
-        return 'src' === $nameLower && $this->matchesPattern($value, self::URI_PROTOCOL_REGEX);
+        return SvgAttribute::Src->value === $nameLower && $this->matchesPattern($value, self::URI_PROTOCOL_REGEX);
     }
 
     /**
      * Check if the attribute name starts with any of the dangerous prefixes.
-     *
-     * This method checks if the attribute name starts with any of the prefixes defined in DANGEROUS_ATTR_PREFIXES.
      *
      * @param string $name The name of the attribute to check
      *
@@ -412,7 +361,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function isUrlAttributeDangerous(string $name, string $value): bool
     {
-        if (!\in_array($name, self::URL_ATTRIBUTES, true)) {
+        if (!\in_array($name, SvgAttribute::dangerous(), true)) {
             return false;
         }
 
@@ -435,7 +384,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function removeStyleWithImport(\DOMDocument $domDocument): void
     {
-        $domNodeList = $domDocument->getElementsByTagName('style');
+        $domNodeList = $domDocument->getElementsByTagName(SvgAttribute::Style->value);
 
         for ($i = $domNodeList->length - 1; $i >= 0; --$i) {
             $style = $domNodeList->item($i);

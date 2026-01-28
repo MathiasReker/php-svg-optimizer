@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Facade;
 
+use LogicException;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
@@ -36,7 +37,9 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
  */
 final readonly class SvgOptimizerFacade
 {
-    /** @var SvgOptimizer The instance responsible for performing SVG optimizations */
+    /**
+     * @var SvgOptimizer The instance responsible for performing SVG optimizations
+     */
     private SvgOptimizer $svgOptimizer;
 
     /**
@@ -213,7 +216,9 @@ final readonly class SvgOptimizerFacade
         $rules = [];
 
         foreach (Rule::cases() as $rule) {
-            /** @var class-string<SvgOptimizerRuleInterface> $ruleClass */
+            /**
+ * @var class-string<SvgOptimizerRuleInterface> $ruleClass
+*/
             $ruleClass = $rule->value;
 
             if ($allowRiskyRules || !$ruleClass::isRisky()) {
@@ -245,7 +250,7 @@ final readonly class SvgOptimizerFacade
      *
      * @return MetaDataValueObject The metadata associated with the SVG content
      *
-     * @throws \LogicException If the metadata cannot be retrieved
+     * @throws LogicException If the metadata cannot be retrieved
      */
     public function getMetaData(): MetaDataValueObject
     {

@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Provider;
 
+use Override;
+use DOMDocument;
+use InvalidArgumentException;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
@@ -63,8 +66,8 @@ abstract class AbstractProvider implements SvgProviderInterface
      *
      * @throws XmlProcessingException
      */
-    #[\Override]
-    final public function optimize(\DOMDocument $domDocument): self
+    #[Override]
+    final public function optimize(DOMDocument $domDocument): self
     {
         $this->runWithTiming(
             function () use ($domDocument): void {
@@ -94,9 +97,9 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Get metadata about the optimization.
      *
-     * @throws \InvalidArgumentException If the original size is less than or equal to 0
+     * @throws InvalidArgumentException If the original size is less than or equal to 0
      */
-    #[\Override]
+    #[Override]
     final public function getMetaData(): MetaDataValueObject
     {
         $metaData = new MetaData(
@@ -111,7 +114,7 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Abstract method to load content into \DOMDocument.
      */
-    abstract public function loadContent(): \DOMDocument;
+    abstract public function loadContent(): DOMDocument;
 
     /**
      * Abstract method to get the input content.
@@ -125,7 +128,7 @@ abstract class AbstractProvider implements SvgProviderInterface
      *
      * @throws IOException If the output file cannot be written
      */
-    #[\Override]
+    #[Override]
     final public function saveToFile(string $path): self
     {
         if (!$this->ensureDirectoryExists(\dirname($path))) {
@@ -161,7 +164,7 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Get the optimized SVG content.
      */
-    #[\Override]
+    #[Override]
     final public function getOutputContent(): string
     {
         return $this->outputContent;
@@ -170,11 +173,11 @@ abstract class AbstractProvider implements SvgProviderInterface
     /**
      * Serialize a \DOMDocument to a string without the XML declaration.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument to serialize
+     * @param DOMDocument $domDocument The \DOMDocument to serialize
      *
      * @return string The serialized XML content
      */
-    final public function serialize(\DOMDocument $domDocument): string
+    final public function serialize(DOMDocument $domDocument): string
     {
         return $this->domDocumentWrapper->saveToString($domDocument);
     }

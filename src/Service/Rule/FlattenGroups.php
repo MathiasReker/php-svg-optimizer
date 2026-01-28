@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
  * @no-named-arguments
@@ -37,9 +38,11 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $domXPath->registerNamespace('svg', 'http://www.w3.org/2000/svg');
+        $domXPath->registerNamespace(SvgTag::Svg->value, 'http://www.w3.org/2000/svg');
 
-        /** @var \DOMNodeList<\DOMElement> $groups */
+        /**
+ * @var \DOMNodeList<\DOMElement> $groups
+*/
         $groups = $domXPath->query('//svg:g');
 
         foreach ($groups as $group) {
@@ -70,7 +73,9 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
      */
     private function applyAttributesToChild(\DOMElement $parent, \DOMElement $child): void
     {
-        /** @var \DOMAttr $attribute */
+        /**
+ * @var \DOMAttr $attribute
+*/
         foreach ($parent->attributes as $attribute) {
             $this->setAttributeIfNotExists($child, $attribute);
         }

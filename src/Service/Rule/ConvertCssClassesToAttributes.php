@@ -11,9 +11,14 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
+use Override;
+use DOMDocument;
+use DOMXPath;
+use DOMNodeList;
+use DOMElement;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgProperty;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgPropertiesTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
 
 /**
  * @no-named-arguments
@@ -30,7 +35,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
      */
     private const string CLASS_SELECTOR_PATTERN = '/\.([a-zA-Z0-9_-]+)\s*\{([^}]+)}/';
 
-    #[\Override]
+    #[Override]
     public static function isRisky(): bool
     {
         return false;
@@ -39,13 +44,13 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     /**
      * Optimizes the given \DOMDocument by converting CSS classes to inline SVG attributes.
      *
-     * @param \DOMDocument $domDocument the DOM document containing SVG markup
+     * @param DOMDocument $domDocument the DOM document containing SVG markup
      */
-    #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    #[Override]
+    public function optimize(DOMDocument $domDocument): void
     {
-        $domXPath = new \DOMXPath($domDocument);
-        $domNodeList = $domDocument->getElementsByTagName('style');
+        $domXPath = new DOMXPath($domDocument);
+        $domNodeList = $domDocument->getElementsByTagName(SvgAttribute::Style->value);
 
         foreach (iterator_to_array($domNodeList, false) as $domElement) {
             $css = $domElement->textContent;
@@ -69,11 +74,11 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
      * Processes CSS text and converts matching rules to SVG attributes.
      *
      * @param string    $css      the CSS text from a <style> element
-     * @param \DOMXPath $domXPath the \DOMXPath instance for querying elements
+     * @param DOMXPath $domXPath the \DOMXPath instance for querying elements
      *
      * @return string the remaining CSS rules that could not be converted
      */
-    private function processCss(string $css, \DOMXPath $domXPath): string
+    private function processCss(string $css, DOMXPath $domXPath): string
     {
         preg_match_all(self::CLASS_SELECTOR_PATTERN, $css, $matches, \PREG_SET_ORDER);
         $resultCss = [];
@@ -123,7 +128,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
             [$prop, $value] = array_map(trim(...), explode(':', $declaration, 2));
             $propLower = mb_strtolower($prop);
 
-            if (\in_array($propLower, SvgProperty::values(), true)) {
+            if (\in_array($propLower, SvgInlineStyleProperty::values(), true)) {
                 $convertible[$propLower] = $value;
             } else {
                 $nonConvertible[$propLower] = $value;
@@ -139,13 +144,13 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
      * @param string                $class          the CSS class to match
      * @param array<string, string> $convertible    attributes to apply
      * @param array<string, string> $nonConvertible attributes that cannot be converted
-     * @param \DOMXPath             $domXPath       \DOMXPath instance for querying elements
+     * @param DOMXPath $domXPath \DOMXPath instance for querying elements
      */
     private function applyAttributesToElements(
         string $class,
         array $convertible,
         array $nonConvertible,
-        \DOMXPath $domXPath,
+        DOMXPath $domXPath,
     ): void {
         $elements = $domXPath->query(
             \sprintf(
@@ -154,11 +159,13 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
             )
         );
 
-        if (!$elements instanceof \DOMNodeList) {
+        if (!$elements instanceof DOMNodeList) {
             return;
         }
 
-        /** @var \DOMElement $element */
+        /**
+         * @var DOMElement $element
+        */
         foreach ($elements as $element) {
             foreach ($convertible as $prop => $value) {
                 $element->setAttribute($prop, $value);
@@ -171,11 +178,11 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     /**
      * Updates the class attribute of an element after converting some styles.
      *
-     * @param \DOMElement           $domElement     the element to update
+     * @param DOMElement $domElement the element to update
      * @param string                $class          the CSS class being processed
      * @param array<string, string> $nonConvertible CSS declarations that were not converted
      */
-    private function updateElementClass(\DOMElement $domElement, string $class, array $nonConvertible): void
+    private function updateElementClass(DOMElement $domElement, string $class, array $nonConvertible): void
     {
         if ([] !== $nonConvertible) {
             $domElement->setAttribute('class', $class);
@@ -209,7 +216,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         return \sprintf('.%s{%s}', $class, implode(';', $props));
     }
 
-    #[\Override]
+    #[Override]
     public function shouldCheckSize(): bool
     {
         return false;

@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Output\Stream;
 
+use RuntimeException;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 
 /**
@@ -21,14 +22,14 @@ class MemoryStream extends AbstractStream implements StreamInterface
     /**
      * Constructor for MemoryStream.
      *
-     * @throws \RuntimeException If unable to open the memory stream
+     * @throws RuntimeException If unable to open the memory stream
      */
     public function __construct()
     {
         $stream = fopen('php://memory', 'w+');
 
         if (!\is_resource($stream)) {
-            throw new \RuntimeException('Unable to open memory stream.');
+            throw new RuntimeException('Unable to open memory stream.');
         }
 
         $this->stream = $stream;

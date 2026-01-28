@@ -220,7 +220,9 @@ final class FinderTest extends TestCase
             \RecursiveIteratorIterator::CHILD_FIRST
         );
 
-        /** @var \SplFileInfo $file */
+        /**
+ * @var \SplFileInfo $file
+*/
         foreach ($iterator as $file) {
             if ($file->isDir()) {
                 rmdir($file->getPathname());

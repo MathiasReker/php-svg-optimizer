@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
  * @no-named-arguments
@@ -25,11 +26,11 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
      * is present in an SVG element with its default value, it will be removed.
      */
     private const array DEFAULT_SVG_ATTRIBUTES = [
-        'stroke' => 'none',
-        'stroke-width' => '1',
-        'stroke-linecap' => 'butt',
-        'stroke-linejoin' => 'miter',
-        'stroke-miterlimit' => '4',
+        SvgAttribute::Stroke->value => 'none',
+        SvgAttribute::StrokeWidth->value => '1',
+        SvgAttribute::StrokeLinecap->value => 'butt',
+        SvgAttribute::StrokeLinejoin->value => 'miter',
+        SvgAttribute::StrokeMiterlimit->value => '4',
     ];
 
     #[\Override]
@@ -52,10 +53,14 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
         $domXPath = new \DOMXPath($domDocument);
 
         foreach (self::DEFAULT_SVG_ATTRIBUTES as $attribute => $defaultValue) {
-            /** @var \DOMNodeList<\DOMAttr> $nodes */
+            /**
+ * @var \DOMNodeList<\DOMAttr> $nodes
+*/
             $nodes = $domXPath->query('//@' . $attribute);
 
-            /** @var \DOMAttr $node */
+            /**
+ * @var \DOMAttr $node
+*/
             foreach ($nodes as $node) {
                 $parentNode = $node->ownerElement;
                 if ($parentNode instanceof \DOMElement && $node->value === $defaultValue) {

@@ -27,7 +27,8 @@ final readonly class ArgumentOptionValueObject
         private string $shorthand,
         private string $full,
         private string $description,
-    ) {}
+    ) {
+    }
 
     /**
      * Get the shorthand name of the argument option.

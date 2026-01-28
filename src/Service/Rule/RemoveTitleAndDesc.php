@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RemoveElementsByTagNameTrait;
 
 /**
@@ -39,8 +40,8 @@ final readonly class RemoveTitleAndDesc implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->removeElementsByTagName($domDocument, 'title');
-        $this->removeElementsByTagName($domDocument, 'desc');
+        $this->removeElementsByTagName($domDocument, SvgTag::Title->value);
+        $this->removeElementsByTagName($domDocument, SvgTag::Desc->value);
     }
 
     #[\Override]

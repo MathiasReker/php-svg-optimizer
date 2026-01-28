@@ -23,7 +23,8 @@ final readonly class ExampleCommandValueObject
      */
     public function __construct(
         private string $command,
-    ) {}
+    ) {
+    }
 
     /**
      * Get the example command.

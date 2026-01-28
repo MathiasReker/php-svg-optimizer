@@ -119,7 +119,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 XML,
         ];
 
-        yield 'Removes href and xlink:href with javascript:' => [
+        yield 'Removes a, href and xlink:href with javascript:' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                     <a xlink:href="javascript:alert('xss')">link</a>
@@ -127,7 +127,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a>link</a><circle cx="5" cy="5" r="3"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><circle cx="5" cy="5" r="3"/></svg>
                 XML,
         ];
 

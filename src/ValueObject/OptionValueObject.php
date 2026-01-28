@@ -25,7 +25,8 @@ final readonly class OptionValueObject
     public function __construct(
         private string $title,
         private string $description,
-    ) {}
+    ) {
+    }
 
     /**
      * Get the title of the command line argument option.

@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
  * @no-named-arguments
@@ -25,11 +26,6 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
      * @see https://regex101.com/r/h0AgKK/1
      */
     private const string ENABLE_BACKGROUND_REGEX = '/^new\s0\s0\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)$/';
-
-    /**
-     * The name of the attribute to be removed or cleaned up.
-     */
-    private const string ENABLE_BACKGROUND_ATTRIBUTE = 'enable-background';
 
     #[\Override]
     public static function isRisky(): bool
@@ -65,15 +61,15 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
 
         foreach ($elements as $element) {
             if ($element instanceof \DOMElement) {
-                $enableBackgroundValue = $element->getAttribute(self::ENABLE_BACKGROUND_ATTRIBUTE);
-                $width = $element->getAttribute('width');
-                $height = $element->getAttribute('height');
+                $enableBackgroundValue = $element->getAttribute(SvgAttribute::EnableBackground->value);
+                $width = $element->getAttribute(SvgAttribute::Width->value);
+                $height = $element->getAttribute(SvgAttribute::Height->value);
                 $cleanedValue = $this->cleanupEnableBackgroundValue($enableBackgroundValue, $width, $height);
 
                 if ('' === trim($cleanedValue)) {
-                    $element->removeAttribute(self::ENABLE_BACKGROUND_ATTRIBUTE);
+                    $element->removeAttribute(SvgAttribute::EnableBackground->value);
                 } else {
-                    $element->setAttribute(self::ENABLE_BACKGROUND_ATTRIBUTE, $cleanedValue);
+                    $element->setAttribute(SvgAttribute::EnableBackground->value, $cleanedValue);
                 }
             }
         }
@@ -118,7 +114,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
                 continue;
             }
 
-            $style = $element->getAttribute('style');
+            $style = $element->getAttribute(SvgAttribute::Style->value);
 
             if (!$this->hasEnableBackground($style)) {
                 continue;
@@ -139,7 +135,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
      */
     private function hasEnableBackground(string $style): bool
     {
-        return str_contains($style, self::ENABLE_BACKGROUND_ATTRIBUTE);
+        return str_contains($style, SvgAttribute::EnableBackground->value);
     }
 
     /**
@@ -163,9 +159,9 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
     private function updateStyleAttribute(\DOMElement $domElement, string $cleanedStyle): void
     {
         if ('' === trim($cleanedStyle)) {
-            $domElement->removeAttribute('style');
+            $domElement->removeAttribute(SvgAttribute::Style->value);
         } else {
-            $domElement->setAttribute('style', $cleanedStyle);
+            $domElement->setAttribute(SvgAttribute::Style->value, $cleanedStyle);
         }
     }
 

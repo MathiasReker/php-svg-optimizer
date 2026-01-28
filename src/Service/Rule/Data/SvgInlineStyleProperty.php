@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgDataInterface;
 
-enum SvgProperty: string implements SvgDataInterface
+enum SvgInlineStyleProperty: string implements SvgDataInterface
 {
     case Fill = 'fill';
     case FillOpacity = 'fill-opacity';

@@ -37,7 +37,9 @@ final readonly class RemoveComments implements SvgOptimizerRuleInterface
     {
         $domXPath = new \DOMXPath($domDocument);
 
-        /** @var \DOMNodeList<\DOMComment> $comments */
+        /**
+ * @var \DOMNodeList<\DOMComment> $comments
+*/
         $comments = $domXPath->query('//comment()');
 
         foreach ($comments as $comment) {

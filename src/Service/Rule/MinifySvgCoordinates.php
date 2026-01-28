@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
  * @no-named-arguments
@@ -57,11 +59,30 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
      * Mapping of SVG elements (XPath queries) to their attributes that should be minified.
      */
     private const array ELEMENTS_TO_ATTRIBUTES = [
-        '//svg:path' => ['d'],
-        '//svg:rect | //svg:circle | //svg:ellipse | //svg:line | //svg:polyline | //svg:polygon | //svg:svg' => [
-            'x', 'x1', 'x2', 'y', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'rx', 'ry', 'r', 'points', 'd',
+        '//svg:path' => [
+            SvgAttribute::D->value,
         ],
-        '//svg:svg' => ['viewBox', 'enable-background'],
+        '//svg:rect | //svg:circle | //svg:ellipse | //svg:line | //svg:polyline | //svg:polygon | //svg:svg' => [
+            SvgAttribute::X->value,
+            SvgAttribute::X1->value,
+            SvgAttribute::X2->value,
+            SvgAttribute::Y->value,
+            SvgAttribute::Y1->value,
+            SvgAttribute::Y2->value,
+            SvgAttribute::Width->value,
+            SvgAttribute::Height->value,
+            SvgAttribute::Cx->value,
+            SvgAttribute::Cy->value,
+            SvgAttribute::Rx->value,
+            SvgAttribute::Ry->value,
+            SvgAttribute::R->value,
+            SvgAttribute::Points->value,
+            SvgAttribute::D->value,
+        ],
+        '//svg:svg' => [
+            SvgAttribute::ViewBox->value,
+            SvgAttribute::EnableBackground->value,
+        ],
     ];
 
     #[\Override]
@@ -85,7 +106,7 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $domXPath->registerNamespace('svg', 'http://www.w3.org/2000/svg');
+        $domXPath->registerNamespace(SvgTag::Svg->value, 'http://www.w3.org/2000/svg');
 
         foreach (self::ELEMENTS_TO_ATTRIBUTES as $xpath => $attributes) {
             $this->processNodes($domXPath, $xpath, $attributes);
@@ -104,7 +125,9 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
             return;
         }
 
-        /** @var \DOMNode $node */
+        /**
+ * @var \DOMNode $node
+*/
         foreach ($nodes as $node) {
             if ($node instanceof \DOMElement) {
                 $this->minifyNodeAttributes($node, $attributes);

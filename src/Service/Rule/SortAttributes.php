@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
  * @no-named-arguments
@@ -51,8 +53,8 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $domXPath->registerNamespace('svg', 'http://www.w3.org/2000/svg');
-        $domXPath->registerNamespace('xlink', 'http://www.w3.org/1999/xlink');
+        $domXPath->registerNamespace(SvgTag::Svg->value, 'http://www.w3.org/2000/svg');
+        $domXPath->registerNamespace(SvgAttribute::Xlink->value, 'http://www.w3.org/1999/xlink');
 
         $elements = $domXPath->query('//*');
 
@@ -79,7 +81,9 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
         $attributes = $this->extractAttributes($domElement);
         $sortedAttributes = $this->sortAttributes($attributes);
 
-        /** @var \DOMAttr $domAttr */
+        /**
+ * @var \DOMAttr $domAttr
+*/
         foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
             $domElement->removeAttribute($domAttr->name);
         }
@@ -104,7 +108,9 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     {
         $attributes = [];
 
-        /** @var \DOMAttr $attribute */
+        /**
+ * @var \DOMAttr $attribute
+*/
         foreach ($domElement->attributes as $attribute) {
             $attributes[$attribute->localName ?? $attribute->name] = $attribute->value;
         }

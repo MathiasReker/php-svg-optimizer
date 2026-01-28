@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Data;
 
+use InvalidArgumentException;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 
 /**
@@ -25,7 +26,7 @@ final readonly class MetaData
      * @param int   $optimizedSize    The optimized size of the SVG file in bytes
      * @param float $optimizationTime The time it took to optimize the SVG file in seconds
      *
-     * @throws \InvalidArgumentException If the original size is less than or equal to 0
+     * @throws InvalidArgumentException If the original size is less than or equal to 0
      */
     public function __construct(
         private int $originalSize,
@@ -33,7 +34,7 @@ final readonly class MetaData
         private float $optimizationTime,
     ) {
         if ($this->originalSize <= 0) {
-            throw new \InvalidArgumentException(\sprintf('Original size must be greater than 0. Given: %d', $this->originalSize));
+            throw new InvalidArgumentException(\sprintf('Original size must be greater than 0. Given: %d', $this->originalSize));
         }
     }
 

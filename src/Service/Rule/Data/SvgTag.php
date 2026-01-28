@@ -15,6 +15,8 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgDataInterface;
 
 enum SvgTag: string implements SvgDataInterface
 {
+    use BaseEnum;
+
     case A = 'a';
     case Font = 'font';
     case Image = 'image';
@@ -37,7 +39,6 @@ enum SvgTag: string implements SvgDataInterface
     case Glyphref = 'glyphref';
     case Hkern = 'hkern';
     case Line = 'line';
-    case Lineargradient = 'lineargradient';
     case Marker = 'marker';
     case Mask = 'mask';
     case Metadata = 'metadata';
@@ -46,7 +47,6 @@ enum SvgTag: string implements SvgDataInterface
     case Pattern = 'pattern';
     case Polygon = 'polygon';
     case Polyline = 'polyline';
-    case Radialgradient = 'radialgradient';
     case Rect = 'rect';
     case Stop = 'stop';
     case Switch = 'switch';
@@ -85,6 +85,26 @@ enum SvgTag: string implements SvgDataInterface
 
     case TextNode = '#text';
 
+    case ForeignObject = 'foreignObject';
+
+    case Script = 'script';
+
+    case Iframe = 'iframe';
+
+    case Object = 'object';
+
+    case Embed = 'embed';
+
+    case Link = 'link';
+    case Animate = 'animate';
+    case Set = 'set';
+    case TextPath = 'textPath';
+    case LinearGradient = 'linearGradient';
+    case RadialGradient = 'radialGradient';
+    case FEDropShadow = 'feDropShadow';
+    case FEImage = 'feImage';
+    case ClipPath = 'clipPath';
+
     /**
      * Returns all tag values as an array of strings.
      *
@@ -93,5 +113,37 @@ enum SvgTag: string implements SvgDataInterface
     public static function values(): array
     {
         return array_map(static fn (self $tag) => $tag->value, self::cases());
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function dangerous(): array
+    {
+        return self::valuesFromCases(self::dangerousCases());
+    }
+
+    /**
+     * @return list<SvgTag>
+     */
+    public static function dangerousCases(): array
+    {
+        return [self::Script, self::ForeignObject, self::Iframe, self::Object, self::Embed, self::Link];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function conditionalDangerous(): array
+    {
+        return self::valuesFromCases(self::ConditionalDangerousCases());
+    }
+
+    /**
+     * @return list<SvgTag>
+     */
+    public static function conditionalDangerousCases(): array
+    {
+        return [self::A, self::Use, self::Tref, self::Image, self::LinearGradient, self::RadialGradient, self::Pattern];
     }
 }

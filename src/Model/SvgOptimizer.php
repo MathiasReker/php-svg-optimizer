@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Model;
 
+use LogicException;
+use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
@@ -73,12 +75,12 @@ final class SvgOptimizer
      *
      * @return MetaDataValueObject The metadata containing information about the SVG file sizes
      *
-     * @throws \LogicException If metadata is requested before optimization
+     * @throws LogicException If metadata is requested before optimization
      */
     public function getMetaData(): MetaDataValueObject
     {
         if (false === $this->isOptimized) {
-            throw new \LogicException('Metadata is not available before optimization.');
+            throw new LogicException('Metadata is not available before optimization.');
         }
 
         return $this->svgProvider->getMetaData();
@@ -194,11 +196,11 @@ final class SvgOptimizer
      * This ensures that only optimizations that improve (reduce) the SVG
      * size are retained, while preserving improvements from earlier rules.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      *
      * @throws XmlProcessingException
      */
-    private function applyRules(\DOMDocument $domDocument): void
+    private function applyRules(DOMDocument $domDocument): void
     {
         $originalContent = $this->svgProvider->serialize($domDocument);
 

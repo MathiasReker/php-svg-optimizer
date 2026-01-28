@@ -108,7 +108,9 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     {
         $domXPath = new \DOMXPath($domDocument);
 
-        /** @var \DOMNodeList<\DOMElement> $elements */
+        /**
+ * @var \DOMNodeList<\DOMElement> $elements
+*/
         $elements = $domXPath->query('//*[@transform]');
 
         foreach ($elements as $element) {

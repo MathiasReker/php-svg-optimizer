@@ -11,6 +11,10 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 
+use InvalidArgumentException;
+use JsonException;
+use ValueError;
+
 /**
  * @no-named-arguments
  */
@@ -27,9 +31,9 @@ final readonly class ConfigLoader
      *
      * @return array<string, bool> The configuration as an associative array
      *
-     * @throws \InvalidArgumentException If the file cannot be read or the JSON is invalid
-     * @throws \JsonException            If the JSON decoding fails
-     * @throws \ValueError               If the decoded JSON is not an array
+     * @throws InvalidArgumentException If the file cannot be read or the JSON is invalid
+     * @throws JsonException If the JSON decoding fails
+     * @throws ValueError If the decoded JSON is not an array
      */
     public static function loadConfig(string $config): array
     {
@@ -38,17 +42,17 @@ final readonly class ConfigLoader
             : $config;
 
         if ('' === $configContent) {
-            throw new \InvalidArgumentException('Configuration must be a valid file path or a JSON string.');
+            throw new InvalidArgumentException('Configuration must be a valid file path or a JSON string.');
         }
 
         if (false === $configContent) {
-            throw new \InvalidArgumentException('Failed to read configuration content.');
+            throw new InvalidArgumentException('Failed to read configuration content.');
         }
 
         $decodedConfig = json_decode($configContent, true, 2, \JSON_THROW_ON_ERROR);
 
         if (!\is_array($decodedConfig)) {
-            throw new \InvalidArgumentException('Configuration must be a valid file path or a JSON string.');
+            throw new InvalidArgumentException('Configuration must be a valid file path or a JSON string.');
         }
 
         return array_combine(

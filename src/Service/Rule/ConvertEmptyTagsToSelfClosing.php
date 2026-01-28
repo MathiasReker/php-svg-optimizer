@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
+use Override;
+use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
@@ -38,7 +40,7 @@ final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor 
      */
     private const string SELF_CLOSING_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*?)\s*\/>/';
 
-    #[\Override]
+    #[Override]
     public static function isRisky(): bool
     {
         return false;
@@ -47,17 +49,17 @@ final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor 
     /**
      * Convert empty tags to self-closing tags in the SVG document.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      *
      * @throws XmlProcessingException When XML content cannot be saved or loaded
      */
-    #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    #[Override]
+    public function optimize(DOMDocument $domDocument): void
     {
         $this->process($domDocument, $this->convertEmptyTagsToSelfClosing(...));
     }
 
-    #[\Override]
+    #[Override]
     public function shouldCheckSize(): bool
     {
         return false;

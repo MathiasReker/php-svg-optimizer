@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
  * @no-named-arguments
@@ -35,10 +37,10 @@ final readonly class RemoveWidthHeightAttributes implements SvgOptimizerRuleInte
     {
         $svg = $domDocument->documentElement;
 
-        if ($svg instanceof \DOMElement && str_contains(mb_strtolower($svg->nodeName), 'svg')) {
+        if ($svg instanceof \DOMElement && str_contains(mb_strtolower($svg->nodeName), SvgTag::Svg->value)) {
             $remove = [];
             foreach ($svg->attributes as $attr) {
-                if (\in_array(mb_strtolower($attr->nodeName), ['width', 'height'], true)) {
+                if (\in_array(mb_strtolower($attr->nodeName), [SvgAttribute::Width->value, SvgAttribute::Height->value], true)) {
                     $remove[] = $attr->nodeName;
                 }
             }

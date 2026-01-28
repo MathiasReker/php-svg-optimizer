@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Provider;
 
+use Override;
+use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
 /**
@@ -34,8 +36,8 @@ final class StringProvider extends AbstractProvider
      *
      * @throws XmlProcessingException If the input content is not valid XML
      */
-    #[\Override]
-    public function loadContent(): \DOMDocument
+    #[Override]
+    public function loadContent(): DOMDocument
     {
         return $this->domDocumentWrapper->loadFromString($this->inputContent);
     }
@@ -43,7 +45,7 @@ final class StringProvider extends AbstractProvider
     /**
      * Get the input SVG content.
      */
-    #[\Override]
+    #[Override]
     public function getInputContent(): string
     {
         return $this->inputContent;

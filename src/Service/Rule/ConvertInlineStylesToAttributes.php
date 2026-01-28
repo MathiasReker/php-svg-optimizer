@@ -11,10 +11,13 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
+use Override;
+use DOMDocument;
+use DOMXPath;
+use DOMElement;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgProperty;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgPropertiesTrait;
 
 /**
  * @no-named-arguments
@@ -31,7 +34,7 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
      */
     private const string PROPERTY_NAME_REGEX = '/^[a-z_-][a-z0-9_-]*$/i';
 
-    #[\Override]
+    #[Override]
     public static function isRisky(): bool
     {
         return false;
@@ -40,10 +43,10 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
     /**
      * Optimizes the given \DOMDocument by converting inline styles to SVG attributes.
      *
-     * @param \DOMDocument $domDocument the DOM document containing SVG markup
+     * @param DOMDocument $domDocument the DOM document containing SVG markup
      */
-    #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    #[Override]
+    public function optimize(DOMDocument $domDocument): void
     {
         foreach ($this->getElementsWithStyle($domDocument) as $domElement) {
             $this->convertStyles($domElement);
@@ -53,11 +56,11 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
     /**
      * Returns a list of DOM elements that have a `style` attribute.
      *
-     * @return list<\DOMElement> list of DOM elements with a `style` attribute
+     * @return list<DOMElement> list of DOM elements with a `style` attribute
      */
-    private function getElementsWithStyle(\DOMDocument $domDocument): array
+    private function getElementsWithStyle(DOMDocument $domDocument): array
     {
-        $domXPath = new \DOMXPath($domDocument);
+        $domXPath = new DOMXPath($domDocument);
         $nodes = $domXPath->query('//*[@style]');
         if (false === $nodes) {
             return [];
@@ -65,7 +68,7 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
 
         $elements = [];
         foreach ($nodes as $node) {
-            if ($node instanceof \DOMElement) {
+            if ($node instanceof DOMElement) {
                 $elements[] = $node;
             }
         }
@@ -77,9 +80,9 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
      * Converts inline CSS styles of a DOM element to SVG attributes, removing any
      * properties that were converted from the `style` attribute.
      *
-     * @param \DOMElement $domElement the DOM element to process
+     * @param DOMElement $domElement the DOM element to process
      */
-    private function convertStyles(\DOMElement $domElement): void
+    private function convertStyles(DOMElement $domElement): void
     {
         $style = trim($domElement->getAttribute(SvgTag::Style->value));
         if ('' === $style || !str_contains($style, ':')) {
@@ -107,11 +110,11 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
      * the declaration to keep in the style attribute.
      *
      * @param string      $declaration The CSS declaration (e.g., "fill:red").
-     * @param \DOMElement $domElement  the DOM element being processed
+     * @param DOMElement $domElement the DOM element being processed
      *
      * @return string the declaration to keep in the style attribute, or empty string if converted
      */
-    private function processDeclaration(string $declaration, \DOMElement $domElement): string
+    private function processDeclaration(string $declaration, DOMElement $domElement): string
     {
         $declaration = trim($declaration);
         if ('' === $declaration || !str_contains($declaration, ':')) {
@@ -129,7 +132,7 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
             return \sprintf('%s:%s', $prop, $value);
         }
 
-        if (\in_array($prop, SvgProperty::values(), true)) {
+        if (\in_array($prop, SvgInlineStyleProperty::values(), true)) {
             if (!$domElement->hasAttribute($prop)) {
                 $domElement->setAttribute($prop, $value);
             }
@@ -152,7 +155,7 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
         return 1 === preg_match(self::PROPERTY_NAME_REGEX, $prop);
     }
 
-    #[\Override]
+    #[Override]
     public function shouldCheckSize(): bool
     {
         return false;

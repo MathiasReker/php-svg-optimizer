@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
  * @no-named-arguments
@@ -48,8 +50,8 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
     {
         $masksToRemove = [];
 
-        foreach ($domDocument->getElementsByTagName('mask') as $domNodeList) {
-            $maskId = $domNodeList->getAttribute('id');
+        foreach ($domDocument->getElementsByTagName(SvgAttribute::Mask->value) as $domNodeList) {
+            $maskId = $domNodeList->getAttribute(SvgAttribute::Id->value);
 
             if ('' === $maskId) {
                 $masksToRemove[] = $domNodeList;
@@ -76,7 +78,7 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
      */
     private function removeEmptyDefs(\DOMDocument $domDocument): void
     {
-        foreach ($domDocument->getElementsByTagName('defs') as $domNodeList) {
+        foreach ($domDocument->getElementsByTagName(SvgTag::Defs->value) as $domNodeList) {
             $hasChildren = false;
 
             foreach ($domNodeList->childNodes as $child) {

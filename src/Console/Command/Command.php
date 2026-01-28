@@ -11,6 +11,11 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 
+use RuntimeException;
+use JsonException;
+use InvalidArgumentException;
+use LogicException;
+use ValueError;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
@@ -66,8 +71,8 @@ final readonly class Command implements CommandInterface
     /**
      * Executes the SVG optimization command.
      *
-     * @throws \LogicException
-     * @throws \ValueError
+     * @throws LogicException
+     * @throws ValueError
      */
     public function run(): void
     {
@@ -89,19 +94,19 @@ final readonly class Command implements CommandInterface
      *
      * @param string $path The path to process, either a file or directory
      *
-     * @throws \LogicException
-     * @throws \ValueError
+     * @throws LogicException
+     * @throws ValueError
      * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     private function processPath(string $path): void
     {
         try {
             $this->svgFileProcessor->processPath($path);
-        } catch (\RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
             $this->outputManager->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
-        } catch (\JsonException $jsonException) {
+        } catch (JsonException $jsonException) {
             $this->outputManager->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptionsValueObject->getConfigPath(), $jsonException->getMessage()));
-        } catch (\InvalidArgumentException $invalidArgumentException) {
+        } catch (InvalidArgumentException $invalidArgumentException) {
             $this->outputManager->printError($invalidArgumentException->getMessage());
         }
     }

@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
  * @no-named-arguments
@@ -78,8 +80,8 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
     private function removeIfEmpty(\DOMElement $domElement): void
     {
         $shouldRemove = match ($domElement->tagName) {
-            'text', 'tspan' => 0 === $domElement->childNodes->length,
-            'tref' => '' === $domElement->getAttribute('xlink:href'),
+            SvgTag::Text->value, SvgTag::Tspan->value => 0 === $domElement->childNodes->length,
+            SvgTag::Tref->value => '' === $domElement->getAttribute(SvgAttribute::XlinkHref->value),
             default => false,
         };
 

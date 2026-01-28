@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
  * @no-named-arguments
@@ -91,7 +92,7 @@ final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor im
         return preg_replace_callback(
             self::STYLE_ATTRIBUTE_REGEX,
             static fn (array $matches): string => \sprintf(
-                'style="%s"',
+                SvgAttribute::Style->value . '="%s"',
                 rtrim(str_replace(' ', '', $matches[1]), ';')
             ),
             $content

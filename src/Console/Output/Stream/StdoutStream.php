@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Output\Stream;
 
+use RuntimeException;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 
 /**
@@ -21,14 +22,14 @@ class StdoutStream extends AbstractStream implements StreamInterface
     /**
      * Constructor for StdoutStream.
      *
-     * @throws \RuntimeException If unable to open the stdout stream
+     * @throws RuntimeException If unable to open the stdout stream
      */
     public function __construct()
     {
         $stream = fopen('php://stdout', 'w');
 
         if (!\is_resource($stream)) {
-            throw new \RuntimeException('Unable to open stdout stream.');
+            throw new RuntimeException('Unable to open stdout stream.');
         }
 
         $this->stream = $stream;

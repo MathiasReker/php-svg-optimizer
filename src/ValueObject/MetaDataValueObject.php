@@ -31,7 +31,8 @@ final readonly class MetaDataValueObject
         private int $savedBytes,
         private float $savedPercentage,
         private float $optimizationTime,
-    ) {}
+    ) {
+    }
 
     /**
      * Get the original size of the SVG file.

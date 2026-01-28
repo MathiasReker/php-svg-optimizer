@@ -29,7 +29,8 @@ final readonly class CommandOptionsValueObject
         private string $configPath,
         private bool $allowRisky,
         private bool $withAllRules,
-    ) {}
+    ) {
+    }
 
     /**
      * Check if the command is set to run in dry-run mode.

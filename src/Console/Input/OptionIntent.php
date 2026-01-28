@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 
+use InvalidArgumentException;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 
 /**
@@ -27,7 +28,8 @@ final readonly class OptionIntent
      */
     public function __construct(
         private ArgumentParser $argumentParser,
-    ) {}
+    ) {
+    }
 
     /**
      * Check if the dry-run option is set.
@@ -84,7 +86,7 @@ final readonly class OptionIntent
      *
      * @return string the path to the configuration file, or an empty string if not set
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function getConfigPath(): string
     {
