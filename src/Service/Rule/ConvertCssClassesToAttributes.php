@@ -178,15 +178,15 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     private function updateElementClass(\DOMElement $domElement, string $class, array $nonConvertible): void
     {
         if ([] !== $nonConvertible) {
-            $domElement->setAttribute(SvgAttribute::class->value, $class);
+            $domElement->setAttribute(SvgAttribute::Class_->value, $class);
         } else {
-            $classes = explode(' ', $domElement->getAttribute(SvgAttribute::class->value));
+            $classes = explode(' ', $domElement->getAttribute(SvgAttribute::Class_->value));
             $classes = array_filter($classes, static fn (string $c): bool => $c !== $class);
 
             if ([] !== $classes) {
-                $domElement->setAttribute(SvgAttribute::class->value, implode(' ', $classes));
+                $domElement->setAttribute(SvgAttribute::Class_->value, implode(' ', $classes));
             } else {
-                $domElement->removeAttribute(SvgAttribute::class->value);
+                $domElement->removeAttribute(SvgAttribute::Class_->value);
             }
         }
     }

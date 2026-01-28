@@ -71,6 +71,7 @@ return RectorConfig::configure()
     ->withSkip(
         [
             PreferPHPUnitThisCallRector::class,
+            EnumCaseToPascalCaseRector::class,
         ]
     )
     ->withRules(

@@ -43,6 +43,8 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
         SvgAttribute::SuspendRedraw->value,
         SvgAttribute::UnsuspendRedraw->value,
         SvgAttribute::UnsuspendRedrawAll->value,
+        SvgAttribute::GlyphOrientationVertical->value,
+        SvgAttribute::GlyphOrientationHorizontal->value,
     ];
 
     /**
