@@ -71,9 +71,7 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
      */
     private function removeEmptyAttributesFromElement(\DOMElement $domElement): void
     {
-        /**
- * @var \DOMAttr $domAttr
-*/
+        /** @var \DOMAttr $domAttr */
         foreach (iterator_to_array($domElement->attributes, true) as $attrName => $domAttr) {
             if ($this->isEmptyOrWhitespace($domAttr->value)) {
                 $domElement->removeAttribute($attrName);

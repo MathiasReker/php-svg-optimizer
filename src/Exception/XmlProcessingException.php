@@ -11,13 +11,11 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Exception;
 
-use RuntimeException;
-
 /**
  * Exception thrown when XML processing fails.
  *
  * @no-named-arguments
  */
-final class XmlProcessingException extends RuntimeException
+final class XmlProcessingException extends \RuntimeException
 {
 }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
@@ -40,9 +41,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         $domXPath = new \DOMXPath($domDocument);
         $domXPath->registerNamespace(SvgTag::Svg->value, 'http://www.w3.org/2000/svg');
 
-        /**
- * @var \DOMNodeList<\DOMElement> $groups
-*/
+        /** @var \DOMNodeList<\DOMElement> $groups */
         $groups = $domXPath->query('//svg:g');
 
         foreach ($groups as $group) {
@@ -73,9 +72,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
      */
     private function applyAttributesToChild(\DOMElement $parent, \DOMElement $child): void
     {
-        /**
- * @var \DOMAttr $attribute
-*/
+        /** @var \DOMAttr $attribute */
         foreach ($parent->attributes as $attribute) {
             $this->setAttributeIfNotExists($child, $attribute);
         }
@@ -104,7 +101,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         $parentNode = $domElement->parentNode;
 
         if ($parentNode instanceof \DOMElement) {
-            $transform = $domElement->getAttribute('transform');
+            $transform = $domElement->getAttribute(SvgAttribute::Transform->value);
 
             $this->applyTransformsToChildren($domElement, $transform);
             $this->moveChildrenUp($domElement, $parentNode);
@@ -119,11 +116,11 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     {
         foreach ($domElement->childNodes as $child) {
             if ($child instanceof \DOMElement) {
-                $childTransform = $child->getAttribute('transform');
+                $childTransform = $child->getAttribute(SvgAttribute::Transform->value);
                 $newTransform = $this->combineTransforms($transform, $childTransform);
 
                 if ('' !== $newTransform) {
-                    $child->setAttribute('transform', $newTransform);
+                    $child->setAttribute(SvgAttribute::Transform->value, $newTransform);
                 }
             }
         }

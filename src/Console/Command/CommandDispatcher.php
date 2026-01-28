@@ -11,10 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 
-use InvalidArgumentException;
-use ValueError;
-use RuntimeException;
-use LogicException;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Console\Input\OptionIntent;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
@@ -35,8 +31,7 @@ final readonly class CommandDispatcher
      */
     private function __construct(
         private array $argv,
-    ) {
-    }
+    ) {}
 
     /**
      * Create a new SvgOptimizerApplication instance from command line arguments.
@@ -53,9 +48,9 @@ final readonly class CommandDispatcher
      *
      * This method processes the command line arguments and executes the appropriate command.
      *
-     * @throws ValueError
-     * @throws RuntimeException If the application is not run in a CLI environment or if an error occurs during command execution
-     * @throws LogicException
+     * @throws \ValueError
+     * @throws \RuntimeException If the application is not run in a CLI environment or if an error occurs during command execution
+     * @throws \LogicException
      */
     public function run(): void
     {
@@ -68,7 +63,7 @@ final readonly class CommandDispatcher
 
         try {
             $argumentParser->validateOptions();
-        } catch (InvalidArgumentException $invalidArgumentException) {
+        } catch (\InvalidArgumentException $invalidArgumentException) {
             $outputManager->printError($invalidArgumentException->getMessage());
             exit(1);
         }
@@ -101,7 +96,7 @@ final readonly class CommandDispatcher
             );
             $command = (new CommandFactory($stream, $argumentParser))->create($commandOptionsValueObject);
             $command->run();
-        } catch (InvalidArgumentException $invalidArgumentException) {
+        } catch (\InvalidArgumentException $invalidArgumentException) {
             $outputManager->printError($invalidArgumentException->getMessage());
             exit(1);
         }

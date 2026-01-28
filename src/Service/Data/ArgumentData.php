@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Data;
 
-use InvalidArgumentException;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
@@ -28,19 +27,13 @@ final class ArgumentData
      */
     private const string BINARY_PATH = 'vendor/bin/svg-optimizer';
 
-    /**
-     * @var array<string, ArgumentOptionValueObject>
-     */
+    /** @var array<string, ArgumentOptionValueObject> */
     private array $options;
 
-    /**
-     * @var array<string, OptionValueObject>
-     */
+    /** @var array<string, OptionValueObject> */
     private readonly array $commands;
 
-    /**
-     * @var list<ExampleCommandValueObject>
-     */
+    /** @var list<ExampleCommandValueObject> */
     private readonly array $examples;
 
     /**
@@ -127,7 +120,7 @@ final class ArgumentData
      *
      * @return ArgumentOptionValueObject Returns the option details
      *
-     * @throws InvalidArgumentException If the option is not found
+     * @throws \InvalidArgumentException If the option is not found
      */
     public function getOptionByName(string $name): ArgumentOptionValueObject
     {
@@ -137,7 +130,7 @@ final class ArgumentData
             }
         }
 
-        throw new InvalidArgumentException(\sprintf('Option "%s" not found.', $name));
+        throw new \InvalidArgumentException(\sprintf('Option "%s" not found.', $name));
     }
 
     /**
@@ -157,12 +150,12 @@ final class ArgumentData
      *
      * @return ArgumentOptionValueObject Returns the option details
      *
-     * @throws InvalidArgumentException If the option is not found
+     * @throws \InvalidArgumentException If the option is not found
      */
     public function getOption(string $option): ArgumentOptionValueObject
     {
         return $this->options[$option]
-            ?? throw new InvalidArgumentException(\sprintf('Option "%s" not found.', $option));
+            ?? throw new \InvalidArgumentException(\sprintf('Option "%s" not found.', $option));
     }
 
     /**

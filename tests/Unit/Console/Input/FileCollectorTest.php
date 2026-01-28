@@ -122,9 +122,7 @@ final class FileCollectorTest extends TestCase
             \RecursiveIteratorIterator::CHILD_FIRST
         );
 
-        /**
- * @var \SplFileInfo $file
-*/
+        /** @var \SplFileInfo $file */
         foreach ($iterator as $file) {
             $path = $file->getPathname();
 

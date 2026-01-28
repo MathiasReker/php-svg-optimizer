@@ -20,11 +20,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
 {
     /**
-     * The XML namespace attribute for the `xlink` namespace.
-     */
-    private const string XMLNS_ATTRIBUTE = SvgAttribute::XmlnsXlink->value;
-
-    /**
      * List of deprecated SVG attributes that should be removed from the document.
      * These attributes are no longer recommended for use in modern SVGs.
      */
@@ -133,8 +128,8 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     {
         $root = $domDocument->documentElement;
 
-        if ($root instanceof \DOMElement && $root->hasAttribute(self::XMLNS_ATTRIBUTE)) {
-            $root->removeAttribute(self::XMLNS_ATTRIBUTE);
+        if ($root instanceof \DOMElement && $root->hasAttribute(SvgAttribute::XmlnsXlink->value)) {
+            $root->removeAttribute(SvgAttribute::XmlnsXlink->value);
         }
     }
 

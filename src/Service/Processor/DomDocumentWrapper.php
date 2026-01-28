@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Processor;
 
-use DOMDocument;
-use DOMElement;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 
@@ -39,15 +37,15 @@ final readonly class DomDocumentWrapper
     /**
      * Saves the current \DOMDocument content as an XML string.
      *
-     * @param DOMDocument $domDocument The \DOMDocument instance to be saved
+     * @param \DOMDocument $domDocument The \DOMDocument instance to be saved
      *
      * @return string Returns the XML content as a string
      *
      * @throws XmlProcessingException If the XML content cannot be saved
      */
-    public function saveToString(DOMDocument $domDocument): string
+    public function saveToString(\DOMDocument $domDocument): string
     {
-        if ($domDocument->documentElement instanceof DOMElement) {
+        if ($domDocument->documentElement instanceof \DOMElement) {
             $saveXML = $domDocument->saveXML($domDocument->documentElement);
         } else {
             $saveXML = $domDocument->saveXML();
@@ -67,13 +65,13 @@ final readonly class DomDocumentWrapper
      *
      * @param string $filePath The path to the XML file
      *
-     * @return DOMDocument Returns the loaded \DOMDocument
+     * @return \DOMDocument Returns the loaded \DOMDocument
      *
      * @throws XmlProcessingException If the XML file cannot be loaded
      */
-    public function loadFromFile(string $filePath): DOMDocument
+    public function loadFromFile(string $filePath): \DOMDocument
     {
-        return $this->loadDomDocument(static fn (DOMDocument $domDocument): bool => $domDocument->load($filePath, self::LOAD_FLAGS));
+        return $this->loadDomDocument(static fn (\DOMDocument $domDocument): bool => $domDocument->load($filePath, self::LOAD_FLAGS));
     }
 
     /**
@@ -81,11 +79,11 @@ final readonly class DomDocumentWrapper
      *
      * @param callable $loader A callback that loads the \DOMDocument (file or string)
      *
-     * @return DOMDocument Returns the loaded \DOMDocument
+     * @return \DOMDocument Returns the loaded \DOMDocument
      *
      * @throws XmlProcessingException If the \DOMDocument fails to load
      */
-    private function loadDomDocument(callable $loader): DOMDocument
+    private function loadDomDocument(callable $loader): \DOMDocument
     {
         $domDocument = $this->createDomDocument();
         libxml_use_internal_errors(true);
@@ -105,9 +103,9 @@ final readonly class DomDocumentWrapper
     /**
      * Creates and returns a new \DOMDocument instance with default settings.
      */
-    private function createDomDocument(): DOMDocument
+    private function createDomDocument(): \DOMDocument
     {
-        $domDocument = new DOMDocument(self::DEFAULT_XML_VERSION, self::DEFAULT_ENCODING);
+        $domDocument = new \DOMDocument(self::DEFAULT_XML_VERSION, self::DEFAULT_ENCODING);
         $domDocument->formatOutput = false;
         $domDocument->preserveWhiteSpace = false;
 
@@ -126,14 +124,14 @@ final readonly class DomDocumentWrapper
      *
      * @param string $content The XML content as a string
      *
-     * @return DOMDocument Returns the loaded \DOMDocument
+     * @return \DOMDocument Returns the loaded \DOMDocument
      *
      * @throws XmlProcessingException If the XML content cannot be loaded
      */
-    public function loadFromString(string $content): DOMDocument
+    public function loadFromString(string $content): \DOMDocument
     {
         return $this->loadDomDocument(
-            static fn (DOMDocument $domDocument): bool => $domDocument->loadXML(
+            static fn (\DOMDocument $domDocument): bool => $domDocument->loadXML(
                 $content,
                 self::LOAD_FLAGS
             )

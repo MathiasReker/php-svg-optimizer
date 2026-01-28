@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 
-use InvalidArgumentException;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
@@ -74,7 +73,7 @@ final readonly class ArgumentParser
             );
 
             return \in_array($this->argumentData->getOption($option->value), $arguments, true);
-        } catch (InvalidArgumentException) {
+        } catch (\InvalidArgumentException) {
             return false;
         }
     }
@@ -98,7 +97,7 @@ final readonly class ArgumentParser
      *
      * @return string The value of the option
      *
-     * @throws InvalidArgumentException If the option is not found in the arguments
+     * @throws \InvalidArgumentException If the option is not found in the arguments
      */
     public function getOption(Option $option): string
     {
@@ -110,7 +109,7 @@ final readonly class ArgumentParser
             }
         }
 
-        throw new InvalidArgumentException(\sprintf('Option "%s" not found in the command-line arguments.', $option->value));
+        throw new \InvalidArgumentException(\sprintf('Option "%s" not found in the command-line arguments.', $option->value));
     }
 
     /**
@@ -130,13 +129,13 @@ final readonly class ArgumentParser
      *
      * @return string The value of the option
      *
-     * @throws InvalidArgumentException If the option is missing a value
+     * @throws \InvalidArgumentException If the option is missing a value
      */
     private function getOptionValue(string $option): string
     {
         $parts = explode('=', $option, self::OPTION_LIMIT);
         if (\count($parts) < self::OPTION_LIMIT) {
-            throw new InvalidArgumentException(\sprintf('Option "%s" requires a value.', $parts[self::OPTION_KEY_INDEX]));
+            throw new \InvalidArgumentException(\sprintf('Option "%s" requires a value.', $parts[self::OPTION_KEY_INDEX]));
         }
 
         return $parts[self::OPTION_VALUE_INDEX];
@@ -150,7 +149,7 @@ final readonly class ArgumentParser
      * shorthand versions (e.g., -d). If an unknown option is found,
      * an \InvalidArgumentException is thrown with a helpful message.
      *
-     * @throws InvalidArgumentException If any unsupported or unknown option is provided
+     * @throws \InvalidArgumentException If any unsupported or unknown option is provided
      */
     public function validateOptions(): void
     {
@@ -166,7 +165,7 @@ final readonly class ArgumentParser
                 $optionName = $this->getOptionKey($arg);
 
                 if (!\in_array($optionName, $validOptionKeys, true)) {
-                    throw new InvalidArgumentException(\sprintf('Unknown option: "%s". Run with --help to see valid options.', $optionName));
+                    throw new \InvalidArgumentException(\sprintf('Unknown option: "%s". Run with --help to see valid options.', $optionName));
                 }
             }
         }
@@ -187,26 +186,26 @@ final readonly class ArgumentParser
      *
      * @return list<string>
      *
-     * @throws InvalidArgumentException If no positional arguments are found
+     * @throws \InvalidArgumentException If no positional arguments are found
      */
     public function getPaths(): array
     {
         $paths = \array_slice($this->args, $this->getArgumentStartIndex());
 
         if ([] === $paths) {
-            throw new InvalidArgumentException('No positional arguments found. Please provide at least one SVG file or directory.');
+            throw new \InvalidArgumentException('No positional arguments found. Please provide at least one SVG file or directory.');
         }
 
         foreach ($paths as $path) {
             if (!is_dir($path) && !is_file($path)) {
-                throw new InvalidArgumentException(\sprintf('"%s" is not a valid directory or file.', $path));
+                throw new \InvalidArgumentException(\sprintf('"%s" is not a valid directory or file.', $path));
             }
         }
 
         $svgFiles = (new FileCollector())->collectSvgFiles($paths);
 
         if ([] === $svgFiles) {
-            throw new InvalidArgumentException('No valid .svg files found to optimize.');
+            throw new \InvalidArgumentException('No valid .svg files found to optimize.');
         }
 
         return $svgFiles;
@@ -217,7 +216,7 @@ final readonly class ArgumentParser
      *
      * @return int The index of the first positional argument
      *
-     * @throws InvalidArgumentException If no positional argument is found
+     * @throws \InvalidArgumentException If no positional argument is found
      */
     public function getArgumentStartIndex(): int
     {
@@ -229,7 +228,7 @@ final readonly class ArgumentParser
      *
      * @return int The index of the first positional argument
      *
-     * @throws InvalidArgumentException If no positional argument is found
+     * @throws \InvalidArgumentException If no positional argument is found
      */
     public function getArgumentIndex(): int
     {
@@ -239,6 +238,6 @@ final readonly class ArgumentParser
             }
         }
 
-        throw new InvalidArgumentException(\sprintf('Please follow the following format: %s', $this->argumentData->getFormat()));
+        throw new \InvalidArgumentException(\sprintf('Please follow the following format: %s', $this->argumentData->getFormat()));
     }
 }

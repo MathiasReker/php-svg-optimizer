@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Contract\Service\Provider;
 
-use DOMDocument;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 
@@ -29,9 +28,9 @@ interface SvgProviderInterface
      * This method should return a \DOMDocument instance that represents the
      * SVG content to be processed.
      *
-     * @return DOMDocument The \DOMDocument instance representing the loaded SVG content
+     * @return \DOMDocument The \DOMDocument instance representing the loaded SVG content
      */
-    public function loadContent(): DOMDocument;
+    public function loadContent(): \DOMDocument;
 
     /**
      * Optimizes the provided \DOMDocument instance.
@@ -39,11 +38,11 @@ interface SvgProviderInterface
      * This method performs optimization on the SVG content represented by the
      * given \DOMDocument instance. It may modify the instance in place.
      *
-     * @param DOMDocument $domDocument The \DOMDocument instance representing the SVG content to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG content to be optimized
      *
      * @return self Returns the current instance to allow method chaining
      */
-    public function optimize(DOMDocument $domDocument): self;
+    public function optimize(\DOMDocument $domDocument): self;
 
     /**
      * Retrieves the raw input SVG content before optimization.
@@ -88,11 +87,11 @@ interface SvgProviderInterface
     /**
      * Serializes the given \DOMDocument to a string without the XML declaration.
      *
-     * @param DOMDocument $domDocument The \DOMDocument instance to serialize
+     * @param \DOMDocument $domDocument The \DOMDocument instance to serialize
      *
      * @return string The serialized XML content
      *
      * @throws XmlProcessingException If the XML content cannot be processed
      */
-    public function serialize(DOMDocument $domDocument): string;
+    public function serialize(\DOMDocument $domDocument): string;
 }

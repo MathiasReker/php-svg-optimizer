@@ -11,12 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Filesystem;
 
-use UnexpectedValueException;
-use RecursiveIteratorIterator;
-use RecursiveDirectoryIterator;
-use FilesystemIterator;
-use SplFileInfo;
-
 /**
  * @no-named-arguments
  */
@@ -84,7 +78,7 @@ final class Finder
 
         try {
             return $this->searchDirectory();
-        } catch (UnexpectedValueException) {
+        } catch (\UnexpectedValueException) {
             return [];
         }
     }
@@ -94,18 +88,18 @@ final class Finder
      *
      * @return list<string>
      *
-     * @throws UnexpectedValueException
+     * @throws \UnexpectedValueException
      */
     private function searchDirectory(): array
     {
         $results = [];
 
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($this->directory, FilesystemIterator::SKIP_DOTS)
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($this->directory, \FilesystemIterator::SKIP_DOTS)
         );
 
         foreach ($iterator as $fileInfo) {
-            if (!$fileInfo instanceof SplFileInfo) {
+            if (!$fileInfo instanceof \SplFileInfo) {
                 continue;
             }
 
@@ -127,11 +121,11 @@ final class Finder
     /**
      * Check if the file matches the filter criteria.
      *
-     * @param SplFileInfo $fileInfo The file information to check
+     * @param \SplFileInfo $fileInfo The file information to check
      *
      * @return bool True if the file matches the filter, false otherwise
      */
-    private function matchesFilter(SplFileInfo $fileInfo): bool
+    private function matchesFilter(\SplFileInfo $fileInfo): bool
     {
         if ($this->onlyFiles && !$fileInfo->isFile()) {
             return false;

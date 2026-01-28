@@ -147,7 +147,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
      */
     private function removeEnableBackgroundFromStyle(string $style): string
     {
-        return preg_replace('/\s*enable-background\s*:\s*[^;]+;\s*/', '', $style) ?? '';
+        return preg_replace('/\s*' . SvgAttribute::EnableBackground->value . '\s*:\s*[^;]+;\s*/', '', $style) ?? '';
     }
 
     /**

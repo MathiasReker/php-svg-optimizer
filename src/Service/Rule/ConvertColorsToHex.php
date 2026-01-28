@@ -11,11 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use Override;
-use DOMDocument;
-use DOMXPath;
-use DOMNodeList;
-use DOMElement;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
@@ -57,7 +52,7 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      */
     private const int BITWISE_SHIFT = 4;
 
-    #[Override]
+    #[\Override]
     public static function isRisky(): bool
     {
         return false;
@@ -68,18 +63,16 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * This method processes the SVG document to find and convert RGB colors to HEX format.
      *
-     * @param DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
-    #[Override]
-    public function optimize(DOMDocument $domDocument): void
+    #[\Override]
+    public function optimize(\DOMDocument $domDocument): void
     {
-        $domXPath = new DOMXPath($domDocument);
+        $domXPath = new \DOMXPath($domDocument);
 
         $colorAttributes = SvgAttribute::colors();
 
-        /**
-         * @var DOMNodeList<DOMElement> $nodeList
-        */
+        /** @var \DOMNodeList<\DOMElement> $nodeList */
         $nodeList = $domXPath->query(
             \sprintf(
                 '//*[%s]',
@@ -96,9 +89,7 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
         $this->processStyleAttributes($nodeList);
 
         foreach ($colorAttributes as $colorAttribute) {
-            /**
-             * @var DOMNodeList<DOMElement> $nodeList
-            */
+            /** @var \DOMNodeList<\DOMElement> $nodeList */
             $nodeList = $domXPath->query('//@' . $colorAttribute);
 
             $this->processNodeList($nodeList);
@@ -110,9 +101,9 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * This method processes the style attributes of the given \DOMNodeList to find and convert RGB colors to HEX format.
      *
-     * @param DOMNodeList<DOMElement> $domNodeList The \DOMNodeList instance containing the nodes to be processed
+     * @param \DOMNodeList<\DOMElement> $domNodeList The \DOMNodeList instance containing the nodes to be processed
      */
-    private function processStyleAttributes(DOMNodeList $domNodeList): void
+    private function processStyleAttributes(\DOMNodeList $domNodeList): void
     {
         foreach ($domNodeList as $node) {
             $styleValue = $node->getAttribute(SvgAttribute::Style->value);
@@ -252,9 +243,9 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      *
      * This method processes the given \DOMNodeList to find and convert RGB colors to HEX format.
      *
-     * @param DOMNodeList<DOMElement> $domNodeList The \DOMNodeList instance containing the nodes to be processed
+     * @param \DOMNodeList<\DOMElement> $domNodeList The \DOMNodeList instance containing the nodes to be processed
      */
-    private function processNodeList(DOMNodeList $domNodeList): void
+    private function processNodeList(\DOMNodeList $domNodeList): void
     {
         foreach ($domNodeList as $node) {
             $value = trim((string) $node->nodeValue);
@@ -267,7 +258,7 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
         }
     }
 
-    #[Override]
+    #[\Override]
     public function shouldCheckSize(): bool
     {
         return false;

@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
  * @no-named-arguments
@@ -41,7 +42,7 @@ final readonly class RemoveAriaAndRole implements SvgOptimizerRuleInterface
             /** @var list<\DOMAttr> $attrs */
             $attrs = iterator_to_array($node->attributes, false);
             foreach ($attrs as $attr) {
-                if (0 === strcasecmp($attr->name, 'role')
+                if (0 === strcasecmp($attr->name, SvgAttribute::Role->value)
                     || 0 === strcasecmp(mb_substr($attr->name, 0, 5), 'aria-')) {
                     $node->removeAttribute($attr->name);
                 }

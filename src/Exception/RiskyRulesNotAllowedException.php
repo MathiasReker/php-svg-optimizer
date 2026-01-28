@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Exception;
 
-use Exception;
-
 /**
  * \Exception thrown when risky SVG optimization rules are used
  * but have not been explicitly allowed.
@@ -22,6 +20,6 @@ use Exception;
  *
  * @no-named-arguments
  */
-final class RiskyRulesNotAllowedException extends Exception
+final class RiskyRulesNotAllowedException extends \Exception
 {
 }

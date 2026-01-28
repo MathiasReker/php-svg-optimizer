@@ -27,8 +27,7 @@ final readonly class OutputManager
      */
     public function __construct(
         private StreamInterface $stream,
-    ) {
-    }
+    ) {}
 
     /**
      * Print a message to the output stream.

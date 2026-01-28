@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 
-use InvalidArgumentException;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
@@ -31,8 +30,7 @@ final readonly class CommandFactory
     public function __construct(
         public StreamInterface $stream,
         public ArgumentParser $argumentParser,
-    ) {
-    }
+    ) {}
 
     /**
      * Create a new Command instance with the provided options.
@@ -41,7 +39,7 @@ final readonly class CommandFactory
      *
      * @return Command The created command instance
      *
-     * @throws InvalidArgumentException If the options are not valid
+     * @throws \InvalidArgumentException If the options are not valid
      */
     public function create(CommandOptionsValueObject $commandOptionsValueObject): Command
     {

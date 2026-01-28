@@ -11,19 +11,17 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data;
 
-use BackedEnum;
-
 trait BaseEnum
 {
     /**
      * Convert enum cases to their string values.
      *
-     * @param list<BackedEnum> $cases
+     * @param list<\BackedEnum> $cases
      *
      * @return list<string>
      */
     private static function valuesFromCases(array $cases): array
     {
-        return array_map(static fn (BackedEnum $backedEnum): int|string => $backedEnum->value, $cases);
+        return array_map(static fn (\BackedEnum $backedEnum): int|string => $backedEnum->value, $cases);
     }
 }

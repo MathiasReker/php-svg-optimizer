@@ -30,6 +30,11 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     ];
 
     /**
+     * Constant for the XML stylesheet processing instruction.
+     */
+    private const string XML_STYLESHEET_PI = 'xml-stylesheet';
+
+    /**
      * Regular expressions for detecting unsafe patterns in attribute values.
      *
      * These patterns are used to identify potentially dangerous content in attributes.
@@ -118,7 +123,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     {
         for ($node = $domDocument->firstChild; $node instanceof \DOMNode; $node = $node->nextSibling) {
             if ($node instanceof \DOMProcessingInstruction
-                && str_contains(mb_strtolower($node->nodeName), 'xml-stylesheet')
+                && str_contains(mb_strtolower($node->nodeName), self::XML_STYLESHEET_PI)
             ) {
                 $domDocument->removeChild($node);
             }

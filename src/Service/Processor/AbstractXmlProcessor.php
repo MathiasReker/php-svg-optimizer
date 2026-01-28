@@ -11,9 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Processor;
 
-use DOMDocument;
-use Exception;
-use Throwable;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 
@@ -29,7 +26,7 @@ abstract readonly class AbstractXmlProcessor
      * function to optimize the SVG, checks the callback's result type, validates the
      * optimized content, and loads the content back into the \DOMDocument.
      *
-     * @param DOMDocument $domDocument the \DOMDocument containing the SVG content to be processed
+     * @param \DOMDocument $domDocument the \DOMDocument containing the SVG content to be processed
      * @param callable     $callback    a callable function that will be applied to optimize the SVG content
      *
      * @param-immediately-invoked-callable $callback
@@ -38,7 +35,7 @@ abstract readonly class AbstractXmlProcessor
      *
      * @throws XmlProcessingException if any error occurs while processing, validating, or loading the XML content
      */
-    final public function process(DOMDocument $domDocument, callable $callback): string
+    final public function process(\DOMDocument $domDocument, callable $callback): string
     {
         $content = $domDocument->saveXML();
 
@@ -58,7 +55,7 @@ abstract readonly class AbstractXmlProcessor
             }
         } catch (XmlProcessingException $e) {
             throw $e;
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             throw new XmlProcessingException('Failed to process the XML content.', 0, $exception);
         }
 
@@ -66,7 +63,7 @@ abstract readonly class AbstractXmlProcessor
             if (!$domDocument->loadXML($content)) {
                 throw new XmlProcessingException('Failed to load optimized XML content.');
             }
-        } catch (Throwable $throwable) {
+        } catch (\Throwable $throwable) {
             throw new XmlProcessingException('Failed to load optimized XML content.', 0, $throwable);
         }
 

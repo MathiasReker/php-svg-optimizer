@@ -17,11 +17,21 @@ enum SvgTag: string implements SvgDataInterface
 {
     use BaseEnum;
 
-    case A = 'a';
-    case Font = 'font';
-    case Image = 'image';
-    case Style = 'style';
-    case Svg = 'svg';
+    case Animate = 'animate';
+    case ClipPath = 'clipPath';
+    case Embed = 'embed';
+    case FEDropShadow = 'feDropShadow';
+    case FEImage = 'feImage';
+    case ForeignObject = 'foreignObject';
+    case Iframe = 'iframe';
+    case LinearGradient = 'linearGradient';
+    case Link = 'link';
+    case Object = 'object';
+    case RadialGradient = 'radialGradient';
+    case Script = 'script';
+    case Set = 'set';
+    case TextNode = '#text';
+    case TextPath = 'textPath';
     case ALTGlyph = 'altglyph';
     case ALTGlyphDef = 'altglyphdef';
     case ALTGlyphItem = 'altglyphitem';
@@ -33,32 +43,6 @@ enum SvgTag: string implements SvgDataInterface
     case Defs = 'defs';
     case Desc = 'desc';
     case Ellipse = 'ellipse';
-    case Filter = 'filter';
-    case G = 'g';
-    case Glyph = 'glyph';
-    case Glyphref = 'glyphref';
-    case Hkern = 'hkern';
-    case Line = 'line';
-    case Marker = 'marker';
-    case Mask = 'mask';
-    case Metadata = 'metadata';
-    case Mpath = 'mpath';
-    case Path = 'path';
-    case Pattern = 'pattern';
-    case Polygon = 'polygon';
-    case Polyline = 'polyline';
-    case Rect = 'rect';
-    case Stop = 'stop';
-    case Switch = 'switch';
-    case Symbol = 'symbol';
-    case Text = 'text';
-    case Textpath = 'textpath';
-    case Title = 'title';
-    case Tref = 'tref';
-    case Tspan = 'tspan';
-    case Use = 'use';
-    case View = 'view';
-    case Vkern = 'vkern';
     case FEBlend = 'feBlend';
     case FEColorMatrix = 'feColorMatrix';
     case FEComponentTransfer = 'feComponentTransfer';
@@ -82,28 +66,37 @@ enum SvgTag: string implements SvgDataInterface
     case FESpotLight = 'feSpotLight';
     case FETile = 'feTile';
     case FETurbulence = 'feTurbulence';
-
-    case TextNode = '#text';
-
-    case ForeignObject = 'foreignObject';
-
-    case Script = 'script';
-
-    case Iframe = 'iframe';
-
-    case Object = 'object';
-
-    case Embed = 'embed';
-
-    case Link = 'link';
-    case Animate = 'animate';
-    case Set = 'set';
-    case TextPath = 'textPath';
-    case LinearGradient = 'linearGradient';
-    case RadialGradient = 'radialGradient';
-    case FEDropShadow = 'feDropShadow';
-    case FEImage = 'feImage';
-    case ClipPath = 'clipPath';
+    case Filter = 'filter';
+    case Font = 'font';
+    case G = 'g';
+    case Glyph = 'glyph';
+    case Glyphref = 'glyphref';
+    case Hkern = 'hkern';
+    case Image = 'image';
+    case Line = 'line';
+    case Marker = 'marker';
+    case Mask = 'mask';
+    case Metadata = 'metadata';
+    case Mpath = 'mpath';
+    case Path = 'path';
+    case Pattern = 'pattern';
+    case Polygon = 'polygon';
+    case Polyline = 'polyline';
+    case Rect = 'rect';
+    case Stop = 'stop';
+    case Style = 'style';
+    case Svg = 'svg';
+    case Switch = 'switch';
+    case Symbol = 'symbol';
+    case Text = 'text';
+    case Textpath = 'textpath';
+    case Title = 'title';
+    case Tref = 'tref';
+    case Tspan = 'tspan';
+    case Use = 'use';
+    case View = 'view';
+    case Vkern = 'vkern';
+    case A = 'a';
 
     /**
      * Returns all tag values as an array of strings.

@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
  * @no-named-arguments
@@ -61,7 +62,7 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
                 continue;
             }
 
-            if ('g' === $child->tagName) {
+            if (SvgTag::G->value === $child->tagName) {
                 $this->removeEmptyGroupsRecursive($child);
                 $this->removeGroupIfEmpty($child);
             } else {

@@ -125,9 +125,7 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
             return;
         }
 
-        /**
- * @var \DOMNode $node
-*/
+        /** @var \DOMNode $node */
         foreach ($nodes as $node) {
             if ($node instanceof \DOMElement) {
                 $this->minifyNodeAttributes($node, $attributes);

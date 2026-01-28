@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
  * @no-named-arguments
@@ -108,13 +109,11 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     {
         $domXPath = new \DOMXPath($domDocument);
 
-        /**
- * @var \DOMNodeList<\DOMElement> $elements
-*/
+        /** @var \DOMNodeList<\DOMElement> $elements */
         $elements = $domXPath->query('//*[@transform]');
 
         foreach ($elements as $element) {
-            $transform = $element->getAttribute('transform');
+            $transform = $element->getAttribute(SvgAttribute::Transform->value);
 
             $transform = $this->convertPercentagesToNumbers($transform);
             $transform = $this->removeIdentityTransforms($transform);
@@ -123,9 +122,9 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
             $transform = trim($transform);
 
             if ($this->isEmptyTransform($transform)) {
-                $element->removeAttribute('transform');
+                $element->removeAttribute(SvgAttribute::Transform->value);
             } else {
-                $element->setAttribute('transform', $transform);
+                $element->setAttribute(SvgAttribute::Transform->value, $transform);
             }
         }
     }
