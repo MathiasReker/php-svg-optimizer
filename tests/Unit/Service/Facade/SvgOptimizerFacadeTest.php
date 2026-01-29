@@ -27,6 +27,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEmptyTagsToSelfClosing;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
@@ -55,6 +56,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(AbstractXmlProcessor::class)]
 #[CoversClass(ConvertCssClassesToAttributes::class)]
 #[CoversClass(ConvertEmptyTagsToSelfClosing::class)]
+#[CoversClass(SvgInlineStyleProperty::class)]
 final class SvgOptimizerFacadeTest extends TestCase
 {
     private string $sampleSvg;
