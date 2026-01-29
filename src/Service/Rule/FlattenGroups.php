@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 
 /**
  * @no-named-arguments
@@ -39,7 +39,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $domXPath->registerNamespace(SvgTag::Svg->value, 'http://www.w3.org/2000/svg');
+        $domXPath->registerNamespace(SvgNamespace::Svg->prefix(), SvgNamespace::Svg->value);
 
         /** @var \DOMNodeList<\DOMElement> $groups */
         $groups = $domXPath->query('//svg:g');

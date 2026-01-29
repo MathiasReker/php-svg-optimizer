@@ -315,7 +315,6 @@ enum SvgAttribute: string implements SvgDataInterface
     case XmlnsXlink = 'xmlns:xlink';
     case XmlSpace = 'xml:space';
     case About = 'about';
-
     case Divisor = 'divisor';
     case FilterUnits = 'filterUnits';
     case FloodOpacity = 'flood-opacity';

@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 
 /**
  * @no-named-arguments
@@ -75,8 +76,8 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      * are used to remove elements and attributes related to these namespaces.
      */
     private const array NAMESPACE_URIS = [
-        'sodipodi' => 'http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd',
-        'inkscape' => 'http://www.inkscape.org/namespaces/inkscape',
+        'sodipodi' => SvgNamespace::Sodipodi->value,
+        'inkscape' => SvgNamespace::Inkscape->value,
     ];
 
     #[\Override]

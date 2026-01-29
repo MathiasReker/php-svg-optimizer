@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 
 /**
  * @no-named-arguments
@@ -76,7 +77,7 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $domXPath->registerNamespace(SvgAttribute::Xlink->value, 'http://www.w3.org/1999/xlink');
+        $domXPath->registerNamespace(SvgNamespace::Xlink->prefix(), SvgNamespace::Xlink->value);
 
         $this->replaceAttributes($domXPath, self::ATTRIBUTES_TO_REPLACE);
         $this->removeNamespaceFromSvgTags($domDocument);
