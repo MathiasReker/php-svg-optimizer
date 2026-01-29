@@ -12,11 +12,11 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgDataInterface;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\Trait\BaseEnum;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\Trait\BaseEnumTrait;
 
 enum SvgAttribute: string implements SvgDataInterface
 {
-    use BaseEnum;
+    use BaseEnumTrait;
 
     case Accumulate = 'accumulate';
     case Additive = 'additive';

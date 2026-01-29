@@ -190,9 +190,9 @@ final class FinderTest extends TestCase
         self::assertSame(realpath($svgUpper), $results[0]);
     }
 
+    #[\Override]
     protected function setUp(): void
     {
-        parent::setUp();
         $this->tempDir = sys_get_temp_dir() . '/finder_test_' . uniqid();
         mkdir($this->tempDir, 0o777, true);
     }
@@ -200,6 +200,7 @@ final class FinderTest extends TestCase
     /**
      * @throws \UnexpectedValueException
      */
+    #[\Override]
     protected function tearDown(): void
     {
         $this->deleteDirectory($this->tempDir);

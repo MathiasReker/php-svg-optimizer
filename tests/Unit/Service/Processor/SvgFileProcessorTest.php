@@ -163,6 +163,7 @@ final class SvgFileProcessorTest extends TestCase
     /**
      * @throws \RuntimeException
      */
+    #[\Override]
     protected function setUp(): void
     {
         $this->tempDir = sys_get_temp_dir() . '/svg_test_' . uniqid();
@@ -180,6 +181,7 @@ final class SvgFileProcessorTest extends TestCase
         $this->metaDataAggregator = new MetaDataAggregator();
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         $files = glob($this->tempDir . '/*');

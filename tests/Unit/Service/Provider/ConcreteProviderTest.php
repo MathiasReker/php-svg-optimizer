@@ -161,6 +161,7 @@ final class ConcreteProviderTest extends TestCase
         rmdir($tempDir);
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         if (file_exists($this->tmpFile)) {

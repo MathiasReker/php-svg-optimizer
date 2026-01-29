@@ -169,10 +169,15 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function removeAllElementsByTagName(\DOMDocument $domDocument, string $tagName): void
     {
-        while (($nodes = $domDocument->getElementsByTagName($tagName))->length) {
+        while (true) {
+            $nodes = $domDocument->getElementsByTagName($tagName);
+            if (0 === $nodes->length) {
+                break;
+            }
+
             $node = $nodes->item(0);
-            if ($parent = $node->parentNode) {
-                $parent->removeChild($node);
+            if ($node instanceof \DOMNode && $node->parentNode instanceof \DOMNode) {
+                $node->parentNode->removeChild($node);
             }
         }
     }

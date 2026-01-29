@@ -301,6 +301,7 @@ final class SvgOptimizerTest extends TestCase
         $svgOptimizer->getMetaData();
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->svgProvider = new class implements SvgProviderInterface {

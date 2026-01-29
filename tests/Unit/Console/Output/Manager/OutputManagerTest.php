@@ -160,6 +160,7 @@ final class OutputManagerTest extends TestCase
     /**
      * @throws \RuntimeException
      */
+    #[\Override]
     protected function setUp(): void
     {
         $this->memoryStream = new MemoryStream();

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data\Trait;
 
-trait BaseEnum
+trait BaseEnumTrait
 {
     /**
      * Convert enum cases to their string values.
@@ -22,6 +22,6 @@ trait BaseEnum
      */
     private static function valuesFromCases(array $cases): array
     {
-        return array_map(static fn (\BackedEnum $backedEnum): int|string => $backedEnum->value, $cases);
+        return array_map(static fn (\BackedEnum $backedEnum): string => (string) $backedEnum->value, $cases);
     }
 }

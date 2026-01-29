@@ -12,11 +12,11 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgDataInterface;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\Trait\BaseEnum;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\Trait\BaseEnumTrait;
 
 enum SvgInlineStyleProperty: string implements SvgDataInterface
 {
-    use BaseEnum;
+    use BaseEnumTrait;
 
     case AlignmentBaseline = 'alignment-baseline';
     case ClipPath = 'clip-path';

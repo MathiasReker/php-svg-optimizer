@@ -92,10 +92,9 @@ final class FileCollectorTest extends TestCase
         self::assertCount(1, $result);
     }
 
+    #[\Override]
     protected function setUp(): void
     {
-        parent::setUp();
-
         $this->tempDir = sys_get_temp_dir() . '/svg_test_' . uniqid();
         mkdir($this->tempDir, 0o777, true);
     }
@@ -103,6 +102,7 @@ final class FileCollectorTest extends TestCase
     /**
      * @throws \UnexpectedValueException
      */
+    #[\Override]
     protected function tearDown(): void
     {
         $this->deleteDirectory($this->tempDir);

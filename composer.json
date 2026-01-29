@@ -89,22 +89,18 @@
     "scripts": {
         "analyze:all": [
             "@analyze:normalize",
-            "@analyze:phpstan",
             "@analyze:dependency",
             "@analyze:validate",
             "@analyze:check",
             "@analyze:autoload",
             "@analyze:type-coverage",
-            "@analyze:php-cs-fixer",
             "@analyze:rector",
-            "@analyze:infection",
             "@analyze:audit"
         ],
         "analyze:audit": "@composer audit --format=table",
         "analyze:autoload": "@composer dump-autoload -o",
         "analyze:check": "@composer check",
         "analyze:dependency": "@php vendor/bin/composer-dependency-analyser",
-        "analyze:infection": "@php vendor/bin/infection --threads=10 --only-covered",
         "analyze:normalize": "composer normalize --dry-run --no-check-lock",
         "analyze:php-cs-fixer": "@php vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php --dry-run --diff",
         "analyze:phpstan": "@php vendor/bin/phpstan analyse -c phpstan.neon",

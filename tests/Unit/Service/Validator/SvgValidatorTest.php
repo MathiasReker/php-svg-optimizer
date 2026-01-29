@@ -97,7 +97,6 @@ final class SvgValidatorTest extends TestCase
     #[\Override]
     protected function setUp(): void
     {
-        parent::setUp();
         $this->svgValidator = new SvgValidator();
     }
 }

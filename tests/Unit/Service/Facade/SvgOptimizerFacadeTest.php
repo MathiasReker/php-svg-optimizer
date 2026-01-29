@@ -269,6 +269,7 @@ final class SvgOptimizerFacadeTest extends TestCase
         unlink($file);
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->sampleSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><title>Test</title></svg>';

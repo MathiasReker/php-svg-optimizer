@@ -133,7 +133,7 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     private function processColorAttributesInStyle(string $styleValue): string
     {
         foreach (SvgAttribute::colors() as $attribute) {
-            $pattern = \sprintf('/\b%s\s*:\s*([^;]+)/i', preg_quote((string) $attribute, '/'));
+            $pattern = \sprintf('/\b%s\s*:\s*([^;]+)/i', preg_quote($attribute, '/'));
 
             $styleValue = preg_replace_callback(
                 $pattern,

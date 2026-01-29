@@ -265,11 +265,13 @@ final class ConfigLoaderTest extends TestCase
         ConfigLoader::loadConfig($nonExistentFile);
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->configFile = tempnam(sys_get_temp_dir(), 'config_test_');
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         if (file_exists($this->configFile)) {

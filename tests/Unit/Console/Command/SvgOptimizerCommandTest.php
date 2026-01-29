@@ -236,12 +236,14 @@ final class SvgOptimizerCommandTest extends TestCase
         self::assertSame($originalContent, $newContent); // no overwrite
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->tempDir = sys_get_temp_dir() . '/svgopt_test_' . uniqid();
         mkdir($this->tempDir);
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         $this->deleteDir($this->tempDir);
