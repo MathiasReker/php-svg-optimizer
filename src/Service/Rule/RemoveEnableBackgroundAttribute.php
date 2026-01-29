@@ -86,15 +86,13 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
      */
     private function cleanupEnableBackgroundValue(string $value, string $width, string $height): string
     {
-        if (\in_array(preg_match(self::ENABLE_BACKGROUND_REGEX, $value, $matches), [0, false], true)) {
+        if (1 !== preg_match(self::ENABLE_BACKGROUND_REGEX, $value, $matches)) {
             return $value;
         }
 
-        if ($matches[1] === $width && $matches[3] === $height) {
-            return '';
-        }
-
-        return $value;
+        return ($matches[1] === $width && $matches[3] === $height)
+            ? ''
+            : $value;
     }
 
     /**

@@ -524,6 +524,152 @@ final class RemoveUnsafeElementsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><defs><pattern id="safePattern" width="10" height="10"><circle cx="5" cy="5" r="2" fill="blue"/></pattern><pattern id="unsafePattern" width="10" height="10"/></defs><rect width="50" height="50" fill="url(#safePattern)"/><rect width="50" height="50" fill="url(#unsafePattern)"/></svg>
                 XML,
         ];
+
+        yield 'Removes onerror' => [
+            <<<'XML'
+                <svg onerror="alert('xss')"></svg>
+                XML,
+            <<<'XML'
+                <svg/>
+                XML,
+        ];
+
+        yield 'Removes onmoouseover' => [
+            <<<'XML'
+                <svg onmoouseover="alert('xss')"></svg>
+                XML,
+            <<<'XML'
+                <svg/>
+                XML,
+        ];
+
+        yield 'Removes onfocus' => [
+            <<<'XML'
+                <svg onfocus="alert('xss')"></svg>
+                XML,
+            <<<'XML'
+                <svg/>
+                XML,
+        ];
+
+        yield 'Removes onload' => [
+            <<<'XML'
+                <svg onload="alert('xss')"></svg>
+                XML,
+            <<<'XML'
+                <svg/>
+                XML,
+        ];
+
+        yield 'Removes onclick' => [
+            <<<'XML'
+                <svg onclick="alert('xss')"></svg>
+                XML,
+            <<<'XML'
+                <svg/>
+                XML,
+        ];
+
+        yield 'Removes onmouseover' => [
+            <<<'XML'
+                <svg onmouseover="alert('xss')"></svg>
+                XML,
+            <<<'XML'
+                <svg/>
+                XML,
+        ];
+
+        yield 'Removes javascript encoded with HTML entities' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;alert(1)">x</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes javascript encoded with hex entities' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="&#x6A;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3A;alert(1)">x</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes base64 data URL with script' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <image href="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes SMIL begin with javascript URL' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <animate attributeName="x" begin="javascript:alert(1)" dur="1s"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><animate attributeName="x" dur="1s"/></svg>
+                XML,
+        ];
+
+        yield 'Removes values attribute containing javascript url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <animate attributeName="fill"
+                        values="red;url(javascript:alert(1));blue"
+                        dur="1s"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><animate attributeName="fill" dur="1s"/></svg>
+                XML,
+        ];
+
+        yield 'Removes nested svg with onload' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <svg onload="alert(1)">
+                        <circle r="5"/>
+                    </svg>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><svg><circle r="5"/></svg></svg>
+                XML,
+        ];
+
+        yield 'Removes javascript in style attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="fill: url(javascript:alert(1))" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes expression() in style attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="width: expression(alert(1))"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
     }
 
     #[Test]

@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgDataInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\Trait\BaseEnum;
 
 enum SvgTag: string implements SvgDataInterface
 {

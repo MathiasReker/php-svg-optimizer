@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data;
+namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data\Trait;
 
 trait BaseEnum
 {

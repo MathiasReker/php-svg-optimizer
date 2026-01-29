@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
  * @no-named-arguments
@@ -80,7 +80,7 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
      */
     private function convertStyles(\DOMElement $domElement): void
     {
-        $style = trim($domElement->getAttribute(SvgTag::Style->value));
+        $style = trim($domElement->getAttribute(SvgAttribute::Style->value));
         if ('' === $style || !str_contains($style, ':')) {
             return;
         }
@@ -94,9 +94,9 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
         }
 
         if ([] === $remaining) {
-            $domElement->removeAttribute(SvgTag::Style->value);
+            $domElement->removeAttribute(SvgAttribute::Style->value);
         } else {
-            $domElement->setAttribute(SvgTag::Style->value, implode('; ', $remaining));
+            $domElement->setAttribute(SvgAttribute::Style->value, implode('; ', $remaining));
         }
     }
 

@@ -169,15 +169,10 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function removeAllElementsByTagName(\DOMDocument $domDocument, string $tagName): void
     {
-        while (true) {
-            $nodes = $domDocument->getElementsByTagName($tagName);
-            if (0 === $nodes->length) {
-                break;
-            }
-
+        while (($nodes = $domDocument->getElementsByTagName($tagName))->length) {
             $node = $nodes->item(0);
-            if ($node instanceof \DOMNode && $node->parentNode instanceof \DOMNode) {
-                $node->parentNode->removeChild($node);
+            if ($parent = $node->parentNode) {
+                $parent->removeChild($node);
             }
         }
     }
@@ -220,8 +215,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         }
 
         foreach (SvgAttribute::dangerousExact() as $attrCase) {
-            $attr = $attrCase;
-            $value = $domNode->getAttribute($attr);
+            $value = $domNode->getAttribute($attrCase);
 
             if ($this->isExactDangerousAttribute($attrCase, $value)) {
                 if ($domNode->parentNode instanceof \DOMNode) {
@@ -261,7 +255,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function matchesPattern(string $value, string $pattern): bool
     {
-        return (bool) preg_match($pattern, $value);
+        return 1 === preg_match($pattern, $value);
     }
 
     /**
@@ -389,7 +383,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function removeStyleWithImport(\DOMDocument $domDocument): void
     {
-        $domNodeList = $domDocument->getElementsByTagName(SvgAttribute::Style->value);
+        $domNodeList = $domDocument->getElementsByTagName(SvgTag::Style->value);
 
         for ($i = $domNodeList->length - 1; $i >= 0; --$i) {
             $style = $domNodeList->item($i);

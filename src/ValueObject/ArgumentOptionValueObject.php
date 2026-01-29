@@ -60,6 +60,6 @@ final readonly class ArgumentOptionValueObject
      */
     public function hasName(string $name): bool
     {
-        return $this->shorthand === $name || $this->full === $name;
+        return \in_array($name, [$this->shorthand, $this->full], true);
     }
 }

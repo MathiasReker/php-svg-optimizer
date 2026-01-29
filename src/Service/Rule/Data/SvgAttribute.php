@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgDataInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\Trait\BaseEnum;
 
 enum SvgAttribute: string implements SvgDataInterface
 {
@@ -366,8 +367,6 @@ enum SvgAttribute: string implements SvgDataInterface
     case AriaValuemin = 'aria-valuemin';
     case AriaValuenow = 'aria-valuenow';
     case AriaValuetext = 'aria-valuetext';
-
-    // Event handlers
     case OnAbort = 'onabort';
     case OnAfterPrint = 'onafterprint';
     case OnBeforePrint = 'onbeforeprint';

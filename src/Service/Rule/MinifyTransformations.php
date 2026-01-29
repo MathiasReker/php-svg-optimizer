@@ -191,9 +191,7 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
      */
     private function isEmptyTransform(string $transform): bool
     {
-        return '' === $transform
-            || '0' === $transform
-            || 1 === preg_match(self::EMPTY_TRANSFORM_REGEX, $transform);
+        return 1 === preg_match(self::EMPTY_TRANSFORM_REGEX, $transform);
     }
 
     #[\Override]

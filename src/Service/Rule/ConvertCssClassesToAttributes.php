@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
  * @no-named-arguments
@@ -45,7 +46,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $domNodeList = $domDocument->getElementsByTagName(SvgAttribute::Style->value);
+        $domNodeList = $domDocument->getElementsByTagName(SvgTag::Style->value);
 
         foreach (iterator_to_array($domNodeList, false) as $domElement) {
             $css = $domElement->textContent;
