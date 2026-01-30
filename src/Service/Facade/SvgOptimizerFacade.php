@@ -108,6 +108,7 @@ final readonly class SvgOptimizerFacade
      * @param bool $minifyTransformations           Whether to minify transformation attributes
      * @param bool $removeAriaAndRole               Whether to remove aria and role attributes
      * @param bool $removeComments                  Whether to remove XML comments from the SVG
+     * @param bool $removeDataAttributes            Whether to remove data-* attributes from elements
      * @param bool $removeDefaultAttributes         Whether to remove default attributes from elements
      * @param bool $removeDeprecatedAttributes      Whether to remove the xlink namespace
      * @param bool $removeDoctype                   Whether to remove the DOCTYPE declaration
@@ -139,6 +140,7 @@ final readonly class SvgOptimizerFacade
         bool $minifyTransformations = false,
         bool $removeAriaAndRole = false,
         bool $removeComments = false,
+        bool $removeDataAttributes = false,
         bool $removeDefaultAttributes = false,
         bool $removeDeprecatedAttributes = false,
         bool $removeDoctype = false,
@@ -168,6 +170,7 @@ final readonly class SvgOptimizerFacade
             Rule::MinifyTransformations->value => $minifyTransformations,
             Rule::RemoveAriaAndRole->value => $removeAriaAndRole,
             Rule::RemoveComments->value => $removeComments,
+            Rule::RemoveDataAttributes->value => $removeDataAttributes,
             Rule::RemoveDefaultAttributes->value => $removeDefaultAttributes,
             Rule::RemoveDeprecatedAttributes->value => $removeDeprecatedAttributes,
             Rule::RemoveDoctype->value => $removeDoctype,

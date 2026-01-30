@@ -46,6 +46,7 @@ final class RuleTest extends TestCase
             Rule::MinifyTransformations->name => 'minifyTransformations',
             Rule::RemoveAriaAndRole->name => 'removeAriaAndRole',
             Rule::RemoveComments->name => 'removeComments',
+            Rule::RemoveDataAttributes->name => 'removeDataAttributes',
             Rule::RemoveDefaultAttributes->name => 'removeDefaultAttributes',
             Rule::RemoveDeprecatedAttributes->name => 'removeDeprecatedAttributes',
             Rule::RemoveDoctype->name => 'removeDoctype',

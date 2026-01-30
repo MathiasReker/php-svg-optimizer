@@ -173,7 +173,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     public function optimizeThrowsExceptionForRiskyRules(): void
     {
         $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)
-            ->withRules(false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true);
+            ->withRules(false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true);
 
         $this->expectException(RiskyRulesNotAllowedException::class);
         $svgOptimizerFacade->optimize();
@@ -188,7 +188,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     public function allowRiskyFalseDoesNotEnableRiskyRules(): void
     {
         $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)
-            ->withRules(false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)
+            ->withRules(false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)
             ->allowRisky(false);
 
         $this->expectException(RiskyRulesNotAllowedException::class);
@@ -222,7 +222,7 @@ final class SvgOptimizerFacadeTest extends TestCase
         $svg = '<svg xmlns="http://www.w3.org/2000/svg"><title>T</title><!-- c --></svg>';
 
         $svgOptimizerFacade = SvgOptimizerFacade::fromString($svg)
-            ->withRules(false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, true)
+            ->withRules(false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, true)
             ->optimize();
 
         $content = $svgOptimizerFacade->getContent();

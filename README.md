@@ -93,6 +93,7 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
     "minifyTransformations": true,
     "removeAriaAndRole": true,
     "removeComments": true,
+    "removeDataAttributes": true,
     "removeDefaultAttributes": true,
     "removeDeprecatedAttributes": true,
     "removeDoctype": true,
@@ -162,6 +163,7 @@ try {
             minifyTransformations: true,
             removeAriaAndRole: true,
             removeComments: true,
+            removeDataAttributes: true,
             removeDefaultAttributes: true,
             removeDeprecatedAttributes: true,
             removeDoctype: true,
@@ -393,6 +395,11 @@ Removes all comments except legal ones, reducing file size and eliminating unnec
 
 ```php
 $svgOptimizer->withRules(removeComments: true);
+```
+
+Removes `data-*` attributes (**risky**):
+```php
+$svgOptimizer->withRules(removeDataAttributes: true);
 ```
 
 Deletes attributes that have default values (e.g., `stroke="none"` if not needed). Saves space without affecting

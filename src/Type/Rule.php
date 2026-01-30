@@ -20,6 +20,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveAriaAndRole;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDataAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDoctype;
@@ -66,6 +67,8 @@ enum Rule: string
     case RemoveAriaAndRole = RemoveAriaAndRole::class;
 
     case RemoveComments = RemoveComments::class;
+
+    case RemoveDataAttributes = RemoveDataAttributes::class;
 
     case RemoveDefaultAttributes = RemoveDefaultAttributes::class;
 
@@ -115,6 +118,7 @@ enum Rule: string
             self::MinifyTransformations->value => 'minifyTransformations',
             self::RemoveAriaAndRole->value => 'removeAriaAndRole',
             self::RemoveComments->value => 'removeComments',
+            self::RemoveDataAttributes->value => 'removeDataAttributes',
             self::RemoveDefaultAttributes->value => 'removeDefaultAttributes',
             self::RemoveDeprecatedAttributes->value => 'removeDeprecatedAttributes',
             self::RemoveDoctype->value => 'removeDoctype',
