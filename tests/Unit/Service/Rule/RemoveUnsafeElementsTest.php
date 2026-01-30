@@ -677,72 +677,72 @@ final class RemoveUnsafeElementsTest extends TestCase
 
         yield 'Removes cursor with external URL' => [
             <<<'XML'
-        <svg xmlns="http://www.w3.org/2000/svg">
-            <rect cursor="url(http://example.com/cursor.cur), auto" width="10" height="10"/>
-        </svg>
-        XML,
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect cursor="url(http://example.com/cursor.cur), auto" width="10" height="10"/>
+                </svg>
+                XML,
             <<<'XML'
-        <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
-        XML,
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
         ];
 
         yield 'Removes background with external image URL' => [
             <<<'XML'
-        <svg xmlns="http://www.w3.org/2000/svg">
-            <rect background="url(https://example.com/bg.png)" width="10" height="10"/>
-        </svg>
-        XML,
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect background="url(https://example.com/bg.png)" width="10" height="10"/>
+                </svg>
+                XML,
             <<<'XML'
-        <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
-        XML,
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
         ];
 
         yield 'Removes border with external URL' => [
             <<<'XML'
-        <svg xmlns="http://www.w3.org/2000/svg">
-            <rect border="url(http://example.com/border.svg)" width="10" height="10"/>
-        </svg>
-        XML,
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect border="url(http://example.com/border.svg)" width="10" height="10"/>
+                </svg>
+                XML,
             <<<'XML'
-        <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
-        XML,
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
         ];
 
         yield 'Removes color-profile with external URL' => [
             <<<'XML'
-        <svg xmlns="http://www.w3.org/2000/svg">
-            <rect color-profile="http://example.com/profile.icc" width="10" height="10"/>
-        </svg>
-        XML,
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect color-profile="http://example.com/profile.icc" width="10" height="10"/>
+                </svg>
+                XML,
             <<<'XML'
-        <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
-        XML,
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
         ];
 
         yield 'Removes marker attributes with external URLs' => [
             <<<'XML'
-        <svg xmlns="http://www.w3.org/2000/svg">
-            <line
-                marker-start="url(http://example.com/start.svg#s)"
-                marker-mid="url(http://example.com/mid.svg#m)"
-                marker-end="url(http://example.com/end.svg#e)"
-                x1="0" y1="0" x2="10" y2="10"/>
-        </svg>
-        XML,
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <line
+                        marker-start="url(http://example.com/start.svg#s)"
+                        marker-mid="url(http://example.com/mid.svg#m)"
+                        marker-end="url(http://example.com/end.svg#e)"
+                        x1="0" y1="0" x2="10" y2="10"/>
+                </svg>
+                XML,
             <<<'XML'
-        <svg xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="10" y2="10"/></svg>
-        XML,
+                <svg xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="10" y2="10"/></svg>
+                XML,
         ];
 
         yield 'Removes overlay with external URL' => [
             <<<'XML'
-        <svg xmlns="http://www.w3.org/2000/svg">
-            <rect overlay="url(https://example.com/overlay.svg)" width="10" height="10"/>
-        </svg>
-        XML,
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect overlay="url(https://example.com/overlay.svg)" width="10" height="10"/>
+                </svg>
+                XML,
             <<<'XML'
-        <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
-        XML,
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
         ];
     }
 
