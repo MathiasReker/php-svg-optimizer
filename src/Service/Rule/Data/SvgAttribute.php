@@ -42,7 +42,6 @@ enum SvgAttribute: string implements SvgDataInterface
     case Cx = 'cx';
     case Cy = 'cy';
     case D = 'd';
-    case Data = 'data-*';
     case Decoding = 'decoding';
     case DiffuseConstant = 'diffuseConstant';
     case Dur = 'dur';
@@ -616,6 +615,12 @@ enum SvgAttribute: string implements SvgDataInterface
             self::To,
             self::Values,
             self::Style,
+            self::Cursor,
+            self::Background,
+            self::Border,
+            self::ColorProfile,
+            self::Marker,
+            self::Overlay,
         ];
     }
 }

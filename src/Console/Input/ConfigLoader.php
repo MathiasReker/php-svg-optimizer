@@ -45,7 +45,12 @@ final readonly class ConfigLoader
             throw new \InvalidArgumentException('Failed to read configuration content.');
         }
 
-        $decodedConfig = json_decode($configContent, true, 2, \JSON_THROW_ON_ERROR);
+        $decodedConfig = json_decode(
+            $configContent,
+            true,
+            2,
+            \JSON_THROW_ON_ERROR
+        );
 
         if (!\is_array($decodedConfig)) {
             throw new \InvalidArgumentException('Configuration must be a valid file path or a JSON string.');
