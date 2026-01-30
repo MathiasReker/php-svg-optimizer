@@ -493,8 +493,16 @@ resizing but may break fixed-layout designs (**risky**):
 $svgOptimizer->withRules(removeWidthHeightAttributes: false);
 ```
 
-Removes potentially unsafe elements, such as `<script>` or external references (`<image xlink:href="...">`). Useful for
-security, but may break interactive SVGs (**risky**):
+The `removeUnsafeElements` rule is designed to **sanitize potentially dangerous content** in SVG files. SVG is XML-based
+and can contain scripts, external references, and interactive elements that may pose **security risks** if untrusted
+files are embedded in your application or website.
+
+When enabled, this rule **removes elements and attributes that could be exploited**, including:
+
+- `<script>` — prevents embedded JavaScript execution.
+- `<foreignObject>` — blocks embedded HTML, which could contain malicious code.
+- `<image>` with external references (`xlink:href`) — prevents loading potentially unsafe external resources.
+- Event attributes like `onclick` or `onload` — disables interactive JavaScript triggers.
 
 ```php
 $svgOptimizer->withRules(removeUnsafeElements: true);
