@@ -94,7 +94,6 @@
             "@analyze:check",
             "@analyze:autoload",
             "@analyze:type-coverage",
-            "@analyze:rector",
             "@analyze:audit"
         ],
         "analyze:audit": "@composer audit --format=table",

@@ -1,5 +1,4 @@
 <?php
-
 /**
  *     This file is part of the php-svg-optimizer package.
  *     (c) Mathias Reker <github@reker.dk>
@@ -15,6 +14,8 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
+ * Normalize SVG attribute names to match the exact case from SvgAttribute enum.
+ *
  * @no-named-arguments
  */
 final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
@@ -25,9 +26,6 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
         return false;
     }
 
-    /**
-     * Normalize SVG attribute names to match the exact case from SvgAttribute enum.
-     */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
@@ -36,34 +34,75 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
         /** @var \DOMNodeList<\DOMElement> $nodes */
         $nodes = $domXPath->query('//* | /*');
 
+        $lookup = $this->getLookupTable();
+
+        foreach ($nodes as $node) {
+            $this->normalizeAttributes($node, $lookup);
+        }
+    }
+
+    /**
+     * Build a lookup table for SVG attribute normalization.
+     *
+     * @return array<string, string> key = normalized attribute, value = canonical attribute
+     */
+    private function getLookupTable(): array
+    {
+        /** @var array<string, string>|null $lookup */
         static $lookup = null;
+
         if (null === $lookup) {
             $lookup = [];
             foreach (SvgAttribute::cases() as $case) {
-                $normalized = mb_strtolower(str_replace('-', '', $case->value));
-                $lookup[$normalized] = $case->value;
+                $lookup[$this->normalizeName($case->value)] = $case->value;
             }
         }
 
-        foreach ($nodes as $node) {
-            $attrs = iterator_to_array($node->attributes, false);
+        return $lookup;
+    }
 
-            foreach ($attrs as $attr) {
-                $normalized = mb_strtolower(str_replace('-', '', $attr->name));
+    /**
+     * Normalize attribute names on a given node.
+     *
+     * @param array<string, string> $lookup
+     */
+    private function normalizeAttributes(\DOMElement $domElement, array $lookup): void
+    {
+        $attrs = iterator_to_array($domElement->attributes, false);
 
-                if (\array_key_exists($normalized, $lookup) && $attr->name !== $lookup[$normalized]) {
-                    $value = $attr->value;
+        foreach ($attrs as $attr) {
+            $normalized = $this->normalizeName($attr->name);
 
-                    if ($attr->namespaceURI) {
-                        $node->removeAttributeNS($attr->namespaceURI, $attr->localName);
-                        $node->setAttributeNS($attr->namespaceURI, $lookup[$normalized], $value);
-                    } else {
-                        $node->removeAttribute($attr->name);
-                        $node->setAttribute($lookup[$normalized], $value);
-                    }
-                }
+            if (!\array_key_exists($normalized, $lookup)) {
+                continue;
+            }
+
+            if ($attr->name === $lookup[$normalized]) {
+                continue;
+            }
+
+            $canonicalName = $lookup[$normalized];
+            $value = $attr->value;
+
+            $namespaceURI = $attr->namespaceURI;
+            $localName = $attr->localName;
+
+            if (null !== $namespaceURI && null !== $localName) {
+                $domElement->removeAttributeNS($namespaceURI, $localName);
+                $domElement->setAttributeNS($namespaceURI, $canonicalName, $value);
+            } else {
+                $domElement->removeAttribute($attr->name);
+                $domElement->setAttribute($canonicalName, $value);
             }
         }
+    }
+
+    /**
+     * Normalize a string by removing dashes and converting to lowercase.
+     */
+    private function normalizeName(string $name): string
+    {
+        return mb_strtolower(str_replace('-', '', $name));
     }
 
     #[\Override]
