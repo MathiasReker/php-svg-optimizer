@@ -30,14 +30,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     private const int OPTIMIZATION_LOOP_COUNT = 2;
 
     /**
-     * The XPath query to select all nodes in the SVG document.
-     *
-     * This query is used to select all elements in the SVG document for
-     * processing, such as removing unwanted elements and attributes.
-     */
-    private const string ALL_NODES_XPATH_QUERY = '//*';
-
-    /**
      * The XML namespace attributes to remove from the SVG document.
      */
     private const array XMLNS_ATTRIBUTES = [
@@ -123,12 +115,13 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      */
     private function removeNamespaceDeclarations(\DOMDocument $domDocument): void
     {
+        /** @var \DOMNodeList<\DOMElement> $domNodeList */
         $domNodeList = $domDocument->getElementsByTagName('*');
 
-        foreach ($domNodeList as $element) {
+        foreach ($domNodeList as $domElement) {
             foreach (self::XMLNS_ATTRIBUTES as $xmlnsAttribute) {
-                if ($element->hasAttribute($xmlnsAttribute)) {
-                    $element->removeAttribute($xmlnsAttribute);
+                if ($domElement->hasAttribute($xmlnsAttribute)) {
+                    $domElement->removeAttribute($xmlnsAttribute);
                 }
             }
         }
@@ -150,22 +143,16 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
             [$prefix] = explode(':', $tagToRemove, self::EXPLODE_LIMIT);
 
             $query = \sprintf('//%s:*', $prefix);
-            $nodes = $domXPath->query($query);
 
-            if (!$nodes instanceof \DOMNodeList) {
-                continue;
-            }
+            /** @var \DOMNodeList<\DOMElement> $domNodeList */
+            $domNodeList = $domXPath->query($query);
 
-            foreach (iterator_to_array($nodes, true) as $node) {
-                if (!$node instanceof \DOMElement) {
+            foreach (iterator_to_array($domNodeList, true) as $domElement) {
+                if (!$domElement->parentNode instanceof \DOMNode) {
                     continue;
                 }
 
-                if (!$node->parentNode instanceof \DOMNode) {
-                    continue;
-                }
-
-                $node->parentNode->removeChild($node);
+                $domElement->parentNode->removeChild($domElement);
             }
         }
     }
@@ -205,15 +192,11 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      */
     private function processNodes(\DOMXPath $domXPath, string $namespaceUri): void
     {
-        $nodes = $domXPath->query(self::ALL_NODES_XPATH_QUERY);
-        if (!$nodes instanceof \DOMNodeList) {
-            return;
-        }
+        /** @var \DOMNodeList<\DOMElement> $nodes */
+        $nodes = $domXPath->query('//*');
 
-        foreach (iterator_to_array($nodes, true) as $domNode) {
-            if ($domNode instanceof \DOMElement) {
-                $this->removeNodeAttributes($domNode, $namespaceUri);
-            }
+        foreach (iterator_to_array($nodes, true) as $domElement) {
+            $this->removeNodeAttributes($domElement, $namespaceUri);
         }
     }
 

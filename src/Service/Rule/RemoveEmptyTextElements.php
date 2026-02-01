@@ -54,6 +54,7 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
 
         for ($i = $domNode->childNodes->length - 1; $i >= 0; --$i) {
             $child = $domNode->childNodes->item($i);
+
             if (null === $child) {
                 continue;
             }

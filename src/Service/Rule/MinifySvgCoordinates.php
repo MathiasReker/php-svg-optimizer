@@ -108,8 +108,8 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         $domXPath = new \DOMXPath($domDocument);
         $domXPath->registerNamespace(SvgNamespace::Svg->prefix(), SvgNamespace::Svg->value);
 
-        foreach (self::ELEMENTS_TO_ATTRIBUTES as $xpath => $attributes) {
-            $this->processNodes($domXPath, $xpath, $attributes);
+        foreach (self::ELEMENTS_TO_ATTRIBUTES as $xPath => $attributes) {
+            $this->processNodes($domXPath, $xPath, $attributes);
         }
     }
 
@@ -120,16 +120,11 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
      */
     private function processNodes(\DOMXPath $domXPath, string $xpath, array $attributes): void
     {
-        $nodes = $domXPath->query($xpath);
-        if (!$nodes instanceof \DOMNodeList) {
-            return;
-        }
+        /** @var \DOMNodeList<\DOMElement> $domNodeList */
+        $domNodeList = $domXPath->query($xpath);
 
-        /** @var \DOMNode $node */
-        foreach ($nodes as $node) {
-            if ($node instanceof \DOMElement) {
-                $this->minifyNodeAttributes($node, $attributes);
-            }
+        foreach ($domNodeList as $domElement) {
+            $this->minifyNodeAttributes($domElement, $attributes);
         }
     }
 

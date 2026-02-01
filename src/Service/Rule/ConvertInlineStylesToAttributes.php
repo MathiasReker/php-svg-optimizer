@@ -57,19 +57,11 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
     private function getElementsWithStyle(\DOMDocument $domDocument): array
     {
         $domXPath = new \DOMXPath($domDocument);
-        $nodes = $domXPath->query('//*[@style]');
-        if (false === $nodes) {
-            return [];
-        }
 
-        $elements = [];
-        foreach ($nodes as $node) {
-            if ($node instanceof \DOMElement) {
-                $elements[] = $node;
-            }
-        }
+        /** @var \DOMNodeList<\DOMElement> $domNodeList */
+        $domNodeList = $domXPath->query('//*[@style]');
 
-        return $elements;
+        return iterator_to_array($domNodeList, false);
     }
 
     /**
@@ -80,13 +72,13 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
      */
     private function convertStyles(\DOMElement $domElement): void
     {
-        $style = trim($domElement->getAttribute(SvgAttribute::Style->value));
-        if ('' === $style || !str_contains($style, ':')) {
+        $styleValue = trim($domElement->getAttribute(SvgAttribute::Style->value));
+        if ('' === $styleValue || !str_contains($styleValue, ':')) {
             return;
         }
 
         $remaining = [];
-        foreach (explode(';', $style) as $declaration) {
+        foreach (explode(';', $styleValue) as $declaration) {
             $remainingEntry = $this->processDeclaration($declaration, $domElement);
             if ('' !== $remainingEntry) {
                 $remaining[] = $remainingEntry;

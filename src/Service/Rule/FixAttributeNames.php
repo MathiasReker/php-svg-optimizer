@@ -32,13 +32,13 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
     {
         $domXPath = new \DOMXPath($domDocument);
 
-        /** @var \DOMNodeList<\DOMElement> $nodes */
-        $nodes = $domXPath->query('//* | /*');
+        /** @var \DOMNodeList<\DOMElement> $domNodeList */
+        $domNodeList = $domXPath->query('//* | /*');
 
         $lookup = $this->getLookupTable();
 
-        foreach ($nodes as $node) {
-            $this->normalizeAttributes($node, $lookup);
+        foreach ($domNodeList as $domElement) {
+            $this->normalizeAttributes($domElement, $lookup);
         }
     }
 
@@ -50,13 +50,9 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
     private function getLookupTable(): array
     {
         /** @var array<string, string>|null $lookup */
-        static $lookup = null;
-
-        if (null === $lookup) {
-            $lookup = [];
-            foreach (SvgAttribute::cases() as $case) {
-                $lookup[$this->normalizeName($case->value)] = $case->value;
-            }
+        $lookup = [];
+        foreach (SvgAttribute::cases() as $case) {
+            $lookup[$this->normalizeName($case->value)] = $case->value;
         }
 
         return $lookup;
@@ -69,30 +65,30 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
      */
     private function normalizeAttributes(\DOMElement $domElement, array $lookup): void
     {
-        $attrs = iterator_to_array($domElement->attributes, false);
+        $attributes = iterator_to_array($domElement->attributes, false);
 
-        foreach ($attrs as $attr) {
-            $normalized = $this->normalizeName($attr->name);
+        foreach ($attributes as $attribute) {
+            $normalized = $this->normalizeName($attribute->name);
 
             if (!\array_key_exists($normalized, $lookup)) {
                 continue;
             }
 
-            if ($attr->name === $lookup[$normalized]) {
+            if ($attribute->name === $lookup[$normalized]) {
                 continue;
             }
 
             $canonicalName = $lookup[$normalized];
-            $value = $attr->value;
+            $value = $attribute->value;
 
-            $namespaceURI = $attr->namespaceURI;
-            $localName = $attr->localName;
+            $namespaceURI = $attribute->namespaceURI;
+            $localName = $attribute->localName;
 
             if (null !== $namespaceURI && null !== $localName) {
                 $domElement->removeAttributeNS($namespaceURI, $localName);
                 $domElement->setAttributeNS($namespaceURI, $canonicalName, $value);
             } else {
-                $domElement->removeAttribute($attr->name);
+                $domElement->removeAttribute($attribute->name);
                 $domElement->setAttribute($canonicalName, $value);
             }
         }

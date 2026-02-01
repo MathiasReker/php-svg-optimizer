@@ -53,13 +53,12 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
         $domXPath = new \DOMXPath($domDocument);
 
         foreach (self::DEFAULT_SVG_ATTRIBUTES as $attribute => $defaultValue) {
-            /** @var \DOMNodeList<\DOMAttr> $nodes */
-            $nodes = $domXPath->query('//@' . $attribute);
+            /** @var \DOMNodeList<\DOMAttr> $domNodeList */
+            $domNodeList = $domXPath->query('//@' . $attribute);
 
-            /** @var \DOMAttr $node */
-            foreach ($nodes as $node) {
-                $parentNode = $node->ownerElement;
-                if ($parentNode instanceof \DOMElement && $node->value === $defaultValue) {
+            foreach ($domNodeList as $domAttr) {
+                $parentNode = $domAttr->ownerElement;
+                if ($parentNode instanceof \DOMElement && $domAttr->value === $defaultValue) {
                     $parentNode->removeAttribute($attribute);
                 }
             }

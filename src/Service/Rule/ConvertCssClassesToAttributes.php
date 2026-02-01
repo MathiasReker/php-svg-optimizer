@@ -46,6 +46,8 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
+
+        /** @var \DOMNodeList<\DOMElement> $domNodeList */
         $domNodeList = $domDocument->getElementsByTagName(SvgTag::Style->value);
 
         foreach (iterator_to_array($domNodeList, false) as $domElement) {
@@ -148,24 +150,20 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         array $nonConvertible,
         \DOMXPath $domXPath,
     ): void {
-        $elements = $domXPath->query(
+        /** @var \DOMNodeList<\DOMElement> $domNodeList */
+        $domNodeList = $domXPath->query(
             \sprintf(
                 "//*[contains(concat(' ', normalize-space(@class), ' '), ' %s ')]",
                 $class
             )
         );
 
-        if (!$elements instanceof \DOMNodeList) {
-            return;
-        }
-
-        /** @var \DOMElement $element */
-        foreach ($elements as $element) {
+        foreach ($domNodeList as $domElement) {
             foreach ($convertible as $prop => $value) {
-                $element->setAttribute($prop, $value);
+                $domElement->setAttribute($prop, $value);
             }
 
-            $this->updateElementClass($element, $class, $nonConvertible);
+            $this->updateElementClass($domElement, $class, $nonConvertible);
         }
     }
 

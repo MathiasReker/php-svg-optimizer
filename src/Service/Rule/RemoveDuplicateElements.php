@@ -47,22 +47,22 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
     {
         $domXPath = new \DOMXPath($domDocument);
 
-        /** @var \DOMNodeList<\DOMElement> $elements */
-        $elements = $domXPath->query('//*'); // TODO normalize elements / nodes
+        /** @var \DOMNodeList<\DOMElement> $domNodeList */
+        $domNodeList = $domXPath->query('//*');
 
         $seen = [];
 
-        foreach ($elements as $element) {
-            $this->normalizeAttributes($element);
+        foreach ($domNodeList as $domElement) {
+            $this->normalizeAttributes($domElement);
 
-            $parent = $element->parentNode;
+            $parent = $domElement->parentNode;
             if (!$parent instanceof \DOMElement) {
                 continue;
             }
 
-            $key = spl_object_hash($parent) . '::' . $this->buildSignature($element);
+            $key = spl_object_hash($parent) . '::' . $this->buildSignature($domElement);
             if (\array_key_exists($key, $seen)) {
-                $parent->removeChild($element);
+                $parent->removeChild($domElement);
             } else {
                 $seen[$key] = true;
             }
@@ -76,10 +76,10 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
      */
     private function normalizeAttributes(\DOMElement $domElement): void
     {
-        foreach ($domElement->attributes as $attr) {
-            $trimmedValue = trim((string) $attr->nodeValue);
-            if ($trimmedValue !== $attr->nodeValue) {
-                $domElement->setAttribute($attr->nodeName, $trimmedValue);
+        foreach ($domElement->attributes as $attribute) {
+            $trimmedValue = trim((string) $attribute->nodeValue);
+            if ($trimmedValue !== $attribute->nodeValue) {
+                $domElement->setAttribute($attribute->nodeName, $trimmedValue);
             }
         }
     }
@@ -96,8 +96,8 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
     private function buildSignature(\DOMElement $domElement): string
     {
         $attrs = [];
-        foreach ($domElement->attributes as $attr) {
-            $attrs[$attr->nodeName] = trim((string) $attr->nodeValue);
+        foreach ($domElement->attributes as $attribute) {
+            $attrs[$attribute->nodeName] = trim((string) $attribute->nodeValue);
         }
 
         ksort($attrs);

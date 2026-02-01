@@ -274,28 +274,22 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     private function removeDangerousAttributes(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $elements = $domXPath->query('//*');
 
-        if (!$elements instanceof \DOMNodeList) {
-            return;
-        }
+        /** @var \DOMNodeList<\DOMElement> $domNodeList */
+        $domNodeList = $domXPath->query('//*');
 
-        foreach ($elements as $element) {
-            if (!$element instanceof \DOMElement) {
-                continue;
-            }
-
-            if (!$element->hasAttributes()) {
+        foreach ($domNodeList as $domElement) {
+            if (!$domElement->hasAttributes()) {
                 continue;
             }
 
             /** @var \DOMAttr $attribute */
-            foreach (iterator_to_array($element->attributes, false) as $attribute) {
+            foreach (iterator_to_array($domElement->attributes, false) as $attribute) {
                 $name = $attribute->name;
                 $value = trim($attribute->value);
 
                 if ($this->isDangerousAttribute($name, $value)) {
-                    $element->removeAttributeNode($attribute);
+                    $domElement->removeAttributeNode($attribute);
                 }
             }
         }

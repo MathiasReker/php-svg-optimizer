@@ -56,14 +56,11 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
         $domXPath->registerNamespace(SvgNamespace::Svg->prefix(), SvgNamespace::Svg->value);
         $domXPath->registerNamespace(SvgNamespace::Xlink->prefix(), SvgNamespace::Xlink->value);
 
+        /** @var \DOMNodeList<\DOMElement> $elements */
         $elements = $domXPath->query('//*');
 
-        if ($elements instanceof \DOMNodeList) {
-            foreach ($elements as $element) {
-                if ($element instanceof \DOMElement) {
-                    $this->sortElementAttributes($element);
-                }
-            }
+        foreach ($elements as $element) {
+            $this->sortElementAttributes($element);
         }
     }
 
@@ -106,9 +103,11 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     {
         $attributes = [];
 
-        /** @var \DOMAttr $attribute */
-        foreach ($domElement->attributes as $attribute) {
-            $attributes[$attribute->localName ?? $attribute->name] = $attribute->value;
+        /** @var \DOMNamedNodeMap<\DOMAttr> $domAttributes */
+        $domAttributes = $domElement->attributes;
+
+        foreach ($domAttributes as $domAttribute) {
+            $attributes[$domAttribute->localName ?? $domAttribute->name] = $domAttribute->value;
         }
 
         return $attributes;

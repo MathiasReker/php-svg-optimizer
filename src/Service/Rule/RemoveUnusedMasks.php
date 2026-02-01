@@ -58,8 +58,9 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
                 continue;
             }
 
+            /** @var \DOMNodeList<\DOMElement> $references */
             $references = $domXPath->query(\sprintf('//*[contains(@' . SvgAttribute::Mask->value . ", 'url(#%s)')]", $maskId));
-            $isReferenced = false !== $references && $references->length > 0;
+            $isReferenced = $references->length > 0;
 
             if (!$isReferenced) {
                 $masksToRemove[] = $domNodeList;

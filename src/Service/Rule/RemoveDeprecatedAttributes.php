@@ -98,23 +98,21 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     private function replaceAttributes(\DOMXPath $domXPath, array $attributes): void
     {
         foreach ($attributes as $oldName => $newName) {
-            $nodes = $domXPath->query(\sprintf('//*[@%s]', $oldName));
-            if (!$nodes instanceof \DOMNodeList) {
-                continue;
-            }
+            /** @var \DOMNodeList<\DOMElement> $domNodeList */
+            $domNodeList = $domXPath->query(\sprintf('//*[@%s]', $oldName));
 
-            foreach ($nodes as $node) {
-                if (!($node instanceof \DOMElement && $node->hasAttribute($oldName))) {
+            foreach ($domNodeList as $domElement) {
+                if (!$domElement->hasAttribute($oldName)) {
                     continue;
                 }
 
-                $value = $node->getAttribute($oldName);
+                $value = $domElement->getAttribute($oldName);
 
-                if (!$node->hasAttribute($newName) || $node->getAttribute($newName) !== $value) {
-                    $node->setAttribute($newName, $value);
+                if (!$domElement->hasAttribute($newName) || $domElement->getAttribute($newName) !== $value) {
+                    $domElement->setAttribute($newName, $value);
                 }
 
-                $node->removeAttribute($oldName);
+                $domElement->removeAttribute($oldName);
             }
         }
     }
@@ -148,17 +146,15 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     private function removeAttributes(\DOMXPath $domXPath, array $attributes): void
     {
         foreach ($attributes as $attribute) {
-            $nodes = $domXPath->query(\sprintf('//*[@%s]', $attribute));
-            if (!$nodes instanceof \DOMNodeList) {
-                continue;
-            }
+            /** @var \DOMNodeList<\DOMElement> $domNodeList */
+            $domNodeList = $domXPath->query(\sprintf('//*[@%s]', $attribute));
 
-            foreach ($nodes as $node) {
-                if (!($node instanceof \DOMElement && $node->hasAttribute($attribute))) {
+            foreach ($domNodeList as $domElement) {
+                if (!$domElement->hasAttribute($attribute)) {
                     continue;
                 }
 
-                $node->removeAttribute($attribute);
+                $domElement->removeAttribute($attribute);
             }
         }
     }

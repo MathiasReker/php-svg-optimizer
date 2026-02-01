@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
  * @no-named-arguments
@@ -93,7 +94,7 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
         $result = preg_match_all($namespacePattern, $content, $matches);
         if (false !== $result && $result > 0) {
             foreach ($matches[1] as $prefix) {
-                $namespaceKey = \sprintf('xmlns:%s', $prefix);
+                $namespaceKey = \sprintf('%s:%s', SvgAttribute::Xmlns->value, $prefix);
                 $elementPattern = \sprintf(self::ELEMENT_PATTERN_TEMPLATE, preg_quote($prefix, '/'));
                 preg_match_all($elementPattern, $content, $elementMatches);
                 $namespaceCounts[$namespaceKey] = \count($elementMatches[0]);

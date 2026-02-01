@@ -109,11 +109,11 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     {
         $domXPath = new \DOMXPath($domDocument);
 
-        /** @var \DOMNodeList<\DOMElement> $elements */
-        $elements = $domXPath->query('//*[@transform]');
+        /** @var \DOMNodeList<\DOMElement> $domNodeList */
+        $domNodeList = $domXPath->query('//*[@transform]');
 
-        foreach ($elements as $element) {
-            $transform = $element->getAttribute(SvgAttribute::Transform->value);
+        foreach ($domNodeList as $domElement) {
+            $transform = $domElement->getAttribute(SvgAttribute::Transform->value);
 
             $transform = $this->convertPercentagesToNumbers($transform);
             $transform = $this->removeIdentityTransforms($transform);
@@ -122,9 +122,9 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
             $transform = trim($transform);
 
             if ($this->isEmptyTransform($transform)) {
-                $element->removeAttribute(SvgAttribute::Transform->value);
+                $domElement->removeAttribute(SvgAttribute::Transform->value);
             } else {
-                $element->setAttribute(SvgAttribute::Transform->value, $transform);
+                $domElement->setAttribute(SvgAttribute::Transform->value, $transform);
             }
         }
     }

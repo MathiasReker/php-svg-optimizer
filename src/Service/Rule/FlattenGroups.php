@@ -41,12 +41,12 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         $domXPath = new \DOMXPath($domDocument);
         $domXPath->registerNamespace(SvgNamespace::Svg->prefix(), SvgNamespace::Svg->value);
 
-        /** @var \DOMNodeList<\DOMElement> $groups */
-        $groups = $domXPath->query('//svg:g');
+        /** @var \DOMNodeList<\DOMElement> $domElementList */
+        $domElementList = $domXPath->query('//svg:g');
 
-        foreach ($groups as $group) {
-            $this->applyGroupAttributesToChildren($group);
-            $this->flattenGroup($group);
+        foreach ($domElementList as $domElement) {
+            $this->applyGroupAttributesToChildren($domElement);
+            $this->flattenGroup($domElement);
         }
     }
 

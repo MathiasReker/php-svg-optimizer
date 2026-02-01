@@ -53,24 +53,19 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
      */
     private function processEnableBackgroundAttributes(\DOMXPath $domXPath): void
     {
+        /** @var \DOMNodeList<\DOMElement> $elements */
         $elements = $domXPath->query('//*[@enable-background]');
 
-        if (false === $elements) {
-            return;
-        }
-
         foreach ($elements as $element) {
-            if ($element instanceof \DOMElement) {
-                $enableBackgroundValue = $element->getAttribute(SvgAttribute::EnableBackground->value);
-                $width = $element->getAttribute(SvgAttribute::Width->value);
-                $height = $element->getAttribute(SvgAttribute::Height->value);
-                $cleanedValue = $this->cleanupEnableBackgroundValue($enableBackgroundValue, $width, $height);
+            $enableBackgroundValue = $element->getAttribute(SvgAttribute::EnableBackground->value);
+            $width = $element->getAttribute(SvgAttribute::Width->value);
+            $height = $element->getAttribute(SvgAttribute::Height->value);
+            $cleanedValue = $this->cleanupEnableBackgroundValue($enableBackgroundValue, $width, $height);
 
-                if ('' === trim($cleanedValue)) {
-                    $element->removeAttribute(SvgAttribute::EnableBackground->value);
-                } else {
-                    $element->setAttribute(SvgAttribute::EnableBackground->value, $cleanedValue);
-                }
+            if ('' === trim($cleanedValue)) {
+                $element->removeAttribute(SvgAttribute::EnableBackground->value);
+            } else {
+                $element->setAttribute(SvgAttribute::EnableBackground->value, $cleanedValue);
             }
         }
     }
@@ -102,17 +97,11 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
      */
     private function processStyleAttributes(\DOMXPath $domXPath): void
     {
-        $elements = $domXPath->query('//*[@style]');
-        if (false === $elements) {
-            return;
-        }
+        /** @var \DOMNodeList<\DOMElement> $DomNodeList */
+        $DomNodeList = $domXPath->query('//*[@style]');
 
-        foreach ($elements as $element) {
-            if (!$element instanceof \DOMElement) {
-                continue;
-            }
-
-            $style = $element->getAttribute(SvgAttribute::Style->value);
+        foreach ($DomNodeList as $domElement) {
+            $style = $domElement->getAttribute(SvgAttribute::Style->value);
 
             if (!$this->hasEnableBackground($style)) {
                 continue;
@@ -120,7 +109,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
 
             $cleanedStyle = $this->removeEnableBackgroundFromStyle($style);
 
-            $this->updateStyleAttribute($element, $cleanedStyle);
+            $this->updateStyleAttribute($domElement, $cleanedStyle);
         }
     }
 
