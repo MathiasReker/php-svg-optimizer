@@ -30,7 +30,7 @@
         "ergebnis/phpstan-rules": "^2.13",
         "friendsofphp/php-cs-fixer": "^3.93",
         "hiperdk/phpstan-rules": "^1.0",
-        "kubawerlos/php-cs-fixer-custom-fixers": "^3.35",
+        "kubawerlos/php-cs-fixer-custom-fixers": "^3.36",
         "marc-mabe/php-enum-phpstan": "^3.0",
         "odan/phpstan-rules": "^0.2",
         "phpstan/extension-installer": "^1.4",

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fa9ae71f8dd7ef2e2c82e70d1c2cd502",
+    "content-hash": "fed6325ea5b102b3ae1b2f119b7197c6",
     "packages": [],
     "packages-dev": [
         {
@@ -1243,16 +1243,16 @@
         },
         {
             "name": "kubawerlos/php-cs-fixer-custom-fixers",
-            "version": "v3.35.1",
+            "version": "v3.36.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers.git",
-                "reference": "2a35f80ae24ca77443a7af1599c3a3db1b6bd395"
+                "reference": "e1f97f6463f0b2a22e0dd320948a04132ff9c501"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kubawerlos/php-cs-fixer-custom-fixers/zipball/2a35f80ae24ca77443a7af1599c3a3db1b6bd395",
-                "reference": "2a35f80ae24ca77443a7af1599c3a3db1b6bd395",
+                "url": "https://api.github.com/repos/kubawerlos/php-cs-fixer-custom-fixers/zipball/e1f97f6463f0b2a22e0dd320948a04132ff9c501",
+                "reference": "e1f97f6463f0b2a22e0dd320948a04132ff9c501",
                 "shasum": ""
             },
             "require": {
@@ -1262,7 +1262,7 @@
                 "php": "^7.4 || ^8.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.6.24 || ^10.5.51 || ^11.5.32"
+                "phpunit/phpunit": "^9.6.24 || ^10.5.51 || ^11.5.44"
             },
             "type": "library",
             "autoload": {
@@ -1283,7 +1283,7 @@
             "description": "A set of custom fixers for PHP CS Fixer",
             "support": {
                 "issues": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers/issues",
-                "source": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers/tree/v3.35.1"
+                "source": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers/tree/v3.36.0"
             },
             "funding": [
                 {
@@ -1291,7 +1291,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-09-28T18:43:35+00:00"
+            "time": "2026-01-31T07:02:11+00:00"
         },
         {
             "name": "localheinz/diff",
@@ -1994,11 +1994,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.1.37",
+            "version": "2.1.38",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/28cd424c5ea984128c95cfa7ea658808e8954e49",
-                "reference": "28cd424c5ea984128c95cfa7ea658808e8954e49",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/dfaf1f530e1663aa167bc3e52197adb221582629",
+                "reference": "dfaf1f530e1663aa167bc3e52197adb221582629",
                 "shasum": ""
             },
             "require": {
@@ -2043,7 +2043,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-01-24T08:21:55+00:00"
+            "time": "2026-01-30T17:12:46+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -4498,16 +4498,16 @@
         },
         {
             "name": "spaze/phpstan-disallowed-calls",
-            "version": "v4.7.0",
+            "version": "v4.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spaze/phpstan-disallowed-calls.git",
-                "reference": "0765102eeb154da8a3bcef3200375bb4297a2141"
+                "reference": "4be6274bc23a2c44817690feda3ae4189496c246"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spaze/phpstan-disallowed-calls/zipball/0765102eeb154da8a3bcef3200375bb4297a2141",
-                "reference": "0765102eeb154da8a3bcef3200375bb4297a2141",
+                "url": "https://api.github.com/repos/spaze/phpstan-disallowed-calls/zipball/4be6274bc23a2c44817690feda3ae4189496c246",
+                "reference": "4be6274bc23a2c44817690feda3ae4189496c246",
                 "shasum": ""
             },
             "require": {
@@ -4520,7 +4520,7 @@
                 "php-parallel-lint/php-parallel-lint": "^1.2",
                 "phpstan/phpstan-deprecation-rules": "^1.2 || ^2.0",
                 "phpunit/phpunit": "^8.5.14 || ^10.1 || ^11.0 || ^12.0",
-                "shipmonk/dead-code-detector": "^0.13.2",
+                "shipmonk/dead-code-detector": "^0.14.1",
                 "spaze/coding-standard": "^1.8"
             },
             "type": "phpstan-extension",
@@ -4553,7 +4553,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spaze/phpstan-disallowed-calls/issues",
-                "source": "https://github.com/spaze/phpstan-disallowed-calls/tree/v4.7.0"
+                "source": "https://github.com/spaze/phpstan-disallowed-calls/tree/v4.7.1"
             },
             "funding": [
                 {
@@ -4561,7 +4561,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-01T23:01:09+00:00"
+            "time": "2026-01-31T03:50:05+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
