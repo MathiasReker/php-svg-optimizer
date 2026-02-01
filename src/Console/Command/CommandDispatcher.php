@@ -94,8 +94,9 @@ final readonly class CommandDispatcher
                 $optionIntent->allowRisky(),
                 $optionIntent->withAllRules(),
             );
-            $command = (new CommandFactory($stream, $argumentParser))->create($commandOptionsValueObject);
-            $command->run();
+            (new CommandFactory($stream, $argumentParser))
+                ->create($commandOptionsValueObject)
+                ->run();
         } catch (\InvalidArgumentException $invalidArgumentException) {
             $outputManager->printError($invalidArgumentException->getMessage());
             exit(1);
