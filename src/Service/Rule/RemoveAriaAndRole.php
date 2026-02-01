@@ -33,10 +33,9 @@ final readonly class RemoveAriaAndRole implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $domxPath = new \DOMXPath($domDocument);
-
+        $domXPath = new \DOMXPath($domDocument); // TODO normalize deomxpath
         /** @var \DOMNodeList<\DOMElement> $nodes */
-        $nodes = $domxPath->query('//*');
+        $nodes = $domXPath->query('//*');
 
         foreach ($nodes as $node) {
             /** @var list<\DOMAttr> $attrs */

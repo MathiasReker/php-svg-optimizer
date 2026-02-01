@@ -1,4 +1,5 @@
 <?php
+
 /**
  *     This file is part of the php-svg-optimizer package.
  *     (c) Mathias Reker <github@reker.dk>
@@ -20,7 +21,7 @@ final readonly class RemoveDataAttributes implements SvgOptimizerRuleInterface
     #[\Override]
     public static function isRisky(): bool
     {
-        return false;
+        return true;
     }
 
     /**

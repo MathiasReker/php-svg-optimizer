@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEmptyTagsToSelfClosing;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\FixAttributeNames;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
@@ -57,6 +58,8 @@ enum Rule: string
     case ConvertEmptyTagsToSelfClosing = ConvertEmptyTagsToSelfClosing::class;
 
     case ConvertInlineStylesToAttributes = ConvertInlineStylesToAttributes::class;
+
+    case FixAttributeNames = FixAttributeNames::class;
 
     case FlattenGroups = FlattenGroups::class;
 
@@ -113,6 +116,7 @@ enum Rule: string
             self::ConvertCssClassesToAttributes->value => 'convertCssClassesToAttributes',
             self::ConvertEmptyTagsToSelfClosing->value => 'convertEmptyTagsToSelfClosing',
             self::ConvertInlineStylesToAttributes->value => 'convertInlineStylesToAttributes',
+            self::FixAttributeNames->value => 'fixAttributeNames',
             self::FlattenGroups->value => 'flattenGroups',
             self::MinifySvgCoordinates->value => 'minifySvgCoordinates',
             self::MinifyTransformations->value => 'minifyTransformations',

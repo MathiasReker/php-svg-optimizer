@@ -45,18 +45,14 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
      */
     private function removeDuplicateElements(\DOMDocument $domDocument): void
     {
-        $domxPath = new \DOMXPath($domDocument);
+        $domXPath = new \DOMXPath($domDocument);
 
-        $nodeList = $domxPath->query('//*');
-        $elements = $nodeList instanceof \DOMNodeList ? iterator_to_array($nodeList, true) : [];
+        /** @var \DOMNodeList<\DOMElement> $elements */
+        $elements = $domXPath->query('//*'); // TODO normalize elements / nodes
 
         $seen = [];
 
         foreach ($elements as $element) {
-            if (!$element instanceof \DOMElement) {
-                continue;
-            }
-
             $this->normalizeAttributes($element);
 
             $parent = $element->parentNode;

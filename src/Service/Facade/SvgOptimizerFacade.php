@@ -103,6 +103,7 @@ final readonly class SvgOptimizerFacade
      * @param bool $convertCssClassesToAttributes   Whether to convert CSS classes to attributes
      * @param bool $convertEmptyTagsToSelfClosing   Whether to convert empty tags to self-closing tags
      * @param bool $convertInlineStylesToAttributes Whether to convert inline styles to attributes
+     * @param bool $fixAttributeNames               Whether to fix typos in attrubutes names
      * @param bool $flattenGroups                   Whether to flatten nested group elements
      * @param bool $minifySvgCoordinates            Whether to minify coordinate values within the SVG
      * @param bool $minifyTransformations           Whether to minify transformation attributes
@@ -135,6 +136,7 @@ final readonly class SvgOptimizerFacade
         bool $convertCssClassesToAttributes = false,
         bool $convertEmptyTagsToSelfClosing = false,
         bool $convertInlineStylesToAttributes = false,
+        bool $fixAttributeNames = false,
         bool $flattenGroups = false,
         bool $minifySvgCoordinates = false,
         bool $minifyTransformations = false,
@@ -165,6 +167,7 @@ final readonly class SvgOptimizerFacade
             Rule::ConvertCssClassesToAttributes->value => $convertCssClassesToAttributes,
             Rule::ConvertEmptyTagsToSelfClosing->value => $convertEmptyTagsToSelfClosing,
             Rule::ConvertInlineStylesToAttributes->value => $convertInlineStylesToAttributes,
+            Rule::FixAttributeNames->value => $fixAttributeNames,
             Rule::FlattenGroups->value => $flattenGroups,
             Rule::MinifySvgCoordinates->value => $minifySvgCoordinates,
             Rule::MinifyTransformations->value => $minifyTransformations,

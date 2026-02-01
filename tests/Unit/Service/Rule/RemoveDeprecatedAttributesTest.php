@@ -227,8 +227,8 @@ final class RemoveDeprecatedAttributesTest extends TestCase
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>');
 
-        $domxPath = new \DOMXPath($domDocument);
-        $domxPath->registerNamespace('xlink', 'http://www.w3.org/1999/xlink');
+        $domXPath = new \DOMXPath($domDocument);
+        $domXPath->registerNamespace('xlink', 'http://www.w3.org/1999/xlink');
 
         $removeDeprecatedAttributes = new RemoveDeprecatedAttributes();
 
@@ -236,7 +236,7 @@ final class RemoveDeprecatedAttributesTest extends TestCase
 
         $attributes = ['xlink:href' => 'href'];
 
-        $reflectionMethod->invoke($removeDeprecatedAttributes, $domxPath, $attributes);
+        $reflectionMethod->invoke($removeDeprecatedAttributes, $domXPath, $attributes);
 
         $xmlString = $domDocument->saveXML($domDocument->documentElement);
         self::assertNotFalse($xmlString, 'Failed to serialize XML');
@@ -255,12 +255,12 @@ final class RemoveDeprecatedAttributesTest extends TestCase
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><text>Some text</text></svg>');
 
-        $domxPath = new \DOMXPath($domDocument);
+        $domXPath = new \DOMXPath($domDocument);
 
         $removeDeprecatedAttributes = new RemoveDeprecatedAttributes();
         $reflectionMethod = new \ReflectionMethod($removeDeprecatedAttributes, 'removeAttributes');
 
-        $reflectionMethod->invoke($removeDeprecatedAttributes, $domxPath, ['baseProfile']);
+        $reflectionMethod->invoke($removeDeprecatedAttributes, $domXPath, ['baseProfile']);
 
         $xmlString = $domDocument->saveXML($domDocument->documentElement);
         self::assertNotFalse($xmlString, 'Failed to serialize XML');

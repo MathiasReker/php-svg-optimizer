@@ -41,6 +41,7 @@ final class RuleTest extends TestCase
             Rule::ConvertCssClassesToAttributes->name => 'convertCssClassesToAttributes',
             Rule::ConvertEmptyTagsToSelfClosing->name => 'convertEmptyTagsToSelfClosing',
             Rule::ConvertInlineStylesToAttributes->name => 'convertInlineStylesToAttributes',
+            Rule::FixAttributeNames->name => 'fixAttributeNames',
             Rule::FlattenGroups->name => 'flattenGroups',
             Rule::MinifySvgCoordinates->name => 'minifySvgCoordinates',
             Rule::MinifyTransformations->name => 'minifyTransformations',
