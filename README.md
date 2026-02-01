@@ -317,7 +317,11 @@ try {
 }
 ```
 
+---
+
 ### Documentation
+
+### SvgOptimizerFacade
 
 Static factory method to create `SvgOptimizerFacade` from a file path.
 
@@ -331,10 +335,18 @@ Static factory method to create `SvgOptimizerFacade` from a string.
 $svgOptimizer = SvgOptimizerFacade::fromString('<svg>...</svg>');
 ```
 
-#### `withRules` Method
+---
+
+### `withRules`
 
 Configure which SVG optimization rules to apply. The method accepts boolean parameters that determine whether specific
 rules should be enabled or disabled.
+
+```php
+$svgOptimizer->withRules();
+```
+
+---
 
 ## Parameters
 
