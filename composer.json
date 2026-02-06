@@ -106,7 +106,7 @@
         "analyze:rector": "@php vendor/bin/rector process --dry-run",
         "analyze:type-coverage": "@php vendor/bin/phpstan analyse --level=max --error-format=table",
         "analyze:validate": "@composer validate --strict",
-        "build:all": "@composer lint:all && build:badges",
+        "build:all": "@composer lint:all && @composer build:badges",
         "build:badges": "sh dev/scripts/badges.sh",
         "lint:all": [
             "@lint:normalize",

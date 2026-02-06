@@ -19,7 +19,6 @@ use Rector\Php85\Rector\Switch_\ColonAfterSwitchCaseRector;
 use Rector\PHPUnit\AnnotationsToAttributes\Rector\Class_\AnnotationWithValueToAttributeRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\AddSeeTestAnnotationRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
-use Rector\PHPUnit\CodeQuality\Rector\ClassMethod\AddInstanceofAssertForNullableArgumentRector;
 use Rector\PHPUnit\CodeQuality\Rector\ClassMethod\ReplaceTestFunctionPrefixWithAttributeRector;
 use Rector\PHPUnit\PHPUnit100\Rector\Class_\RemoveNamedArgsInDataProviderRector;
 use Rector\Transform\Rector\Class_\AddInterfaceByTraitRector;
@@ -107,7 +106,6 @@ return RectorConfig::configure()
             AnnotationWithValueToAttributeRector::class,
             RemoveNamedArgsInDataProviderRector::class,
             AddSeeTestAnnotationRector::class,
-            AddInstanceofAssertForNullableArgumentRector::class,
             ReplaceTestFunctionPrefixWithAttributeRector::class,
             ArrayKeyExistsNullToEmptyStringRector::class,
             ColonAfterSwitchCaseRector::class,
