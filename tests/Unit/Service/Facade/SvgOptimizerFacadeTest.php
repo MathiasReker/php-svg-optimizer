@@ -245,6 +245,8 @@ final class SvgOptimizerFacadeTest extends TestCase
                 false,
                 false,
                 false,
+                false,
+                false,
                 true,
             )
             ->optimize();
