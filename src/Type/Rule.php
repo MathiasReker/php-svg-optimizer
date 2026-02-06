@@ -33,6 +33,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\removeNonStandardAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\removeNonStandardTags;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
@@ -95,6 +97,10 @@ enum Rule: string
 
     case RemoveMetadata = RemoveMetadata::class;
 
+    case RemoveNonStandardAttributes = removeNonStandardAttributes::class;
+
+    case RemoveNonStandardTags = removeNonStandardTags::class;
+
     case RemoveTitleAndDesc = RemoveTitleAndDesc::class;
 
     case RemoveUnnecessaryWhitespace = RemoveUnnecessaryWhitespace::class;
@@ -134,6 +140,8 @@ enum Rule: string
             self::RemoveInkscapeFootprints->value => 'removeInkscapeFootprints',
             self::RemoveInvisibleCharacters->value => 'removeInvisibleCharacters',
             self::RemoveMetadata->value => 'removeMetadata',
+            self::RemoveNonStandardAttributes->value => 'removeNonStandardAttributes',
+            self::RemoveNonStandardTags->value => 'removeNonStandardTags',
             self::RemoveTitleAndDesc->value => 'removeTitleAndDesc',
             self::RemoveUnnecessaryWhitespace->value => 'removeUnnecessaryWhitespace',
             self::RemoveUnsafeElements->value => 'removeUnsafeElements',

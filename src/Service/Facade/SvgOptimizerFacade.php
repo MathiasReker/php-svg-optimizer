@@ -121,6 +121,8 @@ final readonly class SvgOptimizerFacade
      * @param bool $removeInkscapeFootprints        Whether to remove Inkscape-specific footprints
      * @param bool $removeInvisibleCharacters       Whether to remove invisible characters
      * @param bool $removeMetadata                  Whether to remove metadata elements from the SVG
+     * @param bool $removeNonStandardAttributes     Whether to remove non-standard attributes that are not widely supported in SVG
+     * @param bool $removeNonStandardTags           Whether to remove non-standard tags that are not part of the official SVG specification
      * @param bool $removeTitleAndDesc              Whether to remove the <title> and <desc> elements
      * @param bool $removeUnnecessaryWhitespace     Whether to remove unnecessary whitespace
      * @param bool $removeUnsafeElements            Whether to remove unsafe elements
@@ -154,6 +156,8 @@ final readonly class SvgOptimizerFacade
         bool $removeInkscapeFootprints = false,
         bool $removeInvisibleCharacters = false,
         bool $removeMetadata = false,
+        bool $removeNonStandardAttributes = false,
+        bool $removeNonStandardTags = false,
         bool $removeTitleAndDesc = false,
         bool $removeUnnecessaryWhitespace = false,
         bool $removeUnsafeElements = false,
@@ -185,6 +189,8 @@ final readonly class SvgOptimizerFacade
             Rule::RemoveInkscapeFootprints->value => $removeInkscapeFootprints,
             Rule::RemoveInvisibleCharacters->value => $removeInvisibleCharacters,
             Rule::RemoveMetadata->value => $removeMetadata,
+            Rule::RemoveNonStandardAttributes->value => $removeNonStandardAttributes,
+            Rule::RemoveNonStandardTags->value => $removeNonStandardTags,
             Rule::RemoveTitleAndDesc->value => $removeTitleAndDesc,
             Rule::RemoveUnnecessaryWhitespace->value => $removeUnnecessaryWhitespace,
             Rule::RemoveUnsafeElements->value => $removeUnsafeElements,

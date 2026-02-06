@@ -59,6 +59,14 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
     }
 
     /**
+     * Normalize a string by removing dashes and converting to lowercase.
+     */
+    private function normalizeName(string $name): string
+    {
+        return mb_strtolower(str_replace('-', '', $name));
+    }
+
+    /**
      * Normalize attribute names on a given node.
      *
      * @param array<string, string> $lookup
@@ -92,14 +100,6 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
                 $domElement->setAttribute($canonicalName, $value);
             }
         }
-    }
-
-    /**
-     * Normalize a string by removing dashes and converting to lowercase.
-     */
-    private function normalizeName(string $name): string
-    {
-        return mb_strtolower(str_replace('-', '', $name));
     }
 
     #[\Override]

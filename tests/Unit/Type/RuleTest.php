@@ -59,6 +59,8 @@ final class RuleTest extends TestCase
             Rule::RemoveInkscapeFootprints->name => 'removeInkscapeFootprints',
             Rule::RemoveInvisibleCharacters->name => 'removeInvisibleCharacters',
             Rule::RemoveMetadata->name => 'removeMetadata',
+            Rule::RemoveNonStandardAttributes->name => 'removeNonStandardAttributes',
+            Rule::RemoveNonStandardTags->name => 'removeNonStandardTags',
             Rule::RemoveTitleAndDesc->name => 'removeTitleAndDesc',
             Rule::RemoveUnnecessaryWhitespace->name => 'removeUnnecessaryWhitespace',
             Rule::RemoveUnsafeElements->name => 'removeUnsafeElements',

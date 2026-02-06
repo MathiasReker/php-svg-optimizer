@@ -88,13 +88,13 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
     "convertCssClassesToAttributes": true,
     "convertEmptyTagsToSelfClosing": true,
     "convertInlineStylesToAttributes": true,
-    "fixAttributeNames": true,
+    "fixAttributeNames": false,
     "flattenGroups": true,
     "minifySvgCoordinates": true,
     "minifyTransformations": true,
     "removeAriaAndRole": true,
     "removeComments": true,
-    "removeDataAttributes": true,
+    "removeDataAttributes": false,
     "removeDefaultAttributes": true,
     "removeDeprecatedAttributes": true,
     "removeDoctype": true,
@@ -102,10 +102,12 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
     "removeEmptyAttributes": true,
     "removeEmptyGroups": true,
     "removeEmptyTextElements": true,
-    "removeEnableBackgroundAttribute": true,
+    "removeEnableBackgroundAttribute": false,
     "removeInkscapeFootprints": true,
     "removeInvisibleCharacters": true,
     "removeMetadata": true,
+    "removeNonStandardAttributes": false,
+    "removeNonStandardTags": false,
     "removeTitleAndDesc": true,
     "removeUnnecessaryWhitespace": true,
     "removeUnsafeElements": false,
@@ -159,13 +161,13 @@ try {
             convertCssClassesToAttributes: true,
             convertEmptyTagsToSelfClosing: true,
             convertInlineStylesToAttributes: true,
-            fixAttributeNames: true,
+            fixAttributeNames: false,
             flattenGroups: true,
             minifySvgCoordinates: true,
             minifyTransformations: true,
             removeAriaAndRole: true,
             removeComments: true,
-            removeDataAttributes: true,
+            removeDataAttributes: false,
             removeDefaultAttributes: true,
             removeDeprecatedAttributes: true,
             removeDoctype: true,
@@ -173,10 +175,12 @@ try {
             removeEmptyAttributes: true,
             removeEmptyGroups: true,
             removeEmptyTextElements: true,
-            removeEnableBackgroundAttribute: true,
+            removeEnableBackgroundAttribute: false,
             removeInkscapeFootprints: true,
             removeInvisibleCharacters: true,
             removeMetadata: true,
+            removeNonStandardAttributes: false,
+            removeNonStandardTags: false,
             removeTitleAndDesc: true,
             removeUnnecessaryWhitespace: true,
             removeUnsafeElements: false,
@@ -296,8 +300,13 @@ use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 try {
     $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
         ->withRules(
-            removeWidthHeightAttributes: true,
+            fixAttributeNames: true,
+            removeDataAttributes: true,
+            removeEnableBackgroundAttribute: true,
+            removeNonStandardAttributes: true,
+            removeNonStandardTags: true,
             removeUnsafeElements: true,
+            removeWidthHeightAttributes: true,
         )
         ->allowRisky()
         ->optimize()
@@ -607,6 +616,28 @@ $svgOptimizer->removeMetadata();
 
 ---
 
+### `removeNonStandardAttributes` (**risky**)
+
+Removes SVG attributes that are non-standard, unsafe, or not part of the official SVG specification.
+This includes attributes not in the SvgAttribute enum, excluding safe prefixes like xml:, xlink:, or data-*.
+
+```php
+$svgOptimizer->removeNonStandardAttributes();
+```
+
+---
+
+### `removeNonStandardTags` (**risky**)
+
+Removes elements (tags) that are not part of the official SVG specification.
+This is useful for sanitizing SVGs that may contain editor-specific or foreign XML elements.
+
+```php
+$svgOptimizer->removeNonStandardTags();
+```
+
+---
+
 ### `removeTitleAndDesc`
 
 Removes `<title>` and `<desc>` elements. While these elements provide accessibility and descriptive information, they
@@ -697,7 +728,7 @@ $svgOptimizer->withRules(
     convertCssClassesToAttributes: true,
     convertEmptyTagsToSelfClosing: true,
     convertInlineStylesToAttributes: true,
-    fixAttributeNames: true,
+    fixAttributeNames: false,
     flattenGroups: true,
     minifySvgCoordinates: true,
     minifyTransformations: true,
@@ -710,10 +741,12 @@ $svgOptimizer->withRules(
     removeEmptyAttributes: true,
     removeEmptyGroups: true,
     removeEmptyTextElements: true,
-    removeEnableBackgroundAttribute: true,
+    removeEnableBackgroundAttribute: false,
     removeInkscapeFootprints: true,
     removeInvisibleCharacters: true,
     removeMetadata: true,
+    removeNonStandardAttributes: false,
+    removeNonStandardTags: false,
     removeTitleAndDesc: true,
     removeUnnecessaryWhitespace: true,
     removeUnsafeElements: false,
