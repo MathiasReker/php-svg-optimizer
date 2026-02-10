@@ -1,7 +1,7 @@
 parameters:
 	ignoreErrors:
 		-
-			rawMessage: 'Class cognitive complexity is 47, keep it under 40'
+			rawMessage: 'Class cognitive complexity is 56, keep it under 40'
 			identifier: complexity.classLike
 			count: 1
 			path: src/Service/Rule/RemoveUnsafeElements.php

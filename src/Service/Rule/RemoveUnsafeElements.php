@@ -50,7 +50,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * @see https://regex101.com/r/hp3GSh/1
      */
-    private const string DANGEROUS_PROTOCOLS_REGEX = '~^(?:javascript|data|file|http|https|//)~i';
+    private const string DANGEROUS_PROTOCOLS_REGEX = '~^(?:javascript|data|file|http|https|ftp|mailto|//)~i';
 
     /**
      * Regular expressions for detecting unsafe styles in SVG content.
@@ -244,6 +244,8 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function isExactDangerousAttribute(string $name, string $value): bool
     {
+        $value = $this->normalizeValue($value);
+
         return \in_array($name, SvgAttribute::dangerousExact(), true)
             && $this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX);
     }
@@ -286,7 +288,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             /** @var \DOMAttr $attribute */
             foreach (iterator_to_array($domElement->attributes, false) as $attribute) {
                 $name = $attribute->name;
-                $value = trim($attribute->value);
+                $value = $this->normalizeValue($attribute->value);
 
                 if ($this->isDangerousAttribute($name, $value)) {
                     $domElement->removeAttributeNode($attribute);
@@ -308,6 +310,8 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function isDangerousAttribute(string $name, string $value): bool
     {
+        $value = $this->normalizeValue($value);
+
         $nameLower = mb_strtolower($name);
 
         if ($this->hasDangerousPrefix($nameLower)) {
@@ -318,15 +322,45 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             return true;
         }
 
+        if ('values' === $nameLower && $this->isSmilValuesDangerous($value)) {
+            return true;
+        }
+
         if ($this->isUrlAttributeDangerous($nameLower, $value)) {
             return true;
         }
 
-        if (SvgAttribute::Style->value === $nameLower && $this->matchesPattern($value, self::STYLE_DANGEROUS_REGEX)) {
+        if (
+            SvgAttribute::Style->value === $nameLower
+            && $this->matchesPattern(
+                $this->normalizeValue($value),
+                self::STYLE_DANGEROUS_REGEX
+            )
+        ) {
             return true;
         }
 
         return SvgAttribute::Src->value === $nameLower && $this->matchesPattern($value, self::URI_PROTOCOL_REGEX);
+    }
+
+    /**
+     * Check if a SMIL 'values' attribute contains dangerous protocols.
+     *
+     * @param string $value The value of the 'values' attribute
+     *
+     * @return bool True if any semicolon-separated part contains a dangerous protocol
+     */
+    private function isSmilValuesDangerous(string $value): bool
+    {
+        $parts = explode(';', $value);
+
+        foreach ($parts as $part) {
+            if ($this->matchesPattern(trim($part), self::DANGEROUS_PROTOCOLS_REGEX)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -397,6 +431,61 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
                 $style->parentNode->removeChild($style);
             }
         }
+    }
+
+    /**
+     * Normalize a string value for safe SVG processing without ext-intl.
+     *
+     * Decode HTML entities repeatedly.
+     * Decode CSS hexadecimal escapes (e.g., \6a\61\76\61 → "javascript:").
+     * Remove control characters and NULL bytes.
+     * Remove homoglyph-looking characters commonly used in attacks.
+     * Collapse all whitespace and lowercase.
+     *
+     * @param string $value The input value to normalize
+     *
+     * @return string The normalized, lowercase string with safe formatting
+     */
+    private function normalizeValue(string $value): string
+    {
+        do {
+            $prev = $value;
+            $value = html_entity_decode($value, \ENT_QUOTES | \ENT_HTML5 | \ENT_XML1, 'UTF-8');
+        } while ($value !== $prev);
+
+        $value = preg_replace_callback('/\\\([0-9a-f]{2,6})/i', static function (array $match): string {
+            $code = (int) hexdec($match[1]);
+
+            return ($code > 0 && $code <= 0x10_FF_FF) ? mb_chr($code, 'UTF-8') : '';
+        }, $value);
+
+        $value = preg_replace('/[\x00-\x1F\x7F]+/u', '', (string) $value);
+
+        $value = $this->transliterateHomoglyphs((string) $value);
+
+        $value = preg_replace('/\s+/u', '', $value);
+
+        return mb_strtolower(trim((string) $value), 'UTF-8');
+    }
+
+    /**
+     * Replace dangerous homoglyphs with ASCII equivalents.
+     *
+     * Only maps letters/numbers commonly used to obfuscate protocols like javascript: or data:
+     */
+    private function transliterateHomoglyphs(string $value): string
+    {
+        $map = [
+            'Ａ' => 'A', 'Ｂ' => 'B', 'Ｃ' => 'C', 'Ｄ' => 'D', 'Ｅ' => 'E', 'Ｆ' => 'F', 'Ｇ' => 'G', 'Ｈ' => 'H', 'Ｉ' => 'I', 'Ｊ' => 'J',
+            'Ｋ' => 'K', 'Ｌ' => 'L', 'Ｍ' => 'M', 'Ｎ' => 'N', 'Ｏ' => 'O', 'Ｐ' => 'P', 'Ｑ' => 'Q', 'Ｒ' => 'R', 'Ｓ' => 'S', 'Ｔ' => 'T',
+            'Ｕ' => 'U', 'Ｖ' => 'V', 'Ｗ' => 'W', 'Ｘ' => 'X', 'Ｙ' => 'Y', 'Ｚ' => 'Z',
+            'ａ' => 'a', 'ｂ' => 'b', 'ｃ' => 'c', 'ｄ' => 'd', 'ｅ' => 'e', 'ｆ' => 'f', 'ｇ' => 'g', 'ｈ' => 'h', 'ｉ' => 'i', 'ｊ' => 'j',
+            'ｋ' => 'k', 'ｌ' => 'l', 'ｍ' => 'm', 'ｎ' => 'n', 'ｏ' => 'o', 'ｐ' => 'p', 'ｑ' => 'q', 'ｒ' => 'r', 'ｓ' => 's', 'ｔ' => 't',
+            'ｕ' => 'u', 'ｖ' => 'v', 'ｗ' => 'w', 'ｘ' => 'x', 'ｙ' => 'y', 'ｚ' => 'z',
+            '０' => '0', '１' => '1', '２' => '2', '３' => '3', '４' => '4', '５' => '5', '６' => '6', '７' => '7', '８' => '8', '９' => '9',
+        ];
+
+        return strtr($value, $map);
     }
 
     #[\Override]

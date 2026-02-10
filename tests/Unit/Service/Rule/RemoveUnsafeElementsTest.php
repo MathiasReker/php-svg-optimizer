@@ -52,7 +52,11 @@ final class RemoveUnsafeElementsTest extends TestCase
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
         $svgOptimizer->addRule(new RemoveUnsafeElements());
 
-        $actual = $svgOptimizer->allowRisky()->optimize()->getContent();
+        $actual = $svgOptimizer
+            ->allowRisky()
+            ->optimize()
+            ->getContent();
+
         self::assertSame($expectedSvg, $actual);
     }
 
@@ -742,6 +746,163 @@ final class RemoveUnsafeElementsTest extends TestCase
                 XML,
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes javascript split by whitespace and entities' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="j &#x61; v &#97; s &#99; r i p t : alert(1)">x</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes javascript mixed decimal and hex entities' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="&#106;&#x61;&#118;&#x61;&#115;&#99;&#114;&#105;&#112;&#x74;&#58;alert(1)">x</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes javascript with unicode homoglyphs' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="ｊａｖａｓｃｒｉｐｔ:alert(1)">x</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes javascript with random casing' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="JaVaScRiPt:alert(1)">x</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes entity-encoded javascript inside url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect fill="url(&#x6A;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3A;alert(1))"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes javascript in url() with whitespace and quotes' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect fill="url(  ' j a v a s c r i p t : alert(1) ' )"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes obfuscated javascript in SMIL begin attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <animate begin="&#x6A;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3A;alert(1)" dur="1s"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><animate dur="1s"/></svg>
+                XML,
+        ];
+
+        yield 'Removes javascript in style attribute with entity encoding' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="background:url(&#x6A;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3A;alert(1))"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes javascript split by newlines and tabs' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="java
+                script:alert(1)">x</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes javascript with mixed ASCII and fullwidth chars' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="jａvａｓcｒiｐt:alert(1)">x</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes javascript via CSS hex escapes' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="background:url(\6a\61\76\61\73\63\72\69\70\74:alert(1))"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes chained SMIL javascript via values' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <animate attributeName="x"
+                        values="0;javascript:alert(1);10"
+                        dur="1s"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><animate attributeName="x" dur="1s"/></svg>
+                XML,
+        ];
+
+        yield 'Removes protocol-relative URL with whitespace' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <image href="  //example.com/evil.svg  "/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes javascript in set element' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <set attributeName="href" to="javascript:alert(1)"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><set attributeName="href"/></svg>
                 XML,
         ];
     }

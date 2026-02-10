@@ -26,7 +26,7 @@
     },
     "require-dev": {
         "brainbits/phpstan-rules": "^4.0",
-        "ergebnis/composer-normalize": "^2.49",
+        "ergebnis/composer-normalize": "^2.50",
         "ergebnis/phpstan-rules": "^2.13",
         "friendsofphp/php-cs-fixer": "^3.93",
         "hiperdk/phpstan-rules": "^1.0",
@@ -45,7 +45,7 @@
         "rector/rector": "^2.3",
         "shipmonk/composer-dependency-analyser": "^1.8",
         "shipmonk/phpstan-rules": "^4.3",
-        "spaze/phpstan-disallowed-calls": "^4.7",
+        "spaze/phpstan-disallowed-calls": "^4.8",
         "squizlabs/php_codesniffer": "^4.0",
         "symfony/var-dumper": "^7.4",
         "symplify/phpstan-rules": "14.9",
@@ -106,8 +106,8 @@
         "analyze:rector": "@php vendor/bin/rector process --dry-run",
         "analyze:type-coverage": "@php vendor/bin/phpstan analyse --level=max --error-format=table",
         "analyze:validate": "@composer validate --strict",
-        "build:all": "@composer lint:all && @composer build:badges",
         "build:badges": "sh dev/scripts/badges.sh",
+        "build:baseline": "@php vendor/bin/phpstan --generate-baseline",
         "lint:all": [
             "@lint:normalize",
             "@composer lint:phpcbf & @composer lint:rector && @composer lint:php-cs-fixer"
