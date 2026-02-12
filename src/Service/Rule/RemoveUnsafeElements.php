@@ -111,6 +111,13 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private const string WHITESPACE_REGEX = '/\s+/u';
 
+    /**
+     * Regular expression for removing C-style comments.
+     *
+     * @see https://regex101.com/r/vUZENv/1
+     */
+    private const string C_STYLE_COMMENT_REGEX = '/\/\*.*?\*\//s';
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -188,16 +195,17 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function removeAllElementsByTagName(\DOMDocument $domDocument, string $tagName): void
     {
-        while (true) {
-            $nodes = $domDocument->getElementsByTagName($tagName);
-            if (0 === $nodes->length) {
-                break;
-            }
+        $domNodeList = $domDocument->getElementsByTagName('*');
+        $nodesToRemove = [];
 
-            $node = $nodes->item(0);
-            if ($node instanceof \DOMNode && $node->parentNode instanceof \DOMNode) {
-                $node->parentNode->removeChild($node);
+        foreach ($domNodeList as $node) {
+            if (0 === strcasecmp($node->tagName, $tagName)) {
+                $nodesToRemove[] = $node;
             }
+        }
+
+        foreach ($nodesToRemove as $nodeToRemove) {
+            $nodeToRemove->parentNode?->removeChild($nodeToRemove);
         }
     }
 
@@ -462,19 +470,21 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             $value = html_entity_decode($value, \ENT_QUOTES | \ENT_HTML5 | \ENT_XML1, SvgDefaults::XML_ENCODING);
         } while ($value !== $prev);
 
+        $value = preg_replace(self::C_STYLE_COMMENT_REGEX, '', $value) ?? $value;
+
         $value = preg_replace_callback(self::CSS_HEX_ESCAPE_REGEX, static function (array $match): string {
             $code = (int) hexdec($match[1]);
 
             return ($code > 0 && $code <= 0x10_FF_FF) ? mb_chr($code, SvgDefaults::XML_ENCODING) : '';
-        }, $value);
+        }, $value) ?? $value;
 
-        $value = preg_replace(self::CONTROL_CHARS_REGEX, '', (string) $value);
+        $value = preg_replace(self::CONTROL_CHARS_REGEX, '', $value) ?? $value;
 
-        $value = $this->transliterateHomoglyphs((string) $value);
+        $value = $this->transliterateHomoglyphs($value);
 
-        $value = preg_replace(self::WHITESPACE_REGEX, '', $value);
+        $value = preg_replace(self::WHITESPACE_REGEX, '', $value) ?? $value;
 
-        return mb_strtolower(trim((string) $value), SvgDefaults::XML_ENCODING);
+        return mb_strtolower(trim($value), SvgDefaults::XML_ENCODING);
     }
 
     /**

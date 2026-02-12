@@ -905,6 +905,124 @@ final class RemoveUnsafeElementsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><set attributeName="href"/></svg>
                 XML,
         ];
+
+        yield 'Removes javascript with comments' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="java/* comment */script:alert(1)">x</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes various on-event handlers' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect onfocus="alert(1)" onblur="alert(2)" onfocusin="alert(3)" onfocusout="alert(4)" onactivate="alert(5)" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes vbscript protocol' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="vbscript:alert(1)">x</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes tel and sms protocols' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="tel:1234567890">call</a>
+                    <a href="sms:1234567890">text</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes src attribute with javascript' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <script src="javascript:alert(1)"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes mailto protocol' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="mailto:test@example.com">email</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes dangerous tags inside style' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>
+                        @import url(http://example.com/style.css);
+                        s {
+                            background: "<script>alert(1)</script>";
+                        }
+                    </style>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes SMIL values with data URL' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <animate attributeName="fill"
+                        values="red;data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==;blue"
+                        dur="1s"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><animate attributeName="fill" dur="1s"/></svg>
+                XML,
+        ];
+
+        yield 'Removes uppercase SCRIPT tag' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <SCRIPT>alert('xss')</SCRIPT>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes src attribute with http' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <script src="http://example.com/script.js"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
     }
 
     #[Test]
