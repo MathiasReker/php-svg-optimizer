@@ -184,7 +184,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return true;
     }

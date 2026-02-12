@@ -171,5 +171,27 @@ final class RemoveNonStandardTagsTest extends TestCase
             '<svg><defs><foo><linearGradient id="g"/></foo></defs></svg>',
             '<svg><defs><linearGradient id="g"/></defs></svg>',
         ];
+
+        yield 'Removes mixed case unknown tag' => [
+            '<svg><UnKnOwN/></svg>',
+            '<svg/>',
+        ];
+
+        yield 'Removes tag with special characters' => [
+            '<svg><custom-tag_1.2/></svg>',
+            '<svg/>',
+        ];
+    }
+
+    #[Test]
+    public function ruleIsMarkedAsRisky(): void
+    {
+        self::assertFalse(removeNonStandardTags::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(removeNonStandardTags::shouldCheckSize());
     }
 }

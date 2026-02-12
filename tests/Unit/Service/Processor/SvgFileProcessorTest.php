@@ -17,14 +17,14 @@ use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\SvgFileProcessor;
 use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
-use PHPUnit\Framework\Attributes\CoversNothing;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[CoversNothing]
+#[CoversClass(SvgFileProcessor::class)]
 final class SvgFileProcessorTest extends TestCase
 {
     private string $tempDir;
@@ -34,6 +34,8 @@ final class SvgFileProcessorTest extends TestCase
     private OutputManager $outputManager;
 
     private MetaDataAggregator $metaDataAggregator;
+
+    private MemoryStream $memoryStream;
 
     /**
      * @throws \JsonException
@@ -109,10 +111,6 @@ final class SvgFileProcessorTest extends TestCase
     #[Test]
     public function processInvalidPathPrintsError(): void
     {
-        $memoryStream = new MemoryStream();
-        $outputManager = new OutputManager($memoryStream);
-        $metaDataAggregator = new MetaDataAggregator();
-
         $commandOptionsValueObject = new CommandOptionsValueObject(
             true,
             '',
@@ -122,13 +120,13 @@ final class SvgFileProcessorTest extends TestCase
 
         $svgFileProcessor = new SvgFileProcessor(
             $commandOptionsValueObject,
-            $outputManager,
-            $metaDataAggregator
+            $this->outputManager,
+            $this->metaDataAggregator
         );
 
         $svgFileProcessor->processPath($this->tempDir . '/nonexistent.svg');
 
-        $output = $memoryStream->getContent();
+        $output = $this->memoryStream->getContent();
         self::assertStringContainsString('is not a valid SVG file or directory', $output);
     }
 
@@ -161,6 +159,67 @@ final class SvgFileProcessorTest extends TestCase
     }
 
     /**
+     * @throws \JsonException
+     * @throws \LogicException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \RuntimeException
+     * @throws \ValueError
+     */
+    #[Test]
+    public function it_does_not_modify_file_on_dry_run(): void
+    {
+        $originalContent = file_get_contents($this->svgFile);
+
+        $commandOptionsValueObject = new CommandOptionsValueObject(
+            true,
+            '',
+            true,
+            true,
+        );
+
+        $svgFileProcessor = new SvgFileProcessor(
+            $commandOptionsValueObject,
+            $this->outputManager,
+            $this->metaDataAggregator
+        );
+
+        $svgFileProcessor->processPath($this->svgFile);
+
+        $this->assertSame($originalContent, file_get_contents($this->svgFile));
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \LogicException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \RuntimeException
+     * @throws \ValueError
+     */
+    #[Test]
+    public function it_uses_config_file(): void
+    {
+        $configFile = $this->tempDir . '/config.json';
+        file_put_contents($configFile, '{"removeComments": true}');
+
+        $commandOptionsValueObject = new CommandOptionsValueObject(
+            false,
+            $configFile,
+            false,
+            false,
+        );
+
+        $svgFileProcessor = new SvgFileProcessor(
+            $commandOptionsValueObject,
+            $this->outputManager,
+            $this->metaDataAggregator
+        );
+
+        $svgFileProcessor->processPath($this->svgFile);
+
+        $this->assertStringNotContainsString('<!--', (string) file_get_contents($this->svgFile));
+    }
+
+    /**
      * @throws \RuntimeException
      */
     #[\Override]
@@ -174,10 +233,11 @@ final class SvgFileProcessorTest extends TestCase
         $this->svgFile = $this->tempDir . '/test.svg';
         file_put_contents(
             $this->svgFile,
-            '<svg height="100" width="100"><circle cx="50" cy="50" r="40"></circle></svg>'
+            '<svg height="100" width="100"><!-- comment --><circle cx="50" cy="50" r="40"></circle></svg>'
         );
 
-        $this->outputManager = new OutputManager(new MemoryStream());
+        $this->memoryStream = new MemoryStream();
+        $this->outputManager = new OutputManager($this->memoryStream);
         $this->metaDataAggregator = new MetaDataAggregator();
     }
 

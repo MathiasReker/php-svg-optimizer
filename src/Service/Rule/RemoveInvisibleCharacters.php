@@ -55,7 +55,7 @@ final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor impl
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return false;
     }

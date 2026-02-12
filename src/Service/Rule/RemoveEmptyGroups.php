@@ -98,7 +98,7 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return true;
     }

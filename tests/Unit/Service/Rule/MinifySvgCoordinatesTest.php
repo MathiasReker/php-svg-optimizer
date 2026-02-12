@@ -276,5 +276,32 @@ final class MinifySvgCoordinatesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"/>
                 XML,
         ];
+
+        yield 'Empty d attribute' => [
+            '<svg><path d=""/></svg>',
+            '<svg><path d=""/></svg>',
+        ];
+
+        yield 'Empty points attribute' => [
+            '<svg><polyline points=""/></svg>',
+            '<svg><polyline points=""/></svg>',
+        ];
+
+        yield 'Attributes with units are not affected' => [
+            '<svg><rect x="10px" y="20pt" width="30%" height="40em"/></svg>',
+            '<svg><rect x="10px" y="20pt" width="30%" height="40em"/></svg>',
+        ];
+    }
+
+    #[Test]
+    public function ruleIsMarkedAsNotRisky(): void
+    {
+        self::assertFalse(MinifySvgCoordinates::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(MinifySvgCoordinates::shouldCheckSize());
     }
 }

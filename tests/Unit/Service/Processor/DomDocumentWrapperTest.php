@@ -154,6 +154,48 @@ final class DomDocumentWrapperTest extends TestCase
         $this->domDocumentWrapper->loadFromString($invalidXml);
     }
 
+    /**
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function saveToStringHandlesEmptyDomDocument(): void
+    {
+        $domDocument = new \DOMDocument();
+        $result = $this->domDocumentWrapper->saveToString($domDocument);
+        self::assertSame("<?xml version=\"1.0\"?>", $result);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function loadFromFileThrowsExceptionOnMalformedXml(): void
+    {
+        $filePath = __DIR__ . '/malformed.xml';
+        file_put_contents($filePath, '<root><unclosed>');
+
+        $this->expectException(XmlProcessingException::class);
+        $this->expectExceptionMessage('Failed to load DOMDocument.');
+
+        try {
+            $this->domDocumentWrapper->loadFromFile($filePath);
+        } finally {
+            unlink($filePath);
+        }
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function loadFromFileThrowsExceptionOnNonExistentFile(): void
+    {
+        $this->expectException(XmlProcessingException::class);
+        $this->expectExceptionMessage('Failed to load DOMDocument.');
+
+        $this->domDocumentWrapper->loadFromFile('/non/existent/file.xml');
+    }
+
     #[\Override]
     protected function setUp(): void
     {

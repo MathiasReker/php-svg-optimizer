@@ -221,7 +221,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return false;
     }

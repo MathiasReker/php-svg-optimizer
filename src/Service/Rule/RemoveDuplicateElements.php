@@ -115,7 +115,7 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return false;
     }

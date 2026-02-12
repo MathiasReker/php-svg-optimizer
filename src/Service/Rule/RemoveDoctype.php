@@ -44,7 +44,7 @@ final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOp
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return false;
     }

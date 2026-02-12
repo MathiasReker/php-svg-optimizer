@@ -79,7 +79,7 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return false;
     }

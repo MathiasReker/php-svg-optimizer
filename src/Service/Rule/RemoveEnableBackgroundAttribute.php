@@ -114,7 +114,7 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return false;
     }

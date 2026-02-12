@@ -44,7 +44,7 @@ final readonly class RemoveMetadata implements SvgOptimizerRuleInterface
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return false;
     }

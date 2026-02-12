@@ -40,5 +40,5 @@ interface SvgOptimizerRuleInterface
     /**
      * If true, SvgOptimizer will only keep the rule's effect if it reduces size.
      */
-    public function shouldCheckSize(): bool;
+    public static function shouldCheckSize(): bool;
 }

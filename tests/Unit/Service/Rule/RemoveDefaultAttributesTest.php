@@ -133,5 +133,20 @@ final class RemoveDefaultAttributesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></g></svg>
                 XML,
         ];
+
+        yield 'Empty SVG' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'SVG with no default attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="black"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="black"/></svg>',
+        ];
+
+        yield 'SVG with all default attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
     }
 }

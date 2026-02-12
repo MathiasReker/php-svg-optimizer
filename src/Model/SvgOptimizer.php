@@ -209,7 +209,7 @@ final class SvgOptimizer
 
             $rule->optimize($domDocument);
 
-            if ($rule->shouldCheckSize()) {
+            if ($rule::shouldCheckSize()) {
                 $newContent = $this->svgProvider->serialize($domDocument);
                 if (mb_strlen($newContent, '8bit') > mb_strlen($originalContent, '8bit')) {
                     $domDocument->loadXML($originalContent);

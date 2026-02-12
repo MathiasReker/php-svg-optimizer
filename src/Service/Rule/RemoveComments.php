@@ -56,7 +56,7 @@ final readonly class RemoveComments implements SvgOptimizerRuleInterface
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return false;
     }

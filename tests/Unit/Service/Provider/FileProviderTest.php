@@ -160,8 +160,8 @@ final class FileProviderTest extends TestCase
     /**
      * @throws XmlProcessingException
      * @throws FileNotFoundException
-     * @throws \InvalidArgumentException
      * @throws IOException
+     * @throws \InvalidArgumentException
      */
     #[Test]
     public function getMetaData(): void
@@ -330,6 +330,26 @@ final class FileProviderTest extends TestCase
         $this->expectException(\TypeError::class);
 
         $fileProvider->optimize(null);
+    }
+
+    /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function saveToFileThrowsIOException(): void
+    {
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg/>');
+        $fileProvider->optimize($domDocument);
+
+        $nonWritablePath = '/non/writable/path/output.svg';
+        $this->expectException(IOException::class);
+        $this->expectExceptionMessage('Failed to create directory for output file: ' . $nonWritablePath);
+
+        $fileProvider->saveToFile($nonWritablePath);
     }
 
     #[\Override]

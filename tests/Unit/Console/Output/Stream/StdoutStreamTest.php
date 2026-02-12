@@ -123,4 +123,26 @@ final class StdoutStreamTest extends TestCase
 
         self::assertFalse(\is_resource($resource), 'Stream should be closed after destruction');
     }
+
+    /**
+     * @throws \RuntimeException
+     * @throws \ReflectionException
+     */
+    #[Test]
+    public function destructDoesNotThrowOnClosedStream(): void
+    {
+        $stdoutStream = new StdoutStream();
+
+        $reflectionClass = new \ReflectionClass($stdoutStream);
+        $reflectionProperty = $reflectionClass->getProperty('stream');
+
+        $resource = $reflectionProperty->getValue($stdoutStream);
+        \assert(\is_resource($resource));
+
+        fclose($resource);
+
+        unset($stdoutStream);
+
+        $this->expectNotToPerformAssertions();
+    }
 }

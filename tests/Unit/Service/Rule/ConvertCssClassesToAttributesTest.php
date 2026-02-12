@@ -220,5 +220,44 @@ final class ConvertCssClassesToAttributesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><rect fill="#ABC" stroke="#DEF"/></svg>
                 XML,
         ];
+
+        yield 'Removes empty style tag' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style></style>
+                    <rect/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Keeps style tag with non-convertible rules' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>.a { font-size: 12px; }</style>
+                    <rect class="a"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><style>.a{font-size:12px}</style><rect class="a"/></svg>
+                XML,
+        ];
+
+        yield 'Handles multiple classes on one element' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>
+                        .a { fill: #f00; }
+                        .b { stroke: #00f; }
+                    </style>
+                    <rect class="a b"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect fill="#f00" stroke="#00f"/></svg>
+                XML,
+        ];
     }
 }

@@ -107,7 +107,7 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return true;
     }

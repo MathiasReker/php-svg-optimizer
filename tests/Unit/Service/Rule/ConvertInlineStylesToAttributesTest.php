@@ -226,5 +226,38 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><path stroke-width="2" stroke-opacity="0.7" fill-opacity="0.3"/></svg>
                 XML,
         ];
+
+        yield 'Handles empty style declaration' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="fill:;"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Handles style with only invalid properties' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="invalid-prop: 1; another-invalid: 2;"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect style="invalid-prop:1; another-invalid:2"/></svg>
+                XML,
+        ];
+
+        yield 'Handles style with no value' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="fill:"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
     }
 }

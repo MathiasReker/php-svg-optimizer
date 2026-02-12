@@ -37,7 +37,7 @@ final class MemoryStreamTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
-    public function writeAndGetContents(): void
+    public function writeAndgetContent(): void
     {
         $memoryStream = new MemoryStream();
         $memoryStream->write('Hello');
@@ -182,5 +182,16 @@ final class MemoryStreamTest extends TestCase
         $this->expectException(\Error::class);
 
         $memoryStream->getContent();
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function writelnAddsNewline(): void
+    {
+        $memoryStream = new MemoryStream();
+        $memoryStream->writeln('Test');
+        self::assertSame('Test' . \PHP_EOL, $memoryStream->getContent());
     }
 }

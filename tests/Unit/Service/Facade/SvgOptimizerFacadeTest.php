@@ -60,6 +60,7 @@ use PHPUnit\Framework\TestCase;
 final class SvgOptimizerFacadeTest extends TestCase
 {
     private string $sampleSvg;
+    private string $tempFilePath;
 
     /**
      * @throws SvgValidationException
@@ -120,7 +121,19 @@ final class SvgOptimizerFacadeTest extends TestCase
     public function withRulesConfiguresRules(): void
     {
         $svgOptimizerFacade = SvgOptimizerFacade::fromString($this->sampleSvg)
-            ->withRules(true, true, true);
+            ->withRules(
+                true,
+                true,
+                true,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                true,
+
+            );
 
         $svgOptimizerFacade->optimize();
 
@@ -295,9 +308,72 @@ final class SvgOptimizerFacadeTest extends TestCase
         unlink($file);
     }
 
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function withAllRulesEnablesAllNonRiskyRules(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg"><title>T</title><!-- c --></svg>';
+        $facade = SvgOptimizerFacade::fromString($svg)->withAllRules()->optimize();
+        $content = $facade->getContent();
+
+        self::assertStringNotContainsString('<!--', $content);
+        self::assertStringNotContainsString('<title>', $content);
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function getMetaDataReturnsCorrectData(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+        $facade = SvgOptimizerFacade::fromString($svg)->optimize();
+        $metaData = $facade->getMetaData();
+
+        self::assertGreaterThan(0, $metaData->getOriginalSize());
+        self::assertGreaterThan(0, $metaData->getOptimizedSize());
+        self::assertGreaterThanOrEqual(0, $metaData->getSavedBytes());
+        self::assertGreaterThanOrEqual(0, $metaData->getSavedPercentage());
+        self::assertGreaterThanOrEqual(0, $metaData->getOptimizationTime());
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function withRulesCanEnableSpecificRiskyRules(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"></svg>';
+        $facade = SvgOptimizerFacade::fromString($svg)
+            ->withRules(false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,)
+            ->allowRisky()
+            ->optimize();
+
+        $content = $facade->getContent();
+        self::assertStringNotContainsString('width="100"', $content);
+        self::assertStringNotContainsString('height="100"', $content);
+    }
+
     #[\Override]
     protected function setUp(): void
     {
-        $this->sampleSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><title>Test</title></svg>';
+        $this->sampleSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><title>Test</title><!-- comment --></svg>';
+        $this->tempFilePath = sys_get_temp_dir() . '/test_svg_file_' . uniqid() . '.svg';
+    }
+
+    #[\Override]
+    protected function tearDown(): void
+    {
+        if (file_exists($this->tempFilePath)) {
+            unlink($this->tempFilePath);
+        }
     }
 }

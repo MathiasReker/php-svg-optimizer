@@ -234,5 +234,20 @@ final class FixAttributeNamesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"/>',
         ];
+
+        yield 'Preserves xml:space attribute' => [
+            '<svg xml:space="preserve"><rect/></svg>',
+            '<svg xml:space="preserve"><rect/></svg>',
+        ];
+
+        yield 'Handles attributes with invalid characters (DOM handles this, but ensures no crash)' => [
+            '<svg><rect invalid-char="value"/></svg>',
+            '<svg><rect invalid-char="value"/></svg>',
+        ];
+
+        yield 'Preserves viewBox attribute casing' => [
+            '<svg viewBox="0 0 100 100"><rect/></svg>',
+            '<svg viewBox="0 0 100 100"><rect/></svg>',
+        ];
     }
 }

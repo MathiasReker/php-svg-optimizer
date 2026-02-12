@@ -240,7 +240,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return false;
     }

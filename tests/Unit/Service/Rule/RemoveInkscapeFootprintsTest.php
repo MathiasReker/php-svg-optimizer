@@ -260,5 +260,39 @@ final class RemoveInkscapeFootprintsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="100" y2="100"/></svg>
                 XML,
         ];
+
+        yield 'SVG with only Inkscape/Sodipodi namespaces' => [
+            <<<'XML'
+                <svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"/>
+                XML,
+            <<<'XML'
+                <svg/>
+                XML,
+        ];
+
+        yield 'SVG with Inkscape/Sodipodi elements and attributes, but no namespaces' => [
+            <<<'XML'
+                <svg>
+                    <g inkscape:groupmode="layer" sodipodi:role="layer">
+                        <rect inkscape:label="Rect" sodipodi:abswidth="100" width="100" height="100" fill="blue"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg><g inkscape:groupmode="layer" sodipodi:role="layer"><rect inkscape:label="Rect" sodipodi:abswidth="100" width="100" height="100" fill="blue"/></g></svg>
+                XML,
+        ];
+    }
+
+    #[Test]
+    public function ruleIsMarkedAsNotRisky(): void
+    {
+        self::assertFalse(RemoveInkscapeFootprints::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(RemoveInkscapeFootprints::shouldCheckSize());
     }
 }

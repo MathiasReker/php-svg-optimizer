@@ -114,7 +114,7 @@ final readonly class removeNonStandardAttributes implements SvgOptimizerRuleInte
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return false;
     }

@@ -59,7 +59,7 @@ final readonly class RemoveWidthHeightAttributes implements SvgOptimizerRuleInte
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return false;
     }

@@ -216,6 +216,26 @@ final class RemoveDeprecatedAttributesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle fill="red"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle fill="red"/></svg>',
         ];
+
+        yield 'Empty SVG' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'SVG with no deprecated attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'SVG with all deprecated attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" baseProfile="full" contentScriptType="text/ecmascript" contentStyleType="text/css" version="1.1" zoomAndPan="magnify"><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Replaces xml:lang with lang' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xml:lang="en"><text>Hello</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" lang="en"><text>Hello</text></svg>',
+        ];
     }
 
     /**

@@ -129,5 +129,22 @@ final class RemoveNonStandardAttributesTest extends TestCase
             '<svg foo="1"><g bar="2"><rect baz="3"/></g></svg>',
             '<svg><g><rect/></g></svg>',
         ];
+
+        yield 'Keeps attributes with mixed case if standard' => [
+            '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"><rect/></svg>',
+            '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"><rect/></svg>',
+        ];
+    }
+
+    #[Test]
+    public function ruleIsMarkedAsRisky(): void
+    {
+        self::assertFalse(removeNonStandardAttributes::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(removeNonStandardAttributes::shouldCheckSize());
     }
 }

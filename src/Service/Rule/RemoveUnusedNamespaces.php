@@ -126,7 +126,7 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     }
 
     #[\Override]
-    public function shouldCheckSize(): bool
+    public static function shouldCheckSize(): bool
     {
         return false;
     }

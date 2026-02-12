@@ -290,5 +290,50 @@ final class RemoveUnusedMasksTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="grad1"><stop offset="0%"/></linearGradient></defs><rect fill="url(#grad1)"/></svg>
                 XML,
         ];
+
+        yield 'Removes mask with no ID' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <defs><mask><rect/></mask></defs>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes mask with empty ID' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <defs><mask id=""><rect/></mask></defs>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes defs with only comments' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <defs><!-- comment --></defs>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+    }
+
+    #[Test]
+    public function ruleIsMarkedAsNotRisky(): void
+    {
+        self::assertFalse(RemoveUnusedMasks::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(RemoveUnusedMasks::shouldCheckSize());
     }
 }

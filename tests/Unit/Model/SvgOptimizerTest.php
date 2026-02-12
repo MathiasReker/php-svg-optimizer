@@ -50,7 +50,7 @@ final class SvgOptimizerTest extends TestCase
                 // no-op for test
             }
 
-            public function shouldCheckSize(): bool
+            public static function shouldCheckSize(): bool
             {
                 return false;
             }
@@ -78,7 +78,7 @@ final class SvgOptimizerTest extends TestCase
                 // no-op for test
             }
 
-            public function shouldCheckSize(): bool
+            public static function shouldCheckSize(): bool
             {
                 return false;
             }
@@ -247,7 +247,7 @@ final class SvgOptimizerTest extends TestCase
             {
             }
 
-            public function shouldCheckSize(): bool
+            public static function shouldCheckSize(): bool
             {
                 return false;
             }
@@ -263,7 +263,7 @@ final class SvgOptimizerTest extends TestCase
             {
             }
 
-            public function shouldCheckSize(): bool
+            public static function shouldCheckSize(): bool
             {
                 return false;
             }

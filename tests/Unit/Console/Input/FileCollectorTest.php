@@ -92,6 +92,18 @@ final class FileCollectorTest extends TestCase
         self::assertCount(1, $result);
     }
 
+    #[Test]
+    public function it_collects_files_with_different_extensions(): void
+    {
+        $txtFile = $this->tempDir . '/note.txt';
+        file_put_contents($txtFile, 'text');
+
+        $fileCollector = new FileCollector();
+        $result = $fileCollector->collectSvgFiles([$this->tempDir]);
+
+        self::assertCount(0, $result);
+    }
+
     #[\Override]
     protected function setUp(): void
     {
