@@ -943,10 +943,16 @@ Fix code style:
 composer lint:all
 ```
 
-Build:
+Build badges:
 
 ```bash
-composer build:all
+composer build:badges
+```
+
+Build baseline:
+
+```bash
+composer build:baseline
 ```
 
 ### License
