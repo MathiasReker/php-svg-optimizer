@@ -13,22 +13,13 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
+use MathiasReker\PhpSvgOptimizer\Support\SvgDefaults;
 
 /**
  * @no-named-arguments
  */
 final readonly class DomDocumentWrapper
 {
-    /**
-     * Default XML version used when saving the \DOMDocument.
-     */
-    private const string XML_VERSION = '1.0';
-
-    /**
-     * Default encoding used when saving the \DOMDocument.
-     */
-    private const string ENCODING = 'UTF-8';
-
     private const int LOAD_FLAGS =
         \LIBXML_NONET |
         \LIBXML_NOCDATA |
@@ -105,7 +96,7 @@ final readonly class DomDocumentWrapper
      */
     private function createDomDocument(): \DOMDocument
     {
-        $domDocument = new \DOMDocument(self::XML_VERSION, self::ENCODING);
+        $domDocument = new \DOMDocument(SvgDefaults::XML_VERSION, SvgDefaults::XML_ENCODING);
         $domDocument->formatOutput = false;
         $domDocument->preserveWhiteSpace = false;
 

@@ -20,6 +20,11 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
  */
 final readonly class FlattenGroups implements SvgOptimizerRuleInterface
 {
+    /**
+     * XPath query to select all group elements.
+     */
+    private const string XPATH_GROUP_ELEMENTS = '//svg:g';
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -27,13 +32,13 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Optimize the SVG document by flattening groups.
+     * Flattens nested SVG group elements (`<g>`).
      *
-     * This method processes all group elements in the SVG document, applying their attributes
-     * to their child elements and removing the group elements. It also combines transforms
-     * from the group and its children.
+     * This optimization rule merges the attributes of a group into its child
+     * elements and then removes the group, resulting in a flatter and more
+     * compact SVG structure.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -42,7 +47,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         $domXPath->registerNamespace(SvgNamespace::Svg->prefix(), SvgNamespace::Svg->value);
 
         /** @var \DOMNodeList<\DOMElement> $domElementList */
-        $domElementList = $domXPath->query('//svg:g');
+        $domElementList = $domXPath->query(self::XPATH_GROUP_ELEMENTS);
 
         foreach ($domElementList as $domElement) {
             $this->applyGroupAttributesToChildren($domElement);
@@ -51,9 +56,12 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Apply attributes from the group to its child elements.
+     * Applies the attributes of a group element to its direct children.
      *
-     * @param \DOMElement $domElement The group element whose attributes will be applied to its children
+     * This method iterates through the children of the given group element and
+     * applies the group's attributes to each child that is a `\DOMElement`.
+     *
+     * @param \DOMElement $domElement the group element
      */
     private function applyGroupAttributesToChildren(\DOMElement $domElement): void
     {
@@ -65,10 +73,13 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Apply attributes from the parent group to the child element.
+     * Applies the attributes of a parent element to a child element.
      *
-     * @param \DOMElement $parent The parent group element
-     * @param \DOMElement $child  The child element to which attributes will be applied
+     * This method iterates through the attributes of the parent element and
+     * applies each one to the child element.
+     *
+     * @param \DOMElement $parent the parent element
+     * @param \DOMElement $child  the child element
      */
     private function applyAttributesToChild(\DOMElement $parent, \DOMElement $child): void
     {
@@ -79,10 +90,10 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Set an attribute on the child element if it does not already exist.
+     * Sets an attribute on a DOM element if it is not already present.
      *
-     * @param \DOMElement $domElement The child element to set the attribute on
-     * @param \DOMAttr    $domAttr    The attribute to set
+     * @param \DOMElement $domElement the element to modify
+     * @param \DOMAttr    $domAttr    the attribute to set
      */
     private function setAttributeIfNotExists(\DOMElement $domElement, \DOMAttr $domAttr): void
     {
@@ -92,9 +103,12 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Flatten the group by moving its children to the parent node and removing the group.
+     * Flattens a group element by moving its children to its parent.
      *
-     * @param \DOMElement $domElement The group element to be flattened
+     * This method also applies the group's `transform` attribute to its children
+     * before removing the group.
+     *
+     * @param \DOMElement $domElement the group element to flatten
      */
     private function flattenGroup(\DOMElement $domElement): void
     {
@@ -110,7 +124,13 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Apply the combined transform from the group to each child element.
+     * Applies the transform of a group to its children.
+     *
+     * This method combines the group's transform with the transform of each
+     * child element.
+     *
+     * @param \DOMElement $domElement the group element
+     * @param string      $transform  the transform to apply
      */
     private function applyTransformsToChildren(\DOMElement $domElement, string $transform): void
     {
@@ -127,7 +147,15 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Combine two transform strings, returning the concatenated result only if necessary.
+     * Combines two transform strings.
+     *
+     * If the transforms are identical, it returns the original transform.
+     * Otherwise, it concatenates them.
+     *
+     * @param string $transform1 the first transform
+     * @param string $transform2 the second transform
+     *
+     * @return string the combined transform
      */
     private function combineTransforms(string $transform1, string $transform2): string
     {
@@ -139,7 +167,13 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Move all children of the group up to the parent node.
+     * Moves the children of a DOM element to its parent.
+     *
+     * This method inserts each child before the original element in the parent's
+     * child list.
+     *
+     * @param \DOMElement $domElement the element whose children to move
+     * @param \DOMElement $parentNode the parent element
      */
     private function moveChildrenUp(\DOMElement $domElement, \DOMElement $parentNode): void
     {

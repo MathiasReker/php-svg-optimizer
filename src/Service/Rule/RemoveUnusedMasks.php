@@ -27,9 +27,13 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Optimizes the SVG \DOMDocument by removing unused masks and empty <defs> elements.
+     * Removes unused `<mask>` elements and empty `<defs>` containers from the SVG.
      *
-     * @param \DOMDocument $domDocument the SVG DOM document to optimize
+     * This method first identifies and removes any `<mask>` element that is not
+     * referenced by a `mask` attribute elsewhere in the document. It then
+     * cleans up any `<defs>` element that has become empty as a result.
+     *
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -41,57 +45,62 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Removes <mask> elements that are not referenced anywhere in the SVG.
+     * Finds and removes `<mask>` elements that are not referenced.
      *
-     * @param \DOMDocument $domDocument the SVG DOM document
-     * @param \DOMXPath    $domXPath    XPath instance for querying the document
+     * It iterates through all `<mask>` elements. If a mask has no `id` or if its
+     * `id` is not used in any `mask` attribute, the mask element is removed.
+     *
+     * @param \DOMDocument $domDocument the DOM document to modify
+     * @param \DOMXPath    $domXPath    the XPath object for querying the document
      */
     private function removeUnusedMasks(\DOMDocument $domDocument, \DOMXPath $domXPath): void
     {
-        $masksToRemove = [];
+        $domNodeList = $domDocument->getElementsByTagName(SvgTag::Mask->value);
 
-        foreach ($domDocument->getElementsByTagName(SvgAttribute::Mask->value) as $domNodeList) {
-            $maskId = $domNodeList->getAttribute(SvgAttribute::Id->value);
-
-            if ('' === $maskId) {
-                $masksToRemove[] = $domNodeList;
+        for ($i = $domNodeList->length - 1; $i >= 0; --$i) {
+            $mask = $domNodeList->item($i);
+            if (!$mask instanceof \DOMElement) {
                 continue;
             }
 
-            /** @var \DOMNodeList<\DOMElement> $references */
-            $references = $domXPath->query(\sprintf('//*[contains(@' . SvgAttribute::Mask->value . ", 'url(#%s)')]", $maskId));
-            $isReferenced = $references->length > 0;
+            $maskId = $mask->getAttribute(SvgAttribute::Id->value);
 
-            if (!$isReferenced) {
-                $masksToRemove[] = $domNodeList;
+            if ('' === $maskId) {
+                $mask->parentNode?->removeChild($mask);
+                continue;
             }
-        }
 
-        foreach ($masksToRemove as $maskToRemove) {
-            $maskToRemove->parentNode?->removeChild($maskToRemove);
+            $query = \sprintf('//*[contains(@%s, "url(#%s)")]', SvgAttribute::Mask->value, $maskId);
+            $references = $domXPath->query($query);
+
+            if (false !== $references && 0 === $references->length) {
+                $mask->parentNode?->removeChild($mask);
+            }
         }
     }
 
     /**
-     * Removes empty <defs> elements from the SVG document.
+     * Removes `<defs>` elements that do not contain any child elements.
      *
-     * @param \DOMDocument $domDocument the SVG DOM document
+     * @param \DOMDocument $domDocument the DOM document to modify
      */
     private function removeEmptyDefs(\DOMDocument $domDocument): void
     {
-        foreach ($domDocument->getElementsByTagName(SvgTag::Defs->value) as $domNodeList) {
-            $hasChildren = false;
+        $domNodeList = $domDocument->getElementsByTagName(SvgTag::Defs->value);
 
-            foreach ($domNodeList->childNodes as $child) {
+        for ($i = $domNodeList->length - 1; $i >= 0; --$i) {
+            $def = $domNodeList->item($i);
+            if (!$def instanceof \DOMElement) {
+                continue;
+            }
+
+            foreach ($def->childNodes as $child) {
                 if ($child instanceof \DOMElement) {
-                    $hasChildren = true;
-                    break;
+                    continue 2;
                 }
             }
 
-            if (!$hasChildren) {
-                $domNodeList->parentNode?->removeChild($domNodeList);
-            }
+            $def->parentNode?->removeChild($def);
         }
     }
 

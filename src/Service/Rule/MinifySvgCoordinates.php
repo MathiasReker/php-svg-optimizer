@@ -21,47 +21,45 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
 {
     /**
-     * Regular expression pattern to remove unnecessary trailing zeroes in decimal numbers.
+     * This regex removes leading zeros from decimal values (e.g., 0.5 -> .5).
      *
-     * @see https://regex101.com/r/bQpK9Q/1
-     */
-    private const string TRAILING_ZEROES_REGEX = '/(\.\d*?)0+(\D|$)/';
-
-    /**
-     * Regular expression pattern to remove unnecessary decimal point if there are no digits after it.
-     *
-     * @see https://regex101.com/r/zEFuoB/1
-     */
-    private const string UNNECESSARY_DECIMAL_POINT_REGEX = '/(?<=\d)\.0+(\D|$)/';
-
-    /**
-     * Regular expression pattern to remove unnecessary trailing decimal point if there are no digits following it.
-     *
-     * @see https://regex101.com/r/XYoySI/1
-     */
-    private const string TRAILING_DECIMAL_POINT_REGEX = '/(?<=\d)\.(?=\D|$)/';
-
-    /**
-     * Regular expression pattern to remove the leading zero before a decimal point in numbers like 0.1.
-     *
-     * @see https://regex101.com/r/bLWJmu/1
+     * @see https://regex101.com/r/JVNlRF/1
      */
     private const string REMOVE_LEADING_ZERO_REGEX = '/(?<=^|\D)0(\.\d+)/';
 
     /**
-     * Regular expression pattern to replace a standalone decimal point "." with "0".
+     * This regex removes trailing zeros from decimal values (e.g., 1.230 -> 1.23).
      *
-     * @see https://regex101.com/r/CBS2bQ/1
+     * @see https://regex101.com/r/6XmnVQ/1
      */
-    private const string STANDALONE_DOT_REGEX = '/(?<=^|\s)\.(?=\s|$)/';
+    private const string REMOVE_TRAILING_ZEROS_REGEX = '/(\.\d*?)0+(\D|$)/';
 
     /**
-     * Mapping of SVG elements (XPath queries) to their attributes that should be minified.
+     * This regex removes decimal points that are not followed by a digit (e.g., 2. -> 2).
+     *
+     * @see https://regex101.com/r/HpT7H6/1
+     */
+    private const string REMOVE_TRAILING_DECIMAL_POINT_REGEX = '/(?<=\d)\.(?=\D|$)/';
+
+    /**
+     * This regex replaces standalone decimal points with 0.
+     *
+     * @see https://regex101.com/r/UH8ubo/1
+     */
+    private const string REPLACE_STANDALONE_DOT_REGEX = '/(?<=^|\s)\.(?=\s|$)/';
+
+    /**
+     * This regex removes decimal points that are followed by zeros only (e.g., 2.0 -> 2).
+     *
+     * @see https://regex101.com/r/zaCn7k/1
+     */
+    private const string REMOVE_DECIMAL_IF_ZERO_REGEX = '/(?<=\d)\.0+(\D|$)/';
+
+    /**
+     * Mapping of SVG elements to attributes to minify.
      */
     private const array ELEMENTS_TO_ATTRIBUTES = [
-        '//svg:path' => [
-            SvgAttribute::D->value,
-        ],
+        '//svg:path' => [SvgAttribute::D->value],
         '//svg:rect | //svg:circle | //svg:ellipse | //svg:line | //svg:polyline | //svg:polygon | //svg:svg' => [
             SvgAttribute::X->value,
             SvgAttribute::X1->value,
@@ -79,10 +77,7 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
             SvgAttribute::Points->value,
             SvgAttribute::D->value,
         ],
-        '//svg:svg' => [
-            SvgAttribute::ViewBox->value,
-            SvgAttribute::EnableBackground->value,
-        ],
+        '//svg:svg' => [SvgAttribute::ViewBox->value, SvgAttribute::EnableBackground->value],
     ];
 
     #[\Override]
@@ -92,15 +87,14 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Optimize the SVG document by minifying the coordinates of specific elements.
+     * Minifies numerical values in SVG coordinate and dimension attributes.
      *
-     * This method processes the following elements and their attributes:
-     * - `<path>` elements with `d` attribute
-     * - `<svg>`, `<rect>`, `<circle>`, `<ellipse>`, `<line>`, `<polyline>`, and `<polygon>` elements with coordinate attributes
+     * This method targets attributes like `d`, `points`, `x`, `y`, `width`,
+     * `height`, and `viewBox`, applying several regex-based optimizations to
+     * reduce the length of floating-point numbers (e.g., removing leading
+     * zeros, trailing zeros, and unnecessary decimal points).
      *
-     * It removes unnecessary trailing zeroes, decimal points, and trailing decimal points in coordinates.
-     *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -108,56 +102,56 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         $domXPath = new \DOMXPath($domDocument);
         $domXPath->registerNamespace(SvgNamespace::Svg->prefix(), SvgNamespace::Svg->value);
 
-        foreach (self::ELEMENTS_TO_ATTRIBUTES as $xPath => $attributes) {
-            $this->processNodes($domXPath, $xPath, $attributes);
+        foreach (self::ELEMENTS_TO_ATTRIBUTES as $query => $attributes) {
+            $this->minifyElements($domXPath, $query, $attributes);
         }
     }
 
     /**
-     * Query nodes for a given XPath and minify their attributes.
+     * Minifies the specified attributes on elements found by the given XPath query.
      *
-     * @param list<string> $attributes
+     * @param \DOMXPath    $domXPath   the XPath object for querying the document
+     * @param string       $query      the XPath query to find elements
+     * @param list<string> $attributes the attributes to minify on the found elements
      */
-    private function processNodes(\DOMXPath $domXPath, string $xpath, array $attributes): void
+    private function minifyElements(\DOMXPath $domXPath, string $query, array $attributes): void
     {
-        /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domXPath->query($xpath);
+        $nodes = $domXPath->query($query);
 
-        foreach ($domNodeList as $domElement) {
-            $this->minifyNodeAttributes($domElement, $attributes);
-        }
-    }
-
-    /**
-     * Minify specified attributes of a DOM element.
-     *
-     * @param list<string> $attributes
-     */
-    private function minifyNodeAttributes(\DOMNode $domNode, array $attributes): void
-    {
-        if (!$domNode instanceof \DOMElement) {
+        if (false === $nodes) {
             return;
         }
 
+        /** @var \DOMElement $node */
+        foreach ($nodes as $node) {
+            $this->minifyAttributesOnElement($node, $attributes);
+        }
+    }
+
+    /**
+     * Minifies the specified attributes on a single DOM element.
+     *
+     * @param \DOMElement  $domElement the element to process
+     * @param list<string> $attributes the attributes to minify on the element
+     */
+    private function minifyAttributesOnElement(\DOMElement $domElement, array $attributes): void
+    {
         foreach ($attributes as $attribute) {
-            if ($domNode->hasAttribute($attribute)) {
-                $domNode->setAttribute($attribute, $this->minifyCoordinates($domNode->getAttribute($attribute)));
+            if ($domElement->hasAttribute($attribute)) {
+                $domElement->setAttribute($attribute, $this->minifyCoordinates($domElement->getAttribute($attribute)));
             }
         }
     }
 
     /**
-     * Minify the coordinates of the given value by removing unnecessary formatting.
+     * Applies a series of minification techniques to a string of coordinates.
      *
-     * This method performs the following transformations:
-     * - Removes unnecessary trailing zeroes in decimal numbers.
-     * - Removes unnecessary decimal points if there are no digits following them.
-     * - Removes trailing decimal points if there are no digits following them.
-     * - Removes leading zero before the decimal point.
+     * This includes removing leading and trailing zeros from floating-point
+     * numbers and removing unnecessary decimal points.
      *
-     * @param string $value The value to minify
+     * @param string $value the string containing coordinates to minify
      *
-     * @return string The minified value
+     * @return string the minified coordinate string
      */
     private function minifyCoordinates(string $value): string
     {
@@ -165,47 +159,25 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
             return $value;
         }
 
-        if (str_contains($value, '.')) {
-            $value = $this->removeLeadingZero($value);
-        }
+        $value = preg_replace(
+            [
+                self::REMOVE_LEADING_ZERO_REGEX,
+                self::REMOVE_TRAILING_ZEROS_REGEX,
+                self::REMOVE_DECIMAL_IF_ZERO_REGEX,
+                self::REMOVE_TRAILING_DECIMAL_POINT_REGEX,
+                self::REPLACE_STANDALONE_DOT_REGEX,
+            ],
+            [
+                '$1',
+                '$1$2',
+                '$1',
+                '',
+                '0',
+            ],
+            $value
+        );
 
-        $value = $this->removeTrailingZeroes($value);
-        $value = $this->removeUnnecessaryDecimalPoint($value);
-        $value = $this->removeTrailingDecimalPoint($value);
-
-        return preg_replace(self::STANDALONE_DOT_REGEX, '0', $value) ?? $value;
-    }
-
-    /**
-     * Remove leading zero before a decimal point.
-     */
-    private function removeLeadingZero(string $value): string
-    {
-        return preg_replace(self::REMOVE_LEADING_ZERO_REGEX, '$1', $value) ?? $value;
-    }
-
-    /**
-     * Remove unnecessary trailing zeroes in decimal numbers.
-     */
-    private function removeTrailingZeroes(string $value): string
-    {
-        return preg_replace(self::TRAILING_ZEROES_REGEX, '$1$2', $value) ?? $value;
-    }
-
-    /**
-     * Remove unnecessary decimal point if there are no digits following it.
-     */
-    private function removeUnnecessaryDecimalPoint(string $value): string
-    {
-        return preg_replace(self::UNNECESSARY_DECIMAL_POINT_REGEX, '$1', $value) ?? $value;
-    }
-
-    /**
-     * Remove trailing decimal point if there are no digits following it.
-     */
-    private function removeTrailingDecimalPoint(string $value): string
-    {
-        return preg_replace(self::TRAILING_DECIMAL_POINT_REGEX, '', $value) ?? $value;
+        return $value ?? '';
     }
 
     #[\Override]

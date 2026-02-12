@@ -25,9 +25,12 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Optimize the SVG by removing duplicate elements.
+     * Removes duplicate elements from the SVG document.
      *
-     * @param \DOMDocument $domDocument the SVG DOM document to optimize
+     * An element is considered a duplicate if it has the same parent, tag name,
+     * and attributes as another element that has already been processed.
+     *
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -36,33 +39,32 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Removes duplicate elements from the DOM.
+     * Traverses the document and removes duplicate elements.
      *
-     * An element is considered a duplicate if it shares the same parent and
-     * has the same tag name and attributes as another element.
+     * It builds a signature for each element based on its parent, tag name, and
+     * attributes. If an identical signature is encountered again, the element
+     * is removed.
      *
-     * @param \DOMDocument $domDocument the \DOMDocument to process
+     * @param \DOMDocument $domDocument the DOM document to process
      */
     private function removeDuplicateElements(\DOMDocument $domDocument): void
     {
-        $domXPath = new \DOMXPath($domDocument);
-
-        /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domXPath->query('//*');
+        $elements = iterator_to_array($domDocument->getElementsByTagName('*'), true);
 
         $seen = [];
 
-        foreach ($domNodeList as $domElement) {
-            $this->normalizeAttributes($domElement);
+        foreach ($elements as $element) {
+            $this->normalizeAttributes($element);
 
-            $parent = $domElement->parentNode;
+            $parent = $element->parentNode;
             if (!$parent instanceof \DOMElement) {
                 continue;
             }
 
-            $key = spl_object_hash($parent) . '::' . $this->buildSignature($domElement);
+            $key = spl_object_hash($parent) . '::' . $this->buildSignature($element);
+
             if (\array_key_exists($key, $seen)) {
-                $parent->removeChild($domElement);
+                $parent->removeChild($element);
             } else {
                 $seen[$key] = true;
             }
@@ -70,9 +72,13 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Trims whitespace from all attributes of an element.
+     * Trims whitespace from the values of all attributes on a given element.
      *
-     * @param \DOMElement $domElement the element to normalize
+     * This ensures that attributes with functionally identical but textually
+     * different values (e.g., `class=" a "` vs. `class="a"`) are treated as
+     * the same for the purpose of duplicate detection.
+     *
+     * @param \DOMElement $domElement the element whose attributes to normalize
      */
     private function normalizeAttributes(\DOMElement $domElement): void
     {
@@ -85,13 +91,14 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Builds a deterministic signature string for a given element.
+     * Generates a unique signature for an element based on its tag name and attributes.
      *
-     * This signature is used to detect duplicate elements.
+     * The signature is created by sorting the attributes alphabetically and then
+     * JSON-encoding them, which provides a consistent and comparable representation.
      *
-     * @param \DOMElement $domElement the element for which to generate the signature
+     * @param \DOMElement $domElement the element to generate a signature for
      *
-     * @return string the signature representing the element's tag name and attributes
+     *                                -    * @return string The element's signature.                                +    * @return string The element's signature.
      */
     private function buildSignature(\DOMElement $domElement): string
     {

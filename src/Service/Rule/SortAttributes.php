@@ -42,12 +42,13 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Sort element attributes for better compression and optimization.
+     * Sorts the attributes of all elements in the SVG document.
      *
-     * This method iterates through all elements of the SVG document and sorts
-     * their attributes according to the predefined order.
+     * This can improve consistency and may have a minor positive impact on
+     * compression. The sorting order is predefined, with common attributes
+     * like `id`, `width`, and `height` appearing first.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -56,22 +57,20 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
         $domXPath->registerNamespace(SvgNamespace::Svg->prefix(), SvgNamespace::Svg->value);
         $domXPath->registerNamespace(SvgNamespace::Xlink->prefix(), SvgNamespace::Xlink->value);
 
-        /** @var \DOMNodeList<\DOMElement> $elements */
-        $elements = $domXPath->query('//*');
+        $domNodeList = $domDocument->getElementsByTagName('*');
 
-        foreach ($elements as $element) {
+        foreach ($domNodeList as $element) {
             $this->sortElementAttributes($element);
         }
     }
 
     /**
-     * Sort attributes of a given \DOMElement.
+     * Sorts the attributes of a single DOM element.
      *
-     * This method sorts the attributes of the \DOMElement by first prioritizing
-     * the attributes listed in `ATTRIBUTE_ORDER`, followed by sorting the
-     * remaining attributes alphabetically.
+     * The attributes are sorted according to a predefined order, and then
+     * alphabetically.
      *
-     * @param \DOMElement $domElement The \DOMElement whose attributes should be sorted
+     * @param \DOMElement $domElement the element whose attributes to sort
      */
     private function sortElementAttributes(\DOMElement $domElement): void
     {
@@ -89,15 +88,11 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Extract attributes from a \DOMElement.
+     * Extracts all attributes from a DOM element into an associative array.
      *
-     * This method retrieves all attributes from the given \DOMElement and returns
-     * them as an associative array where the keys are attribute names (local names only)
-     * and the values are the corresponding attribute values.
+     * @param \DOMElement $domElement the element to extract attributes from
      *
-     * @param \DOMElement $domElement The \DOMElement whose attributes are to be extracted
-     *
-     * @return array<string, string> The extracted attributes and their values
+     * @return array<string, string> a map of attribute names to their values
      */
     private function extractAttributes(\DOMElement $domElement): array
     {
@@ -114,15 +109,14 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Sort attributes based on predefined order and alphabetical order.
+     * Sorts an array of attributes.
      *
-     * This method first ensures that attributes listed in the `ATTRIBUTE_ORDER`
-     * array appear first in the sorted attributes. Then, the remaining attributes
-     * are sorted alphabetically by their name.
+     * The sorting is based on a predefined priority list, with the remaining
+     * attributes sorted alphabetically.
      *
-     * @param array<string, string> $attributes The attributes to be sorted
+     * @param array<string, string> $attributes the attributes to sort
      *
-     * @return array<string, string> The sorted attributes
+     * @return array<string, string> the sorted attributes
      */
     private function sortAttributes(array $attributes): array
     {

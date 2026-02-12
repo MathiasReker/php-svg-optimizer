@@ -1,6 +1,18 @@
 parameters:
 	ignoreErrors:
 		-
+			rawMessage: 'Cognitive complexity for "MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes::processCss()" is 11, keep it under 9'
+			identifier: complexity.functionLike
+			count: 1
+			path: src/Service/Rule/ConvertCssClassesToAttributes.php
+
+		-
+			rawMessage: 'Method MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes::parseDeclaration() has a nullable return type declaration.'
+			identifier: ergebnis.noNullableReturnTypeDeclaration
+			count: 1
+			path: src/Service/Rule/ConvertInlineStylesToAttributes.php
+
+		-
 			rawMessage: 'Class cognitive complexity is 56, keep it under 40'
 			identifier: complexity.classLike
 			count: 1

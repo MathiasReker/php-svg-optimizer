@@ -14,9 +14,10 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Support\SvgDefaults;
 
 /**
- * @no-named-argumentsy
+ * @no-named-arguments
  */
 final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 {
@@ -48,9 +49,10 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * This pattern matches protocols that are considered unsafe, such as javascript, data, file, http, https, and protocol-relative URLs.
      *
-     * @see https://regex101.com/r/hp3GSh/1
+     * @seehttps://regex101.com/r/bfijom/1
      */
-    private const string DANGEROUS_PROTOCOLS_REGEX = '~^(?:javascript|data|file|http|https|ftp|mailto|//)~i';
+    private const string DANGEROUS_PROTOCOLS_REGEX =
+        '~^\s*(?:(?:javascript|data|file|vbscript|http|https|mailto|ftp|tel|sms):|//)~i';
 
     /**
      * Regular expressions for detecting unsafe styles in SVG content.
@@ -88,6 +90,27 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private const string URL_PROTOCOL_OR_RELATIVE_REGEX = '~^(?:[a-z][a-z0-9+.-]*:|//)~i';
 
+    /**
+     * Regular expression for decoding CSS hexadecimal escapes (e.g. \6a\61\76\61).
+     *
+     * @see https://regex101.com/r/Wpra41/1
+     */
+    private const string CSS_HEX_ESCAPE_REGEX = '/\\\([0-9a-f]{2,6})/i';
+
+    /**
+     * Regular expression for removing control characters and DEL.
+     *
+     * @see https://regex101.com/r/hNSaol/1
+     */
+    private const string CONTROL_CHARS_REGEX = '/[\x00-\x1F\x7F]+/u';
+
+    /**
+     * Regular expression for collapsing whitespace.
+     *
+     * @see https://regex101.com/r/6DKmg3/1
+     */
+    private const string WHITESPACE_REGEX = '/\s+/u';
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -95,12 +118,13 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Optimize the SVG document by removing unsafe elements and attributes.
+     * Sanitizes the SVG document by removing potentially unsafe elements and attributes.
      *
-     * This method processes the SVG content to remove processing instructions, dangerous elements,
-     * and attributes that could lead to security vulnerabilities.
+     * This is a critical security rule that removes scripts, event handlers (e.g.,
+     * `onclick`), external references, and other constructs that could be
+     * exploited for cross-site scripting (XSS) attacks.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to sanitize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -112,12 +136,12 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove processing instructions that match specific criteria from the SVG document.
+     * Removes potentially harmful XML processing instructions.
      *
-     * This method iterates through the DOM nodes and removes any processing instructions
-     * that contain 'xml-stylesheet' in their name, which are considered unsafe.
+     * Specifically, this targets `<?xml-stylesheet ... ?>` instructions, which
+     * can be used to load external resources.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to clean
      */
     private function removeProcessingInstructions(\DOMDocument $domDocument): void
     {
@@ -131,7 +155,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove dangerous elements from the SVG document.
+     * Removes dangerous elements from the SVG document.
      *
      * This method removes elements that are always considered unsafe, as well as conditionally dangerous elements
      * based on their attributes. It ensures that the SVG content does not contain any potentially harmful elements.
@@ -145,12 +169,9 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove always dangerous tags from the SVG document.
+     * Removes tags that are always considered a security risk (e.g., `<script>`).
      *
-     * This method iterates through a predefined list of tags that are always considered unsafe
-     * and removes them from the SVG document.
-     *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to clean
      */
     private function removeAlwaysDangerousTags(\DOMDocument $domDocument): void
     {
@@ -160,12 +181,10 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove all elements with the specified tag name from the SVG document.
+     * Helper function to remove all elements with a given tag name.
      *
-     * This method iterates through all elements with the given tag name and removes them from their parent nodes.
-     *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
-     * @param string       $tagName     The name of the tag to remove from the SVG document
+     * @param \DOMDocument $domDocument the DOM document to modify
+     * @param string       $tagName     the name of the tag to remove
      */
     private function removeAllElementsByTagName(\DOMDocument $domDocument, string $tagName): void
     {
@@ -183,12 +202,12 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove conditionally dangerous tags from the SVG document.
+     * Removes tags that are dangerous only under certain conditions.
      *
-     * This method iterates through specific tags that may contain unsafe content and removes them
-     * if they contain attributes that are considered dangerous, such as href or xlink:href.
+     * For example, an `<a>` tag is removed if its `href` attribute points to a
+     * potentially malicious destination (e.g., using a `javascript:` URI).
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to clean
      */
     private function removeConditionallyDangerousTags(\DOMDocument $domDocument): void
     {
@@ -206,12 +225,9 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove a node if it contains dangerous attributes.
+     * Removes a DOM node if it contains dangerous attributes.
      *
-     * This method checks if the node is an element and has attributes that are considered unsafe.
-     * If it does, the node is removed from its parent.
-     *
-     * @param \DOMNode $domNode The DOM node to check and potentially remove
+     * @param \DOMNode $domNode the node to check
      */
     private function removeIfDangerous(\DOMNode $domNode): void
     {
@@ -233,14 +249,12 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Check if the attribute is an exact dangerous attribute based on its name and value.
+     * Checks if an attribute's value contains a dangerous protocol.
      *
-     * This method checks if the attribute name is in DANGEROUS_ATTRS_EXACT and if the value matches a specific URI protocol pattern.
+     * @param string $name  the attribute name
+     * @param string $value the attribute value
      *
-     * @param string $name  The name of the attribute to check
-     * @param string $value The value of the attribute to check
-     *
-     * @return bool True if the attribute is an exact dangerous attribute, false otherwise
+     * @return bool true if the attribute is considered dangerous
      */
     private function isExactDangerousAttribute(string $name, string $value): bool
     {
@@ -251,14 +265,12 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Check if the given value matches a specific pattern.
+     * Checks if a string matches a given regular expression pattern.
      *
-     * This method uses a regular expression to check if the value matches the provided pattern.
+     * @param string $value   the string to check
+     * @param string $pattern the regex pattern
      *
-     * @param string $value   The value to check
-     * @param string $pattern The regex pattern to match against
-     *
-     * @return bool True if the value matches the pattern, false otherwise
+     * @return bool true if the value matches the pattern
      */
     private function matchesPattern(string $value, string $pattern): bool
     {
@@ -266,19 +278,16 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove dangerous attributes from the SVG document.
+     * Removes dangerous attributes from all elements in the document.
      *
-     * This method iterates through all elements in the DOM and removes attributes that are considered unsafe
-     * based on their names or values, as defined in DANGEROUS_ATTRS_EXACT and DANGEROUS_ATTR_PREFIXES.
+     * This method iterates through every attribute of every element and removes
+     * it if it is determined to be dangerous by `isDangerousAttribute`.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to clean
      */
     private function removeDangerousAttributes(\DOMDocument $domDocument): void
     {
-        $domXPath = new \DOMXPath($domDocument);
-
-        /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domXPath->query('//*');
+        $domNodeList = $domDocument->getElementsByTagName('*');
 
         foreach ($domNodeList as $domElement) {
             if (!$domElement->hasAttributes()) {
@@ -298,57 +307,58 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Check if the attribute is dangerous based on its name and value.
+     * Determines if an attribute is dangerous.
      *
-     * This method checks if the attribute name starts with a dangerous prefix, matches an exact dangerous attribute,
-     * or contains unsafe content in its value.
+     * An attribute is considered dangerous if its name starts with "on" (e.g.,
+     * `onclick`), if it contains a dangerous protocol (e.g., `javascript:`),
+     * or if it's a `style` attribute with unsafe content.
      *
-     * @param string $name  The name of the attribute to check
-     * @param string $value The value of the attribute to check
+     * @param string $name  the attribute name
+     * @param string $value the attribute value
      *
-     * @return bool True if the attribute is considered dangerous, false otherwise
+     * @return bool true if the attribute is dangerous
      */
     private function isDangerousAttribute(string $name, string $value): bool
     {
+        $name = mb_strtolower($name);
+
+        if ($this->hasDangerousPrefix($name)) {
+            return true;
+        }
+
         $value = $this->normalizeValue($value);
 
-        $nameLower = mb_strtolower($name);
-
-        if ($this->hasDangerousPrefix($nameLower)) {
+        if ($this->isExactDangerousAttribute($name, $value)) {
             return true;
         }
 
-        if ($this->isExactDangerousAttribute($nameLower, $value)) {
+        if (SvgAttribute::Values->value === $name && $this->isSmilValuesDangerous($value)) {
             return true;
         }
 
-        if ('values' === $nameLower && $this->isSmilValuesDangerous($value)) {
-            return true;
-        }
-
-        if ($this->isUrlAttributeDangerous($nameLower, $value)) {
+        if ($this->isUrlAttributeDangerous($name, $value)) {
             return true;
         }
 
         if (
-            SvgAttribute::Style->value === $nameLower
-            && $this->matchesPattern(
-                $this->normalizeValue($value),
-                self::STYLE_DANGEROUS_REGEX
-            )
+            SvgAttribute::Style->value === $name
+            && $this->matchesPattern($value, self::STYLE_DANGEROUS_REGEX)
         ) {
             return true;
         }
 
-        return SvgAttribute::Src->value === $nameLower && $this->matchesPattern($value, self::URI_PROTOCOL_REGEX);
+        return SvgAttribute::Src->value === $name && $this->matchesPattern($value, self::URI_PROTOCOL_REGEX);
     }
 
     /**
-     * Check if a SMIL 'values' attribute contains dangerous protocols.
+     * Checks if a SMIL `values` attribute contains any dangerous protocols.
      *
-     * @param string $value The value of the 'values' attribute
+     * The `values` attribute can contain a semicolon-separated list of values,
+     * so each part must be checked.
      *
-     * @return bool True if any semicolon-separated part contains a dangerous protocol
+     * @param string $value the attribute value
+     *
+     * @return bool true if a dangerous protocol is found
      */
     private function isSmilValuesDangerous(string $value): bool
     {
@@ -364,11 +374,11 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Check if the attribute name starts with any of the dangerous prefixes.
+     * Checks if an attribute name has a dangerous prefix (e.g., "on").
      *
-     * @param string $name The name of the attribute to check
+     * @param string $name the attribute name
      *
-     * @return bool True if the attribute name starts with a dangerous prefix, false otherwise
+     * @return bool true if the prefix is dangerous
      */
     private function hasDangerousPrefix(string $name): bool
     {
@@ -382,14 +392,14 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Check if the attribute is a URL attribute that contains dangerous content.
+     * Checks if an attribute that can contain a URL has a dangerous value.
      *
-     * This method checks if the attribute name is in URL_ATTRIBUTES and if the value matches a specific URL pattern.
+     * This applies to attributes like `href` and `xlink:href`.
      *
-     * @param string $name  The name of the attribute to check
-     * @param string $value The value of the attribute to check
+     * @param string $name  the attribute name
+     * @param string $value the attribute value
      *
-     * @return bool True if the attribute is a dangerous URL attribute, false otherwise
+     * @return bool true if the URL is dangerous
      */
     private function isUrlAttributeDangerous(string $name, string $value): bool
     {
@@ -407,12 +417,12 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove style nodes that contain dangerous imports or expressions.
+     * Removes `<style>` elements that contain potentially unsafe content.
      *
-     * This method iterates through all style elements in the SVG document and removes those
-     * that contain unsafe patterns, such as @import statements or expressions that could lead to security vulnerabilities.
+     * This includes styles that use `@import` to load external CSS or contain
+     * other dangerous constructs.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to clean
      */
     private function removeStyleWithImport(\DOMDocument $domDocument): void
     {
@@ -434,44 +444,48 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Normalize a string value for safe SVG processing without ext-intl.
+     * Normalizes a string value for security analysis.
      *
-     * Decode HTML entities repeatedly.
-     * Decode CSS hexadecimal escapes (e.g., \6a\61\76\61 → "javascript:").
-     * Remove control characters and NULL bytes.
-     * Remove homoglyph-looking characters commonly used in attacks.
-     * Collapse all whitespace and lowercase.
+     * This method performs several steps to canonicalize the input string,
+     * making it harder to bypass security checks with obfuscation techniques.
+     * This includes decoding HTML entities, decoding CSS escapes, removing
+     * control characters, and transliterating homoglyphs.
      *
-     * @param string $value The input value to normalize
+     * @param string $value the input string
      *
-     * @return string The normalized, lowercase string with safe formatting
+     * @return string the normalized string
      */
     private function normalizeValue(string $value): string
     {
         do {
             $prev = $value;
-            $value = html_entity_decode($value, \ENT_QUOTES | \ENT_HTML5 | \ENT_XML1, 'UTF-8');
+            $value = html_entity_decode($value, \ENT_QUOTES | \ENT_HTML5 | \ENT_XML1, SvgDefaults::XML_ENCODING);
         } while ($value !== $prev);
 
-        $value = preg_replace_callback('/\\\([0-9a-f]{2,6})/i', static function (array $match): string {
+        $value = preg_replace_callback(self::CSS_HEX_ESCAPE_REGEX, static function (array $match): string {
             $code = (int) hexdec($match[1]);
 
-            return ($code > 0 && $code <= 0x10_FF_FF) ? mb_chr($code, 'UTF-8') : '';
+            return ($code > 0 && $code <= 0x10_FF_FF) ? mb_chr($code, SvgDefaults::XML_ENCODING) : '';
         }, $value);
 
-        $value = preg_replace('/[\x00-\x1F\x7F]+/u', '', (string) $value);
+        $value = preg_replace(self::CONTROL_CHARS_REGEX, '', (string) $value);
 
         $value = $this->transliterateHomoglyphs((string) $value);
 
-        $value = preg_replace('/\s+/u', '', $value);
+        $value = preg_replace(self::WHITESPACE_REGEX, '', $value);
 
-        return mb_strtolower(trim((string) $value), 'UTF-8');
+        return mb_strtolower(trim((string) $value), SvgDefaults::XML_ENCODING);
     }
 
     /**
-     * Replace dangerous homoglyphs with ASCII equivalents.
+     * Replaces characters that look like letters/numbers with their ASCII equivalents.
      *
-     * Only maps letters/numbers commonly used to obfuscate protocols like javascript: or data:
+     * This is used to counter obfuscation attempts where an attacker might use
+     * full-width characters or other homoglyphs to disguise malicious code.
+     *
+     * @param string $value the input string
+     *
+     * @return string the transliterated string
      */
     private function transliterateHomoglyphs(string $value): string
     {

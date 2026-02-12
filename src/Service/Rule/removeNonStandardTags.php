@@ -25,12 +25,20 @@ final readonly class removeNonStandardTags implements SvgOptimizerRuleInterface
         return false;
     }
 
+    /**
+     * Removes non-standard tags from the SVG document, moving their children up.
+     *
+     * This method identifies any element whose tag name is not part of the
+     * standard SVG specification (as defined in `SvgTag`). It then removes the
+     * non-standard tag but preserves its child nodes by moving them to the
+     * parent of the removed tag.
+     *
+     * @param \DOMDocument $domDocument the DOM document to optimize
+     */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $domXPath = new \DOMXPath($domDocument);
-        /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domXPath->query('//*');
+        $domNodeList = $domDocument->getElementsByTagName('*');
 
         $allowed = $this->getAllowedTagLookup();
 
@@ -40,7 +48,7 @@ final readonly class removeNonStandardTags implements SvgOptimizerRuleInterface
             $normalized = $this->normalizeName($element->tagName);
 
             if (\array_key_exists($normalized, $allowed)) {
-                continue; // standard tag, skip
+                continue;
             }
 
             $parent = $element->parentNode;
@@ -57,11 +65,11 @@ final readonly class removeNonStandardTags implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Build a lookup table of allowed SVG tag names.
+     * Creates a lookup table of allowed, normalized SVG tag names.
      *
-     * Pseudo-tags (values starting with `#`) are ignored.
+     * This is used for efficient checking of whether a tag is standard.
      *
-     * @return array<string, true> A lookup map of normalized SVG tag names
+     * @return array<string, true> a map where keys are normalized tag names
      */
     private function getAllowedTagLookup(): array
     {
@@ -79,16 +87,13 @@ final readonly class removeNonStandardTags implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Normalize an SVG tag name for comparison.
+     * Normalizes a tag name for case-insensitive and namespace-agnostic comparison.
      *
-     * - Namespace prefixes are stripped (e.g. `svg:rect` → `rect`)
-     * - The resulting name is lowercased for case-insensitive matching
+     * For example, `svg:rect` becomes `rect`.
      *
-     * Note: This method does NOT validate namespace URIs.
+     * @param string $name the tag name to normalize
      *
-     * @param string $name The raw tag name from the DOM
-     *
-     * @return string The normalized tag name
+     * @return string the normalized tag name
      */
     private function normalizeName(string $name): string
     {

@@ -15,29 +15,27 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 
-/**
- * @no-named-arguments
- */
 final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
     /**
-     * Regex pattern for converting empty tags to self-closing tags without space before the slash.
-     *
-     * This regex matches any tag that is empty (e.g., <rect></rect>) and converts it to a self-closing tag (<rect/>).
+     * Matches empty tags like `<rect></rect>` for conversion to self-closing tags.
      *
      * @see https://regex101.com/r/HolZXY/1
      */
-    private const string EMPTY_TAG_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*?)\s*><\/\1>/';
+    private const string EMPTY_TAG_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)>\s*<\/\1>/';
 
     /**
-     * Regex pattern for removing space before the slash in self-closing tags.
-     *
-     * This regex matches self-closing tags with a space before the slash and removes the space.
+     * Matches self-closing tags with spaces before the slash (e.g., `<rect />`) to remove the space.
      *
      * @see https://regex101.com/r/Le1XFu/1
      */
-    private const string SELF_CLOSING_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*?)\s*\/>/';
+    private const string SELF_CLOSING_SPACE_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)\s+\/>/';
 
+    /**
+     * Indicates whether this rule is risky.
+     *
+     * @return bool False, as this rule is safe
+     */
     #[\Override]
     public static function isRisky(): bool
     {
@@ -45,11 +43,14 @@ final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor 
     }
 
     /**
-     * Convert empty tags to self-closing tags in the SVG document.
+     * Converts empty tags to their self-closing form (e.g., `<tag></tag>` to `<tag/>`).
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * This rule also cleans up self-closing tags by removing any space before
+     * the closing slash (e.g., `<tag />` to `<tag/>`), further reducing file size.
      *
-     * @throws XmlProcessingException When XML content cannot be saved or loaded
+     * @param \DOMDocument $domDocument the DOM document to optimize
+     *
+     * @throws XmlProcessingException if the XML content cannot be processed
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -64,25 +65,16 @@ final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor 
     }
 
     /**
-     * Convert empty tags to self-closing tags and remove spaces before slashes in self-closing tags.
+     * Applies regex transformations to convert empty tags and clean up self-closing tags.
      *
-     * This method processes the SVG content and converts tags with no content or child nodes
-     * into self-closing tags (e.g., <rect/> instead of <rect></rect>) and ensures there's no space
-     * before the slash in self-closing tags (e.g., <rect/> instead of <rect />).
+     * @param string $content the raw SVG content
      *
-     * @param string $content The SVG content to process
-     *
-     * @return string The processed SVG content with empty tags converted to self-closing tags
+     * @return string the modified SVG content
      */
     private function convertEmptyTagsToSelfClosing(string $content): string
     {
-        return array_reduce(
-            [
-                self::EMPTY_TAG_REGEX,
-                self::SELF_CLOSING_REGEX,
-            ],
-            static fn (string $carry, string $pattern): string => preg_replace($pattern, '<$1$2/>', $carry) ?? $carry,
-            $content
-        );
+        $content = preg_replace(self::EMPTY_TAG_REGEX, '<$1$2/>', $content) ?? $content;
+
+        return preg_replace(self::SELF_CLOSING_SPACE_REGEX, '<$1$2/>', $content) ?? $content;
     }
 }

@@ -37,21 +37,6 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
      */
     private const string HEX_REGEX = '/^#([a-fA-F0-9]{3,6})$/';
 
-    /**
-     * Minimum valid value for RGB components.
-     */
-    private const int MIN_RGB_VALUE = 0;
-
-    /**
-     * Maximum valid value for RGB components.
-     */
-    private const int MAX_RGB_VALUE = 255;
-
-    /**
-     * Constant for bitwise shift when converting RGB to shorthand HEX.
-     */
-    private const int BITWISE_SHIFT = 4;
-
     #[\Override]
     public static function isRisky(): bool
     {
@@ -59,203 +44,101 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Convert RGB color values to shorthand HEX colors if possible.
+     * Converts color values to a more compact hexadecimal format.
      *
-     * This method processes the SVG document to find and convert RGB colors to HEX format.
+     * This rule processes all elements in the SVG, converting `rgb()` color
+     * values to their hexadecimal equivalents (e.g., `#RRGGBB`). It also
+     * shortens them where possible (e.g., `#RGB`) and normalizes existing
+     * hex values to lowercase. This is applied to both color attributes and
+     * inline `style` properties.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $domXPath = new \DOMXPath($domDocument);
-
         $colorAttributes = SvgAttribute::colors();
+        $domNodeList = $domDocument->getElementsByTagName('*');
 
-        /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domXPath->query(
-            \sprintf(
-                '//*[%s]',
-                implode(
-                    ' or ',
-                    array_map(
-                        static fn (string $domElement): string => \sprintf('contains(@style, "%s")', $domElement),
-                        $colorAttributes
-                    )
-                )
-            )
+        foreach ($domNodeList as $element) {
+            if ($element->hasAttribute(SvgAttribute::Style->value)) {
+                $style = $element->getAttribute(SvgAttribute::Style->value);
+                $style = $this->processStyle($style, $colorAttributes);
+                $element->setAttribute(SvgAttribute::Style->value, $style);
+            }
+
+            foreach ($colorAttributes as $colorAttribute) {
+                if (!$element->hasAttribute($colorAttribute)) {
+                    continue;
+                }
+
+                $value = trim($element->getAttribute($colorAttribute));
+                $element->setAttribute($colorAttribute, $this->convertColorValue($value));
+            }
+        }
+    }
+
+    /**
+     * Converts a single color value to its hexadecimal representation.
+     *
+     * This method handles `rgb()` values, converting them to `#RRGGBB` or `#RGB`
+     * format. It also normalizes existing hexadecimal colors to lowercase.
+     * Other color formats are returned unchanged.
+     *
+     * @param string $value the color value to convert
+     *
+     * @return string the converted hexadecimal color or the original value
+     */
+    private function convertColorValue(string $value): string
+    {
+        if (1 === preg_match(self::RGB_REGEX, $value, $matches)) {
+            [$r, $g, $b] = array_map(intval(...), \array_slice($matches, 1));
+
+            if ($r < 0 || $r > 255 || $g < 0 || $g > 255 || $b < 0 || $b > 255) {
+                return $value;
+            }
+
+            $hex = \sprintf('#%02x%02x%02x', $r, $g, $b);
+
+            if ($hex[1] === $hex[2] && $hex[3] === $hex[4] && $hex[5] === $hex[6]) {
+                return \sprintf('#%1x%1x%1x', $r >> 4, $g >> 4, $b >> 4);
+            }
+
+            return $hex;
+        }
+
+        if (1 === preg_match(self::HEX_REGEX, $value)) {
+            return mb_strtolower($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Processes a `style` attribute string to convert color values.
+     *
+     * This method finds color-related properties within the style string and
+     * applies the `convertColorValue` transformation to their values.
+     *
+     * @param string       $style           the inline style string
+     * @param list<string> $colorAttributes a list of color-related CSS properties
+     *
+     * @return string the processed style string with converted colors
+     */
+    private function processStyle(string $style, array $colorAttributes): string
+    {
+        $attributes = array_map(
+            static fn (string $a): string => preg_quote($a, '/'),
+            $colorAttributes
         );
 
-        $this->processStyleAttributes($domNodeList);
+        $pattern = '/\b(' . implode('|', $attributes) . ')\s*:\s*([^;]+)/i';
 
-        foreach ($colorAttributes as $colorAttribute) {
-            /** @var \DOMNodeList<\DOMElement> $domNodeList */
-            $domNodeList = $domXPath->query('//@' . $colorAttribute);
-
-            $this->processNodeList($domNodeList);
-        }
-    }
-
-    /**
-     * Process style attributes containing color values.
-     *
-     * This method processes the style attributes of the given \DOMNodeList to find and convert RGB colors to HEX format.
-     *
-     * @param \DOMNodeList<\DOMElement> $domNodeList The \DOMNodeList instance containing the nodes to be processed
-     */
-    private function processStyleAttributes(\DOMNodeList $domNodeList): void
-    {
-        foreach ($domNodeList as $domElement) {
-            $styleValue = $domElement->getAttribute(SvgAttribute::Style->value);
-            $styleValue = $this->processColorAttributesInStyle($styleValue);
-
-            $styleValue = preg_replace_callback(
-                self::HEX_REGEX,
-                static fn (array $matches): string => mb_strtolower($matches[0]),
-                $styleValue
-            );
-
-            if (\is_string($styleValue)) {
-                $domElement->setAttribute(SvgAttribute::Style->value, $styleValue);
-            }
-        }
-    }
-
-    /**
-     * Process color attributes in style values.
-     *
-     * This method processes the given style value to find and convert RGB colors to HEX format.
-     *
-     * @param string $styleValue The style value to process
-     *
-     * @return string The processed style value
-     */
-    private function processColorAttributesInStyle(string $styleValue): string
-    {
-        foreach (SvgAttribute::colors() as $attribute) {
-            $pattern = \sprintf('/\b%s\s*:\s*([^;]+)/i', preg_quote($attribute, '/'));
-
-            $styleValue = preg_replace_callback(
-                $pattern,
-                function (array $matches): string {
-                    $colorValue = trim($matches[1]);
-
-                    if ($this->isRgbColor($colorValue)) {
-                        return str_replace($colorValue, $this->convertRgbToHex($colorValue), $matches[0]);
-                    }
-
-                    if ($this->isHexColor($colorValue)) {
-                        return str_replace($colorValue, mb_strtolower($colorValue), $matches[0]);
-                    }
-
-                    return $matches[0];
-                },
-                $styleValue
-            ) ?? $styleValue;
-        }
-
-        return $styleValue;
-    }
-
-    /**
-     * Check if the given value is an RGB color.
-     *
-     * This method checks if the given value is an RGB color in the format rgb(R, G, B).
-     *
-     * @param string $value The value to check
-     *
-     * @return bool True if the value is an RGB color, false otherwise
-     */
-    private function isRgbColor(string $value): bool
-    {
-        return 1 === preg_match(self::RGB_REGEX, $value);
-    }
-
-    /**
-     * Convert RGB color values to HEX format.
-     *
-     * This method converts the given RGB color value to HEX format.
-     *
-     * @param string $rgbValue The RGB color value to convert
-     *
-     * @return string The converted HEX color value
-     */
-    private function convertRgbToHex(string $rgbValue): string
-    {
-        preg_match(self::RGB_REGEX, $rgbValue, $matches);
-        [$r, $g, $b] = array_map(intval(...), \array_slice($matches, 1));
-
-        if (!$this->isValidRgbValue($r) || !$this->isValidRgbValue($g) || !$this->isValidRgbValue($b)) {
-            return $rgbValue;
-        }
-
-        $hex = \sprintf('#%02x%02x%02x', $r, $g, $b);
-
-        return $this->canBeShortened($hex)
-            ? \sprintf('#%1x%1x%1x', $r >> self::BITWISE_SHIFT, $g >> self::BITWISE_SHIFT, $b >> self::BITWISE_SHIFT)
-            : mb_strtolower($hex);
-    }
-
-    /**
-     * Check if the given value is a valid RGB component.
-     *
-     * This method checks if the given value is a valid RGB component (0-255).
-     *
-     * @param int $value The value to check
-     *
-     * @return bool True if the value is a valid RGB component, false otherwise
-     */
-    private function isValidRgbValue(int $value): bool
-    {
-        return $value >= self::MIN_RGB_VALUE && $value <= self::MAX_RGB_VALUE;
-    }
-
-    /**
-     * Check if the given HEX color value can be shortened.
-     *
-     * This method checks if the given HEX color value can be shortened to shorthand format.
-     *
-     * @param string $hex The HEX color value to check
-     *
-     * @return bool True if the HEX color value can be shortened, false otherwise
-     */
-    private function canBeShortened(string $hex): bool
-    {
-        return $hex[1] === $hex[2] && $hex[3] === $hex[4] && $hex[5] === $hex[6];
-    }
-
-    /**
-     * Check if the given value is a HEX color.
-     *
-     * This method checks if the given value is a HEX color in the format #RRGGBB.
-     *
-     * @param string $value The value to check
-     *
-     * @return bool True if the value is a HEX color, false otherwise
-     */
-    private function isHexColor(string $value): bool
-    {
-        return 1 === preg_match(self::HEX_REGEX, $value);
-    }
-
-    /**
-     * Process nodes containing color values.
-     *
-     * This method processes the given \DOMNodeList to find and convert RGB colors to HEX format.
-     *
-     * @param \DOMNodeList<\DOMElement> $domNodeList The \DOMNodeList instance containing the nodes to be processed
-     */
-    private function processNodeList(\DOMNodeList $domNodeList): void
-    {
-        foreach ($domNodeList as $domElement) {
-            $value = trim((string) $domElement->nodeValue);
-
-            if ($this->isRgbColor($value)) {
-                $domElement->nodeValue = $this->convertRgbToHex($value);
-            } elseif ($this->isHexColor($value)) {
-                $domElement->nodeValue = mb_strtolower($value);
-            }
-        }
+        return preg_replace_callback(
+            $pattern,
+            fn (array $m): string => $m[1] . ':' . $this->convertColorValue(trim($m[2])),
+            $style
+        ) ?? $style;
     }
 
     #[\Override]

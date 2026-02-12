@@ -37,11 +37,16 @@ final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor impl
     }
 
     /**
-     * Remove invisible characters from the SVG document.
+     * Removes invisible characters from the SVG document.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * This method targets various non-printing characters, such as zero-width
+     * spaces and soft hyphens, that may be present in the SVG content as HTML
+     * entities. Removing them can reduce file size without affecting the visual
+     * rendering.
      *
-     * @throws XmlProcessingException When XML content cannot be saved or loaded
+     * @param \DOMDocument $domDocument the DOM document to optimize
+     *
+     * @throws XmlProcessingException if the XML content cannot be processed
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -56,11 +61,11 @@ final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor impl
     }
 
     /**
-     * Remove invisible characters from the SVG content.
+     * Applies a regular expression to remove invisible characters from the SVG content.
      *
-     * @param string $content The SVG content to process
+     * @param string $content the raw SVG content
      *
-     * @return string The processed SVG content with invisible characters removed
+     * @return string the cleaned SVG content
      */
     private function removeInvisibleCharacters(string $content): string
     {

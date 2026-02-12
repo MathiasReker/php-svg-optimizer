@@ -21,8 +21,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
 {
     /**
-     * List of deprecated SVG attributes that should be removed from the document.
-     * These attributes are no longer recommended for use in modern SVGs.
+     * Deprecated attributes to remove.
      */
     private const array ATTRIBUTES_TO_REMOVE = [
         SvgAttribute::BaseProfile->value,
@@ -64,14 +63,14 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     }
 
     /**
-     * Optimizes the given SVG document by removing deprecated attributes and replacing
-     * outdated attributes with their modern equivalents.
+     * Removes deprecated attributes and replaces outdated ones with modern equivalents.
      *
-     * This method also removes the `xlink` namespace, which is no longer needed in recent
-     * versions of SVG.
+     * This rule performs two main actions:
+     * 1. Replaces attributes like `xlink:href` with the modern `href`.
+     * 2. Removes a list of attributes that are deprecated or no longer in use
+     *    in modern SVG specifications.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized.
-     *                                  The SVG will be modified in-place.
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -85,45 +84,35 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     }
 
     /**
-     * Replaces specific attributes in the SVG document with their modern equivalents.
+     * Replaces specified deprecated attributes with their modern counterparts.
      *
-     * This method scans the document for the deprecated attributes listed in `$attributes`
-     * and replaces them with the new names, but only if the new attribute's value is not
-     * already set to the same value.
-     *
-     * @param \DOMXPath             $domXPath   The \DOMXPath instance used to query the SVG elements
-     * @param array<string, string> $attributes An associative array where the key is the old attribute
-     *                                          and the value is the new attribute name
+     * @param \DOMXPath             $domXPath   the XPath object for querying the document
+     * @param array<string, string> $attributes a map of old attribute names to new attribute names
      */
     private function replaceAttributes(\DOMXPath $domXPath, array $attributes): void
     {
         foreach ($attributes as $oldName => $newName) {
-            /** @var \DOMNodeList<\DOMElement> $domNodeList */
-            $domNodeList = $domXPath->query(\sprintf('//*[@%s]', $oldName));
+            /** @var \DOMNodeList<\DOMElement> $elements */
+            $elements = $domXPath->query('//*[@' . $oldName . ']');
 
-            foreach ($domNodeList as $domElement) {
-                if (!$domElement->hasAttribute($oldName)) {
-                    continue;
+            foreach ($elements as $element) {
+                $value = $element->getAttribute($oldName);
+
+                if (!$element->hasAttribute($newName) || $element->getAttribute($newName) !== $value) {
+                    $element->setAttribute($newName, $value);
                 }
 
-                $value = $domElement->getAttribute($oldName);
-
-                if (!$domElement->hasAttribute($newName) || $domElement->getAttribute($newName) !== $value) {
-                    $domElement->setAttribute($newName, $value);
-                }
-
-                $domElement->removeAttribute($oldName);
+                $element->removeAttribute($oldName);
             }
         }
     }
 
     /**
-     * Removes the `xlink` namespace from the root SVG element.
+     * Removes the `xmlns:xlink` namespace declaration from the root `<svg>` element.
      *
-     * The `xlink` namespace is no longer required for modern SVGs, so this method
-     * removes it if it exists in the document.
+     * This is typically done after `xlink:` attributes have been replaced.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG to be optimized
+     * @param \DOMDocument $domDocument the DOM document to modify
      */
     private function removeNamespaceFromSvgTags(\DOMDocument $domDocument): void
     {
@@ -135,26 +124,26 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     }
 
     /**
-     * Removes specific deprecated attributes from the SVG document.
+     * Removes a list of specified deprecated attributes from all elements.
      *
-     * This method removes the attributes listed in `ATTRIBUTES_TO_REMOVE` from all
-     * SVG elements in the document.
-     *
-     * @param \DOMXPath    $domXPath   The \DOMXPath instance used to query the SVG elements
-     * @param list<string> $attributes An associative array where the key is the attribute
+     * @param \DOMXPath    $domXPath   the XPath object for querying the document
+     * @param list<string> $attributes a list of attribute names to remove
      */
     private function removeAttributes(\DOMXPath $domXPath, array $attributes): void
     {
-        foreach ($attributes as $attribute) {
-            /** @var \DOMNodeList<\DOMElement> $domNodeList */
-            $domNodeList = $domXPath->query(\sprintf('//*[@%s]', $attribute));
+        if ([] === $attributes) {
+            return;
+        }
 
-            foreach ($domNodeList as $domElement) {
-                if (!$domElement->hasAttribute($attribute)) {
-                    continue;
+        $query = implode(' | ', array_map(static fn (string $attr): string => '//*[@' . $attr . ']', $attributes));
+        /** @var \DOMNodeList<\DOMElement> $elements */
+        $elements = $domXPath->query($query);
+
+        foreach ($elements as $element) {
+            foreach ($attributes as $attribute) {
+                if ($element->hasAttribute($attribute)) {
+                    $element->removeAttribute($attribute);
                 }
-
-                $domElement->removeAttribute($attribute);
             }
         }
     }

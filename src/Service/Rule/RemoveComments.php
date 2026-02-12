@@ -18,6 +18,11 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
  */
 final readonly class RemoveComments implements SvgOptimizerRuleInterface
 {
+    /**
+     * XPath query to select all comment nodes.
+     */
+    private const string XPATH_COMMENT_NODES = '//comment()';
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -25,12 +30,13 @@ final readonly class RemoveComments implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove all comments from the SVG document.
+     * Removes all comments from the SVG document, except for legal or license comments.
      *
-     * This method locates all comment nodes in the SVG document and removes them.
-     * It uses XPath to query for comment nodes and then removes each one from its parent node.
+     * This method uses an XPath query to find all comment nodes and then iterates
+     * through them, removing each one unless it is identified as a legal or
+     * license comment (typically starting with an exclamation mark).
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -38,7 +44,7 @@ final readonly class RemoveComments implements SvgOptimizerRuleInterface
         $domXPath = new \DOMXPath($domDocument);
 
         /** @var \DOMNodeList<\DOMComment> $domNodeList */
-        $domNodeList = $domXPath->query('//comment()');
+        $domNodeList = $domXPath->query(self::XPATH_COMMENT_NODES);
 
         foreach ($domNodeList as $domComment) {
             if (str_starts_with((string) $domComment->nodeValue, '!')) {

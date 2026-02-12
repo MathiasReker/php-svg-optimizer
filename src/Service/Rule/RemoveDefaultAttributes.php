@@ -20,10 +20,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterface
 {
     /**
-     * Default attributes to be removed from the SVG document.
-     *
-     * This array contains attributes and their default values. If an attribute
-     * is present in an SVG element with its default value, it will be removed.
+     * Default attributes to remove if they have these values.
      */
     private const array DEFAULT_SVG_ATTRIBUTES = [
         SvgAttribute::Stroke->value => 'none',
@@ -33,6 +30,11 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
         SvgAttribute::StrokeMiterlimit->value => '4',
     ];
 
+    /**
+     * XPath query to select all attributes.
+     */
+    private const string XPATH_ALL_ATTRIBUTES = '//@*';
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -40,12 +42,14 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Remove default attributes from the SVG document.
+     * Removes attributes from SVG elements if their values are set to the
+     * default for that attribute.
      *
-     * This method iterates through the predefined default attributes and removes them
-     * from the SVG document if their values match the default values specified.
+     * For example, it will remove `stroke="none"` or `stroke-width="1"` because
+     * these are the default rendering values. This helps to reduce file size
+     * without affecting the visual output.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -53,13 +57,22 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
         $domXPath = new \DOMXPath($domDocument);
 
         foreach (self::DEFAULT_SVG_ATTRIBUTES as $attribute => $defaultValue) {
-            /** @var \DOMNodeList<\DOMAttr> $domNodeList */
-            $domNodeList = $domXPath->query('//@' . $attribute);
+            /** @var \DOMNodeList<\DOMAttr> $attributes */
+            $attributes = $domXPath->query(self::XPATH_ALL_ATTRIBUTES);
 
-            foreach ($domNodeList as $domAttr) {
-                $parentNode = $domAttr->ownerElement;
-                if ($parentNode instanceof \DOMElement && $domAttr->value === $defaultValue) {
-                    $parentNode->removeAttribute($attribute);
+            /** @var \DOMAttr $attr */
+            foreach ($attributes as $attr) {
+                if ($attr->name !== $attribute) {
+                    continue;
+                }
+
+                $element = $attr->ownerElement;
+                if (null === $element) {
+                    continue;
+                }
+
+                if ($attr->value === $defaultValue) {
+                    $element->removeAttribute($attribute);
                 }
             }
         }

@@ -26,9 +26,13 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Optimize the SVG by removing empty <g> elements recursively.
+     * Removes empty group (`<g>`) elements from the SVG document.
      *
-     * @param \DOMDocument $domDocument the SVG DOM document to optimize
+     * This method recursively traverses the DOM and removes any `<g>` element
+     * that has no attributes and contains no meaningful content (i.e., no
+     * child elements, non-whitespace text, or comments).
+     *
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -39,55 +43,32 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Recursively remove empty <g> elements from the DOM.
+     * Recursively traverses a DOM element and removes empty group elements.
      *
-     * Traverses the DOM tree in reverse order to safely remove nodes while iterating.
-     *
-     * @param \DOMNode $domNode the node to traverse
+     * @param \DOMElement $domElement the element to process
      */
-    private function removeEmptyGroupsRecursive(\DOMNode $domNode): void
+    private function removeEmptyGroupsRecursive(\DOMElement $domElement): void
     {
-        if (!$domNode->hasChildNodes()) {
-            return;
-        }
+        $children = iterator_to_array($domElement->childNodes, true);
 
-        for ($i = $domNode->childNodes->length - 1; $i >= 0; --$i) {
-            $child = $domNode->childNodes->item($i);
-            if (null === $child) {
-                continue;
-            }
-
+        foreach ($children as $child) {
             if (!$child instanceof \DOMElement) {
-                $this->removeEmptyGroupsRecursive($child);
                 continue;
             }
 
-            if (SvgTag::G->value === $child->tagName) {
-                $this->removeEmptyGroupsRecursive($child);
-                $this->removeGroupIfEmpty($child);
-            } else {
-                $this->removeEmptyGroupsRecursive($child);
+            $this->removeEmptyGroupsRecursive($child);
+
+            if ($child->tagName === SvgTag::G->value && $this->isEmptyGroup($child)) {
+                $child->parentNode?->removeChild($child);
             }
         }
     }
 
     /**
-     * Remove a group element if it is empty.
+     * Determines if a group element is effectively empty.
      *
-     * @param \DOMElement $domElement the <g> element to check and possibly remove
-     */
-    private function removeGroupIfEmpty(\DOMElement $domElement): void
-    {
-        if ($this->isEmptyGroup($domElement)) {
-            $domElement->parentNode?->removeChild($domElement);
-        }
-    }
-
-    /**
-     * Determines if a <g> element is empty.
-     *
-     * An empty group has no attributes and contains only empty text nodes
-     * or whitespace. Comments do not prevent removal.
+     * A group is considered empty if it has no attributes and no child nodes
+     * that are elements, non-whitespace text, or comments.
      *
      * @param \DOMElement $domElement the group element to check
      *
@@ -100,9 +81,15 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
         }
 
         foreach ($domElement->childNodes as $child) {
-            if ($child instanceof \DOMElement
-                || ($child instanceof \DOMText && '' !== trim($child->wholeText))
-                || $child instanceof \DOMComment) {
+            if ($child instanceof \DOMElement) {
+                return false;
+            }
+
+            if ($child instanceof \DOMText && '' !== trim($child->wholeText)) {
+                return false;
+            }
+
+            if ($child instanceof \DOMComment) {
                 return false;
             }
         }

@@ -93,6 +93,11 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
      */
     private const string MATRIX_IDENTITY_REGEX = '/\bmatrix\(\s*1(?:e[+-]?\d+)?\s+0(?:e[+-]?\d+)?\s+0(?:e[+-]?\d+)?\s+1(?:e[+-]?\d+)?\s+0(?:e[+-]?\d+)?\s+0(?:e[+-]?\d+)?\s*\)/i';
 
+    /**
+     * XPath query to select all elements with a transform attribute.
+     */
+    private const string XPATH_TRANSFORM_ATTRIBUTES = '//*[@transform]';
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -100,9 +105,15 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Optimize the SVG document by minifying all transform attributes.
+     * Minifies `transform` attributes on all applicable SVG elements.
      *
-     * @param \DOMDocument $domDocument The SVG document to optimize
+     * This rule applies several optimizations:
+     * - Converts percentage values to decimals.
+     * - Removes identity transformations (e.g., `translate(0)`, `scale(1)`).
+     * - Normalizes whitespace and commas.
+     * - Removes the `transform` attribute entirely if it becomes empty.
+     *
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -110,7 +121,7 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
         $domXPath = new \DOMXPath($domDocument);
 
         /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domXPath->query('//*[@transform]');
+        $domNodeList = $domXPath->query(self::XPATH_TRANSFORM_ATTRIBUTES);
 
         foreach ($domNodeList as $domElement) {
             $transform = $domElement->getAttribute(SvgAttribute::Transform->value);
@@ -130,11 +141,11 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Convert percentage values in the transform attribute to decimal numbers.
+     * Converts percentage values within a transform string to their decimal equivalents.
      *
-     * @param string $transform The transform attribute string
+     * @param string $transform the transform attribute value
      *
-     * @return string The transform string with percentages converted
+     * @return string the modified transform string
      */
     private function convertPercentagesToNumbers(string $transform): string
     {
@@ -146,11 +157,14 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove identity transformations such as translate(0), scale(1), rotate(0), skewX(0), skewY(0).
+     * Removes identity transformations from a transform string.
      *
-     * @param string $transform The transform attribute string
+     * This includes `translate(0)`, `scale(1)`, `rotate(0)`, `skewX(0)`,
+     * `skewY(0)`, and the identity matrix.
      *
-     * @return string The transform string without identity transformations
+     * @param string $transform the transform attribute value
+     *
+     * @return string the modified transform string
      */
     private function removeIdentityTransforms(string $transform): string
     {
@@ -169,11 +183,13 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Normalize whitespace and commas by collapsing multiple spaces and removing redundant commas.
+     * Normalizes whitespace and commas in a transform string.
      *
-     * @param string $transform The transform attribute string
+     * Collapses multiple spaces into one and standardizes the spacing around commas.
      *
-     * @return string The normalized transform string
+     * @param string $transform the transform attribute value
+     *
+     * @return string the normalized transform string
      */
     private function normalizeSpacesAndCommas(string $transform): string
     {
@@ -183,11 +199,14 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Determine whether the transform string is empty or equivalent to zero.
+     * Checks if a transform string is effectively empty.
      *
-     * @param string $transform The transform attribute string
+     * A transform is considered empty if it contains only whitespace, commas,
+     * or semicolons.
      *
-     * @return bool True if the transform should be considered empty and removed
+     * @param string $transform the transform attribute value
+     *
+     * @return bool true if the transform is empty
      */
     private function isEmptyTransform(string $transform): bool
     {

@@ -28,7 +28,7 @@
         "brainbits/phpstan-rules": "^4.0",
         "ergebnis/composer-normalize": "^2.50",
         "ergebnis/phpstan-rules": "^2.13",
-        "friendsofphp/php-cs-fixer": "^3.93",
+        "friendsofphp/php-cs-fixer": "^3.94",
         "hiperdk/phpstan-rules": "^1.0",
         "kubawerlos/php-cs-fixer-custom-fixers": "^3.36",
         "marc-mabe/php-enum-phpstan": "^3.0",

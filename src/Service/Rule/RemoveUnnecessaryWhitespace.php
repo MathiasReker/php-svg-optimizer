@@ -22,32 +22,16 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
     /**
-     * Regex pattern for matching attribute values.
+     * This regex matches attribute-value pairs, capturing the attribute name and its value.
      *
-     * This regex captures attributes and their values, allowing whitespace
-     * to be removed within the values.
-     *
-     * @see https://regex101.com/r/6oZWnx/1
+     * @see https://regex101.com/r/3p3eY3/1
      */
-    private const string ATTRIBUTE_VALUE_REGEX = '/(\S+)=\s*"([^"]*)"/';
+    private const string ATTRIBUTE_REGEX = '/(\S+)\s*=\s*"([^"]*)"/';
 
     /**
-     * Regex pattern for matching style attribute values.
+     * This regex matches one or more whitespace characters.
      *
-     * This regex captures style attributes and their values, allowing
-     * whitespace to be removed within the style values.
-     *
-     * @see https://regex101.com/r/JFLCQm/1
-     */
-    private const string STYLE_ATTRIBUTE_REGEX = '/style\s*=\s*"([^"]*)"/';
-
-    /**
-     * Regex pattern for matching whitespace characters.
-     *
-     * This regex is used to find and replace multiple whitespace characters
-     * within attribute values.
-     *
-     * @see https://regex101.com/r/pxX489/1
+     * @see https://regex101.com/r/OuyK7V/1
      */
     private const string WHITESPACE_REGEX = '/\s+/';
 
@@ -58,68 +42,39 @@ final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor im
     }
 
     /**
-     * Remove unnecessary whitespace from the SVG document.
+     * Removes unnecessary whitespace from attribute values.
      *
-     * This method saves the current SVG content, processes it to remove
-     * unnecessary whitespace, and then reloads the optimized content back
-     * into the \DOMDocument.
+     * This method processes the raw SVG content to normalize whitespace within
+     * attribute values. For `style` attributes, all whitespace is removed. For
+     * other attributes, consecutive whitespace characters are collapsed into a
+     * single space.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to optimize
      *
-     * @throws XmlProcessingException When XML content cannot be saved or loaded
+     * @throws XmlProcessingException if the XML content cannot be processed
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
         $this->process(
             $domDocument,
-            static fn (string $content): string => self::removeStyleAttributeWhitespace(self::removeAttributeValueWhitespace($content))
+            static fn (string $content): string => preg_replace_callback(
+                self::ATTRIBUTE_REGEX,
+                static function (array $matches): string {
+                    $name = $matches[1];
+                    $value = $matches[2];
+
+                    if (SvgAttribute::Style->value === $name) {
+                        $value = rtrim(str_replace(' ', '', $value), ';');
+                    } else {
+                        $value = preg_replace(self::WHITESPACE_REGEX, ' ', trim($value));
+                    }
+
+                    return \sprintf('%s="%s"', $name, $value);
+                },
+                $content
+            ) ?? $content
         );
-    }
-
-    /**
-     * Remove all whitespace inside style attribute values.
-     *
-     * This method processes the SVG content to remove all whitespace within
-     * style attribute values, which helps to compact the style definitions.
-     *
-     * @param string $content The SVG content to process
-     *
-     * @return string The processed SVG content with whitespace removed from style attributes
-     */
-    private static function removeStyleAttributeWhitespace(string $content): string
-    {
-        return preg_replace_callback(
-            self::STYLE_ATTRIBUTE_REGEX,
-            static fn (array $matches): string => \sprintf(
-                SvgAttribute::Style->value . '="%s"',
-                rtrim(str_replace(' ', '', $matches[1]), ';')
-            ),
-            $content
-        ) ?? $content;
-    }
-
-    /**
-     * Remove unnecessary whitespace inside attribute values.
-     *
-     * This method processes the SVG content to trim and reduce whitespace
-     * within attribute values.
-     *
-     * @param string $content The SVG content to process
-     *
-     * @return string The processed SVG content with reduced whitespace in attribute values
-     */
-    private static function removeAttributeValueWhitespace(string $content): string
-    {
-        return preg_replace_callback(
-            self::ATTRIBUTE_VALUE_REGEX,
-            static fn (array $matches): string => \sprintf(
-                '%s="%s"',
-                $matches[1],
-                preg_replace(self::WHITESPACE_REGEX, ' ', trim($matches[2]))
-            ),
-            $content
-        ) ?? $content;
     }
 
     #[\Override]

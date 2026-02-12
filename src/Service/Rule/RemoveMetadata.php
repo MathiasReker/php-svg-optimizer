@@ -29,13 +29,13 @@ final readonly class RemoveMetadata implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove the metadata elements from the SVG document.
+     * Removes `<metadata>` elements from the SVG document.
      *
-     * This method will find and remove all `<metadata>` elements within the SVG
-     * document. Metadata elements typically contain information that is not
-     * essential for rendering the SVG image.
+     * These elements often contain information that is not essential for rendering,
+     * such as author, creation date, or other metadata. Removing them can
+     * reduce the file size.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void

@@ -20,12 +20,28 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRuleInterface
 {
     /**
-     * Regular expression to match the "enable-background" value format.
-     * The format is: 'new 0 0 width height'.
+     * This regex matches the `enable-background` attribute value.
      *
-     * @see https://regex101.com/r/h0AgKK/1
+     * @see https://regex101.com/r/p9gXyH/1
      */
     private const string ENABLE_BACKGROUND_REGEX = '/^new\s0\s0\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)$/';
+
+    /**
+     * This regex matches the `enable-background` property in a style attribute.
+     *
+     * @see https://regex101.com/r/s5vF6g/1
+     */
+    private const string STYLE_REGEX = '/\s*enable-background\s*:\s*[^;]+;\s*/i';
+
+    /**
+     * XPath query to select all elements that have an `enable-background` attribute.
+     */
+    private const string ENABLE_BACKGROUND_QUERY = '//*[@enable-background]';
+
+    /**
+     * XPath query to select all elements that have a `style` attribute.
+     */
+    private const string STYLE_QUERY = '//*[@style]';
 
     #[\Override]
     public static function isRisky(): bool
@@ -34,121 +50,66 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
     }
 
     /**
-     * Optimizes the given SVG document by removing or cleaning up the `enable-background` attribute.
+     * Removes the `enable-background` attribute and corresponding inline style.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * This attribute is deprecated and no longer required by modern SVG renderers.
+     * The rule removes the attribute if its dimensions match the element's
+     * `width` and `height`. It also removes the `enable-background` property
+     * from any inline `style` attributes.
+     *
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $this->processEnableBackgroundAttributes($domXPath);
-        $this->processStyleAttributes($domXPath);
+
+        $this->handleEnableBackgroundAttribute($domXPath);
+        $this->handleStyleAttribute($domXPath);
     }
 
     /**
-     * Processes the `enable-background` attribute on SVG, mask, and pattern elements.
+     * Handles the `enable-background` attribute on elements.
      *
-     * @param \DOMXPath $domXPath The \DOMXPath instance used to query the SVG elements
+     * @param \DOMXPath $domXPath the XPath object for querying the document
      */
-    private function processEnableBackgroundAttributes(\DOMXPath $domXPath): void
+    private function handleEnableBackgroundAttribute(\DOMXPath $domXPath): void
     {
         /** @var \DOMNodeList<\DOMElement> $elements */
-        $elements = $domXPath->query('//*[@enable-background]');
-
+        $elements = $domXPath->query(self::ENABLE_BACKGROUND_QUERY);
         foreach ($elements as $element) {
-            $enableBackgroundValue = $element->getAttribute(SvgAttribute::EnableBackground->value);
             $width = $element->getAttribute(SvgAttribute::Width->value);
             $height = $element->getAttribute(SvgAttribute::Height->value);
-            $cleanedValue = $this->cleanupEnableBackgroundValue($enableBackgroundValue, $width, $height);
+            $value = trim($element->getAttribute(SvgAttribute::EnableBackground->value));
 
-            if ('' === trim($cleanedValue)) {
+            if (1 === preg_match(self::ENABLE_BACKGROUND_REGEX, $value, $matches)
+                && $matches[1] === $width && $matches[3] === $height) {
                 $element->removeAttribute(SvgAttribute::EnableBackground->value);
             } else {
-                $element->setAttribute(SvgAttribute::EnableBackground->value, $cleanedValue);
+                $element->setAttribute(SvgAttribute::EnableBackground->value, $value);
             }
         }
     }
 
     /**
-     * Cleans up the "enable-background" value by checking if it matches the width/height.
+     * Handles the `enable-background` property within `style` attributes.
      *
-     * @param string $value  The value of the enable-background attribute
-     * @param string $width  The width of the element
-     * @param string $height The height of the element
-     *
-     * @return string The cleaned up value, or empty if it is redundant
+     * @param \DOMXPath $domXPath the XPath object for querying the document
      */
-    private function cleanupEnableBackgroundValue(string $value, string $width, string $height): string
+    private function handleStyleAttribute(\DOMXPath $domXPath): void
     {
-        if (1 !== preg_match(self::ENABLE_BACKGROUND_REGEX, $value, $matches)) {
-            return $value;
-        }
-
-        return ($matches[1] === $width && $matches[3] === $height)
-            ? ''
-            : $value;
-    }
-
-    /**
-     * Processes the `style` attribute and removes the `enable-background` property if present.
-     *
-     * @param \DOMXPath $domXPath The \DOMXPath instance used to query the SVG elements
-     */
-    private function processStyleAttributes(\DOMXPath $domXPath): void
-    {
-        /** @var \DOMNodeList<\DOMElement> $DomNodeList */
-        $DomNodeList = $domXPath->query('//*[@style]');
-
-        foreach ($DomNodeList as $domElement) {
-            $style = $domElement->getAttribute(SvgAttribute::Style->value);
-
-            if (!$this->hasEnableBackground($style)) {
-                continue;
+        /** @var \DOMNodeList<\DOMElement> $elements */
+        $elements = $domXPath->query(self::STYLE_QUERY);
+        foreach ($elements as $element) {
+            $style = $element->getAttribute(SvgAttribute::Style->value);
+            if (str_contains($style, SvgAttribute::EnableBackground->value)) {
+                $cleaned = preg_replace(self::STYLE_REGEX, '', $style) ?? '';
+                if ('' === trim($cleaned)) {
+                    $element->removeAttribute(SvgAttribute::Style->value);
+                } else {
+                    $element->setAttribute(SvgAttribute::Style->value, $cleaned);
+                }
             }
-
-            $cleanedStyle = $this->removeEnableBackgroundFromStyle($style);
-
-            $this->updateStyleAttribute($domElement, $cleanedStyle);
-        }
-    }
-
-    /**
-     * Checks if the style contains the 'enable-background' property.
-     *
-     * @param string $style The style string
-     *
-     * @return bool True if 'enable-background' exists, otherwise false
-     */
-    private function hasEnableBackground(string $style): bool
-    {
-        return str_contains($style, SvgAttribute::EnableBackground->value);
-    }
-
-    /**
-     * Removes the 'enable-background' property from the style string.
-     *
-     * @param string $style The original style string
-     *
-     * @return string The cleaned style string
-     */
-    private function removeEnableBackgroundFromStyle(string $style): string
-    {
-        return preg_replace('/\s*' . SvgAttribute::EnableBackground->value . '\s*:\s*[^;]+;\s*/', '', $style) ?? '';
-    }
-
-    /**
-     * Updates the style attribute on the element.
-     *
-     * @param \DOMElement $domElement   The DOM element
-     * @param string      $cleanedStyle The cleaned style string
-     */
-    private function updateStyleAttribute(\DOMElement $domElement, string $cleanedStyle): void
-    {
-        if ('' === trim($cleanedStyle)) {
-            $domElement->removeAttribute(SvgAttribute::Style->value);
-        } else {
-            $domElement->setAttribute(SvgAttribute::Style->value, $cleanedStyle);
         }
     }
 

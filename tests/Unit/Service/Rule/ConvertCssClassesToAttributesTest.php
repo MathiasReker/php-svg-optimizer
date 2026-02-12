@@ -141,7 +141,7 @@ final class ConvertCssClassesToAttributesTest extends TestCase
                 XML,
         ];
 
-        yield 'Ignores malformed CSS declarations' => [
+        yield 'Remove malformed CSS declarations' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
                     <style>
@@ -153,7 +153,7 @@ final class ConvertCssClassesToAttributesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect class="bad"/><circle stroke="#000"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/><circle stroke="#000"/></svg>
                 XML,
         ];
 

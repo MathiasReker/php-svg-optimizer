@@ -27,68 +27,83 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Optimize the SVG by removing empty text-related elements recursively.
+     * Removes empty text-related elements from the SVG document.
      *
-     * @param \DOMDocument $domDocument the SVG DOM document to optimize
+     * This method recursively traverses the DOM and removes `<text>` and `<tspan>`
+     * elements that contain no meaningful content, as well as `<tref>` elements
+     * with an empty `xlink:href` attribute.
+     *
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        if ($domDocument->documentElement instanceof \DOMElement) {
-            $this->removeEmptyTextRecursive($domDocument->documentElement);
+        $root = $domDocument->documentElement;
+        if ($root instanceof \DOMElement) {
+            $this->removeEmptyTextRecursive($root);
         }
     }
 
     /**
-     * Recursively traverse the DOM tree and remove empty text elements.
+     * Recursively traverses a DOM element and removes empty text-related elements.
      *
-     * Processes child nodes in reverse order to allow safe removal during iteration.
-     *
-     * @param \DOMNode $domNode the DOM node to process
+     * @param \DOMElement $domElement the element to process
      */
-    private function removeEmptyTextRecursive(\DOMNode $domNode): void
+    private function removeEmptyTextRecursive(\DOMElement $domElement): void
     {
-        if (!$domNode->hasChildNodes()) {
-            return;
-        }
-
-        for ($i = $domNode->childNodes->length - 1; $i >= 0; --$i) {
-            $child = $domNode->childNodes->item($i);
-
-            if (null === $child) {
+        foreach (array_reverse(iterator_to_array($domElement->childNodes, true)) as $domNode) {
+            if (!$domNode instanceof \DOMElement) {
                 continue;
             }
 
-            if (!$child instanceof \DOMElement) {
-                $this->removeEmptyTextRecursive($child);
-                continue;
-            }
-
-            $this->removeEmptyTextRecursive($child);
-
-            $this->removeIfEmpty($child);
+            $this->removeEmptyTextRecursive($domNode);
+            $this->removeIfEmpty($domNode);
         }
     }
 
     /**
-     * Remove a text-related element if it meets the empty criteria.
+     * Removes a given element if it is an empty text-related element.
      *
-     * - 'text' or 'tspan' elements with no child nodes are removed.
-     * - 'tref' elements with an empty 'xlink:href' attribute are removed.
-     *
-     * @param \DOMElement $domElement the DOM element to check and remove if empty
+     * @param \DOMElement $domElement the element to check and potentially remove
      */
     private function removeIfEmpty(\DOMElement $domElement): void
     {
-        $shouldRemove = match ($domElement->tagName) {
-            SvgTag::Text->value, SvgTag::Tspan->value => 0 === $domElement->childNodes->length,
-            SvgTag::Tref->value => '' === $domElement->getAttribute(SvgAttribute::XlinkHref->value),
-            default => false,
-        };
+        $tag = $domElement->tagName;
 
-        if ($shouldRemove) {
+        if (($tag === SvgTag::Text->value || $tag === SvgTag::Tspan->value) && $this->isEmptyElement($domElement)) {
+            $domElement->parentNode?->removeChild($domElement);
+
+            return;
+        }
+
+        if ($tag === SvgTag::Tref->value && '' === $domElement->getAttribute(SvgAttribute::XlinkHref->value)) {
             $domElement->parentNode?->removeChild($domElement);
         }
+    }
+
+    /**
+     * Determines if an element is effectively empty.
+     *
+     * An element is considered empty if it has no child elements and no
+     * non-whitespace text content.
+     *
+     * @param \DOMElement $domElement the element to check
+     *
+     * @return bool true if the element is empty, false otherwise
+     */
+    private function isEmptyElement(\DOMElement $domElement): bool
+    {
+        foreach ($domElement->childNodes as $child) {
+            if ($child instanceof \DOMElement) {
+                return false;
+            }
+
+            if ($child instanceof \DOMText && '' !== trim($child->wholeText)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     #[\Override]

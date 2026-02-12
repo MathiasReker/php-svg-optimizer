@@ -25,17 +25,19 @@ final readonly class RemoveDataAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Remove all 'data-*' attributes from SVG elements.
+     * Removes all `data-*` attributes from elements in the SVG document.
      *
-     * @param \DOMDocument $domDocument The SVG \DOMDocument to optimize
+     * These attributes are often used for custom data by scripts and are not
+     * typically required for rendering the SVG. Removing them can reduce file
+     * size, but it is considered a risky operation as it may break
+     * functionality that relies on this data.
+     *
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $domXPath = new \DOMXPath($domDocument);
-
-        /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domXPath->query('//*');
+        $domNodeList = $domDocument->getElementsByTagName('*');
 
         foreach ($domNodeList as $domElement) {
             /** @var list<\DOMAttr> $attributes */

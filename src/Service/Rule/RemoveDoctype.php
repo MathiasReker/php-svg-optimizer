@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
-use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 
 /**
@@ -20,16 +19,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
  */
 final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
-    /**
-     * Regular expression to match the DOCTYPE declaration.
-     *
-     * This regex pattern is used to identify and remove DOCTYPE declarations
-     * from the SVG content.
-     *
-     * @see https://regex101.com/r/DIe4La/1
-     */
-    private const string DOCTYPE_REGEX = '/<!DOCTYPE[^>]*>/i';
-
     #[\Override]
     public static function isRisky(): bool
     {
@@ -37,33 +26,26 @@ final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOp
     }
 
     /**
-     * Optimizes the given \DOMDocument by removing the DOCTYPE declaration.
+     * Removes the DOCTYPE declaration from the SVG document.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument to optimize
+     * The DOCTYPE is not necessary for modern browsers to render SVGs correctly
+     * and can be safely removed to reduce file size.
      *
-     * @throws XmlProcessingException If an error occurs during processing
+     * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->process($domDocument, $this->removeDoctype(...));
+        $doctype = $domDocument->doctype;
+
+        if ($doctype instanceof \DOMDocumentType) {
+            $domDocument->removeChild($doctype);
+        }
     }
 
     #[\Override]
     public function shouldCheckSize(): bool
     {
         return false;
-    }
-
-    /**
-     * Removes the DOCTYPE declaration from the SVG content.
-     *
-     * @param string $content The SVG content as a string
-     *
-     * @return string The SVG content without the DOCTYPE declaration
-     */
-    private function removeDoctype(string $content): string
-    {
-        return (string) preg_replace(self::DOCTYPE_REGEX, '', $content);
     }
 }

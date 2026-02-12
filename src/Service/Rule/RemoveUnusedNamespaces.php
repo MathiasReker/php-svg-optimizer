@@ -26,14 +26,14 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
      *
      * @see https://regex101.com/r/EU11xA/1
      */
-    private const string NAMESPACE_PATTERN = '/xmlns:([a-zA-Z0-9\-]+)="([^"]+)"/';
+    private const string NAMESPACE_REGEX = '/xmlns:([a-zA-Z0-9\-]+)="([^"]+)"/';
 
     /**
      * Regex pattern for matching SVG elements with namespaces.
      *
      * @see https://regex101.com/r/pxqIJN/1
      */
-    private const string ELEMENT_PATTERN_TEMPLATE = '/%s:[a-zA-Z0-9\-]+/';
+    private const string ELEMENT_TEMPLATE_REGEX = '/%s:[a-zA-Z0-9\-]+/';
 
     #[\Override]
     public static function isRisky(): bool
@@ -42,11 +42,11 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     }
 
     /**
-     * Optimize the given \DOMDocument by removing unused namespaces.
+     * Removes unused XML namespaces from the SVG document.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument to optimize
+     * @param \DOMDocument $domDocument the DOM document to optimize
      *
-     * @throws XmlProcessingException When XML content cannot be saved or loaded
+     * @throws XmlProcessingException if the XML content cannot be processed
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -55,13 +55,16 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     }
 
     /**
-     * Optimize the SVG content by removing unused namespaces.
+     * Cleans unused namespaces from the provided DOM document.
      *
-     * @param \DOMDocument $domDocument The \DOMDocument to optimize
+     * This method identifies all namespace declarations, counts their usage within the
+     * document, and removes any that are not used.
      *
-     * @return string The optimized SVG content with unused namespaces removed
+     * @param \DOMDocument $domDocument the DOM document to clean
      *
-     * @throws XmlProcessingException When XML content cannot be saved or loaded
+     * @return string the SVG content with unused namespaces removed
+     *
+     * @throws XmlProcessingException if the XML content cannot be processed
      */
     private function cleanNamespaces(\DOMDocument $domDocument): string
     {
@@ -79,23 +82,26 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     }
 
     /**
-     * Count the number of elements associated with each namespace in the SVG content.
+     * Counts the usage of each declared namespace within the SVG content.
      *
-     * @param string $content The raw SVG content as a string
+     * It uses regular expressions to find all namespace declarations and then counts
+     * how many times elements with each namespace prefix appear.
      *
-     * @return array<string, int> An associative array where keys are namespace prefixes and values are counts of elements
+     * @param string $content the raw SVG content
+     *
+     * @return array<string, int> a map of namespace attributes to their usage count
      */
     private function countNamespaceElementsWithRegex(string $content): array
     {
         $namespaceCounts = [];
 
-        $namespacePattern = self::NAMESPACE_PATTERN;
+        $namespacePattern = self::NAMESPACE_REGEX;
 
         $result = preg_match_all($namespacePattern, $content, $matches);
         if (false !== $result && $result > 0) {
             foreach ($matches[1] as $prefix) {
                 $namespaceKey = \sprintf('%s:%s', SvgAttribute::Xmlns->value, $prefix);
-                $elementPattern = \sprintf(self::ELEMENT_PATTERN_TEMPLATE, preg_quote($prefix, '/'));
+                $elementPattern = \sprintf(self::ELEMENT_TEMPLATE_REGEX, preg_quote($prefix, '/'));
                 preg_match_all($elementPattern, $content, $elementMatches);
                 $namespaceCounts[$namespaceKey] = \count($elementMatches[0]);
             }
@@ -105,10 +111,10 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     }
 
     /**
-     * Remove the specified namespace attribute from the SVG tags.
+     * Removes a specific namespace attribute from the root SVG element.
      *
-     * @param \DOMDocument $domDocument        The \DOMDocument instance representing the SVG to be optimized
-     * @param string       $namespaceAttribute The namespace attribute to remove
+     * @param \DOMDocument $domDocument        the DOM document to modify
+     * @param string       $namespaceAttribute The namespace attribute to remove (e.g., "xmlns:xlink").
      */
     private function removeNamespaceFromSvgTags(\DOMDocument $domDocument, string $namespaceAttribute): void
     {
