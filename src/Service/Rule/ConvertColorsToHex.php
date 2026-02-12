@@ -79,6 +79,33 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     }
 
     /**
+     * Processes a `style` attribute string to convert color values.
+     *
+     * This method finds color-related properties within the style string and
+     * applies the `convertColorValue` transformation to their values.
+     *
+     * @param string       $style           the inline style string
+     * @param list<string> $colorAttributes a list of color-related CSS properties
+     *
+     * @return string the processed style string with converted colors
+     */
+    private function processStyle(string $style, array $colorAttributes): string
+    {
+        $attributes = array_map(
+            static fn (string $a): string => preg_quote($a, '/'),
+            $colorAttributes
+        );
+
+        $pattern = '/\b(' . implode('|', $attributes) . ')\s*:\s*([^;]+)/i';
+
+        return preg_replace_callback(
+            $pattern,
+            fn (array $m): string => $m[1] . ':' . $this->convertColorValue(trim($m[2])),
+            $style
+        ) ?? $style;
+    }
+
+    /**
      * Converts a single color value to its hexadecimal representation.
      *
      * This method handles `rgb()` values, converting them to `#RRGGBB` or `#RGB`
@@ -112,33 +139,6 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
         }
 
         return $value;
-    }
-
-    /**
-     * Processes a `style` attribute string to convert color values.
-     *
-     * This method finds color-related properties within the style string and
-     * applies the `convertColorValue` transformation to their values.
-     *
-     * @param string       $style           the inline style string
-     * @param list<string> $colorAttributes a list of color-related CSS properties
-     *
-     * @return string the processed style string with converted colors
-     */
-    private function processStyle(string $style, array $colorAttributes): string
-    {
-        $attributes = array_map(
-            static fn (string $a): string => preg_quote($a, '/'),
-            $colorAttributes
-        );
-
-        $pattern = '/\b(' . implode('|', $attributes) . ')\s*:\s*([^;]+)/i';
-
-        return preg_replace_callback(
-            $pattern,
-            fn (array $m): string => $m[1] . ':' . $this->convertColorValue(trim($m[2])),
-            $style
-        ) ?? $style;
     }
 
     #[\Override]

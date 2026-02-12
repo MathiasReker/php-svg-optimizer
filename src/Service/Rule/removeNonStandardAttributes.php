@@ -54,6 +54,28 @@ final readonly class removeNonStandardAttributes implements SvgOptimizerRuleInte
     }
 
     /**
+     * Creates a lookup table of allowed SVG attribute names.
+     *
+     * This is used for efficient checking of whether an attribute is standard.
+     *
+     * @return array<string, true> a map where keys are the allowed attribute names
+     */
+    private function getAllowedLookup(): array
+    {
+        /** @var array<string, true>|null $lookup */
+        static $lookup = null;
+
+        if (null === $lookup) {
+            $lookup = [];
+            foreach (SvgAttribute::cases() as $attr) {
+                $lookup[$attr->value] = true;
+            }
+        }
+
+        return $lookup;
+    }
+
+    /**
      * Removes non-standard attributes from a single DOM element.
      *
      * @param \DOMElement         $domElement the element to process
@@ -89,28 +111,6 @@ final readonly class removeNonStandardAttributes implements SvgOptimizerRuleInte
             || str_starts_with($name, 'xlink:')
             || str_starts_with($name, 'data-')
             || \array_key_exists($name, $allowed);
-    }
-
-    /**
-     * Creates a lookup table of allowed SVG attribute names.
-     *
-     * This is used for efficient checking of whether an attribute is standard.
-     *
-     * @return array<string, true> a map where keys are the allowed attribute names
-     */
-    private function getAllowedLookup(): array
-    {
-        /** @var array<string, true>|null $lookup */
-        static $lookup = null;
-
-        if (null === $lookup) {
-            $lookup = [];
-            foreach (SvgAttribute::cases() as $attr) {
-                $lookup[$attr->value] = true;
-            }
-        }
-
-        return $lookup;
     }
 
     #[\Override]

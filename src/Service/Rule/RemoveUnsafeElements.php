@@ -273,6 +273,67 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
+     * Normalizes a string value for security analysis.
+     *
+     * This method performs several steps to canonicalize the input string,
+     * making it harder to bypass security checks with obfuscation techniques.
+     * This includes decoding HTML entities, decoding CSS escapes, removing
+     * control characters, and transliterating homoglyphs.
+     *
+     * @param string $value the input string
+     *
+     * @return string the normalized string
+     */
+    private function normalizeValue(string $value): string
+    {
+        do {
+            $prev = $value;
+            $value = html_entity_decode($value, \ENT_QUOTES | \ENT_HTML5 | \ENT_XML1, SvgDefaults::XML_ENCODING);
+        } while ($value !== $prev);
+
+        $value = preg_replace(self::C_STYLE_COMMENT_REGEX, '', $value) ?? $value;
+
+        $value = preg_replace_callback(self::CSS_HEX_ESCAPE_REGEX, static function (array $match): string {
+            $code = (int) hexdec($match[1]);
+
+            return ($code > 0 && $code <= 0x10_FF_FF) ? mb_chr($code, SvgDefaults::XML_ENCODING) : '';
+        }, $value) ?? $value;
+
+        $value = preg_replace(self::CONTROL_CHARS_REGEX, '', $value) ?? $value;
+
+        $value = $this->transliterateHomoglyphs($value);
+
+        $value = preg_replace(self::WHITESPACE_REGEX, '', $value) ?? $value;
+
+        return mb_strtolower(trim($value), SvgDefaults::XML_ENCODING);
+    }
+
+    /**
+     * Replaces characters that look like letters/numbers with their ASCII equivalents.
+     *
+     * This is used to counter obfuscation attempts where an attacker might use
+     * full-width characters or other homoglyphs to disguise malicious code.
+     *
+     * @param string $value the input string
+     *
+     * @return string the transliterated string
+     */
+    private function transliterateHomoglyphs(string $value): string
+    {
+        $map = [
+            'Ａ' => 'A', 'Ｂ' => 'B', 'Ｃ' => 'C', 'Ｄ' => 'D', 'Ｅ' => 'E', 'Ｆ' => 'F', 'Ｇ' => 'G', 'Ｈ' => 'H', 'Ｉ' => 'I', 'Ｊ' => 'J',
+            'Ｋ' => 'K', 'Ｌ' => 'L', 'Ｍ' => 'M', 'Ｎ' => 'N', 'Ｏ' => 'O', 'Ｐ' => 'P', 'Ｑ' => 'Q', 'Ｒ' => 'R', 'Ｓ' => 'S', 'Ｔ' => 'T',
+            'Ｕ' => 'U', 'Ｖ' => 'V', 'Ｗ' => 'W', 'Ｘ' => 'X', 'Ｙ' => 'Y', 'Ｚ' => 'Z',
+            'ａ' => 'a', 'ｂ' => 'b', 'ｃ' => 'c', 'ｄ' => 'd', 'ｅ' => 'e', 'ｆ' => 'f', 'ｇ' => 'g', 'ｈ' => 'h', 'ｉ' => 'i', 'ｊ' => 'j',
+            'ｋ' => 'k', 'ｌ' => 'l', 'ｍ' => 'm', 'ｎ' => 'n', 'ｏ' => 'o', 'ｐ' => 'p', 'ｑ' => 'q', 'ｒ' => 'r', 'ｓ' => 's', 'ｔ' => 't',
+            'ｕ' => 'u', 'ｖ' => 'v', 'ｗ' => 'w', 'ｘ' => 'x', 'ｙ' => 'y', 'ｚ' => 'z',
+            '０' => '0', '１' => '1', '２' => '2', '３' => '3', '４' => '4', '５' => '5', '６' => '6', '７' => '7', '８' => '8', '９' => '9',
+        ];
+
+        return strtr($value, $map);
+    }
+
+    /**
      * Checks if a string matches a given regular expression pattern.
      *
      * @param string $value   the string to check
@@ -359,6 +420,24 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
+     * Checks if an attribute name has a dangerous prefix (e.g., "on").
+     *
+     * @param string $name the attribute name
+     *
+     * @return bool true if the prefix is dangerous
+     */
+    private function hasDangerousPrefix(string $name): bool
+    {
+        foreach (self::DANGEROUS_ATTR_PREFIXES as $prefix) {
+            if (str_starts_with(mb_strtolower($name), $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Checks if a SMIL `values` attribute contains any dangerous protocols.
      *
      * The `values` attribute can contain a semicolon-separated list of values,
@@ -374,24 +453,6 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 
         foreach ($parts as $part) {
             if ($this->matchesPattern(trim($part), self::DANGEROUS_PROTOCOLS_REGEX)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Checks if an attribute name has a dangerous prefix (e.g., "on").
-     *
-     * @param string $name the attribute name
-     *
-     * @return bool true if the prefix is dangerous
-     */
-    private function hasDangerousPrefix(string $name): bool
-    {
-        foreach (self::DANGEROUS_ATTR_PREFIXES as $prefix) {
-            if (str_starts_with(mb_strtolower($name), $prefix)) {
                 return true;
             }
         }
@@ -449,67 +510,6 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
                 $style->parentNode->removeChild($style);
             }
         }
-    }
-
-    /**
-     * Normalizes a string value for security analysis.
-     *
-     * This method performs several steps to canonicalize the input string,
-     * making it harder to bypass security checks with obfuscation techniques.
-     * This includes decoding HTML entities, decoding CSS escapes, removing
-     * control characters, and transliterating homoglyphs.
-     *
-     * @param string $value the input string
-     *
-     * @return string the normalized string
-     */
-    private function normalizeValue(string $value): string
-    {
-        do {
-            $prev = $value;
-            $value = html_entity_decode($value, \ENT_QUOTES | \ENT_HTML5 | \ENT_XML1, SvgDefaults::XML_ENCODING);
-        } while ($value !== $prev);
-
-        $value = preg_replace(self::C_STYLE_COMMENT_REGEX, '', $value) ?? $value;
-
-        $value = preg_replace_callback(self::CSS_HEX_ESCAPE_REGEX, static function (array $match): string {
-            $code = (int) hexdec($match[1]);
-
-            return ($code > 0 && $code <= 0x10_FF_FF) ? mb_chr($code, SvgDefaults::XML_ENCODING) : '';
-        }, $value) ?? $value;
-
-        $value = preg_replace(self::CONTROL_CHARS_REGEX, '', $value) ?? $value;
-
-        $value = $this->transliterateHomoglyphs($value);
-
-        $value = preg_replace(self::WHITESPACE_REGEX, '', $value) ?? $value;
-
-        return mb_strtolower(trim($value), SvgDefaults::XML_ENCODING);
-    }
-
-    /**
-     * Replaces characters that look like letters/numbers with their ASCII equivalents.
-     *
-     * This is used to counter obfuscation attempts where an attacker might use
-     * full-width characters or other homoglyphs to disguise malicious code.
-     *
-     * @param string $value the input string
-     *
-     * @return string the transliterated string
-     */
-    private function transliterateHomoglyphs(string $value): string
-    {
-        $map = [
-            'Ａ' => 'A', 'Ｂ' => 'B', 'Ｃ' => 'C', 'Ｄ' => 'D', 'Ｅ' => 'E', 'Ｆ' => 'F', 'Ｇ' => 'G', 'Ｈ' => 'H', 'Ｉ' => 'I', 'Ｊ' => 'J',
-            'Ｋ' => 'K', 'Ｌ' => 'L', 'Ｍ' => 'M', 'Ｎ' => 'N', 'Ｏ' => 'O', 'Ｐ' => 'P', 'Ｑ' => 'Q', 'Ｒ' => 'R', 'Ｓ' => 'S', 'Ｔ' => 'T',
-            'Ｕ' => 'U', 'Ｖ' => 'V', 'Ｗ' => 'W', 'Ｘ' => 'X', 'Ｙ' => 'Y', 'Ｚ' => 'Z',
-            'ａ' => 'a', 'ｂ' => 'b', 'ｃ' => 'c', 'ｄ' => 'd', 'ｅ' => 'e', 'ｆ' => 'f', 'ｇ' => 'g', 'ｈ' => 'h', 'ｉ' => 'i', 'ｊ' => 'j',
-            'ｋ' => 'k', 'ｌ' => 'l', 'ｍ' => 'm', 'ｎ' => 'n', 'ｏ' => 'o', 'ｐ' => 'p', 'ｑ' => 'q', 'ｒ' => 'r', 'ｓ' => 's', 'ｔ' => 't',
-            'ｕ' => 'u', 'ｖ' => 'v', 'ｗ' => 'w', 'ｘ' => 'x', 'ｙ' => 'y', 'ｚ' => 'z',
-            '０' => '0', '１' => '1', '２' => '2', '３' => '3', '４' => '4', '５' => '5', '６' => '6', '７' => '7', '８' => '8', '９' => '9',
-        ];
-
-        return strtr($value, $map);
     }
 
     #[\Override]
