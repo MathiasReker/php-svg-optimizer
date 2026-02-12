@@ -86,6 +86,12 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Minifies numerical values in SVG coordinate and dimension attributes.
      *
@@ -178,11 +184,5 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         );
 
         return $value ?? '';
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

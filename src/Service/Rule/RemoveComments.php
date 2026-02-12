@@ -29,6 +29,12 @@ final readonly class RemoveComments implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes all comments from the SVG document, except for legal or license comments.
      *
@@ -53,11 +59,5 @@ final readonly class RemoveComments implements SvgOptimizerRuleInterface
 
             $domComment->parentNode?->removeChild($domComment);
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

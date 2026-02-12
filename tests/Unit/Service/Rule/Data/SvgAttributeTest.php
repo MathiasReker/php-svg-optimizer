@@ -25,13 +25,13 @@ final class SvgAttributeTest extends TestCase
     #[Test]
     public function casesReturnsAllAttributes(): void
     {
-        $this->assertNotEmpty(SvgAttribute::cases());
+        self::assertNotEmpty(SvgAttribute::cases());
     }
 
     #[Test]
     public function valuesReturnsAllAttributeValues(): void
     {
-        $this->assertNotEmpty(SvgAttribute::values());
+        self::assertNotEmpty(SvgAttribute::values());
     }
 
     #[Test]
@@ -49,7 +49,7 @@ final class SvgAttributeTest extends TestCase
             'border-color',
         ];
 
-        $this->assertSame($expected, SvgAttribute::colors());
+        self::assertSame($expected, SvgAttribute::colors());
     }
 
     #[Test]
@@ -79,8 +79,7 @@ final class SvgAttributeTest extends TestCase
             'overlay',
         ];
 
-
-        $this->assertSame($expected, SvgAttribute::dangerous());
+        self::assertSame($expected, SvgAttribute::dangerous());
     }
 
     #[Test]
@@ -91,6 +90,6 @@ final class SvgAttributeTest extends TestCase
             'href',
         ];
 
-        $this->assertSame($expected, SvgAttribute::dangerousExact());
+        self::assertSame($expected, SvgAttribute::dangerousExact());
     }
 }

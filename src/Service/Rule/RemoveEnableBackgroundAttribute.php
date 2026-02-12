@@ -49,6 +49,12 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
         return true;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes the `enable-background` attribute and corresponding inline style.
      *
@@ -111,11 +117,5 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
                 }
             }
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

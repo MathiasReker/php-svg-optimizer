@@ -31,6 +31,12 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return true;
+    }
+
     /**
      * Flattens nested SVG group elements (`<g>`).
      *
@@ -181,11 +187,5 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         foreach ($children as $child) {
             $parentNode->insertBefore($child, $domElement);
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return true;
     }
 }

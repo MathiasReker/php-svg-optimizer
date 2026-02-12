@@ -166,7 +166,7 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \ValueError
      */
     #[Test]
-    public function it_does_not_modify_file_on_dry_run(): void
+    public function itDoesNotModifyFileOnDryRun(): void
     {
         $originalContent = file_get_contents($this->svgFile);
 
@@ -185,7 +185,7 @@ final class SvgFileProcessorTest extends TestCase
 
         $svgFileProcessor->processPath($this->svgFile);
 
-        $this->assertSame($originalContent, file_get_contents($this->svgFile));
+        self::assertSame($originalContent, file_get_contents($this->svgFile));
     }
 
     /**
@@ -196,7 +196,7 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \ValueError
      */
     #[Test]
-    public function it_uses_config_file(): void
+    public function itUsesConfigFile(): void
     {
         $configFile = $this->tempDir . '/config.json';
         file_put_contents($configFile, '{"removeComments": true}');
@@ -216,7 +216,7 @@ final class SvgFileProcessorTest extends TestCase
 
         $svgFileProcessor->processPath($this->svgFile);
 
-        $this->assertStringNotContainsString('<!--', (string) file_get_contents($this->svgFile));
+        self::assertStringNotContainsString('<!--', (string) file_get_contents($this->svgFile));
     }
 
     /**

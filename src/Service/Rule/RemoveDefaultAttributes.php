@@ -41,6 +41,12 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes attributes from SVG elements if their values are set to the
      * default for that attribute.
@@ -76,11 +82,5 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
                 }
             }
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

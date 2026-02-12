@@ -93,7 +93,7 @@ final class FileCollectorTest extends TestCase
     }
 
     #[Test]
-    public function it_collects_files_with_different_extensions(): void
+    public function itCollectsFilesWithDifferentExtensions(): void
     {
         $txtFile = $this->tempDir . '/note.txt';
         file_put_contents($txtFile, 'text');

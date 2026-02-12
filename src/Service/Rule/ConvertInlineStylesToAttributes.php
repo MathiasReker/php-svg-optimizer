@@ -40,6 +40,12 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Converts CSS properties from inline `style` attributes to individual SVG attributes.
      *
@@ -183,11 +189,5 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
     private function isValidPropertyName(string $prop): bool
     {
         return 1 === preg_match(self::PROPERTY_NAME_REGEX, $prop);
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

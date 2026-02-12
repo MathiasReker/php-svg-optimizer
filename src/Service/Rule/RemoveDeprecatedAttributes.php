@@ -62,6 +62,12 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes deprecated attributes and replaces outdated ones with modern equivalents.
      *
@@ -146,11 +152,5 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
                 }
             }
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

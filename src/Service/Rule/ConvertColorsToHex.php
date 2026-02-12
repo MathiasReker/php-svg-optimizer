@@ -43,6 +43,12 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Converts color values to a more compact hexadecimal format.
      *
@@ -139,11 +145,5 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
         }
 
         return $value;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

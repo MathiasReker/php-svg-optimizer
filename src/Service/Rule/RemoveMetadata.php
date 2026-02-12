@@ -28,6 +28,12 @@ final readonly class RemoveMetadata implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes `<metadata>` elements from the SVG document.
      *
@@ -41,11 +47,5 @@ final readonly class RemoveMetadata implements SvgOptimizerRuleInterface
     public function optimize(\DOMDocument $domDocument): void
     {
         $this->removeElementsByTagName($domDocument, SvgTag::Metadata->value);
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

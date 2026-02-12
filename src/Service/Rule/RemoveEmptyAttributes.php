@@ -24,6 +24,12 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes attributes that have an empty or whitespace-only value.
      *
@@ -51,11 +57,5 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
                 $domNodeList->removeAttribute($name);
             }
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

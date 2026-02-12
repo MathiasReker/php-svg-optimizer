@@ -26,6 +26,12 @@ final readonly class RemoveWidthHeightAttributes implements SvgOptimizerRuleInte
         return true;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes the `width` and `height` attributes from the root `<svg>` element.
      *
@@ -56,11 +62,5 @@ final readonly class RemoveWidthHeightAttributes implements SvgOptimizerRuleInte
                 $svg->removeAttribute($attrName);
             }
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

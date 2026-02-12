@@ -124,6 +124,12 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         return true;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Sanitizes the SVG document by removing potentially unsafe elements and attributes.
      *
@@ -510,11 +516,5 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
                 $style->parentNode->removeChild($style);
             }
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

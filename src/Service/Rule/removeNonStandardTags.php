@@ -25,6 +25,12 @@ final readonly class removeNonStandardTags implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes non-standard tags from the SVG document, moving their children up.
      *
@@ -103,11 +109,5 @@ final readonly class removeNonStandardTags implements SvgOptimizerRuleInterface
         }
 
         return mb_strtolower($name);
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

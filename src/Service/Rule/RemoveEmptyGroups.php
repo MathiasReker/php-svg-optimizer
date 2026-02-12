@@ -25,6 +25,12 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return true;
+    }
+
     /**
      * Removes empty group (`<g>`) elements from the SVG document.
      *
@@ -94,12 +100,6 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
             }
         }
 
-        return true;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
         return true;
     }
 }

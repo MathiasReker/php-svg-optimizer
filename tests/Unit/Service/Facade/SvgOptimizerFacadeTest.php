@@ -60,6 +60,7 @@ use PHPUnit\Framework\TestCase;
 final class SvgOptimizerFacadeTest extends TestCase
 {
     private string $sampleSvg;
+
     private string $tempFilePath;
 
     /**
@@ -132,7 +133,6 @@ final class SvgOptimizerFacadeTest extends TestCase
                 false,
                 false,
                 true,
-
             );
 
         $svgOptimizerFacade->optimize();
@@ -317,8 +317,8 @@ final class SvgOptimizerFacadeTest extends TestCase
     public function withAllRulesEnablesAllNonRiskyRules(): void
     {
         $svg = '<svg xmlns="http://www.w3.org/2000/svg"><title>T</title><!-- c --></svg>';
-        $facade = SvgOptimizerFacade::fromString($svg)->withAllRules()->optimize();
-        $content = $facade->getContent();
+        $svgOptimizerFacade = SvgOptimizerFacade::fromString($svg)->withAllRules()->optimize();
+        $content = $svgOptimizerFacade->getContent();
 
         self::assertStringNotContainsString('<!--', $content);
         self::assertStringNotContainsString('<title>', $content);
@@ -333,8 +333,8 @@ final class SvgOptimizerFacadeTest extends TestCase
     public function getMetaDataReturnsCorrectData(): void
     {
         $svg = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
-        $facade = SvgOptimizerFacade::fromString($svg)->optimize();
-        $metaData = $facade->getMetaData();
+        $svgOptimizerFacade = SvgOptimizerFacade::fromString($svg)->optimize();
+        $metaData = $svgOptimizerFacade->getMetaData();
 
         self::assertGreaterThan(0, $metaData->getOriginalSize());
         self::assertGreaterThan(0, $metaData->getOptimizedSize());
@@ -352,12 +352,12 @@ final class SvgOptimizerFacadeTest extends TestCase
     public function withRulesCanEnableSpecificRiskyRules(): void
     {
         $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"></svg>';
-        $facade = SvgOptimizerFacade::fromString($svg)
-            ->withRules(false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,)
+        $svgOptimizerFacade = SvgOptimizerFacade::fromString($svg)
+            ->withRules(false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)
             ->allowRisky()
             ->optimize();
 
-        $content = $facade->getContent();
+        $content = $svgOptimizerFacade->getContent();
         self::assertStringNotContainsString('width="100"', $content);
         self::assertStringNotContainsString('height="100"', $content);
     }

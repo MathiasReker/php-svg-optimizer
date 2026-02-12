@@ -41,6 +41,12 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes unused XML namespaces from the SVG document.
      *
@@ -123,11 +129,5 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
         if ($root instanceof \DOMElement && $root->hasAttribute($namespaceAttribute)) {
             $root->removeAttribute($namespaceAttribute);
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

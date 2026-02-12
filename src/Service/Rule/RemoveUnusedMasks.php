@@ -26,6 +26,12 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes unused `<mask>` elements and empty `<defs>` containers from the SVG.
      *
@@ -102,11 +108,5 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
 
             $def->parentNode?->removeChild($def);
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

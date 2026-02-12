@@ -36,6 +36,12 @@ final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor impl
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes invisible characters from the SVG document.
      *
@@ -52,12 +58,6 @@ final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor impl
     public function optimize(\DOMDocument $domDocument): void
     {
         $this->process($domDocument, $this->removeInvisibleCharacters(...));
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 
     /**

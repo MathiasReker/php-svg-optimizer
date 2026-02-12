@@ -25,6 +25,12 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Normalizes the case of SVG attribute names throughout the document.
      *
@@ -120,11 +126,5 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
                 $domElement->setAttribute($canonicalName, $value);
             }
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

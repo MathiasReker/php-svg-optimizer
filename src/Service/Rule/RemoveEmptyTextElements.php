@@ -26,6 +26,12 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return true;
+    }
+
     /**
      * Removes empty text-related elements from the SVG document.
      *
@@ -103,12 +109,6 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
             }
         }
 
-        return true;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
         return true;
     }
 }

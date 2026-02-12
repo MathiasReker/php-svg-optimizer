@@ -343,6 +343,7 @@ final class FileProviderTest extends TestCase
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg/>');
+
         $fileProvider->optimize($domDocument);
 
         $nonWritablePath = '/non/writable/path/output.svg';

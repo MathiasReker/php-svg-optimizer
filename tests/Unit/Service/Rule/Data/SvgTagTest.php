@@ -25,13 +25,13 @@ final class SvgTagTest extends TestCase
     #[Test]
     public function casesReturnsAllTags(): void
     {
-        $this->assertNotEmpty(SvgTag::cases());
+        self::assertNotEmpty(SvgTag::cases());
     }
 
     #[Test]
     public function valuesReturnsAllTagValues(): void
     {
-        $this->assertNotEmpty(SvgTag::values());
+        self::assertNotEmpty(SvgTag::values());
     }
 
     #[Test]
@@ -43,10 +43,10 @@ final class SvgTagTest extends TestCase
             'iframe',
             'object',
             'embed',
-            'link'
+            'link',
         ];
 
-        $this->assertSame($expected, SvgTag::dangerous());
+        self::assertSame($expected, SvgTag::dangerous());
     }
 
     #[Test]
@@ -62,6 +62,6 @@ final class SvgTagTest extends TestCase
             'pattern',
         ];
 
-        $this->assertSame($expected, SvgTag::conditionalDangerous());
+        self::assertSame($expected, SvgTag::conditionalDangerous());
     }
 }

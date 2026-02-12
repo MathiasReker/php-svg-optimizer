@@ -71,6 +71,12 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes editor-specific data left by Inkscape and Sodipodi.
      *
@@ -218,11 +224,5 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
         }
 
         return $attributesToRemove;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

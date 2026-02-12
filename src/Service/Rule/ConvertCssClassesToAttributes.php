@@ -34,6 +34,12 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Converts CSS style declarations into inline attributes on SVG elements.
      *
@@ -237,11 +243,5 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         }
 
         return \sprintf('.%s{', $class) . implode(';', $props) . '}';
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

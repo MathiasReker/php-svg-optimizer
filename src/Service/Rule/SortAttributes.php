@@ -41,6 +41,12 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Sorts the attributes of all elements in the SVG document.
      *
@@ -134,11 +140,5 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
         ksort($otherAttributes, \SORT_STRING);
 
         return [...$priorityAttributes, ...$otherAttributes];
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

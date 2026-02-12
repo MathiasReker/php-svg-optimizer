@@ -162,7 +162,7 @@ final class DomDocumentWrapperTest extends TestCase
     {
         $domDocument = new \DOMDocument();
         $result = $this->domDocumentWrapper->saveToString($domDocument);
-        self::assertSame("<?xml version=\"1.0\"?>", $result);
+        self::assertSame('<?xml version="1.0"?>', $result);
     }
 
     /**

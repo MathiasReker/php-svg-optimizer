@@ -28,6 +28,12 @@ final readonly class RemoveTitleAndDesc implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes `<title>` and `<desc>` elements from the SVG document.
      *
@@ -42,11 +48,5 @@ final readonly class RemoveTitleAndDesc implements SvgOptimizerRuleInterface
     {
         $this->removeElementsByTagName($domDocument, SvgTag::Title->value);
         $this->removeElementsByTagName($domDocument, SvgTag::Desc->value);
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

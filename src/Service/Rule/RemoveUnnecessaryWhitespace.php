@@ -41,6 +41,12 @@ final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor im
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes unnecessary whitespace from attribute values.
      *
@@ -75,11 +81,5 @@ final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor im
                 $content
             ) ?? $content
         );
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

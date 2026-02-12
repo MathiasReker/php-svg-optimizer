@@ -25,6 +25,12 @@ final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOp
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes the DOCTYPE declaration from the SVG document.
      *
@@ -41,11 +47,5 @@ final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOp
         if ($doctype instanceof \DOMDocumentType) {
             $domDocument->removeChild($doctype);
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

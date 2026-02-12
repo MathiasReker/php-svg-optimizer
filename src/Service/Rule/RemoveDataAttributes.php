@@ -24,6 +24,12 @@ final readonly class RemoveDataAttributes implements SvgOptimizerRuleInterface
         return true;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes all `data-*` attributes from elements in the SVG document.
      *
@@ -48,11 +54,5 @@ final readonly class RemoveDataAttributes implements SvgOptimizerRuleInterface
                 }
             }
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

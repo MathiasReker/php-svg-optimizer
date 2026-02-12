@@ -25,6 +25,12 @@ final readonly class RemoveAriaAndRole implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes `role` and `aria-*` attributes from all elements in the SVG document.
      *
@@ -49,11 +55,5 @@ final readonly class RemoveAriaAndRole implements SvgOptimizerRuleInterface
                 }
             }
         }
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

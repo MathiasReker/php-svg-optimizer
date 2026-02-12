@@ -42,6 +42,12 @@ final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor 
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Converts empty tags to their self-closing form (e.g., `<tag></tag>` to `<tag/>`).
      *
@@ -56,12 +62,6 @@ final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor 
     public function optimize(\DOMDocument $domDocument): void
     {
         $this->process($domDocument, $this->convertEmptyTagsToSelfClosing(...));
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 
     /**

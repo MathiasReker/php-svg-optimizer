@@ -104,6 +104,12 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Minifies `transform` attributes on all applicable SVG elements.
      *
@@ -211,11 +217,5 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     private function isEmptyTransform(string $transform): bool
     {
         return 1 === preg_match(self::EMPTY_TRANSFORM_REGEX, $transform);
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

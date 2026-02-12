@@ -24,6 +24,12 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes duplicate elements from the SVG document.
      *
@@ -112,11 +118,5 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
         $attrString = json_encode($attrs, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE);
 
         return $domElement->tagName . '|' . $attrString;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }

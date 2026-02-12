@@ -30,6 +30,12 @@ final readonly class removeNonStandardAttributes implements SvgOptimizerRuleInte
         return false;
     }
 
+    #[\Override]
+    public static function shouldCheckSize(): bool
+    {
+        return false;
+    }
+
     /**
      * Removes attributes that are not part of the standard SVG specification.
      *
@@ -111,11 +117,5 @@ final readonly class removeNonStandardAttributes implements SvgOptimizerRuleInte
             || str_starts_with($name, 'xlink:')
             || str_starts_with($name, 'data-')
             || \array_key_exists($name, $allowed);
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
     }
 }
