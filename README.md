@@ -20,6 +20,18 @@
 It applies various transformations and cleanup operations while ensuring compliance with SVG 2.0 specifications.
 The resulting SVGs remain visually identical to the original but are smaller, cleaner, and safer.
 
+## Features
+
+- **Comprehensive Optimization:** A wide range of rules to minify and clean SVGs, from removing unnecessary attributes
+  to flattening groups.
+- **Security First:** A powerful `removeUnsafeElements` rule to sanitize SVGs and protect against XSS attacks.
+- **CLI and Package Usage:** Use it as a command-line tool for quick optimizations or as a PHP package for programmatic
+  control.
+- **Flexible Configuration:** Enable or disable specific rules, and allow "risky" rules when you need them.
+- **Detailed Metadata:** Get detailed information about the optimization process, including size reduction and
+  processing time.
+- **Modern PHP:** Built with modern PHP 8.3 features and a clean, object-oriented architecture.
+
 ### Versions & Dependencies
 
 | Version | PHP  | Documentation                                                |
@@ -46,10 +58,9 @@ composer require mathiasreker/php-svg-optimizer
 
 You can use this library in two main ways:
 
-1. Command-Line Interface (CLI): Run the optimizer directly from your terminal to process SVG files quickly. This is
+1. **Command-Line Interface (CLI):** Run the optimizer directly from your terminal to process SVG files quickly. This is
    ideal for batch processing or integrating into build scripts.
-
-2. Standalone Package: Use it as a PHP package in your project to optimize SVGs programmatically. This allows you to
+2. **Standalone Package:** Use it as a PHP package in your project to optimize SVGs programmatically. This allows you to
    integrate SVG optimization directly into your application workflow or custom scripts.
 
 ## CLI tool
@@ -122,22 +133,22 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
 
 ### Example Workflow for GitHub Actions
 
-```bash
+```yaml
 name: Optimize SVGs
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
-  run-optimizer:
-    runs-on: ubuntu-latest
+    run-optimizer:
+        runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v6
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.5'
-      - run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
-      - run: php vendor/bin/svg-optimizer -a -q process /path/to/svgs
+        steps:
+            -   uses: actions/checkout@v6
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    php-version: '8.5'
+            -   run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+            -   run: php vendor/bin/svg-optimizer -a -q process /path/to/svgs
 ```
 
 ## Package
