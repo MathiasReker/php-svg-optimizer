@@ -27,6 +27,11 @@ interface SvgOptimizerRuleInterface
     public static function isRisky(): bool;
 
     /**
+     * If true, SvgOptimizer will only keep the rule's effect if it reduces size.
+     */
+    public static function shouldCheckSize(): bool;
+
+    /**
      * Apply optimization rules to the given \DOMDocument instance.
      *
      * This method modifies the provided $domDocument instance in place,
@@ -36,9 +41,4 @@ interface SvgOptimizerRuleInterface
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      */
     public function optimize(\DOMDocument $domDocument): void;
-
-    /**
-     * If true, SvgOptimizer will only keep the rule's effect if it reduces size.
-     */
-    public static function shouldCheckSize(): bool;
 }

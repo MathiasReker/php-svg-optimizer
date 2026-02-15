@@ -104,7 +104,7 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
      *
      * @param \DOMElement $domElement the element to generate a signature for
      *
-     *                                -    * @return string The element's signature.                                +    * @return string The element's signature.
+     * @return string the element's signature
      */
     private function buildSignature(\DOMElement $domElement): string
     {

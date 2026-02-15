@@ -41,7 +41,6 @@ final class ConcreteXmlProcessorTest extends TestCase
 
         $callback = static fn (string $content): string => str_replace('blue', 'red', $content);
 
-        // Use anonymous class because AbstractXmlProcessor is abstract
         $processor = new /**
                           * @no-named-arguments
                           */
@@ -66,7 +65,6 @@ final class ConcreteXmlProcessorTest extends TestCase
         $domDocument = new \DOMDocument();
         $domDocument->loadXML($svg);
 
-        // Callback returns array, not string
         $callback = static fn (): array => [];
 
         $processor = new /**
@@ -91,7 +89,6 @@ final class ConcreteXmlProcessorTest extends TestCase
         $domDocument = new \DOMDocument();
         $domDocument->loadXML($svg);
 
-        // Callback returns empty string (invalid SVG)
         $callback = static fn (): string => '';
 
         $processor = new /**

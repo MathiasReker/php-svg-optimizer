@@ -142,9 +142,9 @@ final class ConfigLoaderTest extends TestCase
 
         self::assertSame(
             [
-                'key1' => true,  // "yes" casts to true
-                'key2' => true,  // 123 casts to true
-                'key3' => false, // null casts to false
+                'key1' => true,
+                'key2' => true,
+                'key3' => false,
             ],
             $result
         );

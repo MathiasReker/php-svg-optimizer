@@ -99,8 +99,8 @@ final class MetaDataAggregatorTest extends TestCase
     public function multipleFilesCalculateSavedPercentageCorrectly(): void
     {
         $metaDataAggregator = new MetaDataAggregator();
-        $metaDataAggregator->addFileData(1_000, 800, 0.1); // 200 saved
-        $metaDataAggregator->addFileData(2_000, 1_500, 0.1); // 500 saved
+        $metaDataAggregator->addFileData(1_000, 800, 0.1);
+        $metaDataAggregator->addFileData(2_000, 1_500, 0.1);
 
         self::assertSame(3_000, $metaDataAggregator->getTotalOriginalSize());
         self::assertSame(2_300, $metaDataAggregator->getTotalOptimizedSize());
@@ -165,5 +165,21 @@ final class MetaDataAggregatorTest extends TestCase
 
         $metaDataAggregator->addFileData(1_000, 900, -0.1);
         self::assertSame(-0.1, $metaDataAggregator->getOptimizationTime());
+    }
+
+    #[Test]
+    public function hasSavedBytesReturnsTrueWhenBytesAreSaved(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+        $metaDataAggregator->addFileData(1_000, 800, 0.1);
+        self::assertTrue($metaDataAggregator->hasSavedBytes());
+    }
+
+    #[Test]
+    public function hasSavedBytesReturnsFalseWhenNoBytesAreSaved(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+        $metaDataAggregator->addFileData(1_000, 1_000, 0.1);
+        self::assertFalse($metaDataAggregator->hasSavedBytes());
     }
 }

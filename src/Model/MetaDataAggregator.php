@@ -120,4 +120,14 @@ final class MetaDataAggregator
     {
         return $this->optimizedFileCount > 0;
     }
+
+    /**
+     * Determines whether any bytes were saved during optimization.
+     *
+     * @return bool True if one or more bytes were saved, false otherwise
+     */
+    public function hasSavedBytes(): bool
+    {
+        return $this->getSavedBytes() > 0;
+    }
 }

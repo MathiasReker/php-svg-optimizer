@@ -20,18 +20,6 @@
 It applies various transformations and cleanup operations while ensuring compliance with SVG 2.0 specifications.
 The resulting SVGs remain visually identical to the original but are smaller, cleaner, and safer.
 
-## Features
-
-- **Comprehensive Optimization:** A wide range of rules to minify and clean SVGs, from removing unnecessary attributes
-  to flattening groups.
-- **Security First:** A powerful `removeUnsafeElements` rule to sanitize SVGs and protect against XSS attacks.
-- **CLI and Package Usage:** Use it as a command-line tool for quick optimizations or as a PHP package for programmatic
-  control.
-- **Flexible Configuration:** Enable or disable specific rules, and allow "risky" rules when you need them.
-- **Detailed Metadata:** Get detailed information about the optimization process, including size reduction and
-  processing time.
-- **Modern PHP:** Built with modern PHP 8.3 features and a clean, object-oriented architecture.
-
 ### Versions & Dependencies
 
 | Version | PHP  | Documentation                                                |
@@ -334,6 +322,40 @@ try {
     echo sprintf('Size reduction: %d bytes%s', $metaData->getSavedBytes(), \PHP_EOL);
     echo sprintf('Reduction percentage: %s %%%s', $metaData->getSavedPercentage(), \PHP_EOL);
     echo sprintf('Processing time: %s seconds%s', $metaData->getOptimizationTime(), \PHP_EOL);
+} catch (\Exception $exception) {
+    echo $exception->getMessage();
+}
+```
+
+### Security: Sanitizing Untrusted SVGs
+
+When accepting SVG uploads from users or other untrusted sources, it is **critical** to sanitize them to prevent
+Cross-Site Scripting (XSS) attacks. Malicious SVGs can contain scripts, event handlers, or external references that can
+execute code in the user's browser.
+
+The `php-svg-optimizer` provides a powerful set of rules to mitigate these risks. The most important rule is
+`removeUnsafeElements`, which strips out known dangerous tags and attributes. For a stricter policy, you can combine it
+with `removeNonStandardTags` and `removeNonStandardAttributes`.
+
+```php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
+
+try {
+    $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
+        ->withRules(
+            removeNonStandardAttributes: true,
+            removeNonStandardTags: true,
+            removeUnsafeElements: true,
+        )
+        ->allowRisky()
+        ->optimize()
+        ->saveToFile('path/to/output.svg');
 } catch (\Exception $exception) {
     echo $exception->getMessage();
 }
@@ -848,6 +870,16 @@ Returns the number of bytes saved by the optimization process.
 
 ```php
 $svgOptimizer->getMetaData()->getSavedBytes();
+```
+
+---
+
+#### `hasSavedBytes`
+
+Returns a boolean indicating whether any bytes were saved by the optimization process.
+
+```php
+$svgOptimizer->getMetaData()->hasSavedBytes();
 ```
 
 ---

@@ -213,7 +213,6 @@ final class ArgumentParserTest extends TestCase
     #[Test]
     public function getPathsThrowsIfNoSvgFilesFound(): void
     {
-        // Create temporary directory with no SVG files
         $tempDir = sys_get_temp_dir() . '/empty_dir_' . uniqid();
         mkdir($tempDir);
 

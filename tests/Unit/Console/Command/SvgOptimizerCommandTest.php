@@ -233,7 +233,7 @@ final class SvgOptimizerCommandTest extends TestCase
         $command->run();
 
         $newContent = file_get_contents($svgFile);
-        self::assertSame($originalContent, $newContent); // no overwrite
+        self::assertSame($originalContent, $newContent);
     }
 
     #[\Override]

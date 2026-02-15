@@ -31,11 +31,6 @@ final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor 
      */
     private const string SELF_CLOSING_SPACE_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)\s+\/>/';
 
-    /**
-     * Indicates whether this rule is risky.
-     *
-     * @return bool False, as this rule is safe
-     */
     #[\Override]
     public static function isRisky(): bool
     {
