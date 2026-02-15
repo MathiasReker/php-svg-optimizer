@@ -53,8 +53,8 @@ abstract readonly class AbstractXmlProcessor
             if (!$this->getValidator()->isValid($content)) {
                 throw new XmlProcessingException('Optimized SVG content is not valid.');
             }
-        } catch (XmlProcessingException $e) {
-            throw $e;
+        } catch (XmlProcessingException $xmlProcessingException) {
+            throw $xmlProcessingException;
         } catch (\Exception $exception) {
             throw new XmlProcessingException('Failed to process the XML content.', 0, $exception);
         }
