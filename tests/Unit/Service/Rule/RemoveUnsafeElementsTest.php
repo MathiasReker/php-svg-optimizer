@@ -1023,6 +1023,246 @@ final class RemoveUnsafeElementsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"/>
                 XML,
         ];
+
+        yield 'Keeps data:image in href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><image href="data:image/png;base64,..."/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><image href="data:image/png;base64,..."/></svg>',
+        ];
+
+        yield 'Keeps data:image in xlink:href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image xlink:href="data:image/png;base64,..."/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image xlink:href="data:image/png;base64,..."/></svg>',
+        ];
+
+        yield 'Removes data:text/html in href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><image href="data:text/html;base64,..."/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'Keeps data:image in fill' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="url(data:image/png;base64,...)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="url(data:image/png;base64,...)"/></svg>',
+        ];
+
+        yield 'Removes data:text/html in fill' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="url(data:text/html;base64,...)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Keeps data image png in href' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps data image svg in href' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <image href="data:image/svg+xml;base64,PHN2Zy8+" />
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><image href="data:image/svg+xml;base64,PHN2Zy8+"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps data image gif in fill url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect fill="url(data:image/gif;base64,R0lGODlhAQABAIAAAP)" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect fill="url(data:image/gif;base64,R0lGODlhAQABAIAAAP)" width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps uppercase DATA IMAGE protocol' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <image href="DATA:IMAGE/JPEG;base64,/9j/4AAQSkZJRgABAQ"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><image href="DATA:IMAGE/JPEG;base64,/9j/4AAQSkZJRgABAQ"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps data image with whitespace around value' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <image href="  data:image/webp;base64,UklGRiIAAABXRUJQVlA4  "/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><image href="  data:image/webp;base64,UklGRiIAAABXRUJQVlA4  "/></svg>
+                XML,
+        ];
+
+        yield 'Keeps data image inside style attribute url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA)" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect style="background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA)" width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps data image in xlink:href' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps data image in SMIL values list' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <animate attributeName="fill"
+                        values="red;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA;blue"
+                        dur="1s"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><animate attributeName="fill" values="red;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA;blue" dur="1s"/></svg>
+                XML,
+        ];
+
+        yield 'Removes foreignObject' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <foreignObject>
+                        <body><script>alert(1)</script></body>
+                    </foreignObject>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes use with external href' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <use xlink:href="http://evil.com/attack.svg#foo"/>
+                    <circle cx="5" cy="5" r="3"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><circle cx="5" cy="5" r="3"/></svg>
+                XML,
+        ];
+
+        yield 'Removes image with data:text/html' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <image href="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="/>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes numeric entity obfuscated javascript' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="&#x6A;&#x61;&#x76;&#x61;script:alert(1)">click</a>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes inline style with url(javascript:...)' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="background-image: url('javascript:alert(1)'); width:100px; height:100px"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes style with behavior url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="behavior: url('http://evil.com/attack.htc'); width:100px; height:100px"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes nested @import in style' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>
+                        @import url("http://evil.com/style.css");
+                        rect { fill: red; }
+                    </style>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes unsafe use href reference' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <use xlink:href="http://evil.com/bad"/>
+                    <use xlink:href="#safe"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><use xlink:href="#safe"/></svg>
+                XML,
+        ];
+
+        yield 'Removes images with external href' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <image href="http://evil.com/img.svg"/>
+                    <image href="data:image/png;base64,abc"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><image href="data:image/png;base64,abc"/></svg>
+                XML,
+        ];
+
+        yield 'Removes unsafe style content' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>
+                        @import url("http://evil.com/style.css");
+                        rect { fill: red; }
+                    </style>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
     }
 
     #[Test]

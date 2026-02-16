@@ -67,6 +67,7 @@ final class RuleTest extends TestCase
             Rule::RemoveUnusedMasks->name => 'removeUnusedMasks',
             Rule::RemoveUnusedNamespaces->name => 'removeUnusedNamespaces',
             Rule::RemoveWidthHeightAttributes->name => 'removeWidthHeightAttributes',
+            Rule::ScopeSvgStyles->name => 'scopeSvgStyles',
             Rule::SortAttributes->name => 'sortAttributes',
         ];
 

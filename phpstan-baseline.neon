@@ -13,10 +13,46 @@ parameters:
 			path: src/Service/Rule/ConvertInlineStylesToAttributes.php
 
 		-
-			rawMessage: 'Class cognitive complexity is 55, keep it under 40'
+			rawMessage: 'Class cognitive complexity is 57, keep it under 40'
 			identifier: complexity.classLike
 			count: 1
 			path: src/Service/Rule/RemoveUnsafeElements.php
+
+		-
+			rawMessage: 'Cognitive complexity for "MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles::updateClassAttributes()" is 10, keep it under 9'
+			identifier: complexity.functionLike
+			count: 1
+			path: src/Service/Rule/ScopeSvgStyles.php
+
+		-
+			rawMessage: 'Method MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles::processCssRules() has parameter $classReplacements that is passed by reference.'
+			identifier: ergebnis.noParameterPassedByReference
+			count: 1
+			path: src/Service/Rule/ScopeSvgStyles.php
+
+		-
+			rawMessage: 'Method MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles::processCssRules() has parameter $idReplacements that is passed by reference.'
+			identifier: ergebnis.noParameterPassedByReference
+			count: 1
+			path: src/Service/Rule/ScopeSvgStyles.php
+
+		-
+			rawMessage: 'Method MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles::scopeClasses() has parameter $classReplacements that is passed by reference.'
+			identifier: ergebnis.noParameterPassedByReference
+			count: 1
+			path: src/Service/Rule/ScopeSvgStyles.php
+
+		-
+			rawMessage: 'Method MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles::scopeSelectorIds() has parameter $idReplacements that is passed by reference.'
+			identifier: ergebnis.noParameterPassedByReference
+			count: 1
+			path: src/Service/Rule/ScopeSvgStyles.php
+
+		-
+			rawMessage: Use explicit return value over magic &reference
+			identifier: symplify.noReference
+			count: 6
+			path: src/Service/Rule/ScopeSvgStyles.php
 
 		-
 			rawMessage: 'Call to static method PHPUnit\Framework\Assert::assertSame() with array{true, false} and array<string, bool> will always evaluate to false.'

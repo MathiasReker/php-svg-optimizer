@@ -41,6 +41,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedMasks;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 
 /**
@@ -113,6 +114,8 @@ enum Rule: string
 
     case RemoveWidthHeightAttributes = RemoveWidthHeightAttributes::class;
 
+    case ScopeSvgStyles = ScopeSvgStyles::class;
+
     case SortAttributes = SortAttributes::class;
 
     public function configKey(): string
@@ -148,6 +151,7 @@ enum Rule: string
             self::RemoveUnusedMasks->value => 'removeUnusedMasks',
             self::RemoveUnusedNamespaces->value => 'removeUnusedNamespaces',
             self::RemoveWidthHeightAttributes->value => 'removeWidthHeightAttributes',
+            self::ScopeSvgStyles->value => 'scopeSvgStyles',
             self::SortAttributes->value => 'sortAttributes',
         };
     }

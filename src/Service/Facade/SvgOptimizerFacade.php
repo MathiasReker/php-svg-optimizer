@@ -129,6 +129,7 @@ final readonly class SvgOptimizerFacade
      * @param bool $removeUnusedMasks               Whether to remove unused masks
      * @param bool $removeUnusedNamespaces          Whether to remove unused namespaces
      * @param bool $removeWidthHeightAttributes     Whether to remove width and height attributes
+     * @param bool $scopeSvgStyles                  Whether to rewrite IDs and class names in SVG styles to prevent conflicts
      * @param bool $sortAttributes                  Whether to sort attributes
      *
      * @return $this The SvgOptimizerFacade instance
@@ -164,6 +165,7 @@ final readonly class SvgOptimizerFacade
         bool $removeUnusedMasks = false,
         bool $removeUnusedNamespaces = false,
         bool $removeWidthHeightAttributes = false,
+        bool $scopeSvgStyles = false,
         bool $sortAttributes = false,
     ): self {
         $rules = [
@@ -197,6 +199,7 @@ final readonly class SvgOptimizerFacade
             Rule::RemoveUnusedMasks->value => $removeUnusedMasks,
             Rule::RemoveUnusedNamespaces->value => $removeUnusedNamespaces,
             Rule::RemoveWidthHeightAttributes->value => $removeWidthHeightAttributes,
+            Rule::ScopeSvgStyles->value => $scopeSvgStyles,
             Rule::SortAttributes->value => $sortAttributes,
         ];
 

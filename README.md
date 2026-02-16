@@ -115,6 +115,7 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
     "removeUnusedMasks": true,
     "removeUnusedNamespaces": true,
     "removeWidthHeightAttributes": false,
+    "scopeSvgStyles": false,
     "sortAttributes": true
 }
 ```
@@ -188,6 +189,7 @@ try {
             removeUnusedMasks: true,
             removeUnusedNamespaces: true,
             removeWidthHeightAttributes: false,
+            scopeSvgStyles: false,
             sortAttributes: true,
         )
         ->optimize()
@@ -742,6 +744,18 @@ $svgOptimizer->removeUnusedMasks();
 
 ---
 
+### `scopeSvgStyles` (**risky**)
+
+Scopes all IDs and class names within SVG elements to avoid style collisions.
+Each embedded SVG gets unique identifiers, and CSS rules are rewritten accordingly.
+This ensures multiple SVGs can coexist in the same document without interfering with each other.
+
+```php
+$svgOptimizer->scopeSvgStyles();
+```
+
+---
+
 ### `sortAttributes`
 
 Sorts element attributes alphabetically. This improves consistency, makes diffs easier to read in version control
@@ -788,6 +802,7 @@ $svgOptimizer->withRules(
     removeUnusedMasks: true,
     removeUnusedNamespaces: true,
     removeWidthHeightAttributes: false,
+    scopeSvgStyles: false,
     sortAttributes: true,
 );
 ```

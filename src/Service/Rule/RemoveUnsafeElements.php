@@ -36,23 +36,15 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     private const string XML_STYLESHEET_PI = 'xml-stylesheet';
 
     /**
-     * Regular expressions for detecting unsafe patterns in attribute values.
-     *
-     * These patterns are used to identify potentially dangerous content in attributes.
-     *
-     * @see https://regex101.com/r/QHNWJG/1
-     */
-    private const string URI_PROTOCOL_REGEX = '~^[a-z][a-z0-9+.-]*:~i';
-
-    /**
      * Regular expression for detecting dangerous protocols in URLs.
      *
-     * This pattern matches protocols that are considered unsafe, such as javascript, data, file, http, https, and protocol-relative URLs.
+     * This pattern matches protocols that are considered unsafe, such as javascript, file, http, https, and protocol-relative URLs.
+     * It allows data URIs for images (data:image/...) but blocks other data URIs.
      *
-     * @seehttps://regex101.com/r/bfijom/1
+     * @see https://regex101.com/r/bfijom/2
      */
     private const string DANGEROUS_PROTOCOLS_REGEX =
-        '~^\s*(?:(?:javascript|data|file|vbscript|http|https|mailto|ftp|tel|sms):|//)~i';
+        '~^\s*(?:(?:javascript|data(?!:image)|file|vbscript|http|https|mailto|ftp|tel|sms|callto|cis|xmpp):|//)~i';
 
     /**
      * Regular expressions for detecting unsafe styles in SVG content.
@@ -80,15 +72,6 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      * @see https://regex101.com/r/WQHx9p/1
      */
     private const string URL_FUNCTION_REGEX = '/url\(\s*([\'"]?)(.*?)\1\s*\)/i';
-
-    /**
-     * Regular expression for detecting URLs that start with a protocol or are relative.
-     *
-     * This pattern matches URLs that start with a scheme (e.g., http:) or are protocol-relative (e.g., //example.com).
-     *
-     * @see https://regex101.com/r/Wpra41/1
-     */
-    private const string URL_PROTOCOL_OR_RELATIVE_REGEX = '~^(?:[a-z][a-z0-9+.-]*:|//)~i';
 
     /**
      * Regular expression for decoding CSS hexadecimal escapes (e.g. \6a\61\76\61).
@@ -158,11 +141,19 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function removeProcessingInstructions(\DOMDocument $domDocument): void
     {
-        for ($node = $domDocument->firstChild; $node instanceof \DOMNode; $node = $node->nextSibling) {
-            if ($node instanceof \DOMProcessingInstruction
-                && str_contains(mb_strtolower($node->nodeName), self::XML_STYLESHEET_PI)
+        $domXPath = new \DOMXPath($domDocument);
+        $pis = $domXPath->query('//processing-instruction()');
+
+        if (false === $pis) {
+            return;
+        }
+
+        foreach ($pis as $pi) {
+            if ($pi instanceof \DOMProcessingInstruction
+                && str_contains(mb_strtolower($pi->nodeName), self::XML_STYLESHEET_PI)
+                && $pi->parentNode instanceof \DOMNode
             ) {
-                $domDocument->removeChild($node);
+                $pi->parentNode->removeChild($pi);
             }
         }
     }
@@ -249,33 +240,16 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             return;
         }
 
-        foreach (SvgAttribute::dangerousExact() as $attrCase) {
-            $value = $domNode->getAttribute($attrCase);
+        foreach (SvgAttribute::dangerousExact() as $attrName) {
+            if ($domNode->hasAttribute($attrName)) {
+                $value = $this->normalizeValue($domNode->getAttribute($attrName));
+                if ($this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX)) {
+                    $domNode->parentNode?->removeChild($domNode);
 
-            if ($this->isExactDangerousAttribute($attrCase, $value)) {
-                if ($domNode->parentNode instanceof \DOMNode) {
-                    $domNode->parentNode->removeChild($domNode);
+                    return;
                 }
-
-                break;
             }
         }
-    }
-
-    /**
-     * Checks if an attribute's value contains a dangerous protocol.
-     *
-     * @param string $name  the attribute name
-     * @param string $value the attribute value
-     *
-     * @return bool true if the attribute is considered dangerous
-     */
-    private function isExactDangerousAttribute(string $name, string $value): bool
-    {
-        $value = $this->normalizeValue($value);
-
-        return \in_array($name, SvgAttribute::dangerousExact(), true)
-            && $this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX);
     }
 
     /**
@@ -292,10 +266,9 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function normalizeValue(string $value): string
     {
-        do {
-            $prev = $value;
+        if (str_contains($value, '&')) {
             $value = html_entity_decode($value, \ENT_QUOTES | \ENT_HTML5 | \ENT_XML1, SvgDefaults::XML_ENCODING);
-        } while ($value !== $prev);
+        }
 
         $value = preg_replace(self::C_STYLE_COMMENT_REGEX, '', $value) ?? $value;
 
@@ -371,10 +344,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 
             /** @var \DOMAttr $attribute */
             foreach (iterator_to_array($domElement->attributes, false) as $attribute) {
-                $name = $attribute->name;
-                $value = $this->normalizeValue($attribute->value);
-
-                if ($this->isDangerousAttribute($name, $value)) {
+                if ($this->isDangerousAttribute($attribute)) {
                     $domElement->removeAttributeNode($attribute);
                 }
             }
@@ -388,22 +358,52 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      * `onclick`), if it contains a dangerous protocol (e.g., `javascript:`),
      * or if it's a `style` attribute with unsafe content.
      *
-     * @param string $name  the attribute name
-     * @param string $value the attribute value
+     * @param \DOMAttr $domAttr the attribute to check
      *
      * @return bool true if the attribute is dangerous
      */
-    private function isDangerousAttribute(string $name, string $value): bool
+    private function isDangerousAttribute(\DOMAttr $domAttr): bool
     {
-        $name = mb_strtolower($name);
+        $name = mb_strtolower($domAttr->name);
 
-        if ($this->hasDangerousPrefix($name)) {
+        if ($this->isDangerousAttributeName($name)) {
             return true;
         }
 
-        $value = $this->normalizeValue($value);
+        $value = $this->normalizeValue($domAttr->value);
 
-        if ($this->isExactDangerousAttribute($name, $value)) {
+        return $this->isDangerousAttributeValue($name, $value);
+    }
+
+    /**
+     * Checks if an attribute name is dangerous.
+     *
+     * @param string $name the attribute name
+     *
+     * @return bool true if the name is dangerous
+     */
+    private function isDangerousAttributeName(string $name): bool
+    {
+        foreach (self::DANGEROUS_ATTR_PREFIXES as $prefix) {
+            if (str_starts_with($name, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if an attribute value is dangerous.
+     *
+     * @param string $name  the attribute name
+     * @param string $value the normalized attribute value
+     *
+     * @return bool true if the value is dangerous
+     */
+    private function isDangerousAttributeValue(string $name, string $value): bool
+    {
+        if (\in_array($name, SvgAttribute::dangerousExact(), true) && $this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX)) {
             return true;
         }
 
@@ -411,7 +411,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             return true;
         }
 
-        if ($this->isUrlAttributeDangerous($name, $value)) {
+        if (\in_array($name, SvgAttribute::dangerous(), true) && $this->isUrlAttributeValueDangerous($value)) {
             return true;
         }
 
@@ -422,25 +422,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             return true;
         }
 
-        return SvgAttribute::Src->value === $name && $this->matchesPattern($value, self::URI_PROTOCOL_REGEX);
-    }
-
-    /**
-     * Checks if an attribute name has a dangerous prefix (e.g., "on").
-     *
-     * @param string $name the attribute name
-     *
-     * @return bool true if the prefix is dangerous
-     */
-    private function hasDangerousPrefix(string $name): bool
-    {
-        foreach (self::DANGEROUS_ATTR_PREFIXES as $prefix) {
-            if (str_starts_with(mb_strtolower($name), $prefix)) {
-                return true;
-            }
-        }
-
-        return false;
+        return SvgAttribute::Src->value === $name && $this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX);
     }
 
     /**
@@ -471,24 +453,19 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      *
      * This applies to attributes like `href` and `xlink:href`.
      *
-     * @param string $name  the attribute name
      * @param string $value the attribute value
      *
      * @return bool true if the URL is dangerous
      */
-    private function isUrlAttributeDangerous(string $name, string $value): bool
+    private function isUrlAttributeValueDangerous(string $value): bool
     {
-        if (!\in_array($name, SvgAttribute::dangerous(), true)) {
-            return false;
-        }
-
         if (1 === preg_match(self::URL_FUNCTION_REGEX, $value, $matches)) {
             $urlInside = trim($matches[2]);
 
-            return 1 === preg_match(self::URL_PROTOCOL_OR_RELATIVE_REGEX, $urlInside);
+            return 1 === preg_match(self::DANGEROUS_PROTOCOLS_REGEX, $urlInside);
         }
 
-        return 1 === preg_match(self::URL_PROTOCOL_OR_RELATIVE_REGEX, trim($value));
+        return 1 === preg_match(self::DANGEROUS_PROTOCOLS_REGEX, trim($value));
     }
 
     /**
