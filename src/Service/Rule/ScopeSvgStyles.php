@@ -19,31 +19,43 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
 {
     /**
      * Matches a CSS rule, capturing the selector and body.
+     *
+     * @see https://regex101.com/r/aoMXmR/1
      */
     private const string CSS_RULE_REGEX = '/(?<selector>[^{]+?){(?<body>[^}]+)}/';
 
     /**
      * Matches a tag selector.
+     *
+     * @see https://regex101.com/r/3fFyX5/1
      */
     private const string TAG_SELECTOR_REGEX = '/^[a-zA-Z][\w-]*$/';
 
     /**
      * Matches a class selector.
+     *
+     * @see https://regex101.com/r/wqnnqt/1
      */
     private const string CLASS_SELECTOR_REGEX = '/\.([\w\-]+)/';
 
     /**
      * Matches an ID selector.
+     *
+     * @see https://regex101.com/r/W8IG1C/1
      */
     private const string ID_SELECTOR_REGEX = '/#([\w\-]+)/';
 
     /**
      * Matches a URL reference to an ID.
+     *
+     * @see https://regex101.com/r/RPou2d/1
      */
     private const string URL_REFERENCE_REGEX = '/url\(#([\w\-]+)\)/';
 
     /**
      * Matches one or more whitespace characters.
+     *
+     * @see https://regex101.com/r/kNrSO5/1
      */
     private const string WHITESPACE_REGEX = '/\s+/';
 
