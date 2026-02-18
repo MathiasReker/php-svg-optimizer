@@ -27,11 +27,38 @@ use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEmptyTagsToSelfClosing;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\FixAttributeNames;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveAriaAndRole;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDataAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDoctype;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDuplicateElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyGroups;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardTags;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedMasks;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -57,6 +84,33 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ConvertCssClassesToAttributes::class)]
 #[CoversClass(ConvertEmptyTagsToSelfClosing::class)]
 #[CoversClass(SvgInlineStyleProperty::class)]
+#[CoversClass(ConvertInlineStylesToAttributes::class)]
+#[CoversClass(SvgAttribute::class)]
+#[CoversClass(SvgNamespace::class)]
+#[CoversClass(FixAttributeNames::class)]
+#[CoversClass(FlattenGroups::class)]
+#[CoversClass(MinifySvgCoordinates::class)]
+#[CoversClass(MinifyTransformations::class)]
+#[CoversClass(RemoveAriaAndRole::class)]
+#[CoversClass(RemoveDataAttributes::class)]
+#[CoversClass(RemoveDefaultAttributes::class)]
+#[CoversClass(RemoveDeprecatedAttributes::class)]
+#[CoversClass(RemoveDoctype::class)]
+#[CoversClass(RemoveDuplicateElements::class)]
+#[CoversClass(RemoveEmptyAttributes::class)]
+#[CoversClass(RemoveEmptyGroups::class)]
+#[CoversClass(RemoveEmptyTextElements::class)]
+#[CoversClass(RemoveInkscapeFootprints::class)]
+#[CoversClass(RemoveInvisibleCharacters::class)]
+#[CoversClass(RemoveMetadata::class)]
+#[CoversClass(RemoveUnnecessaryWhitespace::class)]
+#[CoversClass(RemoveUnsafeElements::class)]
+#[CoversClass(RemoveUnusedMasks::class)]
+#[CoversClass(RemoveUnusedNamespaces::class)]
+#[CoversClass(ScopeSvgStyles::class)]
+#[CoversClass(SortAttributes::class)]
+#[CoversClass(RemoveNonStandardAttributes::class)]
+#[CoversClass(RemoveNonStandardTags::class)]
 final class SvgOptimizerFacadeTest extends TestCase
 {
     private string $sampleSvg;

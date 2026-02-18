@@ -17,7 +17,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 /**
  * @no-named-arguments
  */
-final readonly class removeNonStandardTags implements SvgOptimizerRuleInterface
+final readonly class RemoveNonStandardTags implements SvgOptimizerRuleInterface
 {
     #[\Override]
     public static function isRisky(): bool

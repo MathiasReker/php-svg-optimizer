@@ -19,6 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -36,6 +37,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(XmlFormatter::class)]
 #[CoversClass(SvgValidator::class)]
+#[CoversClass(SvgNamespace::class)]
 final class RemoveDeprecatedAttributesTest extends TestCase
 {
     /**

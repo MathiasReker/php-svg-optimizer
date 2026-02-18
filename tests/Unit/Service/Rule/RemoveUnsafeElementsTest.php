@@ -135,7 +135,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><circle cx="5" cy="5" r="3"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">link<circle cx="5" cy="5" r="3"/></svg>
                 XML,
         ];
 
@@ -594,7 +594,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg">x</svg>
                 XML,
         ];
 
@@ -605,7 +605,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg">x</svg>
                 XML,
         ];
 
@@ -756,7 +756,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg">x</svg>
                 XML,
         ];
 
@@ -767,7 +767,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg">x</svg>
                 XML,
         ];
 
@@ -778,7 +778,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg">x</svg>
                 XML,
         ];
 
@@ -789,7 +789,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg">x</svg>
                 XML,
         ];
 
@@ -845,7 +845,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg">x</svg>
                 XML,
         ];
 
@@ -856,7 +856,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg">x</svg>
                 XML,
         ];
 
@@ -913,7 +913,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg">x</svg>
                 XML,
         ];
 
@@ -935,7 +935,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg">x</svg>
                 XML,
         ];
 
@@ -947,7 +947,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg">calltext</svg>
                 XML,
         ];
 
@@ -969,7 +969,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg">email</svg>
                 XML,
         ];
 
@@ -1185,7 +1185,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg">click<rect width="10" height="10"/></svg>
                 XML,
         ];
 
@@ -1261,6 +1261,211 @@ final class RemoveUnsafeElementsTest extends TestCase
                 XML,
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes link element referencing external resource' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <link href="http://evil.com/style.css"/>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes style element with potential external import' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>@import url("http://evil.com/x.css");</style>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes event handler attributes (XSS vector)' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect width="10" height="10" onclick="alert(1)" onload="evil()"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes javascript URLs in attributes' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a xlink:href="javascript:alert(1)">
+                        <text>Click</text>
+                    </a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><text>Click</text></svg>
+                XML,
+        ];
+
+        yield 'Removes base tag to prevent SSRF or URL rewriting' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <base href="http://evil.com/"/>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><base/><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes processing instructions' => [
+            <<<'XML'
+                <?xml-stylesheet type="text/xsl" href="http://evil.com/x.xsl"?>
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Unwraps animate with dangerous href' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <animate attributeName="href" values="javascript:alert(1);"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><animate attributeName="href"/></svg>
+                XML,
+        ];
+
+        yield 'Unwraps animate with dangerous href with data' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <animate attributeName="href" values="data:alert(1);"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><animate attributeName="href"/></svg>
+                XML,
+        ];
+
+        yield 'Unwraps a tag with javascript href' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="javascript:alert(1)">click me</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">click me</svg>
+                XML,
+        ];
+
+        yield 'Unwraps element with xlink:href dangerous value' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <use xlink:href="javascript:alert(1)"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Preserves element with safe xlink:href' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <use xlink:href="#safe"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><use xlink:href="#safe"/></svg>
+                XML,
+        ];
+
+        yield 'Removes style with @import' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>@import url("https://malicious.com/style.css");</style>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes style with dangerous HTML tags inside' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style><script>alert(1)</script></style>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><style/></svg>
+                XML,
+        ];
+
+        yield 'Removes element with on* event attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect onclick="alert(1)"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Unwraps element with dangerous srcset' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <image srcset="javascript:alert(1)"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><image/></svg>
+                XML,
+        ];
+
+        yield 'Unwraps element with dangerous style url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="fill: url('javascript:alert(1)')"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Unwraps animateMotion with dangerous values' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <animateMotion values="javascript:alert(1);"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><animateMotion/></svg>
+                XML,
+        ];
+
+        yield 'Removes processing instruction xml-stylesheet' => [
+            <<<'XML'
+                <?xml-stylesheet type="text/css" href="http://malicious.com/style.css"?>
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
                 XML,
         ];
     }

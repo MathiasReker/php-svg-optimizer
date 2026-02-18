@@ -33,8 +33,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\removeNonStandardAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\removeNonStandardTags;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardTags;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
@@ -98,9 +98,9 @@ enum Rule: string
 
     case RemoveMetadata = RemoveMetadata::class;
 
-    case RemoveNonStandardAttributes = removeNonStandardAttributes::class;
+    case RemoveNonStandardAttributes = RemoveNonStandardAttributes::class;
 
-    case RemoveNonStandardTags = removeNonStandardTags::class;
+    case RemoveNonStandardTags = RemoveNonStandardTags::class;
 
     case RemoveTitleAndDesc = RemoveTitleAndDesc::class;
 

@@ -15,8 +15,12 @@ use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FixAttributeNames;
+use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -26,6 +30,12 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(FixAttributeNames::class)]
+#[CoversClass(SvgOptimizer::class)]
+#[CoversClass(StringProvider::class)]
+#[CoversClass(SvgValidator::class)]
+#[CoversClass(DomDocumentWrapper::class)]
+#[CoversClass(XmlFormatter::class)]
+#[CoversClass(AbstractProvider::class)]
 final class FixAttributeNamesTest extends TestCase
 {
     /**

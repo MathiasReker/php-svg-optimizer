@@ -15,8 +15,11 @@ use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\removeNonStandardAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -25,9 +28,12 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(removeNonStandardAttributes::class)]
+#[CoversClass(RemoveNonStandardAttributes::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(StringProvider::class)]
+#[CoversClass(XmlFormatter::class)]
+#[CoversClass(DomDocumentWrapper::class)]
+#[CoversClass(SvgValidator::class)]
 final class RemoveNonStandardAttributesTest extends TestCase
 {
     /**
@@ -40,7 +46,7 @@ final class RemoveNonStandardAttributesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new removeNonStandardAttributes());
+        $svgOptimizer->addRule(new RemoveNonStandardAttributes());
 
         $actual = $svgOptimizer
             ->allowRisky()
@@ -139,12 +145,12 @@ final class RemoveNonStandardAttributesTest extends TestCase
     #[Test]
     public function ruleIsMarkedAsRisky(): void
     {
-        self::assertFalse(removeNonStandardAttributes::isRisky());
+        self::assertFalse(RemoveNonStandardAttributes::isRisky());
     }
 
     #[Test]
     public function shouldCheckSizeReturnsFalse(): void
     {
-        self::assertFalse(removeNonStandardAttributes::shouldCheckSize());
+        self::assertFalse(RemoveNonStandardAttributes::shouldCheckSize());
     }
 }

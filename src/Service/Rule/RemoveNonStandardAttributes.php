@@ -17,7 +17,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 /**
  * @no-named-arguments
  */
-final readonly class removeNonStandardAttributes implements SvgOptimizerRuleInterface
+final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInterface
 {
     /**
      * XPath query to select all elements that have any attribute.

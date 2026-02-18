@@ -41,19 +41,9 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      * This pattern matches protocols that are considered unsafe, such as javascript, file, http, https, and protocol-relative URLs.
      * It allows data URIs for images (data:image/...) but blocks other data URIs.
      *
-     * @see https://regex101.com/r/bfijom/2
+     * @see todo
      */
-    private const string DANGEROUS_PROTOCOLS_REGEX =
-        '~^\s*(?:(?:javascript|data(?!:image)|file|vbscript|http|https|mailto|ftp|tel|sms|callto|cis|xmpp):|//)~i';
-
-    /**
-     * Regular expressions for detecting unsafe styles in SVG content.
-     *
-     * These patterns are used to identify potentially dangerous CSS styles that should be removed.
-     *
-     * @see https://regex101.com/r/vi3UHt/1
-     */
-    private const string STYLE_DANGEROUS_REGEX = '/@import|expression|url\(\s*javascript:/i';
+    private const string DANGEROUS_PROTOCOLS_REGEX = '~^\s*(?:(?:javascript|file|vbscript|http|https|mailto|ftp|tel|sms|callto|cis|xmpp):|data:(?!image/(?:png|gif|jpeg|jpg|webp|avif|svg\+xml);base64,)|//)~ix';
 
     /**
      * Regular expression for detecting dangerous content in style nodes.
@@ -97,9 +87,35 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     /**
      * Regular expression for removing C-style comments.
      *
-     * @see https://regex101.com/r/vUZENv/1
+     * @see https://regex101.com/r/ZieTB0/1
      */
     private const string C_STYLE_COMMENT_REGEX = '/\/\*.*?\*\//s';
+
+    /**
+     * Regular expression for detecting dangerous styles.
+     *
+     * @see https://regex101.com/r/fBom15/1
+     */
+    private const string DANGEROUS_STYLE_REGEX = '/@import|expression/i';
+
+    /**
+     * Regular expression for splitting srcset candidates.
+     *
+     * @see https://regex101.com/r/C5Lghy/1
+     */
+    private const string SRCSET_SPLIT_REGEX = '/\s+/';
+
+    /**
+     * Regular expression for removing safe data URIs from SMIL values.
+     *
+     * @see https://regex101.com/r/tCMDDi/1
+     */
+    private const string SMIL_VALUES_SAFE_DATA_URI_REGEX = '~data:image/(?:png|gif|jpeg|jpg|webp|avif|svg\+xml);base64,.*?(?=;|$)~i';
+
+    /**
+     * XPath query for selecting all processing instructions.
+     */
+    private const string PROCESSING_INSTRUCTION_QUERY = '//processing-instruction()';
 
     #[\Override]
     public static function isRisky(): bool
@@ -142,7 +158,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     private function removeProcessingInstructions(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $pis = $domXPath->query('//processing-instruction()');
+        $pis = $domXPath->query(self::PROCESSING_INSTRUCTION_QUERY);
 
         if (false === $pis) {
             return;
@@ -196,7 +212,9 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         $nodesToRemove = [];
 
         foreach ($domNodeList as $node) {
-            if (0 === strcasecmp($node->tagName, $tagName)) {
+            $localName = $node->localName ?? $node->tagName;
+
+            if (0 === strcasecmp($localName, $tagName)) {
                 $nodesToRemove[] = $node;
             }
         }
@@ -224,6 +242,13 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
                     continue;
                 }
 
+                $element = $nodes->item($i);
+                $attributeName = mb_strtolower($element->getAttribute(SvgAttribute::AttributeName->value));
+                if (\in_array($attributeName, [SvgAttribute::Href->value, SvgAttribute::XlinkHref->value], true)) {
+                    $element->parentNode?->removeChild($element);
+                    continue;
+                }
+
                 $this->removeIfDangerous($nodes->item($i));
             }
         }
@@ -243,8 +268,9 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         foreach (SvgAttribute::dangerousExact() as $attrName) {
             if ($domNode->hasAttribute($attrName)) {
                 $value = $this->normalizeValue($domNode->getAttribute($attrName));
+
                 if ($this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX)) {
-                    $domNode->parentNode?->removeChild($domNode);
+                    $this->unwrapNode($domNode);
 
                     return;
                 }
@@ -323,6 +349,27 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     private function matchesPattern(string $value, string $pattern): bool
     {
         return 1 === preg_match($pattern, $value);
+    }
+
+    /**
+     * Unwraps a DOM element by moving its children to its parent and removing the element itself.
+     *
+     * @param \DOMElement $domElement the DOM element to unwrap
+     */
+    private function unwrapNode(\DOMElement $domElement): void
+    {
+        $parent = $domElement->parentNode;
+        if (!$parent instanceof \DOMNode) {
+            return;
+        }
+
+        if ($domElement->hasChildNodes()) {
+            while (null !== $domElement->firstChild) {
+                $parent->insertBefore($domElement->firstChild, $domElement);
+            }
+        }
+
+        $parent->removeChild($domElement);
     }
 
     /**
@@ -415,11 +462,12 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             return true;
         }
 
-        if (
-            SvgAttribute::Style->value === $name
-            && $this->matchesPattern($value, self::STYLE_DANGEROUS_REGEX)
-        ) {
-            return true;
+        if (SvgAttribute::Style->value === $name) {
+            return $this->isStyleAttributeDangerous($value);
+        }
+
+        if ($name === SvgAttribute::Srcset->value) {
+            return $this->isSrcsetDangerous($value);
         }
 
         return SvgAttribute::Src->value === $name && $this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX);
@@ -437,6 +485,8 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function isSmilValuesDangerous(string $value): bool
     {
+        $value = preg_replace(self::SMIL_VALUES_SAFE_DATA_URI_REGEX, '', $value) ?? $value;
+
         $parts = explode(';', $value);
 
         foreach ($parts as $part) {
@@ -466,6 +516,57 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         }
 
         return 1 === preg_match(self::DANGEROUS_PROTOCOLS_REGEX, trim($value));
+    }
+
+    /**
+     * Checks if a style attribute value is dangerous.
+     *
+     * @param string $value the style attribute value
+     *
+     * @return bool true if the value is dangerous, false otherwise
+     */
+    private function isStyleAttributeDangerous(string $value): bool
+    {
+        if ($this->matchesPattern($value, self::DANGEROUS_STYLE_REGEX)) {
+            return true;
+        }
+
+        if (1 === preg_match_all(self::URL_FUNCTION_REGEX, $value, $matches)) {
+            foreach ($matches[2] as $url) {
+                $normalized = $this->normalizeValue($url);
+
+                if ($this->matchesPattern($normalized, self::DANGEROUS_PROTOCOLS_REGEX)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if a srcset attribute value is dangerous.
+     *
+     * @param string $value the srcset attribute value
+     *
+     * @return bool true if the value is dangerous, false otherwise
+     */
+    private function isSrcsetDangerous(string $value): bool
+    {
+        $candidates = explode(',', $value);
+
+        foreach ($candidates as $candidate) {
+            $parts = preg_split(self::SRCSET_SPLIT_REGEX, trim($candidate));
+            $url = $parts[0] ?? '';
+
+            $normalized = $this->normalizeValue($url);
+
+            if ($this->matchesPattern($normalized, self::DANGEROUS_PROTOCOLS_REGEX)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

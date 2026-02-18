@@ -18,7 +18,7 @@ use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\removeNonStandardTags;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardTags;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -28,7 +28,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(removeNonStandardTags::class)]
+#[CoversClass(RemoveNonStandardTags::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
@@ -46,7 +46,7 @@ final class RemoveNonStandardTagsTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new removeNonStandardTags());
+        $svgOptimizer->addRule(new RemoveNonStandardTags());
 
         $actual = $svgOptimizer->allowRisky()->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -186,12 +186,12 @@ final class RemoveNonStandardTagsTest extends TestCase
     #[Test]
     public function ruleIsMarkedAsRisky(): void
     {
-        self::assertFalse(removeNonStandardTags::isRisky());
+        self::assertFalse(RemoveNonStandardTags::isRisky());
     }
 
     #[Test]
     public function shouldCheckSizeReturnsFalse(): void
     {
-        self::assertFalse(removeNonStandardTags::shouldCheckSize());
+        self::assertFalse(RemoveNonStandardTags::shouldCheckSize());
     }
 }
