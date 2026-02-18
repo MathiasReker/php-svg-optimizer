@@ -4,7 +4,7 @@ set -euo pipefail
 mkdir -p dev/artifacts
 
 # --- FILE SIZE BADGE ---
-FILES=(bin src composer.json composer.lock LICENSE)
+FILES=(bin src LICENSE)
 SIZE_KB=$(du -sk "${FILES[@]}" 2>/dev/null | awk '{sum+=$1} END {print sum}')
 
 curl -s -o dev/artifacts/filesize.svg \
