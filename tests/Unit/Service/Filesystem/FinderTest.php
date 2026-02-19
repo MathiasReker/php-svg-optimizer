@@ -200,7 +200,6 @@ final class FinderTest extends TestCase
     /**
      * @throws \UnexpectedValueException
      */
-    #[\Override]
     protected function tearDown(): void
     {
         $this->deleteDirectory($this->tempDir);

@@ -9,7 +9,7 @@
         "minify",
         "compress",
         "clean",
-        "minifier"
+        "sanitize"
     ],
     "authors": [
         {
