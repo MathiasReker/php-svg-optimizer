@@ -41,9 +41,9 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      * This pattern matches protocols that are considered unsafe, such as javascript, file, http, https, and protocol-relative URLs.
      * It allows data URIs for images (data:image/...) but blocks other data URIs.
      *
-     * @see https://regex101.com/r/B33nW3/1
+     * @see https://regex101.com/r/Kd3TRU/1
      */
-    private const string DANGEROUS_PROTOCOLS_REGEX = '~^\s*(?:(?:javascript|file|vbscript|http|https|mailto|ftp|tel|sms|callto|cis|xmpp):|data:(?!image/(?:png|gif|jpeg|jpg|webp|avif|svg\+xml);base64,)|//)~ix';
+    private const string DANGEROUS_PROTOCOLS_REGEX = '~^\s*(?:(?:javascript|file|vbscript|http|https|mailto|ftp|tel|sms|callto|cis|xmpp|blob):|data:(?!image/(?:png|gif|jpeg|jpg|webp|avif|svg\+xml);base64,)|//)~ix';
 
     /**
      * Regular expression for detecting dangerous content in style nodes.
