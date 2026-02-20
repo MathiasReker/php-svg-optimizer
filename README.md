@@ -721,7 +721,7 @@ $svgOptimizer->removeWidthHeightAttributes();
 
 ---
 
-### `removeUnsafeElements` (**risky**)
+### `removeUnsafeElements`
 
 Sanitizes SVG content by removing elements and attributes that can pose security risks. This includes scripting
 capabilities, external resource references, and interactive event handlers. The rule is intended for use with untrusted

@@ -364,6 +364,7 @@ final class FileProviderTest extends TestCase
         if (file_exists(self::TEST_INPUT_FILE)) {
             unlink(self::TEST_INPUT_FILE);
         }
+
         parent::tearDown();
     }
 }
