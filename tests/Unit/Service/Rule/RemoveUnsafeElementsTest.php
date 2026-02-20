@@ -1473,6 +1473,6 @@ final class RemoveUnsafeElementsTest extends TestCase
     #[Test]
     public function ruleIsMarkedAsRisky(): void
     {
-        self::assertTrue(RemoveUnsafeElements::isRisky());
+        self::assertFalse(RemoveUnsafeElements::isRisky());
     }
 }

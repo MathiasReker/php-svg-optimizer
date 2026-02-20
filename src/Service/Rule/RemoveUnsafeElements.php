@@ -120,7 +120,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     #[\Override]
     public static function isRisky(): bool
     {
-        return true;
+        return false;
     }
 
     #[\Override]
