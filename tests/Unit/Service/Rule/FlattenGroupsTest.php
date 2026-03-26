@@ -280,6 +280,51 @@ final class FlattenGroupsTest extends TestCase
                 XML,
         ];
 
+        yield 'Nested groups with clip-path are not flattened' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="750" height="600">
+                    <defs>
+                        <clipPath id="d"><path d="M0,0H100V200H0Z" fill="none"/></clipPath>
+                        <clipPath id="e"><rect x="-16" y="-28" width="782" height="657" fill="none"/></clipPath>
+                        <clipPath id="f"><rect x="-21" y="-33" width="792" height="667" fill="none"/></clipPath>
+                    </defs>
+                    <g>
+                        <g clip-path="url(#d)">
+                            <g clip-path="url(#e)">
+                                <g clip-path="url(#f)">
+                                    <rect x="0" y="0" width="750" height="600"/>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="750" height="600"><defs><clipPath id="d"><path d="M0,0H100V200H0Z" fill="none"/></clipPath><clipPath id="e"><rect x="-16" y="-28" width="782" height="657" fill="none"/></clipPath><clipPath id="f"><rect x="-21" y="-33" width="792" height="667" fill="none"/></clipPath></defs><g clip-path="url(#d)"><g clip-path="url(#e)"><g clip-path="url(#f)"><rect x="0" y="0" width="750" height="600"/></g></g></g></svg>
+                XML,
+        ];
+
+        yield 'Nested groups with mask are not flattened' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <defs>
+                        <mask id="m"><rect width="100" height="50" fill="white"/></mask>
+                        <mask id="n"><rect width="80" height="40" fill="white"/></mask>
+                    </defs>
+                    <g>
+                        <g mask="url(#m)">
+                            <g mask="url(#n)">
+                                <rect x="0" y="0" width="100" height="100"/>
+                            </g>
+                        </g>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><defs><mask id="m"><rect width="100" height="50" fill="white"/></mask><mask id="n"><rect width="80" height="40" fill="white"/></mask></defs><g mask="url(#m)"><g mask="url(#n)"><rect x="0" y="0" width="100" height="100"/></g></g></svg>
+                XML,
+        ];
+
         yield 'Group with empty attributes' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
