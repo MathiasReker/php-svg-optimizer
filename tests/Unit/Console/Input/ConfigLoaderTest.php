@@ -265,6 +265,9 @@ final class ConfigLoaderTest extends TestCase
         ConfigLoader::loadConfig($nonExistentFile);
     }
 
+    /**
+     * @throws \TypeError
+     */
     #[\Override]
     protected function setUp(): void
     {
