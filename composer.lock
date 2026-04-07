@@ -1996,11 +1996,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.1.44",
+            "version": "2.1.46",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/4a88c083c668b2c364a425c9b3171b2d9ea5d218",
-                "reference": "4a88c083c668b2c364a425c9b3171b2d9ea5d218",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/a193923fc2d6325ef4e741cf3af8c3e8f54dbf25",
+                "reference": "a193923fc2d6325ef4e741cf3af8c3e8f54dbf25",
                 "shasum": ""
             },
             "require": {
@@ -2045,7 +2045,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-03-25T17:34:21+00:00"
+            "time": "2026-04-01T09:25:14+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -4462,16 +4462,16 @@
         },
         {
             "name": "shipmonk/phpstan-rules",
-            "version": "4.3.6",
+            "version": "4.3.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/shipmonk-rnd/phpstan-rules.git",
-                "reference": "7dbbcec7b00b4120ceaa13141be648eab3f8e24e"
+                "reference": "a46689f9179206f1edcfe078bcec6fc1ec5bf202"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shipmonk-rnd/phpstan-rules/zipball/7dbbcec7b00b4120ceaa13141be648eab3f8e24e",
-                "reference": "7dbbcec7b00b4120ceaa13141be648eab3f8e24e",
+                "url": "https://api.github.com/repos/shipmonk-rnd/phpstan-rules/zipball/a46689f9179206f1edcfe078bcec6fc1ec5bf202",
+                "reference": "a46689f9179206f1edcfe078bcec6fc1ec5bf202",
                 "shasum": ""
             },
             "require": {
@@ -4516,9 +4516,9 @@
             ],
             "support": {
                 "issues": "https://github.com/shipmonk-rnd/phpstan-rules/issues",
-                "source": "https://github.com/shipmonk-rnd/phpstan-rules/tree/4.3.6"
+                "source": "https://github.com/shipmonk-rnd/phpstan-rules/tree/4.3.7"
             },
-            "time": "2026-02-16T11:17:47+00:00"
+            "time": "2026-04-07T07:56:34+00:00"
         },
         {
             "name": "spaze/phpstan-disallowed-calls",
