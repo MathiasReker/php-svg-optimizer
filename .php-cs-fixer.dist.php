@@ -78,6 +78,9 @@ return (new PhpCsFixer\Config())
         // Disable rule causing issues
         'multiline_whitespace_before_semicolons' => true,
 
+        // Somehow not applied by the rulesets
+        'declare_strict_types' => true,
+
         // Custom Fixers
         PhpCsFixerCustomFixers\Fixer\TrimKeyFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\StringableInterfaceFixer::name() => true,
