@@ -962,7 +962,7 @@ usage.
 To use the project with Docker, you can start the container using:
 
 ```bash
-docker-compose up -d
+docker-compose up --build -d
 ```
 
 Then, access the container:

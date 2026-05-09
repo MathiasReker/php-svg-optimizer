@@ -56,7 +56,11 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         $domElementList = $domXPath->query(self::XPATH_GROUP_ELEMENTS);
 
         foreach ($domElementList as $domElement) {
-            if ($domElement->hasAttribute(SvgAttribute::ClipPath->value) || $domElement->hasAttribute(SvgAttribute::Mask->value)) {
+            if ($domElement->hasAttribute(SvgAttribute::ClipPath->value)) {
+                continue;
+            }
+
+            if ($domElement->hasAttribute(SvgAttribute::Mask->value)) {
                 continue;
             }
 

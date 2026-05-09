@@ -1,7 +1,10 @@
-services:
-  app:
-    build: .
-    image: php-svg-optimizer:1.0.0
-    container_name: "php-svg-optimizer"
-    volumes:
-      - ./:/app
+  services:
+    app:
+      build: .
+      image: php-svg-optimizer:1.0.0
+      container_name: php-svg-optimizer
+      environment:
+        COMPOSER_ROOT_VERSION: dev-develop
+        COMPOSER_MEMORY_LIMIT: -1
+      volumes:
+        - ./:/app
