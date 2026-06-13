@@ -69,6 +69,10 @@ return (new PhpCsFixer\Config())
         // PHP-CS-Fixer Rules
         '@PhpCsFixer' => true,
         '@PhpCsFixer:risky' => true,
+        'trailing_comma_in_multiline' => [
+            'elements' => ['arguments', 'array_destructuring', 'arrays', 'match', 'parameters'],
+            'after_heredoc' => true,
+        ],
 
         // Symfony Rules
         '@Symfony' => true,

@@ -26,7 +26,7 @@
     },
     "require-dev": {
         "brainbits/phpstan-rules": "^4.0",
-        "ergebnis/composer-normalize": "^2.51.0",
+        "ergebnis/composer-normalize": "^2.52.0",
         "ergebnis/phpstan-rules": "^2.13",
         "friendsofphp/php-cs-fixer": "^3.95",
         "hiperdk/phpstan-rules": "^1.0",
@@ -34,7 +34,7 @@
         "marc-mabe/php-enum-phpstan": "^3.0",
         "odan/phpstan-rules": "^0.2",
         "phpstan/extension-installer": "^1.4",
-        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan": "^2.2",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-mockery": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
@@ -49,8 +49,8 @@
         "squizlabs/php_codesniffer": "^4.0",
         "symfony/var-dumper": "^7.4",
         "symplify/phpstan-rules": "14.9",
-        "tomasvotruba/cognitive-complexity": "^1.1",
-        "tomasvotruba/type-coverage": "^2.1",
+        "tomasvotruba/cognitive-complexity": "^1.2",
+        "tomasvotruba/type-coverage": "^2.2",
         "voku/phpstan-rules": "^3.7"
     },
     "autoload": {

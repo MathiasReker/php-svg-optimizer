@@ -101,7 +101,7 @@ final class RuleTest extends TestCase
     public function allEnumValuesAreUnique(): void
     {
         $values = array_map(
-            static fn (Rule $rule) => $rule->value,
+            static fn (Rule $rule): string => $rule->value,
             Rule::cases()
         );
 

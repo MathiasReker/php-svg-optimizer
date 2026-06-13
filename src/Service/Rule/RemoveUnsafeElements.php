@@ -293,7 +293,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     private function normalizeValue(string $value): string
     {
         if (str_contains($value, '&')) {
-            $value = html_entity_decode($value, \ENT_QUOTES | \ENT_HTML5 | \ENT_XML1, SvgDefaults::XML_ENCODING);
+            $value = html_entity_decode($value, \ENT_QUOTES | \ENT_XML1, SvgDefaults::XML_ENCODING);
         }
 
         $value = preg_replace(self::C_STYLE_COMMENT_REGEX, '', $value) ?? $value;
