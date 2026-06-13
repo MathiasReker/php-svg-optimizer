@@ -37,6 +37,8 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
      * and attributes as another element that has already been processed.
      *
      * @param \DOMDocument $domDocument the DOM document to optimize
+     *
+     * @throws \JsonException
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
@@ -52,6 +54,8 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
      * is removed.
      *
      * @param \DOMDocument $domDocument the DOM document to process
+     *
+     * @throws \JsonException
      */
     private function removeDuplicateElements(\DOMDocument $domDocument): void
     {
@@ -102,21 +106,35 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
      * The signature is created by sorting the attributes alphabetically and then
      * JSON-encoding them, which provides a consistent and comparable representation.
      *
-     * @param \DOMElement $domElement the element to generate a signature for
-     *
-     * @return string the element's signature
+     * @throws \JsonException
      */
     private function buildSignature(\DOMElement $domElement): string
     {
         $attrs = [];
+
         foreach ($domElement->attributes as $attribute) {
             $attrs[$attribute->nodeName] = trim((string) $attribute->nodeValue);
         }
 
         ksort($attrs);
 
-        $attrString = json_encode($attrs, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE);
+        $children = [];
 
-        return $domElement->tagName . '|' . $attrString;
+        foreach ($domElement->childNodes as $child) {
+            if ($child instanceof \DOMElement) {
+                $children[] = $this->buildSignature($child);
+            } elseif ($child instanceof \DOMText) {
+                $children[] = trim((string) $child->nodeValue);
+            }
+        }
+
+        return json_encode(
+            [
+                'tag' => $domElement->tagName,
+                'attrs' => $attrs,
+                'children' => $children,
+            ],
+            \JSON_THROW_ON_ERROR
+        );
     }
 }

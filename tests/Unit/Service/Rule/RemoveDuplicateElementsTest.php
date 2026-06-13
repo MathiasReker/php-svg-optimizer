@@ -81,20 +81,59 @@ final class RemoveDuplicateElementsTest extends TestCase
                 XML,
         ];
 
-        yield 'Removes duplicates within same group only' => [
+        yield 'Keeps groups with identical attributes but different text content' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
-                    <g>
-                        <circle cx="5" cy="5" r="5" fill="green"/>
-                        <circle cx="5" cy="5" r="5" fill="green"/>
+                    <g transform="scale(.1)">
+                        <text x="455" y="140">code coverage</text>
                     </g>
-                    <g>
-                        <circle cx="5" cy="5" r="5" fill="green"/>
+                    <g transform="scale(.1)">
+                        <text x="1055" y="140">93%</text>
                     </g>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><g><circle cx="5" cy="5" r="5" fill="green"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(.1)"><text x="455" y="140">code coverage</text></g><g transform="scale(.1)"><text x="1055" y="140">93%</text></g></svg>
+                XML,
+        ];
+
+        yield 'Removes duplicate text elements with same parent' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <text x="10" y="10">Hello</text>
+                    <text x="10" y="10">Hello</text>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><text x="10" y="10">Hello</text></svg>
+                XML,
+        ];
+
+        yield 'Keeps text elements with different content' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <text x="10" y="10">Hello</text>
+                    <text x="10" y="10">World</text>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><text x="10" y="10">Hello</text><text x="10" y="10">World</text></svg>
+                XML,
+        ];
+
+        yield 'Keeps badge label and value groups' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <g transform="scale(.1)">
+                        <text x="455" y="140">code coverage</text>
+                    </g>
+                    <g transform="scale(.1)">
+                        <text x="1055" y="140">93%</text>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(.1)"><text x="455" y="140">code coverage</text></g><g transform="scale(.1)"><text x="1055" y="140">93%</text></g></svg>
                 XML,
         ];
 
