@@ -364,7 +364,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         }
 
         if ($domElement->hasChildNodes()) {
-            while (null !== $domElement->firstChild) {
+            while ($domElement->firstChild instanceof \DOMNode) {
                 $parent->insertBefore($domElement->firstChild, $domElement);
             }
         }

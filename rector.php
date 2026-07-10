@@ -10,14 +10,12 @@
 declare(strict_types=1);
 
 use Rector\CodingStyle\Rector\Assign\NestedTernaryToMatchRector;
-use Rector\CodingStyle\Rector\Enum_\EnumCaseToPascalCaseRector;
 use Rector\CodingStyle\Rector\FuncCall\ArraySpreadInsteadOfArrayMergeRector;
 use Rector\Config\RectorConfig;
 use Rector\Php84\Rector\Param\ExplicitNullableParamTypeRector;
 use Rector\Php85\Rector\FuncCall\ArrayKeyExistsNullToEmptyStringRector;
 use Rector\Php85\Rector\Switch_\ColonAfterSwitchCaseRector;
 use Rector\PHPUnit\AnnotationsToAttributes\Rector\Class_\AnnotationWithValueToAttributeRector;
-use Rector\PHPUnit\CodeQuality\Rector\Class_\AddSeeTestAnnotationRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
 use Rector\PHPUnit\CodeQuality\Rector\ClassMethod\ReplaceTestFunctionPrefixWithAttributeRector;
 use Rector\PHPUnit\PHPUnit100\Rector\Class_\RemoveNamedArgsInDataProviderRector;
@@ -70,7 +68,6 @@ return RectorConfig::configure()
     ->withSkip(
         [
             PreferPHPUnitThisCallRector::class,
-            EnumCaseToPascalCaseRector::class,
         ]
     )
     ->withRules(
@@ -98,14 +95,12 @@ return RectorConfig::configure()
             ChangeMethodVisibilityRector::class,
             AddInterfaceByTraitRector::class,
             ArraySpreadInsteadOfArrayMergeRector::class,
-            EnumCaseToPascalCaseRector::class,
             NestedTernaryToMatchRector::class,
             AddReturnDocblockForScalarArrayFromAssignsRector::class,
             AddParamArrayDocblockBasedOnCallableNativeFuncCallRector::class,
             AddReturnArrayDocblockBasedOnArrayMapRector::class,
             AnnotationWithValueToAttributeRector::class,
             RemoveNamedArgsInDataProviderRector::class,
-            AddSeeTestAnnotationRector::class,
             ReplaceTestFunctionPrefixWithAttributeRector::class,
             ArrayKeyExistsNullToEmptyStringRector::class,
             ColonAfterSwitchCaseRector::class,

@@ -42,7 +42,7 @@
         "phpunit/php-code-coverage": "^12.5",
         "phpunit/phpunit": "^12.5",
         "povils/phpmnd": "^3.6",
-        "rector/rector": "^2.4",
+        "rector/rector": "^2.5",
         "shipmonk/composer-dependency-analyser": "^1.8",
         "shipmonk/phpstan-rules": "^4.3",
         "spaze/phpstan-disallowed-calls": "^4.12",

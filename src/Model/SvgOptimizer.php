@@ -120,8 +120,6 @@ final class SvgOptimizer
      * Risky rules are disabled by default because they may alter the SVG in ways
      * that impact compatibility, rendering behavior, or semantic meaning. Call
      * this method explicitly to allow such rules to run.
-     *
-     * @return $this
      */
     public function allowRisky(): self
     {
