@@ -191,7 +191,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
             [$processedCss, $newClassReplacements, $newIdReplacements] = $this->processCssRules(
                 $css,
                 $hash,
-                $classReplacements,
                 $idReplacements
             );
 
@@ -207,7 +206,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     /**
      * Process the CSS rules within a style block.
      *
-     * @param array<string, string> $classReplacements
      * @param array<string, string> $idReplacements
      *
      * @return array{string, array<string, string>, array<string, string>}
@@ -215,7 +213,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     private function processCssRules(
         string $css,
         string $hash,
-        array $classReplacements,
         array $idReplacements,
     ): array {
         $newClassReplacements = [];
@@ -224,7 +221,7 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
         $result = preg_replace_callback(
             self::CSS_RULE_REGEX,
             function (array $match) use ($hash, &$newClassReplacements, &$newIdReplacements, $idReplacements): string {
-                $selector = trim((string) $match['selector']);
+                $selector = trim($match['selector']);
                 $body = $match['body'];
 
                 if ($this->isUnsafeSelector($selector)) {

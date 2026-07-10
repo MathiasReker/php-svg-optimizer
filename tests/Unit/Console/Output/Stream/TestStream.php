@@ -15,20 +15,35 @@ use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
 
 final class TestStream extends StdoutStream
 {
+    /**
+     * @throws \RuntimeException
+     */
     public function __construct()
     {
         parent::__construct();
 
-        $this->stream = fopen('php://memory', 'w+');
-        if (false === $this->stream) {
+        $stream = fopen('php://memory', 'w+');
+
+        if (false === $stream) {
             throw new \RuntimeException('Unable to open memory stream.');
         }
+
+        $this->stream = $stream;
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     public function getContent(): string
     {
         rewind($this->stream);
 
-        return stream_get_contents($this->stream);
+        $content = stream_get_contents($this->stream);
+
+        if (false === $content) {
+            throw new \RuntimeException('Unable to read memory stream.');
+        }
+
+        return $content;
     }
 }

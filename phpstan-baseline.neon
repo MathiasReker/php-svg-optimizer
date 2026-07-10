@@ -7,12 +7,6 @@ parameters:
 			path: src/Service/Rule/RemoveUnsafeElements.php
 
 		-
-			rawMessage: Casting to string something that's already string.
-			identifier: cast.useless
-			count: 1
-			path: src/Service/Rule/ScopeSvgStyles.php
-
-		-
 			rawMessage: Use explicit return value over magic &reference
 			identifier: symplify.noReference
 			count: 2
@@ -25,12 +19,6 @@ parameters:
 			path: tests/Unit/Console/Input/ConfigLoaderTest.php
 
 		-
-			rawMessage: 'Parameter #1 $stream of function rewind expects resource, mixed given.'
-			identifier: argument.type
-			count: 1
-			path: tests/Unit/Console/Output/Stream/MemoryStreamTest.php
-
-		-
 			rawMessage: Class "MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output\Stream\TestStream" is not allowed to extend "MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream".
 			identifier: ergebnis.noExtends
 			count: 1
@@ -39,12 +27,6 @@ parameters:
 		-
 			rawMessage: Only abstract classes can be extended
 			identifier: symplify.forbiddenExtendOfNonAbstractClass
-			count: 1
-			path: tests/Unit/Console/Output/Stream/TestStream.php
-
-		-
-			rawMessage: 'Property MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream::$stream (resource) does not accept resource|false.'
-			identifier: assign.propertyType
 			count: 1
 			path: tests/Unit/Console/Output/Stream/TestStream.php
 

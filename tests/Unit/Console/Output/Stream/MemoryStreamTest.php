@@ -37,7 +37,7 @@ final class MemoryStreamTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
-    public function writeAndgetContent(): void
+    public function writeAndGetContent(): void
     {
         $memoryStream = new MemoryStream();
         $memoryStream->write('Hello');
@@ -117,7 +117,10 @@ final class MemoryStreamTest extends TestCase
         $reflectionProperty = $reflectionClass->getProperty('stream');
         $stream = $reflectionProperty->getValue($memoryStream);
 
+        self::assertIsResource($stream);
+
         rewind($stream);
+
         $output = $memoryStream->getContent();
 
         self::assertStringContainsString('Testing', $output);
