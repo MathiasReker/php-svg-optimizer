@@ -20,30 +20,30 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(OptionValueObject::class)]
-final class CommandOptionValueObjectTest extends TestCase
+final class OptionValueObjectTest extends TestCase
 {
     private const string TITLE = 'process';
 
     private const string DESCRIPTION = 'Process SVG files for optimization.';
 
-    private OptionValueObject $commandOptionValueObject;
+    private OptionValueObject $optionValueObject;
 
     #[Test]
     public function getTitle(): void
     {
-        self::assertSame(self::TITLE, $this->commandOptionValueObject->getTitle());
+        self::assertSame(self::TITLE, $this->optionValueObject->getTitle());
     }
 
     #[Test]
     public function getDescription(): void
     {
-        self::assertSame(self::DESCRIPTION, $this->commandOptionValueObject->getDescription());
+        self::assertSame(self::DESCRIPTION, $this->optionValueObject->getDescription());
     }
 
     #[\Override]
     protected function setUp(): void
     {
-        $this->commandOptionValueObject = new OptionValueObject(
+        $this->optionValueObject = new OptionValueObject(
             self::TITLE,
             self::DESCRIPTION
         );

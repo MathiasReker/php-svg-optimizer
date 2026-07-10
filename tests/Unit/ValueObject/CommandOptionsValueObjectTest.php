@@ -29,11 +29,28 @@ final class CommandOptionsValueObjectTest extends TestCase
             true,
             '/path/to/config.json',
             false,
-            false,
+            true,
         );
 
         self::assertTrue($commandOptionsValueObject->isDryRun());
-
         self::assertSame('/path/to/config.json', $commandOptionsValueObject->getConfigPath());
+        self::assertFalse($commandOptionsValueObject->allowRisky());
+        self::assertTrue($commandOptionsValueObject->withAllRules());
+    }
+
+    #[Test]
+    public function defaultValuesAreAssignedCorrectly(): void
+    {
+        $commandOptionsValueObject = new CommandOptionsValueObject(
+            false,
+            '',
+            true,
+            false,
+        );
+
+        self::assertFalse($commandOptionsValueObject->isDryRun());
+        self::assertSame('', $commandOptionsValueObject->getConfigPath());
+        self::assertTrue($commandOptionsValueObject->allowRisky());
+        self::assertFalse($commandOptionsValueObject->withAllRules());
     }
 }

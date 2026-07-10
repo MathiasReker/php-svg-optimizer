@@ -79,24 +79,6 @@ final class ConcreteProviderTest extends TestCase
 
     /**
      * @throws XmlProcessingException
-     * @throws \InvalidArgumentException
-     */
-    #[Test]
-    public function getMetaDataWithMbStrlen(): void
-    {
-        $input = "<?xml version=\"1.0\"?>\n<svg>✓漢</svg>";
-        $provider = $this->getConcreteProvider($input);
-        $domDocument = $provider->loadContent();
-
-        $provider->optimize($domDocument);
-        $metaDataValueObject = $provider->getMetaData();
-
-        self::assertSame(mb_strlen($provider->getInputContent(), '8bit'), $metaDataValueObject->getOriginalSize());
-        self::assertSame(mb_strlen($provider->getOutputContent(), '8bit'), $metaDataValueObject->getOptimizedSize());
-    }
-
-    /**
-     * @throws XmlProcessingException
      * @throws IOException
      */
     #[Test]

@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Type;
 
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -22,25 +23,39 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Command::class)]
 final class CommandTest extends TestCase
 {
+    #[DataProvider('provideGetTitleCases')]
     #[Test]
-    public function getTitle(): void
+    public function getTitle(Command $command, string $expectedTitle): void
     {
-        $command = Command::Process;
-
-        $expectedTitle = 'Process';
-        $actualTitle = $command->getTitle();
-
-        self::assertSame($expectedTitle, $actualTitle, 'The getTitle method should return the correct title.');
+        self::assertSame($expectedTitle, $command->getTitle());
     }
 
-    #[Test]
-    public function getDescription(): void
+    /**
+     * @return \Generator<array{Command, string}>
+     */
+    public static function provideGetTitleCases(): iterable
     {
-        $command = Command::Process;
+        yield 'Process command' => [
+            Command::Process,
+            'Process',
+        ];
+    }
 
-        $expectedDescription = 'Provide a list of directories or files to process.';
-        $actualDescription = $command->getDescription();
+    #[DataProvider('provideGetDescriptionCases')]
+    #[Test]
+    public function getDescription(Command $command, string $expectedDescription): void
+    {
+        self::assertSame($expectedDescription, $command->getDescription());
+    }
 
-        self::assertSame($expectedDescription, $actualDescription, 'The getDescription method should return the correct description.');
+    /**
+     * @return \Generator<array{Command, string}>
+     */
+    public static function provideGetDescriptionCases(): iterable
+    {
+        yield 'Process command' => [
+            Command::Process,
+            'Provide a list of directories or files to process.',
+        ];
     }
 }

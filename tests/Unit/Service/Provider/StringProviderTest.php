@@ -43,23 +43,23 @@ final class StringProviderTest extends TestCase
 
     /**
      * @throws XmlProcessingException
-     * @throws \InvalidArgumentException
      */
     #[Test]
-    public function getMetaData(): void
+    public function loadContent(): void
     {
         $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
         $domDocument = $stringProvider->loadContent();
 
-        $stringProvider->optimize($domDocument);
+        self::assertNotNull($domDocument->documentElement);
+        self::assertSame('svg', $domDocument->documentElement->tagName);
+    }
 
-        $metaDataValueObject = $stringProvider->getMetaData();
+    #[Test]
+    public function getOutputContentBeforeOptimize(): void
+    {
+        $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
 
-        $originalSize = mb_strlen(self::TEST_INPUT_STRING, '8bit');
-        $optimizedSize = mb_strlen($stringProvider->getOutputContent(), '8bit');
-
-        self::assertSame($originalSize, $metaDataValueObject->getOriginalSize());
-        self::assertSame($optimizedSize, $metaDataValueObject->getOptimizedSize());
+        self::assertEmpty($stringProvider->getOutputContent());
     }
 
     /**

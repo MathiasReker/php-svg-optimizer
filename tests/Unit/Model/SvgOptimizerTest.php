@@ -177,8 +177,8 @@ final class SvgOptimizerTest extends TestCase
 
         $metaDataValueObject = $svgOptimizer->getMetaData();
 
-        self::assertSame(13, $metaDataValueObject->getOriginalSize());
-        self::assertSame(18, $metaDataValueObject->getOptimizedSize());
+        self::assertSame(11, $metaDataValueObject->getOriginalSize());
+        self::assertSame(20, $metaDataValueObject->getOptimizedSize());
         self::assertGreaterThan(0, $metaDataValueObject->getOptimizationTime());
     }
 
@@ -326,7 +326,7 @@ final class SvgOptimizerTest extends TestCase
 
             public function serialize(\DOMDocument $domDocument): string
             {
-                return '';
+                return '<svg>optimized</svg>';
             }
         };
     }

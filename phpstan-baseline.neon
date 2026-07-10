@@ -91,18 +91,6 @@ parameters:
 			path: tests/Unit/Console/Output/Stream/StdoutStreamTest.php
 
 		-
-			rawMessage: Cannot access property $tagName on DOMElement|null.
-			identifier: property.nonObject
-			count: 1
-			path: tests/Unit/Service/Provider/FileProviderTest.php
-
-		-
-			rawMessage: 'Cannot call method setAttribute() on DOMElement|null.'
-			identifier: method.nonObject
-			count: 2
-			path: tests/Unit/Service/Provider/FileProviderTest.php
-
-		-
 			rawMessage: 'Method MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Provider\FileProviderTest::optimizeThrowsTypeErrorOnInvalidInput() throws checked exception MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException but it''s missing from the PHPDoc @throws tag.'
 			identifier: missingType.checkedException
 			count: 1

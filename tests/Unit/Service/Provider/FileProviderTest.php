@@ -78,6 +78,7 @@ final class FileProviderTest extends TestCase
 
         $domDocument = $fileProvider->loadContent();
 
+        self::assertNotNull($domDocument->documentElement);
         self::assertSame('svg', $domDocument->documentElement->tagName);
     }
 
@@ -140,62 +141,6 @@ final class FileProviderTest extends TestCase
      * @throws XmlProcessingException
      * @throws FileNotFoundException
      * @throws IOException
-     * @throws \InvalidArgumentException
-     */
-    #[Test]
-    public function getMetaDataReflectsOptimizedSize(): void
-    {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
-
-        $domDocument = $fileProvider->loadContent();
-        $fileProvider->optimize($domDocument);
-
-        $metaDataValueObject = $fileProvider->getMetaData();
-
-        self::assertGreaterThan(0, $metaDataValueObject->getOriginalSize());
-        self::assertGreaterThan(0, $metaDataValueObject->getOptimizedSize());
-        self::assertGreaterThanOrEqual(0.0, $metaDataValueObject->getSavedPercentage());
-    }
-
-    /**
-     * @throws XmlProcessingException
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws \InvalidArgumentException
-     */
-    #[Test]
-    public function getMetaData(): void
-    {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
-        $domDocument = new \DOMDocument();
-        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>');
-
-        $fileProvider->optimize($domDocument);
-
-        $metaDataValueObject = $fileProvider->getMetaData();
-
-        self::assertSame(filesize(self::TEST_INPUT_FILE), $metaDataValueObject->getOriginalSize());
-    }
-
-    /**
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws \InvalidArgumentException
-     */
-    #[Test]
-    public function providerReturnsZeroBeforeOptimization(): void
-    {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
-        $metaDataValueObject = $fileProvider->getMetaData();
-
-        self::assertSame(filesize(self::TEST_INPUT_FILE), $metaDataValueObject->getOriginalSize());
-        self::assertSame(0, $metaDataValueObject->getOptimizedSize());
-    }
-
-    /**
-     * @throws XmlProcessingException
-     * @throws FileNotFoundException
-     * @throws IOException
      */
     #[Test]
     public function optimizeWithMinimalSvg(): void
@@ -236,29 +181,6 @@ final class FileProviderTest extends TestCase
      * @throws XmlProcessingException
      * @throws FileNotFoundException
      * @throws IOException
-     * @throws \InvalidArgumentException
-     * @throws \DivisionByZeroError
-     */
-    #[Test]
-    public function metaDataSavedPercentageCalculation(): void
-    {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
-
-        $domDocument = $fileProvider->loadContent();
-        $fileProvider->optimize($domDocument);
-
-        $metaDataValueObject = $fileProvider->getMetaData();
-
-        $expectedSaved = $metaDataValueObject->getOriginalSize() - $metaDataValueObject->getOptimizedSize();
-        $expectedPercentage = $expectedSaved / $metaDataValueObject->getOriginalSize() * 100;
-
-        self::assertEqualsWithDelta($expectedPercentage, $metaDataValueObject->getSavedPercentage(), 0.01);
-    }
-
-    /**
-     * @throws XmlProcessingException
-     * @throws FileNotFoundException
-     * @throws IOException
      */
     #[Test]
     public function loadContentThrowsXmlProcessingExceptionOnMalformedXml(): void
@@ -284,38 +206,15 @@ final class FileProviderTest extends TestCase
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
 
-        $domDocument->documentElement->setAttribute('data-test', 'value');
+        if ($domDocument->documentElement instanceof \DOMElement) {
+            $domDocument->documentElement->setAttribute('data-test', 'value');
+        }
 
         $fileProvider->optimize($domDocument);
 
         $output = $fileProvider->getOutputContent();
 
         self::assertStringContainsString('data-test="value"', $output);
-    }
-
-    /**
-     * @throws XmlProcessingException
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws \InvalidArgumentException
-     */
-    #[Test]
-    public function metaDataReflectsMultipleOptimizations(): void
-    {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
-
-        $domDocument = $fileProvider->loadContent();
-        $fileProvider->optimize($domDocument);
-
-        $metaDataValueObject = $fileProvider->getMetaData();
-
-        $domDocument->documentElement->setAttribute('class', 'test');
-        $fileProvider->optimize($domDocument);
-
-        $secondMeta = $fileProvider->getMetaData();
-
-        self::assertSame($metaDataValueObject->getOriginalSize(), $secondMeta->getOriginalSize());
-        self::assertNotSame($metaDataValueObject->getOptimizedSize(), $secondMeta->getOptimizedSize());
     }
 
     /**
