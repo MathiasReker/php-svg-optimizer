@@ -17,6 +17,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
@@ -33,6 +34,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MetaDataValueObject::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversClass(MetaData::class)]
 final class SvgOptimizerTest extends TestCase
 {
     private SvgProviderInterface $svgProvider;
@@ -142,17 +144,6 @@ final class SvgOptimizerTest extends TestCase
                 return '';
             }
 
-            public function getMetaData(): MetaDataValueObject
-            {
-                return new MetaDataValueObject(
-                    100,
-                    50,
-                    50,
-                    50.0,
-                    0.001,
-                );
-            }
-
             public function saveToFile(string $path): SvgProviderInterface
             {
                 return $this;
@@ -178,7 +169,7 @@ final class SvgOptimizerTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      */
     #[Test]
-    public function getMetaDataReturnsProviderMetaData(): void
+    public function getMetaDataReturnsCorrectMetaData(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
@@ -186,9 +177,9 @@ final class SvgOptimizerTest extends TestCase
 
         $metaDataValueObject = $svgOptimizer->getMetaData();
 
-        self::assertSame(100, $metaDataValueObject->getOriginalSize());
-        self::assertSame(50, $metaDataValueObject->getOptimizedSize());
-        self::assertSame(0.001, $metaDataValueObject->getOptimizationTime());
+        self::assertSame(13, $metaDataValueObject->getOriginalSize());
+        self::assertSame(18, $metaDataValueObject->getOptimizedSize());
+        self::assertGreaterThan(0, $metaDataValueObject->getOptimizationTime());
     }
 
     #[Test]
@@ -326,17 +317,6 @@ final class SvgOptimizerTest extends TestCase
             public function getOutputContent(): string
             {
                 return '<svg>optimized</svg>';
-            }
-
-            public function getMetaData(): MetaDataValueObject
-            {
-                return new MetaDataValueObject(
-                    100,
-                    50,
-                    50,
-                    50.0,
-                    0.001,
-                );
             }
 
             public function saveToFile(string $path): SvgProviderInterface

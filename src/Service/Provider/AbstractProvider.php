@@ -14,9 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Provider;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
-use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 
 /**
  * @no-named-arguments
@@ -44,11 +42,6 @@ abstract class AbstractProvider implements SvgProviderInterface
     protected string $inputContent = '';
 
     /**
-     * Holds the time spent optimizing, in seconds.
-     */
-    protected float $optimizationTime = 0.0;
-
-    /**
      * Constructor for the AbstractProvider class.
      *
      * Initializes the DomDocumentWrapper instance.
@@ -66,46 +59,9 @@ abstract class AbstractProvider implements SvgProviderInterface
     #[\Override]
     final public function optimize(\DOMDocument $domDocument): self
     {
-        $this->runWithTiming(
-            function () use ($domDocument): void {
-                $this->outputContent = $this->domDocumentWrapper->saveToString($domDocument);
-            }
-        );
+        $this->outputContent = $this->domDocumentWrapper->saveToString($domDocument);
 
         return $this;
-    }
-
-    /**
-     * Measures execution time of a callback and stores it.
-     *
-     * @param callable $callback The operation to measure
-     *
-     * @param-immediately-invoked-callable $callback
-     */
-    private function runWithTiming(callable $callback): void
-    {
-        $start = microtime(true);
-        $callback();
-        $end = microtime(true);
-
-        $this->optimizationTime += ($end - $start);
-    }
-
-    /**
-     * Get metadata about the optimization.
-     *
-     * @throws \InvalidArgumentException If the original size is less than or equal to 0
-     */
-    #[\Override]
-    final public function getMetaData(): MetaDataValueObject
-    {
-        $metaData = new MetaData(
-            mb_strlen($this->inputContent, '8bit'),
-            mb_strlen($this->outputContent, '8bit'),
-            $this->optimizationTime,
-        );
-
-        return $metaData->toValueObject();
     }
 
     /**

@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Contract\Service\Provider;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 
 /**
  * Defines the contract for an SVG content provider, including loading, optimizing,
@@ -63,17 +62,6 @@ interface SvgProviderInterface
      * @return string The optimized SVG content
      */
     public function getOutputContent(): string;
-
-    /**
-     * Retrieves metadata about the optimization process.
-     *
-     * This method provides details about the sizes of the original and
-     * optimized SVG content, including the amount of bytes saved and the
-     * percentage of space saved.
-     *
-     * @return MetaDataValueObject The metadata about the optimization process
-     */
-    public function getMetaData(): MetaDataValueObject;
 
     /**
      * Save the optimized SVG content to a file.

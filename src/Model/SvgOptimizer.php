@@ -16,6 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 
@@ -58,6 +59,11 @@ final class SvgOptimizer
     private bool $isOptimized = false;
 
     /**
+     * Holds the time spent optimizing, in seconds.
+     */
+    private float $optimizationTime = 0.0;
+
+    /**
      * Constructor for SvgOptimizer.
      *
      * @param SvgProviderInterface $svgProvider The provider used to get and save SVG content
@@ -81,7 +87,13 @@ final class SvgOptimizer
             throw new \LogicException('Metadata is not available before optimization.');
         }
 
-        return $this->svgProvider->getMetaData();
+        $metaData = new MetaData(
+            mb_strlen($this->svgProvider->getInputContent(), '8bit'),
+            mb_strlen($this->svgProvider->getOutputContent(), '8bit'),
+            $this->optimizationTime,
+        );
+
+        return $metaData->toValueObject();
     }
 
     /**
@@ -139,6 +151,8 @@ final class SvgOptimizer
      */
     public function optimize(): self
     {
+        $start = microtime(true);
+
         if ($this->hasRiskyRules() && !$this->allowRisky) {
             throw new RiskyRulesNotAllowedException('Risky optimization rules are disabled. Enable them to use these rules.');
         }
@@ -154,6 +168,10 @@ final class SvgOptimizer
         $this->domDocumentContent = $this->svgProvider->optimize($domDocument)->getOutputContent();
 
         $this->isOptimized = true;
+
+        $end = microtime(true);
+
+        $this->optimizationTime = $end - $start;
 
         return $this;
     }
