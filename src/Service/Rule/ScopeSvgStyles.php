@@ -188,14 +188,17 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
                 continue;
             }
 
-            $processed = $this->processCssRules(
+            [$processedCss, $newClassReplacements, $newIdReplacements] = $this->processCssRules(
                 $css,
                 $hash,
                 $classReplacements,
                 $idReplacements
             );
 
-            $domNodeList->nodeValue = $processed;
+            $classReplacements = array_merge($classReplacements, $newClassReplacements);
+            $idReplacements = array_merge($idReplacements, $newIdReplacements);
+
+            $domNodeList->nodeValue = $processedCss;
         }
 
         return $classReplacements;
@@ -206,16 +209,21 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
      *
      * @param array<string, string> $classReplacements
      * @param array<string, string> $idReplacements
+     *
+     * @return array{string, array<string, string>, array<string, string>}
      */
     private function processCssRules(
         string $css,
         string $hash,
-        array &$classReplacements,
-        array &$idReplacements,
-    ): string {
+        array $classReplacements,
+        array $idReplacements,
+    ): array {
+        $newClassReplacements = [];
+        $newIdReplacements = [];
+
         $result = preg_replace_callback(
             self::CSS_RULE_REGEX,
-            function (array $match) use ($hash, &$classReplacements, &$idReplacements): string {
+            function (array $match) use ($hash, &$newClassReplacements, &$newIdReplacements, $classReplacements, $idReplacements): string {
                 $selector = trim($match['selector']);
                 $body = $match['body'];
 
@@ -226,8 +234,11 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
                 $selectors = array_map(trim(...), explode(',', $selector));
 
                 foreach ($selectors as &$single) {
-                    $single = $this->scopeClasses($single, $hash, $classReplacements);
-                    $single = $this->scopeSelectorIds($single, $hash, $idReplacements);
+                    [$single, $scopedClasses] = $this->scopeClasses($single, $hash, $classReplacements);
+                    $newClassReplacements = array_merge($newClassReplacements, $scopedClasses);
+
+                    [$single, $scopedIds] = $this->scopeSelectorIds($single, $hash, $idReplacements);
+                    $newIdReplacements = array_merge($newIdReplacements, $scopedIds);
                 }
 
                 return \sprintf('%s{%s}', implode(', ', $selectors), $body);
@@ -235,7 +246,7 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
             $css
         );
 
-        return $result ?? '';
+        return [$result ?? '', $newClassReplacements, $newIdReplacements];
     }
 
     /**
@@ -254,48 +265,63 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
      * Scope classes within a CSS selector.
      *
      * @param array<string, string> $classReplacements
+     *
+     * @return array{string, array<string, string>}
      */
     private function scopeClasses(
         string $selector,
         string $hash,
-        array &$classReplacements,
-    ): string {
-        return (string) preg_replace_callback(
+        array $classReplacements,
+    ): array {
+        $scopedClasses = [];
+
+        $newSelector = (string) preg_replace_callback(
             self::CLASS_SELECTOR_REGEX,
-            static function (array $match) use ($hash, &$classReplacements): string {
+            static function (array $match) use ($hash, &$scopedClasses): string {
                 $original = $match[1];
                 $scoped = $original . '-' . $hash;
-                $classReplacements[$original] = $scoped;
+                $scopedClasses[$original] = $scoped;
 
                 return '.' . $scoped;
             },
             $selector
         );
+
+        return [$newSelector, $scopedClasses];
     }
 
     /**
      * Scope IDs within a CSS selector.
      *
      * @param array<string, string> $idReplacements
+     *
+     * @return array{string, array<string, string>}
      */
     private function scopeSelectorIds(
         string $selector,
         string $hash,
-        array &$idReplacements,
-    ): string {
-        return (string) preg_replace_callback(
+        array $idReplacements,
+    ): array {
+        $scopedIds = [];
+
+        $newSelector = (string) preg_replace_callback(
             self::ID_SELECTOR_REGEX,
-            static function (array $match) use ($hash, &$idReplacements): string {
+            static function (array $match) use ($hash, &$scopedIds, $idReplacements): string {
                 $original = $match[1];
 
-                if (!\array_key_exists($original, $idReplacements)) {
-                    $idReplacements[$original] = $original . '-' . $hash;
+                if (\array_key_exists($original, $idReplacements)) {
+                    return '#' . $idReplacements[$original];
                 }
 
-                return '#' . $idReplacements[$original];
+                $scoped = $original . '-' . $hash;
+                $scopedIds[$original] = $scoped;
+
+                return '#' . $scoped;
             },
             $selector
         );
+
+        return [$newSelector, $scopedIds];
     }
 
     /**
@@ -322,19 +348,28 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
                 continue;
             }
 
-            $classes = preg_split(self::WHITESPACE_REGEX, $node->getAttribute(SvgAttribute::Class_->value));
-            if (!\is_array($classes)) {
-                continue;
-            }
-
-            foreach ($classes as &$class) {
-                if (\array_key_exists($class, $classReplacements)) {
-                    $class = $classReplacements[$class];
-                }
-            }
-
-            $node->setAttribute(SvgAttribute::Class_->value, implode(' ', $classes));
+            $this->updateSingleClassAttribute($node, $classReplacements);
         }
+    }
+
+    /**
+     * @param \DOMElement $node
+     * @param array<string, string> $classReplacements
+     */
+    private function updateSingleClassAttribute(\DOMElement $node, array $classReplacements): void
+    {
+        $classes = preg_split(self::WHITESPACE_REGEX, $node->getAttribute(SvgAttribute::Class_->value));
+        if (!\is_array($classes)) {
+            return;
+        }
+
+        foreach ($classes as &$class) {
+            if (\array_key_exists($class, $classReplacements)) {
+                $class = $classReplacements[$class];
+            }
+        }
+
+        $node->setAttribute(SvgAttribute::Class_->value, implode(' ', $classes));
     }
 
     /**

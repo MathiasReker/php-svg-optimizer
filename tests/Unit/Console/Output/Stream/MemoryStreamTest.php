@@ -113,7 +113,11 @@ final class MemoryStreamTest extends TestCase
         $memoryStream = new MemoryStream();
         $memoryStream->write('Testing');
 
-        rewind((new \ReflectionClass($memoryStream))->getProperty('stream')->getValue($memoryStream));
+        $reflection = new \ReflectionClass($memoryStream);
+        $property = $reflection->getProperty('stream');
+        $stream = $property->getValue($memoryStream);
+
+        rewind($stream);
         $output = $memoryStream->getContent();
 
         self::assertStringContainsString('Testing', $output);

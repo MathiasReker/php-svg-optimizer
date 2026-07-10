@@ -122,13 +122,11 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
         $remaining = [];
 
         foreach ($declarations as $declaration) {
-            $parsed = $this->parseDeclaration($declaration);
+            [$prop, $value] = $this->parseDeclaration($declaration);
 
-            if (null === $parsed) {
+            if ('' === $prop) {
                 continue;
             }
-
-            [$prop, $value] = $parsed;
 
             if ($this->isConvertibleProperty($prop)) {
                 if (!$domElement->hasAttribute($prop)) {
@@ -145,14 +143,14 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
     }
 
     /**
-     * @return array{string, string}|null
+     * @return array{string, string}
      */
-    private function parseDeclaration(string $declaration): ?array
+    private function parseDeclaration(string $declaration): array
     {
         $declaration = trim($declaration);
 
         if ('' === $declaration || !str_contains($declaration, ':')) {
-            return null;
+            return ['', ''];
         }
 
         [$prop, $value] = explode(':', $declaration, 2);
@@ -161,7 +159,7 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
         $value = trim($value);
 
         if ('' === $prop || '' === $value) {
-            return null;
+            return ['', ''];
         }
 
         return [$prop, $value];

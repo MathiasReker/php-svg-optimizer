@@ -162,7 +162,7 @@ final class ConfigLoaderTest extends TestCase
 
         $result = ConfigLoader::loadConfig($jsonString);
 
-        self::assertSame(['0' => true, '1' => false], $result);
+        self::assertSame([0 => true, 1 => false], $result);
     }
 
     /**

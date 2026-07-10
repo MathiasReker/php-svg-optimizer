@@ -38,24 +38,7 @@ final class StdoutStreamTest extends TestCase
     #[Test]
     public function writeAndWritelnToMemoryStream(): void
     {
-        $stream = new class extends StdoutStream {
-            public function __construct()
-            {
-                parent::__construct();
-
-                $this->stream = fopen('php://memory', 'w+');
-                if (false === $this->stream) {
-                    throw new \RuntimeException('Unable to open memory stream.');
-                }
-            }
-
-            public function getContent(): string
-            {
-                rewind($this->stream);
-
-                return stream_get_contents($this->stream);
-            }
-        };
+        $stream = new TestStream();
 
         $stream->write('Hello');
         $stream->writeln(' World');
@@ -72,24 +55,7 @@ final class StdoutStreamTest extends TestCase
     #[Test]
     public function multipleWrites(): void
     {
-        $stream = new class extends StdoutStream {
-            public function __construct()
-            {
-                parent::__construct();
-
-                $this->stream = fopen('php://memory', 'w+');
-                if (false === $this->stream) {
-                    throw new \RuntimeException('Unable to open memory stream.');
-                }
-            }
-
-            public function getContent(): string
-            {
-                rewind($this->stream);
-
-                return stream_get_contents($this->stream);
-            }
-        };
+        $stream = new TestStream();
 
         $stream->write('Line 1');
         $stream->writeln(' Line 2');

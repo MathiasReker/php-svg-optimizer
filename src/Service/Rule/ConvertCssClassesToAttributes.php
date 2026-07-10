@@ -144,15 +144,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
 
             [$convertible, $nonConvertible] = $this->splitDeclarations($declarations, $convertibleLookup);
 
-            if (\array_key_exists($class, $classMap)) {
-                foreach ($classMap[$class] as $element) {
-                    foreach ($convertible as $prop => $value) {
-                        $element->setAttribute($prop, $value);
-                    }
-
-                    $this->updateElementClass($element, $class, $nonConvertible);
-                }
-            }
+            $this->applyStylesToElements($class, $classMap, $convertible, $nonConvertible);
 
             if ([] !== $nonConvertible) {
                 $remainingCss[] = $this->rebuildCssRule($class, $nonConvertible);
@@ -160,6 +152,27 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         }
 
         return implode('', $remainingCss);
+    }
+
+    /**
+     * @param string $class
+     * @param array<string, list<\DOMElement>> $classMap
+     * @param array<string, string> $convertible
+     * @param array<string, string> $nonConvertible
+     */
+    private function applyStylesToElements(string $class, array $classMap, array $convertible, array $nonConvertible): void
+    {
+        if (!\array_key_exists($class, $classMap)) {
+            return;
+        }
+
+        foreach ($classMap[$class] as $element) {
+            foreach ($convertible as $prop => $value) {
+                $element->setAttribute($prop, $value);
+            }
+
+            $this->updateElementClass($element, $class, $nonConvertible);
+        }
     }
 
     /**

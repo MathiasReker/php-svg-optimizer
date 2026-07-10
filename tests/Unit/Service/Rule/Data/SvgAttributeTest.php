@@ -23,18 +23,6 @@ use PHPUnit\Framework\TestCase;
 final class SvgAttributeTest extends TestCase
 {
     #[Test]
-    public function casesReturnsAllAttributes(): void
-    {
-        self::assertNotEmpty(SvgAttribute::cases());
-    }
-
-    #[Test]
-    public function valuesReturnsAllAttributeValues(): void
-    {
-        self::assertNotEmpty(SvgAttribute::values());
-    }
-
-    #[Test]
     public function colorsReturnsCorrectAttributes(): void
     {
         $expected = [

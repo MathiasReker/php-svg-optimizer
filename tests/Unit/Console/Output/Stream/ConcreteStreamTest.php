@@ -29,6 +29,9 @@ final class ConcreteStreamTest extends TestCase
     public function writeAppendsToStream(): void
     {
         $stream = new class extends AbstractStream {
+            /**
+             * @throws \RuntimeException
+             */
             public function __construct()
             {
                 $stream = fopen('php://memory', 'w+');
@@ -61,6 +64,9 @@ final class ConcreteStreamTest extends TestCase
     public function writelnAppendsWithNewline(): void
     {
         $stream = new class extends AbstractStream {
+            /**
+             * @throws \RuntimeException
+             */
             public function __construct()
             {
                 $stream = fopen('php://memory', 'w+');

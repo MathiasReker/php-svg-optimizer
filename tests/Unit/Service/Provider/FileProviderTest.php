@@ -220,6 +220,7 @@ final class FileProviderTest extends TestCase
     /**
      * @throws FileNotFoundException
      * @throws IOException
+     * @throws XmlProcessingException
      */
     #[Test]
     public function optimizeThrowsTypeErrorOnInvalidInput(): void

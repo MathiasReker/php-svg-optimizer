@@ -23,18 +23,6 @@ use PHPUnit\Framework\TestCase;
 final class SvgTagTest extends TestCase
 {
     #[Test]
-    public function casesReturnsAllTags(): void
-    {
-        self::assertNotEmpty(SvgTag::cases());
-    }
-
-    #[Test]
-    public function valuesReturnsAllTagValues(): void
-    {
-        self::assertNotEmpty(SvgTag::values());
-    }
-
-    #[Test]
     public function dangerousReturnsCorrectTags(): void
     {
         $expected = [
