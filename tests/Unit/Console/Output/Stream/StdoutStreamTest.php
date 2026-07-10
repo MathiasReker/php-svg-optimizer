@@ -38,12 +38,12 @@ final class StdoutStreamTest extends TestCase
     #[Test]
     public function writeAndWritelnToMemoryStream(): void
     {
-        $stream = new TestStream();
+        $testStream = new TestStream();
 
-        $stream->write('Hello');
-        $stream->writeln(' World');
+        $testStream->write('Hello');
+        $testStream->writeln(' World');
 
-        $output = $stream->getContent();
+        $output = $testStream->getContent();
 
         self::assertStringContainsString('Hello', $output);
         self::assertStringContainsString(' World', $output);
@@ -55,14 +55,14 @@ final class StdoutStreamTest extends TestCase
     #[Test]
     public function multipleWrites(): void
     {
-        $stream = new TestStream();
+        $testStream = new TestStream();
 
-        $stream->write('Line 1');
-        $stream->writeln(' Line 2');
-        $stream->write('Line 3');
-        $stream->writeln(' Line 4');
+        $testStream->write('Line 1');
+        $testStream->writeln(' Line 2');
+        $testStream->write('Line 3');
+        $testStream->writeln(' Line 4');
 
-        $output = $stream->getContent();
+        $output = $testStream->getContent();
 
         self::assertStringContainsString('Line 1', $output);
         self::assertStringContainsString('Line 2' . \PHP_EOL, $output);

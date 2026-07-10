@@ -113,9 +113,9 @@ final class MemoryStreamTest extends TestCase
         $memoryStream = new MemoryStream();
         $memoryStream->write('Testing');
 
-        $reflection = new \ReflectionClass($memoryStream);
-        $property = $reflection->getProperty('stream');
-        $stream = $property->getValue($memoryStream);
+        $reflectionClass = new \ReflectionClass($memoryStream);
+        $reflectionProperty = $reflectionClass->getProperty('stream');
+        $stream = $reflectionProperty->getValue($memoryStream);
 
         rewind($stream);
         $output = $memoryStream->getContent();

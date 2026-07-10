@@ -155,10 +155,9 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     /**
-     * @param string $class
      * @param array<string, list<\DOMElement>> $classMap
-     * @param array<string, string> $convertible
-     * @param array<string, string> $nonConvertible
+     * @param array<string, string>            $convertible
+     * @param array<string, string>            $nonConvertible
      */
     private function applyStylesToElements(string $class, array $classMap, array $convertible, array $nonConvertible): void
     {

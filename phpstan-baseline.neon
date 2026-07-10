@@ -7,6 +7,12 @@ parameters:
 			path: src/Service/Rule/RemoveUnsafeElements.php
 
 		-
+			rawMessage: Casting to string something that's already string.
+			identifier: cast.useless
+			count: 1
+			path: src/Service/Rule/ScopeSvgStyles.php
+
+		-
 			rawMessage: Use explicit return value over magic &reference
 			identifier: symplify.noReference
 			count: 2

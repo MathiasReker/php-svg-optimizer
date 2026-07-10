@@ -195,8 +195,8 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
                 $idReplacements
             );
 
-            $classReplacements = array_merge($classReplacements, $newClassReplacements);
-            $idReplacements = array_merge($idReplacements, $newIdReplacements);
+            $classReplacements = [...$classReplacements, ...$newClassReplacements];
+            $idReplacements = [...$idReplacements, ...$newIdReplacements];
 
             $domNodeList->nodeValue = $processedCss;
         }
@@ -223,8 +223,8 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
 
         $result = preg_replace_callback(
             self::CSS_RULE_REGEX,
-            function (array $match) use ($hash, &$newClassReplacements, &$newIdReplacements, $classReplacements, $idReplacements): string {
-                $selector = trim($match['selector']);
+            function (array $match) use ($hash, &$newClassReplacements, &$newIdReplacements, $idReplacements): string {
+                $selector = trim((string) $match['selector']);
                 $body = $match['body'];
 
                 if ($this->isUnsafeSelector($selector)) {
@@ -234,11 +234,11 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
                 $selectors = array_map(trim(...), explode(',', $selector));
 
                 foreach ($selectors as &$single) {
-                    [$single, $scopedClasses] = $this->scopeClasses($single, $hash, $classReplacements);
-                    $newClassReplacements = array_merge($newClassReplacements, $scopedClasses);
+                    [$single, $scopedClasses] = $this->scopeClasses($single, $hash);
+                    $newClassReplacements = [...$newClassReplacements, ...$scopedClasses];
 
                     [$single, $scopedIds] = $this->scopeSelectorIds($single, $hash, $idReplacements);
-                    $newIdReplacements = array_merge($newIdReplacements, $scopedIds);
+                    $newIdReplacements = [...$newIdReplacements, ...$scopedIds];
                 }
 
                 return \sprintf('%s{%s}', implode(', ', $selectors), $body);
@@ -264,14 +264,11 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     /**
      * Scope classes within a CSS selector.
      *
-     * @param array<string, string> $classReplacements
-     *
      * @return array{string, array<string, string>}
      */
     private function scopeClasses(
         string $selector,
         string $hash,
-        array $classReplacements,
     ): array {
         $scopedClasses = [];
 
@@ -353,12 +350,11 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     }
 
     /**
-     * @param \DOMElement $node
      * @param array<string, string> $classReplacements
      */
-    private function updateSingleClassAttribute(\DOMElement $node, array $classReplacements): void
+    private function updateSingleClassAttribute(\DOMElement $domElement, array $classReplacements): void
     {
-        $classes = preg_split(self::WHITESPACE_REGEX, $node->getAttribute(SvgAttribute::Class_->value));
+        $classes = preg_split(self::WHITESPACE_REGEX, $domElement->getAttribute(SvgAttribute::Class_->value));
         if (!\is_array($classes)) {
             return;
         }
@@ -369,7 +365,7 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
             }
         }
 
-        $node->setAttribute(SvgAttribute::Class_->value, implode(' ', $classes));
+        $domElement->setAttribute(SvgAttribute::Class_->value, implode(' ', $classes));
     }
 
     /**
