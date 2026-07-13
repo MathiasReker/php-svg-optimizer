@@ -147,14 +147,14 @@ final class SvgOptimizerCommandTest extends TestCase
 
         $outputManager = new OutputManager(new MemoryStream());
 
-        $commandOptions = new CommandOption(
+        $commandOption = new CommandOption(
             false,
             '',
             false,
             false,
         );
 
-        $constructor->invoke($command, [$svgFile], $commandOptions, $outputManager);
+        $constructor->invoke($command, [$svgFile], $commandOption, $outputManager);
 
         $command->run();
 
@@ -184,14 +184,14 @@ final class SvgOptimizerCommandTest extends TestCase
         $outputManager = new OutputManager(new MemoryStream());
         $command = $reflectionClass->newInstanceWithoutConstructor();
 
-        $commandOptions = new CommandOption(
+        $commandOption = new CommandOption(
             false,
             '',
             false,
             false,
         );
 
-        $constructor->invoke($command, [], $commandOptions, $outputManager);
+        $constructor->invoke($command, [], $commandOption, $outputManager);
 
         $command->run();
         $prop = $reflectionClass->getProperty('metaDataAggregator');

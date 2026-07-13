@@ -20,37 +20,37 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(CommandOption::class)]
-final class CommandOptionsValueObjectTest extends TestCase
+final class CommandOptionTest extends TestCase
 {
     #[Test]
     public function propertiesAreAssignedCorrectly(): void
     {
-        $commandOptions = new CommandOption(
+        $commandOption = new CommandOption(
             true,
             '/path/to/config.json',
             false,
             true,
         );
 
-        self::assertTrue($commandOptions->isDryRun());
-        self::assertSame('/path/to/config.json', $commandOptions->getConfigPath());
-        self::assertFalse($commandOptions->allowRisky());
-        self::assertTrue($commandOptions->withAllRules());
+        self::assertTrue($commandOption->isDryRun());
+        self::assertSame('/path/to/config.json', $commandOption->getConfigPath());
+        self::assertFalse($commandOption->allowRisky());
+        self::assertTrue($commandOption->withAllRules());
     }
 
     #[Test]
     public function defaultValuesAreAssignedCorrectly(): void
     {
-        $commandOptions = new CommandOption(
+        $commandOption = new CommandOption(
             false,
             '',
             true,
             false,
         );
 
-        self::assertFalse($commandOptions->isDryRun());
-        self::assertSame('', $commandOptions->getConfigPath());
-        self::assertTrue($commandOptions->allowRisky());
-        self::assertFalse($commandOptions->withAllRules());
+        self::assertFalse($commandOption->isDryRun());
+        self::assertSame('', $commandOption->getConfigPath());
+        self::assertTrue($commandOption->allowRisky());
+        self::assertFalse($commandOption->withAllRules());
     }
 }

@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(Metrics::class)]
-final class MetaDataValueObjectTest extends TestCase
+final class MetricsTest extends TestCase
 {
     private const int ORIGINAL_SIZE = 1_000;
 

@@ -34,13 +34,13 @@ final readonly class Command implements CommandInterface
     private SvgFileProcessor $svgFileProcessor;
 
     /**
-     * @param list<string>   $paths          The paths to SVG files or directories to process
-     * @param CommandOption $commandOptions The options for the command
-     * @param OutputManager  $outputManager  The output helper for displaying messages
+     * @param list<string>  $paths         The paths to SVG files or directories to process
+     * @param CommandOption $commandOption The options for the command
+     * @param OutputManager $outputManager The output helper for displaying messages
      */
     public function __construct(
-        private array         $paths,
-        private CommandOption $commandOptions,
+        private array $paths,
+        private CommandOption $commandOption,
         private OutputManager $outputManager,
     ) {
         $this->metaDataAggregator = new MetaDataAggregator();
@@ -55,7 +55,7 @@ final readonly class Command implements CommandInterface
     private function buildProcessor(): SvgFileProcessor
     {
         return new SvgFileProcessor(
-            $this->commandOptions,
+            $this->commandOption,
             $this->outputManager,
             $this->metaDataAggregator
         );
@@ -98,7 +98,7 @@ final readonly class Command implements CommandInterface
         } catch (\RuntimeException $exception) {
             $this->outputManager->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
         } catch (\JsonException $jsonException) {
-            $this->outputManager->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptions->getConfigPath(), $jsonException->getMessage()));
+            $this->outputManager->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOption->getConfigPath(), $jsonException->getMessage()));
         } catch (\InvalidArgumentException $invalidArgumentException) {
             $this->outputManager->printError($invalidArgumentException->getMessage());
         }

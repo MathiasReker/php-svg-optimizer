@@ -149,7 +149,7 @@ final class SvgFileProcessorTest extends TestCase
     #[Test]
     public function processSingleSvgFile(): void
     {
-        $commandOptions = new CommandOption(
+        $commandOption = new CommandOption(
             false,
             '',
             true,
@@ -157,7 +157,7 @@ final class SvgFileProcessorTest extends TestCase
         );
 
         $svgFileProcessor = new SvgFileProcessor(
-            $commandOptions,
+            $commandOption,
             $this->outputManager,
             $this->metaDataAggregator
         );
@@ -185,7 +185,7 @@ final class SvgFileProcessorTest extends TestCase
         $file2 = $this->tempDir . '/file2.svg';
         file_put_contents($file2, '<svg><rect width="10" height="10"></rect></svg>');
 
-        $commandOptions = new CommandOption(
+        $commandOption = new CommandOption(
             true,
             '',
             false,
@@ -193,7 +193,7 @@ final class SvgFileProcessorTest extends TestCase
         );
 
         $svgFileProcessor = new SvgFileProcessor(
-            $commandOptions,
+            $commandOption,
             $this->outputManager,
             $this->metaDataAggregator
         );
@@ -213,7 +213,7 @@ final class SvgFileProcessorTest extends TestCase
     #[Test]
     public function processInvalidPathPrintsError(): void
     {
-        $commandOptions = new CommandOption(
+        $commandOption = new CommandOption(
             true,
             '',
             false,
@@ -221,7 +221,7 @@ final class SvgFileProcessorTest extends TestCase
         );
 
         $svgFileProcessor = new SvgFileProcessor(
-            $commandOptions,
+            $commandOption,
             $this->outputManager,
             $this->metaDataAggregator
         );
@@ -242,7 +242,7 @@ final class SvgFileProcessorTest extends TestCase
     #[Test]
     public function processWithRiskyRulesAllowed(): void
     {
-        $commandOptions = new CommandOption(
+        $commandOption = new CommandOption(
             true,
             '',
             true,
@@ -250,7 +250,7 @@ final class SvgFileProcessorTest extends TestCase
         );
 
         $svgFileProcessor = new SvgFileProcessor(
-            $commandOptions,
+            $commandOption,
             $this->outputManager,
             $this->metaDataAggregator
         );
@@ -272,7 +272,7 @@ final class SvgFileProcessorTest extends TestCase
     {
         $originalContent = file_get_contents($this->svgFile);
 
-        $commandOptions = new CommandOption(
+        $commandOption = new CommandOption(
             true,
             '',
             true,
@@ -280,7 +280,7 @@ final class SvgFileProcessorTest extends TestCase
         );
 
         $svgFileProcessor = new SvgFileProcessor(
-            $commandOptions,
+            $commandOption,
             $this->outputManager,
             $this->metaDataAggregator
         );
@@ -303,7 +303,7 @@ final class SvgFileProcessorTest extends TestCase
         $configFile = $this->tempDir . '/config.json';
         file_put_contents($configFile, '{"removeComments": true}');
 
-        $commandOptions = new CommandOption(
+        $commandOption = new CommandOption(
             false,
             $configFile,
             false,
@@ -311,7 +311,7 @@ final class SvgFileProcessorTest extends TestCase
         );
 
         $svgFileProcessor = new SvgFileProcessor(
-            $commandOptions,
+            $commandOption,
             $this->outputManager,
             $this->metaDataAggregator
         );

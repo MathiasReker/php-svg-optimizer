@@ -86,14 +86,14 @@ final readonly class CommandDispatcher
         }
 
         try {
-            $commandOptions = new CommandOption(
+            $commandOption = new CommandOption(
                 $optionIntent->isDryRun(),
                 $optionIntent->getConfigPath(),
                 $optionIntent->allowRisky(),
                 $optionIntent->withAllRules(),
             );
             (new CommandFactory($stream, $argumentParser))
-                ->create($commandOptions)
+                ->create($commandOption)
                 ->run();
         } catch (\InvalidArgumentException $invalidArgumentException) {
             $outputManager->printError($invalidArgumentException->getMessage());

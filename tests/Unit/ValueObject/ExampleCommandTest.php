@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(ExampleCommand::class)]
-final class ExampleCommandValueObjectTest extends TestCase
+final class ExampleCommandTest extends TestCase
 {
     private const string EXAMPLE_COMMAND = 'vendor/bin/svg-optimizer --dry-run --quiet process /path/to/svgs';
 

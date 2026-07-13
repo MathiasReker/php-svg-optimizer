@@ -27,13 +27,13 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOption;
 final readonly class SvgFileProcessor
 {
     /**
-     * @param CommandOption     $commandOptions     The options provided by the command line
+     * @param CommandOption      $commandOption      The options provided by the command line
      * @param OutputManager      $outputManager      The output manager for displaying messages
      * @param MetaDataAggregator $metaDataAggregator The aggregator for metadata about processed files
      */
     public function __construct(
-        private CommandOption      $commandOptions,
-        private OutputManager      $outputManager,
+        private CommandOption $commandOption,
+        private OutputManager $outputManager,
         private MetaDataAggregator $metaDataAggregator,
     ) {}
 
@@ -91,14 +91,14 @@ final readonly class SvgFileProcessor
     private function optimizeSvg(string $filePath): void
     {
         $svgOptimizerFacade = SvgOptimizerFacade::fromFile($filePath)
-            ->allowRisky($this->commandOptions->allowRisky())
-            ->withAllRules($this->commandOptions->withAllRules())
+            ->allowRisky($this->commandOption->allowRisky())
+            ->withAllRules($this->commandOption->withAllRules())
             ->withRules(...array_map(fn (Rule $rule) => $this->getConfig()[$rule->configKey()] ?? false, Rule::cases()))
             ->optimize();
 
         $metrics = $svgOptimizerFacade->getMetaData();
 
-        if (!$this->commandOptions->isDryRun()) {
+        if (!$this->commandOption->isDryRun()) {
             $svgOptimizerFacade->saveToFile($filePath);
         }
 
@@ -126,8 +126,8 @@ final readonly class SvgFileProcessor
      */
     private function getConfig(): array
     {
-        return '' !== $this->commandOptions->getConfigPath()
-            ? ConfigLoader::loadConfig($this->commandOptions->getConfigPath())
+        return '' !== $this->commandOption->getConfigPath()
+            ? ConfigLoader::loadConfig($this->commandOption->getConfigPath())
             : [];
     }
 }

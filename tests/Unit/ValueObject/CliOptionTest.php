@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(CliOption::class)]
-final class ArgumentOptionValueObjectTest extends TestCase
+final class CliOptionTest extends TestCase
 {
     private const string SHORTHAND = '-h';
 

@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(CommandHelp::class)]
-final class CommandOptionValueObjectTest extends TestCase
+final class CommandHelpTest extends TestCase
 {
     private const string TITLE = 'process';
 
