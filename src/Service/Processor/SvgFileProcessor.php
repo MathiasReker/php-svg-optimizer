@@ -98,16 +98,18 @@ final readonly class SvgFileProcessor
             ->withRules(...array_map(fn (Rule $rule) => $this->getConfig()[$rule->configKey()] ?? false, Rule::cases()))
             ->optimize();
 
+        $metaDataValueObject = $svgOptimizerFacade->getMetaData();
+
         if (!$this->commandOptionsValueObject->isDryRun()) {
             $svgOptimizerFacade->saveToFile($filePath);
         }
 
-        $metaDataValueObject = $svgOptimizerFacade->getMetaData();
         $this->metaDataAggregator->addFileData(
             $metaDataValueObject->getOriginalSize(),
             $metaDataValueObject->getOptimizedSize(),
             $metaDataValueObject->getOptimizationTime(),
         );
+
         $this->outputManager->printOptimizationResult($filePath, $metaDataValueObject->getSavedPercentage());
     }
 
