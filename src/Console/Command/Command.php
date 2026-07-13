@@ -16,7 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\SvgFileProcessor;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptions;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOption;
 
 /**
  * @no-named-arguments
@@ -35,12 +35,12 @@ final readonly class Command implements CommandInterface
 
     /**
      * @param list<string>   $paths          The paths to SVG files or directories to process
-     * @param CommandOptions $commandOptions The options for the command
+     * @param CommandOption $commandOptions The options for the command
      * @param OutputManager  $outputManager  The output helper for displaying messages
      */
     public function __construct(
-        private array $paths,
-        private CommandOptions $commandOptions,
+        private array         $paths,
+        private CommandOption $commandOptions,
         private OutputManager $outputManager,
     ) {
         $this->metaDataAggregator = new MetaDataAggregator();

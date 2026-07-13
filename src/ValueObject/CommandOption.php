@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\ValueObject;
 /**
  * @no-named-arguments
  */
-final readonly class CommandOptions
+final readonly class CommandOption
 {
     /**
      * @param bool   $dryRun       if true, the command will run in dry-run mode, calculating potential changes without modifying files

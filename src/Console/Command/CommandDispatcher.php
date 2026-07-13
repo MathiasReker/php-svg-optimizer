@@ -17,7 +17,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\SilentStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
 use MathiasReker\PhpSvgOptimizer\Type\Application;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptions;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOption;
 
 /**
  * @no-named-arguments
@@ -86,7 +86,7 @@ final readonly class CommandDispatcher
         }
 
         try {
-            $commandOptions = new CommandOptions(
+            $commandOptions = new CommandOption(
                 $optionIntent->isDryRun(),
                 $optionIntent->getConfigPath(),
                 $optionIntent->allowRisky(),

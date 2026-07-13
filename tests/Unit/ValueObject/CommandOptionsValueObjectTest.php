@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObject;
 
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptions;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOption;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -19,13 +19,13 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(CommandOptions::class)]
+#[CoversClass(CommandOption::class)]
 final class CommandOptionsValueObjectTest extends TestCase
 {
     #[Test]
     public function propertiesAreAssignedCorrectly(): void
     {
-        $commandOptions = new CommandOptions(
+        $commandOptions = new CommandOption(
             true,
             '/path/to/config.json',
             false,
@@ -41,7 +41,7 @@ final class CommandOptionsValueObjectTest extends TestCase
     #[Test]
     public function defaultValuesAreAssignedCorrectly(): void
     {
-        $commandOptions = new CommandOptions(
+        $commandOptions = new CommandOption(
             false,
             '',
             true,

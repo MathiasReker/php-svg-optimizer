@@ -59,7 +59,7 @@ use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\ValueObject\CliOption;
 use MathiasReker\PhpSvgOptimizer\ValueObject\CommandHelp;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptions;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOption;
 use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommand;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -107,7 +107,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(CommandHelp::class)]
 #[CoversClass(OutputManager::class)]
 #[CoversClass(MetaDataAggregator::class)]
-#[CoversClass(CommandOptions::class)]
+#[CoversClass(CommandOption::class)]
 #[CoversClass(SvgFileProcessor::class)]
 #[CoversClass(ConfigLoader::class)]
 #[CoversClass(ByteFormatter::class)]
@@ -147,7 +147,7 @@ final class SvgOptimizerCommandTest extends TestCase
 
         $outputManager = new OutputManager(new MemoryStream());
 
-        $commandOptions = new CommandOptions(
+        $commandOptions = new CommandOption(
             false,
             '',
             false,
@@ -184,7 +184,7 @@ final class SvgOptimizerCommandTest extends TestCase
         $outputManager = new OutputManager(new MemoryStream());
         $command = $reflectionClass->newInstanceWithoutConstructor();
 
-        $commandOptions = new CommandOptions(
+        $commandOptions = new CommandOption(
             false,
             '',
             false,
@@ -222,7 +222,7 @@ final class SvgOptimizerCommandTest extends TestCase
 
         $command = new Command(
             [$svgFile],
-            new CommandOptions(
+            new CommandOption(
                 true,
                 '',
                 false,

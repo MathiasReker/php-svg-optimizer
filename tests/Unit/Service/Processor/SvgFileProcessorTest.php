@@ -64,7 +64,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptions;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOption;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -77,7 +77,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(OutputManager::class)]
 #[CoversClass(MemoryStream::class)]
 #[CoversClass(MetaDataAggregator::class)]
-#[CoversClass(CommandOptions::class)]
+#[CoversClass(CommandOption::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(FileProvider::class)]
 #[CoversClass(SvgValidator::class)]
@@ -149,7 +149,7 @@ final class SvgFileProcessorTest extends TestCase
     #[Test]
     public function processSingleSvgFile(): void
     {
-        $commandOptions = new CommandOptions(
+        $commandOptions = new CommandOption(
             false,
             '',
             true,
@@ -185,7 +185,7 @@ final class SvgFileProcessorTest extends TestCase
         $file2 = $this->tempDir . '/file2.svg';
         file_put_contents($file2, '<svg><rect width="10" height="10"></rect></svg>');
 
-        $commandOptions = new CommandOptions(
+        $commandOptions = new CommandOption(
             true,
             '',
             false,
@@ -213,7 +213,7 @@ final class SvgFileProcessorTest extends TestCase
     #[Test]
     public function processInvalidPathPrintsError(): void
     {
-        $commandOptions = new CommandOptions(
+        $commandOptions = new CommandOption(
             true,
             '',
             false,
@@ -242,7 +242,7 @@ final class SvgFileProcessorTest extends TestCase
     #[Test]
     public function processWithRiskyRulesAllowed(): void
     {
-        $commandOptions = new CommandOptions(
+        $commandOptions = new CommandOption(
             true,
             '',
             true,
@@ -272,7 +272,7 @@ final class SvgFileProcessorTest extends TestCase
     {
         $originalContent = file_get_contents($this->svgFile);
 
-        $commandOptions = new CommandOptions(
+        $commandOptions = new CommandOption(
             true,
             '',
             true,
@@ -303,7 +303,7 @@ final class SvgFileProcessorTest extends TestCase
         $configFile = $this->tempDir . '/config.json';
         file_put_contents($configFile, '{"removeComments": true}');
 
-        $commandOptions = new CommandOptions(
+        $commandOptions = new CommandOption(
             false,
             $configFile,
             false,

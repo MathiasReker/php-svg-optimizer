@@ -19,7 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptions;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOption;
 
 /**
  * @no-named-arguments
@@ -27,13 +27,13 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptions;
 final readonly class SvgFileProcessor
 {
     /**
-     * @param CommandOptions     $commandOptions     The options provided by the command line
+     * @param CommandOption     $commandOptions     The options provided by the command line
      * @param OutputManager      $outputManager      The output manager for displaying messages
      * @param MetaDataAggregator $metaDataAggregator The aggregator for metadata about processed files
      */
     public function __construct(
-        private CommandOptions $commandOptions,
-        private OutputManager $outputManager,
+        private CommandOption      $commandOptions,
+        private OutputManager      $outputManager,
         private MetaDataAggregator $metaDataAggregator,
     ) {}
 
