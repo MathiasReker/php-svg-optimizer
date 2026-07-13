@@ -17,7 +17,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
-use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -28,7 +28,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(AbstractProvider::class)]
 #[CoversClass(IOException::class)]
 #[CoversClass(MetaData::class)]
-#[CoversClass(MetaDataValueObject::class)]
+#[CoversClass(Metrics::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(XmlFormatter::class)]
 final class ConcreteProviderTest extends TestCase

@@ -42,8 +42,6 @@ abstract class AbstractProvider implements SvgProviderInterface
     protected string $inputContent = '';
 
     /**
-     * Constructor for the AbstractProvider class.
-     *
      * Initializes the DomDocumentWrapper instance.
      */
     public function __construct()

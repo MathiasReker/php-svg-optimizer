@@ -17,7 +17,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\SilentStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
 use MathiasReker\PhpSvgOptimizer\Type\Application;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptions;
 
 /**
  * @no-named-arguments
@@ -25,8 +25,6 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 final readonly class CommandDispatcher
 {
     /**
-     * Constructor for SvgOptimizerApplication.
-     *
      * @param array<int, string> $argv The command line arguments
      */
     private function __construct(
@@ -88,14 +86,14 @@ final readonly class CommandDispatcher
         }
 
         try {
-            $commandOptionsValueObject = new CommandOptionsValueObject(
+            $commandOptions = new CommandOptions(
                 $optionIntent->isDryRun(),
                 $optionIntent->getConfigPath(),
                 $optionIntent->allowRisky(),
                 $optionIntent->withAllRules(),
             );
             (new CommandFactory($stream, $argumentParser))
-                ->create($commandOptionsValueObject)
+                ->create($commandOptions)
                 ->run();
         } catch (\InvalidArgumentException $invalidArgumentException) {
             $outputManager->printError($invalidArgumentException->getMessage());

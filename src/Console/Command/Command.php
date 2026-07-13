@@ -16,7 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\SvgFileProcessor;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptions;
 
 /**
  * @no-named-arguments
@@ -34,15 +34,13 @@ final readonly class Command implements CommandInterface
     private SvgFileProcessor $svgFileProcessor;
 
     /**
-     * Constructor for SvgOptimizerCommand.
-     *
-     * @param list<string>              $paths                     The paths to SVG files or directories to process
-     * @param CommandOptionsValueObject $commandOptionsValueObject The options for the command
-     * @param OutputManager             $outputManager             The output helper for displaying messages
+     * @param list<string>   $paths          The paths to SVG files or directories to process
+     * @param CommandOptions $commandOptions The options for the command
+     * @param OutputManager  $outputManager  The output helper for displaying messages
      */
     public function __construct(
         private array $paths,
-        private CommandOptionsValueObject $commandOptionsValueObject,
+        private CommandOptions $commandOptions,
         private OutputManager $outputManager,
     ) {
         $this->metaDataAggregator = new MetaDataAggregator();
@@ -57,7 +55,7 @@ final readonly class Command implements CommandInterface
     private function buildProcessor(): SvgFileProcessor
     {
         return new SvgFileProcessor(
-            $this->commandOptionsValueObject,
+            $this->commandOptions,
             $this->outputManager,
             $this->metaDataAggregator
         );
@@ -100,7 +98,7 @@ final readonly class Command implements CommandInterface
         } catch (\RuntimeException $exception) {
             $this->outputManager->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
         } catch (\JsonException $jsonException) {
-            $this->outputManager->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptionsValueObject->getConfigPath(), $jsonException->getMessage()));
+            $this->outputManager->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOptions->getConfigPath(), $jsonException->getMessage()));
         } catch (\InvalidArgumentException $invalidArgumentException) {
             $this->outputManager->printError($invalidArgumentException->getMessage());
         }

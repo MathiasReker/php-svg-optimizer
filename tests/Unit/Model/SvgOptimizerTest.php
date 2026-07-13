@@ -20,7 +20,7 @@ use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
-use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -31,7 +31,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(SvgOptimizer::class)]
-#[CoversClass(MetaDataValueObject::class)]
+#[CoversClass(Metrics::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(MetaData::class)]
@@ -175,11 +175,11 @@ final class SvgOptimizerTest extends TestCase
 
         $svgOptimizer->optimize();
 
-        $metaDataValueObject = $svgOptimizer->getMetaData();
+        $metrics = $svgOptimizer->getMetaData();
 
-        self::assertSame(11, $metaDataValueObject->getOriginalSize());
-        self::assertSame(20, $metaDataValueObject->getOptimizedSize());
-        self::assertGreaterThan(0, $metaDataValueObject->getOptimizationTime());
+        self::assertSame(11, $metrics->getOriginalSize());
+        self::assertSame(20, $metrics->getOptimizedSize());
+        self::assertGreaterThan(0, $metrics->getOptimizationTime());
     }
 
     #[Test]

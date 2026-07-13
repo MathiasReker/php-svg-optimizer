@@ -14,9 +14,9 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Data;
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
-use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CliOption;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandHelp;
+use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -27,10 +27,10 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(ArgumentData::class)]
 #[CoversClass(Option::class)]
-#[CoversClass(ArgumentOptionValueObject::class)]
-#[CoversClass(ExampleCommandValueObject::class)]
+#[CoversClass(CliOption::class)]
+#[CoversClass(ExampleCommand::class)]
 #[CoversClass(Command::class)]
-#[CoversClass(OptionValueObject::class)]
+#[CoversClass(CommandHelp::class)]
 final class ArgumentDataTest extends TestCase
 {
     private ArgumentData $argumentData;
@@ -100,8 +100,8 @@ final class ArgumentDataTest extends TestCase
     #[Test]
     public function getOption(string $optionValue, string $expectedFullName): void
     {
-        $argumentOptionValueObject = $this->argumentData->getOption($optionValue);
-        self::assertSame($expectedFullName, $argumentOptionValueObject->getFull());
+        $cliOption = $this->argumentData->getOption($optionValue);
+        self::assertSame($expectedFullName, $cliOption->getFull());
     }
 
     /**
@@ -124,8 +124,8 @@ final class ArgumentDataTest extends TestCase
     #[Test]
     public function getOptionByName(string $optionName, string $expectedFullName): void
     {
-        $argumentOptionValueObject = $this->argumentData->getOptionByName($optionName);
-        self::assertSame($expectedFullName, $argumentOptionValueObject->getFull());
+        $cliOption = $this->argumentData->getOptionByName($optionName);
+        self::assertSame($expectedFullName, $cliOption->getFull());
     }
 
     /**

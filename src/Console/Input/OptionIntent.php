@@ -21,8 +21,6 @@ use MathiasReker\PhpSvgOptimizer\Type\Option;
 final readonly class OptionIntent
 {
     /**
-     * Constructor for OptionIntent.
-     *
      * @param ArgumentParser $argumentParser the argument parser to check for options
      */
     public function __construct(

@@ -388,13 +388,13 @@ final class SvgOptimizerFacadeTest extends TestCase
     {
         $svg = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
         $svgOptimizerFacade = SvgOptimizerFacade::fromString($svg)->optimize();
-        $metaDataValueObject = $svgOptimizerFacade->getMetaData();
+        $metrics = $svgOptimizerFacade->getMetaData();
 
-        self::assertGreaterThan(0, $metaDataValueObject->getOriginalSize());
-        self::assertGreaterThan(0, $metaDataValueObject->getOptimizedSize());
-        self::assertGreaterThanOrEqual(0, $metaDataValueObject->getSavedBytes());
-        self::assertGreaterThanOrEqual(0, $metaDataValueObject->getSavedPercentage());
-        self::assertGreaterThanOrEqual(0, $metaDataValueObject->getOptimizationTime());
+        self::assertGreaterThan(0, $metrics->getOriginalSize());
+        self::assertGreaterThan(0, $metrics->getOptimizedSize());
+        self::assertGreaterThanOrEqual(0, $metrics->getSavedBytes());
+        self::assertGreaterThanOrEqual(0, $metrics->getSavedPercentage());
+        self::assertGreaterThanOrEqual(0, $metrics->getOptimizationTime());
     }
 
     /**

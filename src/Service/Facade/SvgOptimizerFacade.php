@@ -22,7 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
-use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 
 /**
  * This class is the main entry point for building and configuring the SVG optimizer.
@@ -258,11 +258,11 @@ final readonly class SvgOptimizerFacade
     /**
      * Retrieves metadata related to the SVG content.
      *
-     * @return MetaDataValueObject The metadata associated with the SVG content
+     * @return Metrics The metadata associated with the SVG content
      *
      * @throws \LogicException If the metadata cannot be retrieved
      */
-    public function getMetaData(): MetaDataValueObject
+    public function getMetaData(): Metrics
     {
         return $this->svgOptimizer->getMetaData();
     }

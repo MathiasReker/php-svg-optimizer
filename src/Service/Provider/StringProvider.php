@@ -19,8 +19,6 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 final class StringProvider extends AbstractProvider
 {
     /**
-     * Constructor for StringProvider.
-     *
      * @param string $inputContent The SVG content as a string
      */
     public function __construct(

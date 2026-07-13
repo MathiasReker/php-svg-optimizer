@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptions;
 
 /**
  * @no-named-arguments
@@ -22,8 +22,6 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 final readonly class CommandFactory
 {
     /**
-     * Constructor for CommandFactory.
-     *
      * @param StreamInterface $stream         The output stream to use
      * @param ArgumentParser  $argumentParser The argument parser to use
      */
@@ -35,17 +33,17 @@ final readonly class CommandFactory
     /**
      * Create a new Command instance with the provided options.
      *
-     * @param CommandOptionsValueObject $commandOptionsValueObject The options for the command
+     * @param CommandOptions $commandOptions The options for the command
      *
      * @return Command The created command instance
      *
      * @throws \InvalidArgumentException If the options are not valid
      */
-    public function create(CommandOptionsValueObject $commandOptionsValueObject): Command
+    public function create(CommandOptions $commandOptions): Command
     {
         return new Command(
             $this->argumentParser->getPaths(),
-            $commandOptionsValueObject,
+            $commandOptions,
             $this->buildOutputHelper()
         );
     }

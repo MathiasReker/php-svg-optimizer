@@ -17,9 +17,9 @@ use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
-use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CliOption;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandHelp;
+use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -28,12 +28,12 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(ArgumentParser::class)]
-#[CoversClass(ArgumentOptionValueObject::class)]
+#[CoversClass(CliOption::class)]
 #[CoversClass(Option::class)]
-#[CoversClass(ExampleCommandValueObject::class)]
+#[CoversClass(ExampleCommand::class)]
 #[CoversClass(ArgumentData::class)]
 #[CoversClass(Command::class)]
-#[CoversClass(OptionValueObject::class)]
+#[CoversClass(CommandHelp::class)]
 #[CoversClass(FileCollector::class)]
 #[CoversClass(Finder::class)]
 final class ArgumentParserTest extends TestCase

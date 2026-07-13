@@ -18,9 +18,9 @@ use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
 use MathiasReker\PhpSvgOptimizer\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
-use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CliOption;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandHelp;
+use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -35,9 +35,9 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ArgumentData::class)]
 #[CoversClass(Command::class)]
 #[CoversClass(Option::class)]
-#[CoversClass(ArgumentOptionValueObject::class)]
-#[CoversClass(ExampleCommandValueObject::class)]
-#[CoversClass(OptionValueObject::class)]
+#[CoversClass(CliOption::class)]
+#[CoversClass(ExampleCommand::class)]
+#[CoversClass(CommandHelp::class)]
 final class OutputManagerTest extends TestCase
 {
     private MemoryStream $memoryStream;

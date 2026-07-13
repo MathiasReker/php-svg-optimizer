@@ -19,8 +19,6 @@ use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 class MemoryStream extends AbstractStream implements StreamInterface
 {
     /**
-     * Constructor for MemoryStream.
-     *
      * @throws \RuntimeException If unable to open the memory stream
      */
     public function __construct()

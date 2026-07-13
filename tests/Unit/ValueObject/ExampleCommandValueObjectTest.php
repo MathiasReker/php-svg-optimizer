@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObject;
 
-use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -19,22 +19,22 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(ExampleCommandValueObject::class)]
+#[CoversClass(ExampleCommand::class)]
 final class ExampleCommandValueObjectTest extends TestCase
 {
     private const string EXAMPLE_COMMAND = 'vendor/bin/svg-optimizer --dry-run --quiet process /path/to/svgs';
 
-    private ExampleCommandValueObject $exampleCommandValueObject;
+    private ExampleCommand $exampleCommand;
 
     #[Test]
     public function getCommand(): void
     {
-        self::assertSame(self::EXAMPLE_COMMAND, $this->exampleCommandValueObject->getCommand());
+        self::assertSame(self::EXAMPLE_COMMAND, $this->exampleCommand->getCommand());
     }
 
     #[\Override]
     protected function setUp(): void
     {
-        $this->exampleCommandValueObject = new ExampleCommandValueObject(self::EXAMPLE_COMMAND);
+        $this->exampleCommand = new ExampleCommand(self::EXAMPLE_COMMAND);
     }
 }

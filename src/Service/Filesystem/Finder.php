@@ -32,8 +32,6 @@ final class Finder
     private string $extension = '';
 
     /**
-     * Constructor for Finder.
-     *
      * @param string $directory The directory to search in
      */
     public function in(string $directory): self
@@ -95,7 +93,10 @@ final class Finder
         $results = [];
 
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($this->directory, \FilesystemIterator::SKIP_DOTS)
+            new \RecursiveDirectoryIterator(
+                $this->directory,
+                \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::FOLLOW_SYMLINKS
+            )
         );
 
         foreach ($iterator as $fileInfo) {
@@ -103,16 +104,9 @@ final class Finder
                 continue;
             }
 
-            if (!$this->matchesFilter($fileInfo)) {
-                continue;
+            if ($this->matchesFilter($fileInfo)) {
+                $results[] = str_replace(['/', '\\'], \DIRECTORY_SEPARATOR, $fileInfo->getPathname());
             }
-
-            $realPath = $fileInfo->getRealPath();
-            if (false === $realPath) {
-                continue;
-            }
-
-            $results[] = $realPath;
         }
 
         return $results;
@@ -131,10 +125,6 @@ final class Finder
             return false;
         }
 
-        if ('' !== $this->extension && mb_strtolower($fileInfo->getExtension()) !== $this->extension) {
-            return false;
-        }
-
-        return true;
+        return '' === $this->extension || mb_strtolower($fileInfo->getExtension()) === $this->extension;
     }
 }

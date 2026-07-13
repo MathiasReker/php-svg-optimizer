@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObject;
 
-use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(MetaDataValueObject::class)]
+#[CoversClass(Metrics::class)]
 final class MetaDataValueObjectTest extends TestCase
 {
     private const int ORIGINAL_SIZE = 1_000;
@@ -32,72 +32,72 @@ final class MetaDataValueObjectTest extends TestCase
 
     private const float OPTIMIZATION_TIME = 0.001;
 
-    private MetaDataValueObject $metaDataValueObject;
+    private Metrics $metrics;
 
     #[Test]
     public function zeroAndNegativeValues(): void
     {
-        $metaDataValueObject = new MetaDataValueObject(0, -1, -1, -100.0, -0.1);
-        self::assertSame(0, $metaDataValueObject->getOriginalSize());
-        self::assertSame(-1, $metaDataValueObject->getOptimizedSize());
-        self::assertSame(-1, $metaDataValueObject->getSavedBytes());
-        self::assertEqualsWithDelta(-100.0, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+        $metrics = new Metrics(0, -1, -1, -100.0, -0.1);
+        self::assertSame(0, $metrics->getOriginalSize());
+        self::assertSame(-1, $metrics->getOptimizedSize());
+        self::assertSame(-1, $metrics->getSavedBytes());
+        self::assertEqualsWithDelta(-100.0, $metrics->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
     #[Test]
     public function getOriginalSize(): void
     {
-        self::assertSame(self::ORIGINAL_SIZE, $this->metaDataValueObject->getOriginalSize());
+        self::assertSame(self::ORIGINAL_SIZE, $this->metrics->getOriginalSize());
     }
 
     #[Test]
     public function getOptimizedSize(): void
     {
-        self::assertSame(self::OPTIMIZED_SIZE, $this->metaDataValueObject->getOptimizedSize());
+        self::assertSame(self::OPTIMIZED_SIZE, $this->metrics->getOptimizedSize());
     }
 
     #[Test]
     public function getSavedBytes(): void
     {
-        self::assertSame(self::SAVED_BYTES, $this->metaDataValueObject->getSavedBytes());
+        self::assertSame(self::SAVED_BYTES, $this->metrics->getSavedBytes());
     }
 
     #[Test]
     public function getSavedPercentage(): void
     {
-        self::assertEqualsWithDelta(self::SAVED_PERCENTAGE, $this->metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+        self::assertEqualsWithDelta(self::SAVED_PERCENTAGE, $this->metrics->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
     #[Test]
     public function largeValues(): void
     {
-        $metaDataValueObject = new MetaDataValueObject(\PHP_INT_MAX, \PHP_INT_MAX - 1, 1, 0.000_000_1, \PHP_FLOAT_MAX);
-        self::assertSame(\PHP_INT_MAX, $metaDataValueObject->getOriginalSize());
-        self::assertSame(\PHP_INT_MAX - 1, $metaDataValueObject->getOptimizedSize());
-        self::assertSame(1, $metaDataValueObject->getSavedBytes());
-        self::assertEqualsWithDelta(0.000_000_1, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+        $metrics = new Metrics(\PHP_INT_MAX, \PHP_INT_MAX - 1, 1, 0.000_000_1, \PHP_FLOAT_MAX);
+        self::assertSame(\PHP_INT_MAX, $metrics->getOriginalSize());
+        self::assertSame(\PHP_INT_MAX - 1, $metrics->getOptimizedSize());
+        self::assertSame(1, $metrics->getSavedBytes());
+        self::assertEqualsWithDelta(0.000_000_1, $metrics->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
     #[Test]
     public function boundaryValues(): void
     {
-        $metaDataValueObject = new MetaDataValueObject(\PHP_INT_MIN, \PHP_INT_MAX, 0, 0.0, 0.0);
-        self::assertSame(\PHP_INT_MIN, $metaDataValueObject->getOriginalSize());
-        self::assertSame(\PHP_INT_MAX, $metaDataValueObject->getOptimizedSize());
-        self::assertSame(0, $metaDataValueObject->getSavedBytes());
-        self::assertEqualsWithDelta(0.0, $metaDataValueObject->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+        $metrics = new Metrics(\PHP_INT_MIN, \PHP_INT_MAX, 0, 0.0, 0.0);
+        self::assertSame(\PHP_INT_MIN, $metrics->getOriginalSize());
+        self::assertSame(\PHP_INT_MAX, $metrics->getOptimizedSize());
+        self::assertSame(0, $metrics->getSavedBytes());
+        self::assertEqualsWithDelta(0.0, $metrics->getSavedPercentage(), \PHP_FLOAT_EPSILON);
     }
 
     #[Test]
     public function getOptimizedTime(): void
     {
-        self::assertEqualsWithDelta(self::OPTIMIZATION_TIME, $this->metaDataValueObject->getOptimizationTime(), 0.000_001);
+        self::assertEqualsWithDelta(self::OPTIMIZATION_TIME, $this->metrics->getOptimizationTime(), 0.000_001);
     }
 
     #[Test]
     public function zeroOptimizedTime(): void
     {
-        $metaDataValueObject = new MetaDataValueObject(
+        $metrics = new Metrics(
             self::ORIGINAL_SIZE,
             self::OPTIMIZED_SIZE,
             self::SAVED_BYTES,
@@ -105,14 +105,14 @@ final class MetaDataValueObjectTest extends TestCase
             0.0,
         );
 
-        self::assertSame(0.0, $metaDataValueObject->getOptimizationTime());
+        self::assertSame(0.0, $metrics->getOptimizationTime());
     }
 
     #[Test]
     public function smallOptimizedTime(): void
     {
         $smallTime = 0.000_001;
-        $metaDataValueObject = new MetaDataValueObject(
+        $metrics = new Metrics(
             self::ORIGINAL_SIZE,
             self::OPTIMIZED_SIZE,
             self::SAVED_BYTES,
@@ -120,14 +120,14 @@ final class MetaDataValueObjectTest extends TestCase
             $smallTime,
         );
 
-        self::assertEqualsWithDelta($smallTime, $metaDataValueObject->getOptimizationTime(), 0.000_000_1);
+        self::assertEqualsWithDelta($smallTime, $metrics->getOptimizationTime(), 0.000_000_1);
     }
 
     #[Test]
     public function largeOptimizedTime(): void
     {
         $largeTime = 12_345.678_9;
-        $metaDataValueObject = new MetaDataValueObject(
+        $metrics = new Metrics(
             self::ORIGINAL_SIZE,
             self::OPTIMIZED_SIZE,
             self::SAVED_BYTES,
@@ -135,14 +135,14 @@ final class MetaDataValueObjectTest extends TestCase
             $largeTime,
         );
 
-        self::assertEqualsWithDelta($largeTime, $metaDataValueObject->getOptimizationTime(), 0.000_001);
+        self::assertEqualsWithDelta($largeTime, $metrics->getOptimizationTime(), 0.000_001);
     }
 
     #[Test]
     public function negativeOptimizedTime(): void
     {
         $negativeTime = -0.5;
-        $metaDataValueObject = new MetaDataValueObject(
+        $metrics = new Metrics(
             self::ORIGINAL_SIZE,
             self::OPTIMIZED_SIZE,
             self::SAVED_BYTES,
@@ -150,13 +150,13 @@ final class MetaDataValueObjectTest extends TestCase
             $negativeTime,
         );
 
-        self::assertEqualsWithDelta($negativeTime, $metaDataValueObject->getOptimizationTime(), 0.000_001);
+        self::assertEqualsWithDelta($negativeTime, $metrics->getOptimizationTime(), 0.000_001);
     }
 
     #[\Override]
     protected function setUp(): void
     {
-        $this->metaDataValueObject = new MetaDataValueObject(
+        $this->metrics = new Metrics(
             self::ORIGINAL_SIZE,
             self::OPTIMIZED_SIZE,
             self::SAVED_BYTES,

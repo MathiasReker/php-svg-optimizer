@@ -37,8 +37,6 @@ final class MetaDataAggregator
     private float $totalOptimizationTime = 0.0;
 
     /**
-     * Constructor for MetaDataAggregator.
-     *
      * Initializes the total sizes to zero.
      */
     public function addFileData(int $originalSize, int $optimizedSize, float $optimizationTime): void

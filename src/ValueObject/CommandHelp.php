@@ -14,11 +14,9 @@ namespace MathiasReker\PhpSvgOptimizer\ValueObject;
 /**
  * @no-named-arguments
  */
-final readonly class OptionValueObject
+final readonly class CommandHelp
 {
     /**
-     * Constructor for OptionValueObject.
-     *
      * @param string $title       The title of the command line argument option
      * @param string $description The description of the command line argument option
      */

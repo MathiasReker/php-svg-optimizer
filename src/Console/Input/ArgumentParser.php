@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
-use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CliOption;
 
 /**
  * @no-named-arguments
@@ -46,8 +46,6 @@ final readonly class ArgumentParser
     private ArgumentData $argumentData;
 
     /**
-     * Constructor for the ArgumentParser class.
-     *
      * @param array<int, string> $args Command-line arguments passed to the script
      */
     public function __construct(
@@ -65,7 +63,7 @@ final readonly class ArgumentParser
     {
         try {
             $arguments = array_map(
-                fn (string $arg): ArgumentOptionValueObject => $this->argumentData->getOptionByName($this->getOptionKey($arg)),
+                fn (string $arg): CliOption => $this->argumentData->getOptionByName($this->getOptionKey($arg)),
                 array_filter(
                     \array_slice($this->args, 1),
                     $this->isOption(...)

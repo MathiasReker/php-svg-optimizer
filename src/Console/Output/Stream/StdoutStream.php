@@ -19,8 +19,6 @@ use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 class StdoutStream extends AbstractStream implements StreamInterface
 {
     /**
-     * Constructor for StdoutStream.
-     *
      * @throws \RuntimeException If unable to open the stdout stream
      */
     public function __construct()

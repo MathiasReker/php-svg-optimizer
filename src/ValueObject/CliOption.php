@@ -14,11 +14,9 @@ namespace MathiasReker\PhpSvgOptimizer\ValueObject;
 /**
  * @no-named-arguments
  */
-final readonly class ArgumentOptionValueObject
+final readonly class CliOption
 {
     /**
-     * Constructor for ArgumentOptionValueObject.
-     *
      * @param string $shorthand   The shorthand name of the argument option
      * @param string $full        The full name of the argument option
      * @param string $description The description of the argument option

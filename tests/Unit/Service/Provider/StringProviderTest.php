@@ -16,7 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
-use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -25,7 +25,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(StringProvider::class)]
-#[CoversClass(MetaDataValueObject::class)]
+#[CoversClass(Metrics::class)]
 #[CoversClass(MetaData::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(XmlFormatter::class)]

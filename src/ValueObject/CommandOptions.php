@@ -14,11 +14,9 @@ namespace MathiasReker\PhpSvgOptimizer\ValueObject;
 /**
  * @no-named-arguments
  */
-final readonly class CommandOptionsValueObject
+final readonly class CommandOptions
 {
     /**
-     * Constructor of CommandOptionsValueObject.
-     *
      * @param bool   $dryRun       if true, the command will run in dry-run mode, calculating potential changes without modifying files
      * @param string $configPath   Path to a JSON configuration file defining custom optimization rules. Ignored if not provided.
      * @param bool   $allowRisky   Whether risky optimization rules are allowed. Risky rules may change the visual output of SVGs.

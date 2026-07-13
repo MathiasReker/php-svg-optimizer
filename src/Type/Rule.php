@@ -120,39 +120,6 @@ enum Rule: string
 
     public function configKey(): string
     {
-        return match ($this->value) {
-            self::ConvertColorsToHex->value => 'convertColorsToHex',
-            self::ConvertCssClassesToAttributes->value => 'convertCssClassesToAttributes',
-            self::ConvertEmptyTagsToSelfClosing->value => 'convertEmptyTagsToSelfClosing',
-            self::ConvertInlineStylesToAttributes->value => 'convertInlineStylesToAttributes',
-            self::FixAttributeNames->value => 'fixAttributeNames',
-            self::FlattenGroups->value => 'flattenGroups',
-            self::MinifySvgCoordinates->value => 'minifySvgCoordinates',
-            self::MinifyTransformations->value => 'minifyTransformations',
-            self::RemoveAriaAndRole->value => 'removeAriaAndRole',
-            self::RemoveComments->value => 'removeComments',
-            self::RemoveDataAttributes->value => 'removeDataAttributes',
-            self::RemoveDefaultAttributes->value => 'removeDefaultAttributes',
-            self::RemoveDeprecatedAttributes->value => 'removeDeprecatedAttributes',
-            self::RemoveDoctype->value => 'removeDoctype',
-            self::RemoveDuplicateElements->value => 'removeDuplicateElements',
-            self::RemoveEnableBackgroundAttribute->value => 'removeEnableBackgroundAttribute',
-            self::RemoveEmptyGroups->value => 'removeEmptyGroups',
-            self::RemoveEmptyTextElements->value => 'removeEmptyTextElements',
-            self::RemoveEmptyAttributes->value => 'removeEmptyAttributes',
-            self::RemoveInkscapeFootprints->value => 'removeInkscapeFootprints',
-            self::RemoveInvisibleCharacters->value => 'removeInvisibleCharacters',
-            self::RemoveMetadata->value => 'removeMetadata',
-            self::RemoveNonStandardAttributes->value => 'removeNonStandardAttributes',
-            self::RemoveNonStandardTags->value => 'removeNonStandardTags',
-            self::RemoveTitleAndDesc->value => 'removeTitleAndDesc',
-            self::RemoveUnnecessaryWhitespace->value => 'removeUnnecessaryWhitespace',
-            self::RemoveUnsafeElements->value => 'removeUnsafeElements',
-            self::RemoveUnusedMasks->value => 'removeUnusedMasks',
-            self::RemoveUnusedNamespaces->value => 'removeUnusedNamespaces',
-            self::RemoveWidthHeightAttributes->value => 'removeWidthHeightAttributes',
-            self::ScopeSvgStyles->value => 'scopeSvgStyles',
-            self::SortAttributes->value => 'sortAttributes',
-        };
+        return lcfirst($this->name);
     }
 }

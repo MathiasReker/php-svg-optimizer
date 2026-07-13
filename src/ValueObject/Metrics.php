@@ -14,11 +14,9 @@ namespace MathiasReker\PhpSvgOptimizer\ValueObject;
 /**
  * @no-named-arguments
  */
-final readonly class MetaDataValueObject
+final readonly class Metrics
 {
     /**
-     * Constructor for MetaDataValueObject.
-     *
      * @param int   $originalSize     The original size of the SVG file in bytes
      * @param int   $optimizedSize    The optimized size of the SVG file in bytes
      * @param int   $savedBytes       The number of bytes saved through optimization

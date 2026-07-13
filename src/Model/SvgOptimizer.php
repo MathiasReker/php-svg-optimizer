@@ -18,7 +18,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
-use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 
 /**
  * @no-named-arguments
@@ -64,8 +64,6 @@ final class SvgOptimizer
     private float $optimizationTime = 0.0;
 
     /**
-     * Constructor for SvgOptimizer.
-     *
      * @param SvgProviderInterface $svgProvider The provider used to get and save SVG content
      */
     public function __construct(
@@ -77,11 +75,11 @@ final class SvgOptimizer
     /**
      * Get metadata related to the SVG content.
      *
-     * @return MetaDataValueObject The metadata containing information about the SVG file sizes
+     * @return Metrics The metadata containing information about the SVG file sizes
      *
      * @throws \LogicException If metadata is requested before optimization
      */
-    public function getMetaData(): MetaDataValueObject
+    public function getMetaData(): Metrics
     {
         if (false === $this->isOptimized) {
             throw new \LogicException('Metadata is not available before optimization.');

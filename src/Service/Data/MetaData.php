@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Data;
 
-use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 
 /**
  * @no-named-arguments
@@ -19,8 +19,6 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
 final readonly class MetaData
 {
     /**
-     * Constructor for MetaData.
-     *
      * @param int   $originalSize     The original size of the SVG file in bytes
      * @param int   $optimizedSize    The optimized size of the SVG file in bytes
      * @param float $optimizationTime The time it took to optimize the SVG file in seconds
@@ -40,11 +38,11 @@ final readonly class MetaData
     /**
      * Converts the metadata to a value object.
      *
-     * @return MetaDataValueObject The value object representing the metadata
+     * @return Metrics The value object representing the metadata
      */
-    public function toValueObject(): MetaDataValueObject
+    public function toValueObject(): Metrics
     {
-        return new MetaDataValueObject(
+        return new Metrics(
             $this->originalSize,
             $this->optimizedSize,
             $this->calculateSavedBytes(),

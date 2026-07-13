@@ -21,8 +21,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
 final readonly class OutputManager
 {
     /**
-     * Constructor for OutputHelper.
-     *
      * @param StreamInterface $stream The output stream to write messages to
      */
     public function __construct(
@@ -56,15 +54,15 @@ final readonly class OutputManager
         $this->stream->writeln('');
 
         $this->stream->writeln('Options:');
-        foreach ($argumentData->getOptions() as $argumentOptionValueObject) {
-            $this->stream->writeln(\sprintf('  %-3s  %-20s %s', $argumentOptionValueObject->getShorthand(), $argumentOptionValueObject->getFull(), $argumentOptionValueObject->getDescription()));
+        foreach ($argumentData->getOptions() as $cliOption) {
+            $this->stream->writeln(\sprintf('  %-3s  %-20s %s', $cliOption->getShorthand(), $cliOption->getFull(), $cliOption->getDescription()));
         }
 
         $this->stream->writeln('');
         $this->stream->writeln('Commands:');
         $this->stream->writeln('');
-        foreach ($argumentData->getCommands() as $optionValueObject) {
-            $this->stream->writeln(\sprintf('  %-25s %s', $optionValueObject->getTitle(), $optionValueObject->getDescription()));
+        foreach ($argumentData->getCommands() as $commandHelp) {
+            $this->stream->writeln(\sprintf('  %-25s %s', $commandHelp->getTitle(), $commandHelp->getDescription()));
         }
 
         $this->stream->writeln('');

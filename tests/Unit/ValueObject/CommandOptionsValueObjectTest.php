@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\ValueObject;
 
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptions;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -19,38 +19,38 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(CommandOptionsValueObject::class)]
+#[CoversClass(CommandOptions::class)]
 final class CommandOptionsValueObjectTest extends TestCase
 {
     #[Test]
     public function propertiesAreAssignedCorrectly(): void
     {
-        $commandOptionsValueObject = new CommandOptionsValueObject(
+        $commandOptions = new CommandOptions(
             true,
             '/path/to/config.json',
             false,
             true,
         );
 
-        self::assertTrue($commandOptionsValueObject->isDryRun());
-        self::assertSame('/path/to/config.json', $commandOptionsValueObject->getConfigPath());
-        self::assertFalse($commandOptionsValueObject->allowRisky());
-        self::assertTrue($commandOptionsValueObject->withAllRules());
+        self::assertTrue($commandOptions->isDryRun());
+        self::assertSame('/path/to/config.json', $commandOptions->getConfigPath());
+        self::assertFalse($commandOptions->allowRisky());
+        self::assertTrue($commandOptions->withAllRules());
     }
 
     #[Test]
     public function defaultValuesAreAssignedCorrectly(): void
     {
-        $commandOptionsValueObject = new CommandOptionsValueObject(
+        $commandOptions = new CommandOptions(
             false,
             '',
             true,
             false,
         );
 
-        self::assertFalse($commandOptionsValueObject->isDryRun());
-        self::assertSame('', $commandOptionsValueObject->getConfigPath());
-        self::assertTrue($commandOptionsValueObject->allowRisky());
-        self::assertFalse($commandOptionsValueObject->withAllRules());
+        self::assertFalse($commandOptions->isDryRun());
+        self::assertSame('', $commandOptions->getConfigPath());
+        self::assertTrue($commandOptions->allowRisky());
+        self::assertFalse($commandOptions->withAllRules());
     }
 }

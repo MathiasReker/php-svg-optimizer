@@ -19,7 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptions;
 
 /**
  * @no-named-arguments
@@ -27,14 +27,12 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
 final readonly class SvgFileProcessor
 {
     /**
-     * Constructor for SvgFileProcessor.
-     *
-     * @param CommandOptionsValueObject $commandOptionsValueObject The options provided by the command line
-     * @param OutputManager             $outputManager             The output manager for displaying messages
-     * @param MetaDataAggregator        $metaDataAggregator        The aggregator for metadata about processed files
+     * @param CommandOptions     $commandOptions     The options provided by the command line
+     * @param OutputManager      $outputManager      The output manager for displaying messages
+     * @param MetaDataAggregator $metaDataAggregator The aggregator for metadata about processed files
      */
     public function __construct(
-        private CommandOptionsValueObject $commandOptionsValueObject,
+        private CommandOptions $commandOptions,
         private OutputManager $outputManager,
         private MetaDataAggregator $metaDataAggregator,
     ) {}
@@ -93,24 +91,24 @@ final readonly class SvgFileProcessor
     private function optimizeSvg(string $filePath): void
     {
         $svgOptimizerFacade = SvgOptimizerFacade::fromFile($filePath)
-            ->allowRisky($this->commandOptionsValueObject->allowRisky())
-            ->withAllRules($this->commandOptionsValueObject->withAllRules())
+            ->allowRisky($this->commandOptions->allowRisky())
+            ->withAllRules($this->commandOptions->withAllRules())
             ->withRules(...array_map(fn (Rule $rule) => $this->getConfig()[$rule->configKey()] ?? false, Rule::cases()))
             ->optimize();
 
-        $metaDataValueObject = $svgOptimizerFacade->getMetaData();
+        $metrics = $svgOptimizerFacade->getMetaData();
 
-        if (!$this->commandOptionsValueObject->isDryRun()) {
+        if (!$this->commandOptions->isDryRun()) {
             $svgOptimizerFacade->saveToFile($filePath);
         }
 
         $this->metaDataAggregator->addFileData(
-            $metaDataValueObject->getOriginalSize(),
-            $metaDataValueObject->getOptimizedSize(),
-            $metaDataValueObject->getOptimizationTime(),
+            $metrics->getOriginalSize(),
+            $metrics->getOptimizedSize(),
+            $metrics->getOptimizationTime(),
         );
 
-        $this->outputManager->printOptimizationResult($filePath, $metaDataValueObject->getSavedPercentage());
+        $this->outputManager->printOptimizationResult($filePath, $metrics->getSavedPercentage());
     }
 
     /**
@@ -128,8 +126,8 @@ final readonly class SvgFileProcessor
      */
     private function getConfig(): array
     {
-        return '' !== $this->commandOptionsValueObject->getConfigPath()
-            ? ConfigLoader::loadConfig($this->commandOptionsValueObject->getConfigPath())
+        return '' !== $this->commandOptions->getConfigPath()
+            ? ConfigLoader::loadConfig($this->commandOptions->getConfigPath())
             : [];
     }
 }

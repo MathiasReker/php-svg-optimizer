@@ -57,11 +57,11 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
-use MathiasReker\PhpSvgOptimizer\ValueObject\ArgumentOptionValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptionsValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommandValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\MetaDataValueObject;
-use MathiasReker\PhpSvgOptimizer\ValueObject\OptionValueObject;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CliOption;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandHelp;
+use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOptions;
+use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommand;
+use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -98,16 +98,16 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgOptimizerFacade::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(Rule::class)]
-#[CoversClass(MetaDataValueObject::class)]
+#[CoversClass(Metrics::class)]
 #[CoversClass(MemoryStream::class)]
 #[CoversClass(ArgumentData::class)]
 #[CoversClass(Option::class)]
-#[CoversClass(ArgumentOptionValueObject::class)]
-#[CoversClass(ExampleCommandValueObject::class)]
-#[CoversClass(OptionValueObject::class)]
+#[CoversClass(CliOption::class)]
+#[CoversClass(ExampleCommand::class)]
+#[CoversClass(CommandHelp::class)]
 #[CoversClass(OutputManager::class)]
 #[CoversClass(MetaDataAggregator::class)]
-#[CoversClass(CommandOptionsValueObject::class)]
+#[CoversClass(CommandOptions::class)]
 #[CoversClass(SvgFileProcessor::class)]
 #[CoversClass(ConfigLoader::class)]
 #[CoversClass(ByteFormatter::class)]
@@ -147,14 +147,14 @@ final class SvgOptimizerCommandTest extends TestCase
 
         $outputManager = new OutputManager(new MemoryStream());
 
-        $commandOptionsValueObject = new CommandOptionsValueObject(
+        $commandOptions = new CommandOptions(
             false,
             '',
             false,
             false,
         );
 
-        $constructor->invoke($command, [$svgFile], $commandOptionsValueObject, $outputManager);
+        $constructor->invoke($command, [$svgFile], $commandOptions, $outputManager);
 
         $command->run();
 
@@ -184,14 +184,14 @@ final class SvgOptimizerCommandTest extends TestCase
         $outputManager = new OutputManager(new MemoryStream());
         $command = $reflectionClass->newInstanceWithoutConstructor();
 
-        $commandOptionsValueObject = new CommandOptionsValueObject(
+        $commandOptions = new CommandOptions(
             false,
             '',
             false,
             false,
         );
 
-        $constructor->invoke($command, [], $commandOptionsValueObject, $outputManager);
+        $constructor->invoke($command, [], $commandOptions, $outputManager);
 
         $command->run();
         $prop = $reflectionClass->getProperty('metaDataAggregator');
@@ -222,7 +222,7 @@ final class SvgOptimizerCommandTest extends TestCase
 
         $command = new Command(
             [$svgFile],
-            new CommandOptionsValueObject(
+            new CommandOptions(
                 true,
                 '',
                 false,
