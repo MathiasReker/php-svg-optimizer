@@ -1482,12 +1482,12 @@ final class RemoveUnsafeElementsTest extends TestCase
         ];
 
         yield 'Removes case-varied xml-stylesheet processing instruction nested inside the root element' => [
-            <<<'XML'
+            <<<'EOD'
                 <svg xmlns="http://www.w3.org/2000/svg">
                     <?XML-STYLESHEET type="text/css" href="http://malicious.com/style.css"?>
                     <rect/>
                 </svg>
-                XML,
+                EOD,
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
                 XML,
@@ -1640,7 +1640,7 @@ final class RemoveUnsafeElementsTest extends TestCase
         $removeUnsafeElements = new RemoveUnsafeElements();
         $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'normalizeValue');
 
-        $result = $reflectionMethod->invoke($removeUnsafeElements, 'a\\10ffffb');
+        $result = $reflectionMethod->invoke($removeUnsafeElements, 'a\10ffffb');
 
         self::assertSame('a' . mb_chr(0x10_FF_FF, 'UTF-8') . 'b', $result);
     }
@@ -1654,7 +1654,7 @@ final class RemoveUnsafeElementsTest extends TestCase
         $removeUnsafeElements = new RemoveUnsafeElements();
         $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'normalizeValue');
 
-        $result = $reflectionMethod->invoke($removeUnsafeElements, 'a\\110000b');
+        $result = $reflectionMethod->invoke($removeUnsafeElements, 'a\110000b');
 
         self::assertSame('ab', $result);
     }
@@ -1668,7 +1668,7 @@ final class RemoveUnsafeElementsTest extends TestCase
         $removeUnsafeElements = new RemoveUnsafeElements();
         $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'normalizeValue');
 
-        $result = $reflectionMethod->invoke($removeUnsafeElements, 'a\\1f600z');
+        $result = $reflectionMethod->invoke($removeUnsafeElements, 'a\1f600z');
 
         self::assertSame('a' . mb_chr(0x1_F6_00, 'UTF-8') . 'z', $result);
     }

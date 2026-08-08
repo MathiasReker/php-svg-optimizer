@@ -94,9 +94,12 @@ final class ConcreteXmlProcessorTest extends TestCase
         };
 
         try {
-            $processor->process($domDocument, static function () use ($runtimeException): string {
-                throw $runtimeException;
-            });
+            $processor->process(
+                $domDocument,
+                static function () use ($runtimeException): string {
+                    throw $runtimeException;
+                }
+            );
             self::fail('Expected XmlProcessingException was not thrown.');
         } catch (XmlProcessingException $xmlProcessingException) {
             self::assertSame('Failed to process the XML content.', $xmlProcessingException->getMessage());
