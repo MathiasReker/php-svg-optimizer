@@ -158,12 +158,14 @@ final class ConcreteProviderTest extends TestCase
         $directoryAsFilePath = sys_get_temp_dir() . '/svgtest_dir_as_file_' . uniqid();
         mkdir($directoryAsFilePath);
 
-        try {
-            $this->expectException(IOException::class);
-            $this->expectExceptionMessage('Failed to write optimized content to the output file: ' . $directoryAsFilePath);
+        $this->expectException(IOException::class);
+        $this->expectExceptionMessage('Failed to write optimized content to the output file: ' . $directoryAsFilePath);
 
-            @$provider->saveToFile($directoryAsFilePath);
+        set_error_handler(static fn (): bool => true, \E_WARNING);
+        try {
+            $provider->saveToFile($directoryAsFilePath);
         } finally {
+            restore_error_handler();
             rmdir($directoryAsFilePath);
         }
     }

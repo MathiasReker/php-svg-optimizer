@@ -34,6 +34,8 @@ final class CommandFactoryTest extends TestCase
 
     /**
      * @throws \ReflectionException
+     * @throws \RuntimeException
+     * @throws \InvalidArgumentException
      */
     #[Test]
     public function createBuildsCommandFromProvidedDependencies(): void
@@ -58,8 +60,6 @@ final class CommandFactoryTest extends TestCase
         $commandOption = new CommandOption(false, '', false, false);
 
         $command = $commandFactory->create($commandOption);
-
-        self::assertInstanceOf(Command::class, $command);
 
         $reflectionClass = new \ReflectionClass(Command::class);
 

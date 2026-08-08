@@ -289,6 +289,9 @@ final class SvgOptimizerTest extends TestCase
         $provider = new class($originalContent) implements SvgProviderInterface {
             private string $lastOutput = '';
 
+            /**
+             * @param non-empty-string $testInput
+             */
             public function __construct(
                 private readonly string $testInput,
             ) {}
@@ -306,6 +309,9 @@ final class SvgOptimizerTest extends TestCase
                 return $domDocument;
             }
 
+            /**
+             * @throws XmlProcessingException
+             */
             public function optimize(\DOMDocument $domDocument): SvgProviderInterface
             {
                 $this->lastOutput = $this->serialize($domDocument);

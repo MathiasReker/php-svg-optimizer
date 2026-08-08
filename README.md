@@ -4,7 +4,7 @@
 [![Packagist Downloads](https://img.shields.io/packagist/dt/MathiasReker/php-svg-optimizer.svg?color=%23ff007f)](https://packagist.org/packages/MathiasReker/php-svg-optimizer)
 [![CI status](https://github.com/MathiasReker/php-svg-optimizer/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/MathiasReker/php-svg-optimizer/actions/workflows/ci.yml)
 [![Codacy Security Scan](https://github.com/MathiasReker/php-svg-optimizer/actions/workflows/codacy.yml/badge.svg)](https://github.com/MathiasReker/php-svg-optimizer/actions/workflows/codacy.yml)
-[![PHPStan Level](https://img.shields.io/badge/PHPStan-Level%209-blue)](#)
+[![PHPStan Level](https://img.shields.io/badge/PHPStan-Level%20max-blue)](#)
 [![Type Coverage](https://img.shields.io/badge/type%20coverage-100%25-brightgreen)](#)
 [![Code Coverage](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/coverage.svg)](#)
 [![Tests](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/tests.svg)](#)
@@ -61,7 +61,7 @@ vendor/bin/svg-optimizer [options] process <path1> <path2> ...
 ```bash
 Options:
 -h , --help               Display help for the command.
--c , --config             Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.
+-c , --config             Path to a JSON file, or a raw JSON string, with custom optimization rules. If not provided, all default optimizations will be applied.
 -d , --dry-run            Only calculate potential savings without modifying the files.
 -r , --allow-risky        Explicitly enables risky rules, allowing them to be applied.
 -a , --with-all-rules     Enable all non-risky rules. Use --allow-risky to include risky rules as well.
@@ -75,10 +75,11 @@ Process                   Provide a list of directories or files to process.
 #### Examples:
 
 ```bash
-vendor/bin/svg-optimizer --dry-run --with--all-rules process /path/to/svgs
+vendor/bin/svg-optimizer --with-all-rules --dry-run process /path/to/svgs
 vendor/bin/svg-optimizer --config=config.json process /path/to/file.svg
-vendor/bin/svg-optimizer --config='{"removeUnsafeElements": true}' --allow-risky process /path/to/file.svg
-vendor/bin/svg-optimizer --quiet --with--all-rules process /path/to/file.svg
+vendor/bin/svg-optimizer --config='{"removeInkscapeFootprints": true}' process /path/to/file.svg
+vendor/bin/svg-optimizer --quiet --with-all-rules process /path/to/file.svg
+vendor/bin/svg-optimizer --with-all-rules --allow-risky process /path/to/file.svg
 vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
 ```
 
@@ -246,7 +247,7 @@ try {
         ->withAllRules()
         ->optimize();
 
-    echo sprintf('Get content: ', $svgOptimizer->getContent(), \PHP_EOL);
+    echo sprintf('Get content: %s%s', $svgOptimizer->getContent(), \PHP_EOL);
 
     $metaData = $svgOptimizer->getMetaData();
 
@@ -276,7 +277,7 @@ try {
         ->withAllRules()
         ->optimize();
 
-    echo sprintf('Content: ', $svgOptimizer->getContent(), \PHP_EOL);
+    echo sprintf('Content: %s%s', $svgOptimizer->getContent(), \PHP_EOL);
 
     $metaData = $svgOptimizer->getMetaData();
 
@@ -316,7 +317,7 @@ try {
         ->optimize()
         ->saveToFile('path/to/output.svg');
 
-    echo sprintf('Content: ', $svgOptimizer->getContent(), \PHP_EOL);
+    echo sprintf('Content: %s%s', $svgOptimizer->getContent(), \PHP_EOL);
 
     $metaData = $svgOptimizer->getMetaData();
 
@@ -356,7 +357,6 @@ try {
             removeNonStandardTags: true,
             removeUnsafeElements: true,
         )
-        ->allowRisky()
         ->optimize()
         ->saveToFile('path/to/output.svg');
 } catch (\Exception $exception) {
@@ -449,7 +449,7 @@ $svgOptimizer->convertInlineStylesToAttributes();
 
 ---
 
-### `fixAttributeNames` (**risky**)
+### `fixAttributeNames`
 
 Normalizes SVG attribute names to their canonical, specification-compliant casing and hyphenation. Attribute names are
 matched against a known set of valid SVG attributes and corrected where case differences or missing hyphens occur. This
@@ -654,7 +654,7 @@ $svgOptimizer->removeMetadata();
 
 ---
 
-### `removeNonStandardAttributes` (**risky**)
+### `removeNonStandardAttributes`
 
 Removes SVG attributes that are non-standard, unsafe, or not part of the official SVG specification.
 This includes attributes not in the SvgAttribute enum, excluding safe prefixes like xml:, xlink:, or data-*.
@@ -665,7 +665,7 @@ $svgOptimizer->removeNonStandardAttributes();
 
 ---
 
-### `removeNonStandardTags` (**risky**)
+### `removeNonStandardTags`
 
 Removes elements (tags) that are not part of the official SVG specification.
 This is useful for sanitizing SVGs that may contain editor-specific or foreign XML elements.
@@ -770,7 +770,8 @@ $svgOptimizer->sortAttributes();
 
 ### `withRules`
 
-Below you see the default configuration. You can configure each rule individually by passing the desired values to it:
+Every parameter defaults to `false`, so only the rules you explicitly pass as `true` are applied. Below is the full list
+of available rules, shown with the values that `withAllRules()` (without `allowRisky()`) would enable:
 
 ```php
 $svgOptimizer->withRules(
@@ -778,12 +779,13 @@ $svgOptimizer->withRules(
     convertCssClassesToAttributes: true,
     convertEmptyTagsToSelfClosing: true,
     convertInlineStylesToAttributes: true,
-    fixAttributeNames: false,
+    fixAttributeNames: true,
     flattenGroups: true,
     minifySvgCoordinates: true,
     minifyTransformations: true,
     removeAriaAndRole: true,
     removeComments: true,
+    removeDataAttributes: false,
     removeDefaultAttributes: true,
     removeDeprecatedAttributes: true,
     removeDoctype: true,
@@ -795,11 +797,11 @@ $svgOptimizer->withRules(
     removeInkscapeFootprints: true,
     removeInvisibleCharacters: true,
     removeMetadata: true,
-    removeNonStandardAttributes: false,
-    removeNonStandardTags: false,
+    removeNonStandardAttributes: true,
+    removeNonStandardTags: true,
     removeTitleAndDesc: true,
     removeUnnecessaryWhitespace: true,
-    removeUnsafeElements: false,
+    removeUnsafeElements: true,
     removeUnusedMasks: true,
     removeUnusedNamespaces: true,
     removeWidthHeightAttributes: false,
@@ -910,12 +912,12 @@ $svgOptimizer->getMetaData()->getSavedPercentage();
 
 ---
 
-#### `getOptimizedTime`
+#### `getOptimizationTime`
 
 Returns the time taken to optimize the SVG file, in seconds.
 
 ```php
-$svgOptimizer->getMetaData()->getOptimizedTime();
+$svgOptimizer->getMetaData()->getOptimizationTime();
 ```
 
 ---

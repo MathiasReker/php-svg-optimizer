@@ -60,7 +60,7 @@ enum Option: string
     {
         return match ($this->value) {
             self::Help->value => 'Display help for the command.',
-            self::Config->value => 'Path to a JSON file with custom optimization rules. If not provided, all default optimizations will be applied.',
+            self::Config->value => 'Path to a JSON file, or a raw JSON string, with custom optimization rules. If not provided, all default optimizations will be applied.',
             self::DryRun->value => 'Only calculate potential savings without modifying the files.',
             self::AllowRisky->value => 'Explicitly enables risky rules, allowing them to be applied.',
             self::WithAllRules->value => 'Enable all non-risky rules. Use --allow-risky to include risky rules as well.',

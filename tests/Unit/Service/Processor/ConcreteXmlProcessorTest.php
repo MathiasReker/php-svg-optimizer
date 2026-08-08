@@ -76,7 +76,7 @@ final class ConcreteXmlProcessorTest extends TestCase
     }
 
     /**
-     * @throws XmlProcessingException
+     * @throws \RuntimeException
      */
     #[Test]
     public function processWithCallbackThrowingGenericExceptionWrapsAsXmlProcessingException(): void
@@ -86,9 +86,6 @@ final class ConcreteXmlProcessorTest extends TestCase
         $domDocument->loadXML($svg);
 
         $runtimeException = new \RuntimeException('boom');
-        $callback = static function () use ($runtimeException): string {
-            throw $runtimeException;
-        };
 
         $processor = new /**
                           * @no-named-arguments
@@ -97,7 +94,9 @@ final class ConcreteXmlProcessorTest extends TestCase
         };
 
         try {
-            $processor->process($domDocument, $callback);
+            $processor->process($domDocument, static function () use ($runtimeException): string {
+                throw $runtimeException;
+            });
             self::fail('Expected XmlProcessingException was not thrown.');
         } catch (XmlProcessingException $xmlProcessingException) {
             self::assertSame('Failed to process the XML content.', $xmlProcessingException->getMessage());

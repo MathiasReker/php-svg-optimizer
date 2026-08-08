@@ -70,4 +70,12 @@ final readonly class Metrics
     {
         return $this->optimizationTime;
     }
+
+    /**
+     * @return bool True if one or more bytes were saved, false otherwise
+     */
+    public function hasSavedBytes(): bool
+    {
+        return $this->savedBytes > 0;
+    }
 }

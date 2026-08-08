@@ -153,6 +153,26 @@ final class MetricsTest extends TestCase
         self::assertEqualsWithDelta($negativeTime, $metrics->getOptimizationTime(), 0.000_001);
     }
 
+    #[Test]
+    public function hasSavedBytesReturnsTrueWhenBytesAreSaved(): void
+    {
+        self::assertTrue($this->metrics->hasSavedBytes());
+    }
+
+    #[Test]
+    public function hasSavedBytesReturnsFalseWhenNoBytesAreSaved(): void
+    {
+        $metrics = new Metrics(
+            self::ORIGINAL_SIZE,
+            self::ORIGINAL_SIZE,
+            0,
+            0.0,
+            self::OPTIMIZATION_TIME,
+        );
+
+        self::assertFalse($metrics->hasSavedBytes());
+    }
+
     #[\Override]
     protected function setUp(): void
     {

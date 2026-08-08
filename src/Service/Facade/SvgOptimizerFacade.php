@@ -84,7 +84,7 @@ final readonly class SvgOptimizerFacade
      * @param bool $convertCssClassesToAttributes   Whether to convert CSS classes to attributes
      * @param bool $convertEmptyTagsToSelfClosing   Whether to convert empty tags to self-closing tags
      * @param bool $convertInlineStylesToAttributes Whether to convert inline styles to attributes
-     * @param bool $fixAttributeNames               Whether to fix typos in attrubutes names
+     * @param bool $fixAttributeNames               Whether to fix typos in attribute names
      * @param bool $flattenGroups                   Whether to flatten nested group elements
      * @param bool $minifySvgCoordinates            Whether to minify coordinate values within the SVG
      * @param bool $minifyTransformations           Whether to minify transformation attributes
@@ -92,12 +92,12 @@ final readonly class SvgOptimizerFacade
      * @param bool $removeComments                  Whether to remove XML comments from the SVG
      * @param bool $removeDataAttributes            Whether to remove data-* attributes from elements
      * @param bool $removeDefaultAttributes         Whether to remove default attributes from elements
-     * @param bool $removeDeprecatedAttributes      Whether to remove the xlink namespace
+     * @param bool $removeDeprecatedAttributes      Whether to remove and modernize deprecated attributes
      * @param bool $removeDoctype                   Whether to remove the DOCTYPE declaration
      * @param bool $removeDuplicateElements         Whether to remove duplicate elements
      * @param bool $removeEmptyAttributes           Whether to remove empty attributes from elements
      * @param bool $removeEmptyGroups               Whether to remove empty groups
-     * @param bool $removeEmptyTextAttributes       Whether to remove empty text attributes
+     * @param bool $removeEmptyTextElements         Whether to remove empty text elements
      * @param bool $removeEnableBackgroundAttribute Whether to remove the enable-background attribute
      * @param bool $removeInkscapeFootprints        Whether to remove Inkscape-specific footprints
      * @param bool $removeInvisibleCharacters       Whether to remove invisible characters
@@ -133,7 +133,7 @@ final readonly class SvgOptimizerFacade
         bool $removeDuplicateElements = false,
         bool $removeEmptyAttributes = false,
         bool $removeEmptyGroups = false,
-        bool $removeEmptyTextAttributes = false,
+        bool $removeEmptyTextElements = false,
         bool $removeEnableBackgroundAttribute = false,
         bool $removeInkscapeFootprints = false,
         bool $removeInvisibleCharacters = false,
@@ -167,7 +167,7 @@ final readonly class SvgOptimizerFacade
             Rule::RemoveDuplicateElements->value => $removeDuplicateElements,
             Rule::RemoveEmptyAttributes->value => $removeEmptyAttributes,
             Rule::RemoveEmptyGroups->value => $removeEmptyGroups,
-            Rule::RemoveEmptyTextElements->value => $removeEmptyTextAttributes,
+            Rule::RemoveEmptyTextElements->value => $removeEmptyTextElements,
             Rule::RemoveEnableBackgroundAttribute->value => $removeEnableBackgroundAttribute,
             Rule::RemoveInkscapeFootprints->value => $removeInkscapeFootprints,
             Rule::RemoveInvisibleCharacters->value => $removeInvisibleCharacters,
