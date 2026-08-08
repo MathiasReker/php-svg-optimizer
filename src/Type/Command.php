@@ -18,9 +18,6 @@ enum Command: string
 {
     case Process = 'process';
 
-    /**
-     * Get the title for the command.
-     */
     public function getTitle(): string
     {
         return match ($this->value) {
@@ -28,9 +25,6 @@ enum Command: string
         };
     }
 
-    /**
-     * Get the description for the command.
-     */
     public function getDescription(): string
     {
         return match ($this->value) {

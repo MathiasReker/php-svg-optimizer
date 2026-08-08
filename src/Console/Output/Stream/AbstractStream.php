@@ -18,16 +18,10 @@ use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
  */
 abstract class AbstractStream implements StreamInterface
 {
-    /**
-     * The output stream resource.
-     *
-     * @var resource
-     */
+    /** @var resource */
     protected $stream;
 
     /**
-     * Write a message to the output stream, followed by a newline.
-     *
      * @param string $message The message to write
      */
     final public function writeln(string $message): void
@@ -36,8 +30,6 @@ abstract class AbstractStream implements StreamInterface
     }
 
     /**
-     * Write a message to the output stream.
-     *
      * @param string $message The message to write
      */
     final public function write(string $message): void

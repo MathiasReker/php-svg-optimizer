@@ -13,13 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Support;
 
 final class SvgDefaults
 {
-    /**
-     * The default XML version for SVG documents.
-     */
     public const string XML_VERSION = '1.0';
 
-    /**
-     * The default character encoding for SVG documents.
-     */
     public const string XML_ENCODING = 'UTF-8';
 }

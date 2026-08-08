@@ -25,11 +25,6 @@ use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 
 /**
- * This class is the main entry point for building and configuring the SVG optimizer.
- *
- * It allows you to add various optimization rules to the SVG optimizer and
- * build the final SVG optimizer object that can then be used to optimize SVG content.
- *
  * @see https://github.com/MathiasReker/php-svg-optimizer
  *
  * @no-named-arguments
@@ -40,8 +35,6 @@ final readonly class SvgOptimizerFacade
     private SvgOptimizer $svgOptimizer;
 
     /**
-     * Initializes the SvgOptimizerFacade with a specified SVG provider.
-     *
      * @param SvgProviderInterface $svgProvider The provider for retrieving the SVG content
      */
     private function __construct(SvgProviderInterface $svgProvider)
@@ -50,8 +43,6 @@ final readonly class SvgOptimizerFacade
     }
 
     /**
-     * Creates an instance of SvgOptimizerFacade from a string.
-     *
      * @param string $content The SVG content as a string
      *
      * @return static The SvgOptimizerFacade instance configured for string-based SVG content
@@ -62,8 +53,6 @@ final readonly class SvgOptimizerFacade
     }
 
     /**
-     * Creates an instance of SvgOptimizerFacade from a file path.
-     *
      * @param string $filePath The path to the SVG file
      *
      * @return static The SvgOptimizerFacade instance configured for file-based SVG content
@@ -77,10 +66,6 @@ final readonly class SvgOptimizerFacade
     }
 
     /**
-     * Optimizes the SVG content using the configured rules.
-     *
-     * If no rules have been added, a default set of rules will be applied.
-     *
      * @return $this The SvgOptimizerFacade instance
      *
      * @throws SvgValidationException        If the SVG content is invalid
@@ -95,10 +80,6 @@ final readonly class SvgOptimizerFacade
     }
 
     /**
-     * Configures the optimization rules for the SVG optimizer.
-     *
-     * Each rule can be enabled or disabled via the respective parameters.
-     *
      * @param bool $convertColorsToHex              Whether to convert colors to hexadecimal format
      * @param bool $convertCssClassesToAttributes   Whether to convert CSS classes to attributes
      * @param bool $convertEmptyTagsToSelfClosing   Whether to convert empty tags to self-closing tags
@@ -209,12 +190,6 @@ final readonly class SvgOptimizerFacade
     }
 
     /**
-     * Enables all available optimization rules for the SVG optimizer.
-     *
-     * This method will activate every rule that is either non-risky or, if risky rules
-     * are allowed, will also include risky rules. It provides a convenient way to ensure
-     * that the SVG content is fully optimized according to all applicable rules.
-     *
      * @return $this The SvgOptimizerFacade instance
      */
     public function withAllRules(bool $enable = true): self
@@ -242,8 +217,6 @@ final readonly class SvgOptimizerFacade
     }
 
     /**
-     * Saves the optimized SVG content to a specified file path.
-     *
      * @param string $outputPath The file path where the optimized SVG content will be saved
      *
      * @return $this The SvgOptimizerFacade instance
@@ -256,8 +229,6 @@ final readonly class SvgOptimizerFacade
     }
 
     /**
-     * Retrieves metadata related to the SVG content.
-     *
      * @return Metrics The metadata associated with the SVG content
      *
      * @throws \LogicException If the metadata cannot be retrieved
@@ -268,8 +239,6 @@ final readonly class SvgOptimizerFacade
     }
 
     /**
-     * Retrieves the optimized SVG content as a string.
-     *
      * @return string The optimized SVG content
      */
     public function getContent(): string
@@ -278,11 +247,6 @@ final readonly class SvgOptimizerFacade
     }
 
     /**
-     * Enables or disables the use of risky optimization rules.
-     *
-     * Risky rules can potentially change the visual rendering of the SVG.
-     * Use with caution.
-     *
      * @param bool $allowRisky Whether to allow risky rules (default: true)
      *
      * @return $this The SvgOptimizerFacade instance

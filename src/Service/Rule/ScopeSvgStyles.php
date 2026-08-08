@@ -18,65 +18,41 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
 {
     /**
-     * Matches a CSS rule, capturing the selector and body.
-     *
      * @see https://regex101.com/r/aoMXmR/1
      */
     private const string CSS_RULE_REGEX = '/(?<selector>[^{]+?){(?<body>[^}]+)}/';
 
     /**
-     * Matches a tag selector.
-     *
      * @see https://regex101.com/r/3fFyX5/1
      */
     private const string TAG_SELECTOR_REGEX = '/^[a-zA-Z][\w-]*$/';
 
     /**
-     * Matches a class selector.
-     *
      * @see https://regex101.com/r/wqnnqt/1
      */
     private const string CLASS_SELECTOR_REGEX = '/\.([\w\-]+)/';
 
     /**
-     * Matches an ID selector.
-     *
      * @see https://regex101.com/r/W8IG1C/1
      */
     private const string ID_SELECTOR_REGEX = '/#([\w\-]+)/';
 
     /**
-     * Matches a URL reference to an ID.
-     *
      * @see https://regex101.com/r/RPou2d/1
      */
     private const string URL_REFERENCE_REGEX = '/url\(#([\w\-]+)\)/';
 
     /**
-     * Matches one or more whitespace characters.
-     *
      * @see https://regex101.com/r/kNrSO5/1
      */
     private const string WHITESPACE_REGEX = '/\s+/';
 
-    /**
-     * XPath query for finding all SVG elements.
-     */
     private const string SVG_QUERY = '//*[local-name()="svg"]';
 
-    /**
-     * XPath query for finding all elements with an ID attribute.
-     */
     private const string ID_QUERY = './/*[@id]';
 
-    /**
-     * XPath query for finding all elements with a class attribute.
-     */
     private const string CLASS_QUERY = './/*[@class]';
 
-    /**
-     * XPath query for finding all attributes containing a URL reference.
-     */
     private const string URL_REFERENCE_QUERY = './/@*[contains(., "url(#")]';
 
     #[\Override]
@@ -91,10 +67,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
         return false;
     }
 
-    /**
-     * Finds all SVG elements in the DOM and scopes their styles individually.
-     * This prevents style conflicts when multiple SVGs are embedded in the same document.
-     */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
@@ -124,9 +96,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
         }
     }
 
-    /**
-     * Scope a single SVG element with a unique hash.
-     */
     private function scopeSingleSvg(\DOMXPath $domXPath, \DOMElement $domElement, string $hash): void
     {
         $idReplacements = $this->scopeIds($domXPath, $domElement, $hash);
@@ -137,8 +106,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Scope all IDs in the given SVG element.
-     *
      * @return array<string, string> a map of original to new IDs
      */
     private function scopeIds(\DOMXPath $domXPath, \DOMElement $domElement, string $hash): array
@@ -169,8 +136,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Process all style blocks in the given SVG element.
-     *
      * @param array<string, string> $idReplacements
      *
      * @return array<string, string> a map of original to new class names
@@ -204,8 +169,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Process the CSS rules within a style block.
-     *
      * @param array<string, string> $idReplacements
      *
      * @return array{string, array<string, string>, array<string, string>}
@@ -249,9 +212,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
         return [$result ?? '', $newClassReplacements, $newIdReplacements];
     }
 
-    /**
-     * Check if a CSS selector is considered unsafe.
-     */
     private function isUnsafeSelector(string $selector): bool
     {
         if (str_starts_with($selector, '*')) {
@@ -262,8 +222,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Scope classes within a CSS selector.
-     *
      * @return array{string, array<string, string>}
      */
     private function scopeClasses(
@@ -288,8 +246,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Scope IDs within a CSS selector.
-     *
      * @param array<string, string> $idReplacements
      *
      * @return array{string, array<string, string>}
@@ -322,8 +278,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Update class attributes in the SVG element.
-     *
      * @param array<string, string> $classReplacements
      */
     private function updateClassAttributes(
@@ -368,8 +322,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Update URL references in the SVG element.
-     *
      * @param array<string, string> $idReplacements
      */
     private function updateUrlReferences(

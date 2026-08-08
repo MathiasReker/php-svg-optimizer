@@ -32,12 +32,6 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Normalizes the case of SVG attribute names throughout the document.
-     *
-     * This method iterates over all elements and their attributes, correcting
-     * the casing of attribute names to match the standard defined in the
-     * `SvgAttribute` enum. For example, `viewbox` would be corrected to `viewBox`.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
@@ -53,12 +47,6 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Creates a lookup table for efficient attribute name normalization.
-     *
-     * The keys of the returned array are normalized attribute names (lowercase,
-     * with dashes removed), and the values are the canonical, case-sensitive
-     * names from the `SvgAttribute` enum.
-     *
      * @return array<string, string> a map of normalized names to canonical names
      */
     private function getLookupTable(): array
@@ -73,11 +61,6 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Normalizes an attribute name for lookup.
-     *
-     * This helper function converts a name to a consistent format (lowercase,
-     * no dashes) to be used as a key in the lookup table.
-     *
      * @param string $name the attribute name to normalize
      *
      * @return string the normalized name
@@ -88,12 +71,6 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Corrects the attribute names for a single DOM element.
-     *
-     * It iterates over the element's attributes, and for any attribute whose
-     * name does not match the canonical form, it replaces it while preserving
-     * its value and namespace.
-     *
      * @param \DOMElement           $domElement the element to process
      * @param array<string, string> $lookup     the normalization lookup table
      */

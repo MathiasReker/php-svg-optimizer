@@ -26,8 +26,6 @@ final readonly class DomDocumentWrapper
         \LIBXML_NOEMPTYTAG;
 
     /**
-     * Saves the current \DOMDocument content as an XML string.
-     *
      * @param \DOMDocument $domDocument The \DOMDocument instance to be saved
      *
      * @return string Returns the XML content as a string
@@ -52,8 +50,6 @@ final readonly class DomDocumentWrapper
     }
 
     /**
-     * Loads an XML file into a \DOMDocument, suppressing errors.
-     *
      * @param string $filePath The path to the XML file
      *
      * @return \DOMDocument Returns the loaded \DOMDocument
@@ -70,8 +66,6 @@ final readonly class DomDocumentWrapper
     }
 
     /**
-     * Common method for loading a \DOMDocument with error handling.
-     *
      * @param callable $loader A callback that loads the \DOMDocument (file or string)
      *
      * @return \DOMDocument Returns the loaded \DOMDocument
@@ -95,16 +89,12 @@ final readonly class DomDocumentWrapper
         return $domDocument;
     }
 
-    /**
-     * Creates and returns a new \DOMDocument instance with default settings.
-     */
     private function createDomDocument(): \DOMDocument
     {
         $domDocument = new \DOMDocument(SvgDefaults::XML_VERSION, SvgDefaults::XML_ENCODING);
         $domDocument->formatOutput = false;
         $domDocument->preserveWhiteSpace = false;
 
-        // Security: Harden XXE
         $domDocument->resolveExternals = false;
         $domDocument->substituteEntities = false;
         $domDocument->validateOnParse = false;
@@ -115,8 +105,6 @@ final readonly class DomDocumentWrapper
     }
 
     /**
-     * Loads XML from a string into a \DOMDocument.
-     *
      * @param string $content The XML content as a string
      *
      * @return \DOMDocument Returns the loaded \DOMDocument

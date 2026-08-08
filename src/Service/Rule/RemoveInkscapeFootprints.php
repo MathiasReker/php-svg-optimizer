@@ -19,50 +19,25 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
  */
 final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterface
 {
-    /**
-     * The limit for the number of times to explode the SVG document.
-     */
     private const int EXPLODE_LIMIT = 2;
 
-    /**
-     * The number of optimization loops to perform.
-     */
     private const int OPTIMIZATION_LOOP_COUNT = 2;
 
-    /**
-     * The XML namespace attributes to remove from the SVG document.
-     */
     private const array XMLNS_ATTRIBUTES = [
         'xmlns:sodipodi',
         'xmlns:inkscape',
     ];
 
-    /**
-     * The attributes to remove from the SVG document.
-     *
-     * These attributes are typically used for metadata and are not essential
-     * for rendering the SVG image. They are removed to reduce file size and
-     * improve performance.
-     */
     private const array ATTRIBUTES_TO_REMOVE = [
         'sodipodi:*',
         'inkscape:*',
     ];
 
-    /**
-     * The XML namespace URIs for the Sodipodi and Inkscape namespaces.
-     *
-     * These URIs are used to identify the namespaces in the SVG document and
-     * are used to remove elements and attributes related to these namespaces.
-     */
     private const array NAMESPACE_URIS = [
         'sodipodi' => SvgNamespace::Sodipodi->value,
         'inkscape' => SvgNamespace::Inkscape->value,
     ];
 
-    /**
-     * XPath query to select all elements.
-     */
     private const string XPATH_ALL_ELEMENTS = '//*';
 
     #[\Override]
@@ -78,12 +53,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     }
 
     /**
-     * Removes editor-specific data left by Inkscape and Sodipodi.
-     *
-     * This method cleans the SVG by removing custom namespaces, elements, and
-     * attributes added by these editors, which are not needed for rendering
-     * the final image.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
@@ -103,8 +72,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     }
 
     /**
-     * Removes the `xmlns:sodipodi` and `xmlns:inkscape` namespace declarations.
-     *
      * @param \DOMDocument $domDocument the DOM document to clean
      */
     private function removeNamespaceDeclarations(\DOMDocument $domDocument): void
@@ -122,8 +89,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     }
 
     /**
-     * Removes all elements belonging to the Inkscape or Sodipodi namespaces.
-     *
      * @param \DOMXPath    $domXPath     the XPath object for querying the document
      * @param list<string> $tagsToRemove A list of tag patterns to remove (e.g., "sodipodi:*").
      */
@@ -148,8 +113,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     }
 
     /**
-     * Removes all attributes belonging to the Inkscape or Sodipodi namespaces.
-     *
      * @param \DOMXPath $domXPath the XPath object for querying the document
      */
     private function removeNamespacedAttributes(\DOMXPath $domXPath): void
@@ -174,8 +137,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     }
 
     /**
-     * Iterates through all nodes and removes namespaced attributes from them.
-     *
      * @param \DOMXPath $domXPath     the XPath object for querying the document
      * @param string    $namespaceUri the namespace URI of the attributes to remove
      */
@@ -190,8 +151,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     }
 
     /**
-     * Removes attributes with a specific namespace URI from a single element.
-     *
      * @param \DOMElement $domElement   the element to clean
      * @param string      $namespaceUri the namespace URI of the attributes to remove
      */
@@ -205,8 +164,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     }
 
     /**
-     * Gets a list of local names for all attributes on an element that match a given namespace URI.
-     *
      * @param \DOMElement $domElement   the element to inspect
      * @param string      $namespaceUri the namespace URI to match
      *

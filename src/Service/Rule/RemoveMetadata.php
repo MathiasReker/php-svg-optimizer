@@ -35,12 +35,6 @@ final readonly class RemoveMetadata implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Removes `<metadata>` elements from the SVG document.
-     *
-     * These elements often contain information that is not essential for rendering,
-     * such as author, creation date, or other metadata. Removing them can
-     * reduce the file size.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]

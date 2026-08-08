@@ -21,8 +21,6 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 final class FileProvider extends AbstractProvider
 {
     /**
-     * The path to the input SVG file.
-     *
      * @param string $inputFile The path to the input SVG file
      *
      * @throws FileNotFoundException If the file does not exist
@@ -33,13 +31,10 @@ final class FileProvider extends AbstractProvider
     ) {
         parent::__construct();
 
-        // Load the input content immediately to have it as a reference for metadata.
         $this->inputContent = $this->getInputContent();
     }
 
     /**
-     * Get the content of the input file.
-     *
      * @throws FileNotFoundException If the file does not exist
      * @throws IOException           If the file does not exist or cannot be read
      */
@@ -64,8 +59,6 @@ final class FileProvider extends AbstractProvider
     }
 
     /**
-     * Load the input file into a \DOMDocument instance.
-     *
      * @throws XmlProcessingException If the XML processing fails
      */
     #[\Override]

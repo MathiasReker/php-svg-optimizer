@@ -19,9 +19,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
  */
 final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInterface
 {
-    /**
-     * XPath query to select all elements that have any attribute.
-     */
     private const string XPATH_ALL_WITH_ATTRIBUTES = '//*[@*]';
 
     #[\Override]
@@ -37,12 +34,6 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
     }
 
     /**
-     * Removes attributes that are not part of the standard SVG specification.
-     *
-     * This method iterates through all attributes on all elements and removes
-     * any that are not defined in the `SvgAttribute` enum. It explicitly
-     * preserves `xml:*`, `xlink:*`, and `data-*` attributes.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
@@ -60,10 +51,6 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
     }
 
     /**
-     * Creates a lookup table of allowed SVG attribute names.
-     *
-     * This is used for efficient checking of whether an attribute is standard.
-     *
      * @return array<string, true> a map where keys are the allowed attribute names
      */
     private function getAllowedLookup(): array
@@ -82,8 +69,6 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
     }
 
     /**
-     * Removes non-standard attributes from a single DOM element.
-     *
      * @param \DOMElement         $domElement the element to process
      * @param array<string, true> $allowed    a lookup map of allowed attribute names
      */
@@ -104,8 +89,6 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
     }
 
     /**
-     * Checks if an attribute is allowed based on its name.
-     *
      * @param string              $name    the name of the attribute
      * @param array<string, true> $allowed a lookup map of allowed attribute names
      *

@@ -45,11 +45,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 
 /**
- * Represents all available optimization rules for the SVG optimizer.
- *
- * Each enum case corresponds to a specific optimization step
- * that can be toggled on or off.
- *
  * @no-named-arguments
  */
 enum Rule: string

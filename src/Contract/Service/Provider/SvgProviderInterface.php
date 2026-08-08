@@ -14,29 +14,16 @@ namespace MathiasReker\PhpSvgOptimizer\Contract\Service\Provider;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
 /**
- * Defines the contract for an SVG content provider, including loading, optimizing,
- * and retrieving SVG content and metadata.
- *
  * @no-named-arguments
  */
 interface SvgProviderInterface
 {
     /**
-     * Loads the SVG content into a \DOMDocument instance.
-     *
-     * This method should return a \DOMDocument instance that represents the
-     * SVG content to be processed.
-     *
      * @return \DOMDocument The \DOMDocument instance representing the loaded SVG content
      */
     public function loadContent(): \DOMDocument;
 
     /**
-     * Optimizes the provided \DOMDocument instance.
-     *
-     * This method performs optimization on the SVG content represented by the
-     * given \DOMDocument instance. It may modify the instance in place.
-     *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG content to be optimized
      *
      * @return self Returns the current instance to allow method chaining
@@ -44,37 +31,21 @@ interface SvgProviderInterface
     public function optimize(\DOMDocument $domDocument): self;
 
     /**
-     * Retrieves the raw input SVG content before optimization.
-     *
-     * This method returns the original SVG content as a string, prior to any
-     * optimization being applied.
-     *
      * @return string The raw input SVG content
      */
     public function getInputContent(): string;
 
     /**
-     * Retrieves the optimized SVG content after processing.
-     *
-     * This method returns the SVG content as a string after optimization has
-     * been applied.
-     *
      * @return string The optimized SVG content
      */
     public function getOutputContent(): string;
 
     /**
-     * Save the optimized SVG content to a file.
-     *
-     * This method saves the optimized SVG content to the specified file path.
-     *
      * @param string $path The path to save the optimized SVG content to
      */
     public function saveToFile(string $path): self;
 
     /**
-     * Serializes the given \DOMDocument to a string without the XML declaration.
-     *
      * @param \DOMDocument $domDocument The \DOMDocument instance to serialize
      *
      * @return string The serialized XML content

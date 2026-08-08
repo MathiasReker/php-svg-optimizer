@@ -20,9 +20,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
  */
 final readonly class FlattenGroups implements SvgOptimizerRuleInterface
 {
-    /**
-     * XPath query to select all group elements.
-     */
     private const string XPATH_GROUP_ELEMENTS = '//svg:g';
 
     #[\Override]
@@ -38,12 +35,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Flattens nested SVG group elements (`<g>`).
-     *
-     * This optimization rule merges the attributes of a group into its child
-     * elements and then removes the group, resulting in a flatter and more
-     * compact SVG structure.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
@@ -70,11 +61,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Applies the attributes of a group element to its direct children.
-     *
-     * This method iterates through the children of the given group element and
-     * applies the group's attributes to each child that is a `\DOMElement`.
-     *
      * @param \DOMElement $domElement the group element
      */
     private function applyGroupAttributesToChildren(\DOMElement $domElement): void
@@ -87,11 +73,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Applies the attributes of a parent element to a child element.
-     *
-     * This method iterates through the attributes of the parent element and
-     * applies each one to the child element.
-     *
      * @param \DOMElement $parent the parent element
      * @param \DOMElement $child  the child element
      */
@@ -104,8 +85,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Sets an attribute on a DOM element if it is not already present.
-     *
      * @param \DOMElement $domElement the element to modify
      * @param \DOMAttr    $domAttr    the attribute to set
      */
@@ -117,11 +96,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Flattens a group element by moving its children to its parent.
-     *
-     * This method also applies the group's `transform` attribute to its children
-     * before removing the group.
-     *
      * @param \DOMElement $domElement the group element to flatten
      */
     private function flattenGroup(\DOMElement $domElement): void
@@ -138,11 +112,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Applies the transform of a group to its children.
-     *
-     * This method combines the group's transform with the transform of each
-     * child element.
-     *
      * @param \DOMElement $domElement the group element
      * @param string      $transform  the transform to apply
      */
@@ -161,11 +130,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Combines two transform strings.
-     *
-     * If the transforms are identical, it returns the original transform.
-     * Otherwise, it concatenates them.
-     *
      * @param string $transform1 the first transform
      * @param string $transform2 the second transform
      *
@@ -181,11 +145,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Moves the children of a DOM element to its parent.
-     *
-     * This method inserts each child before the original element in the parent's
-     * child list.
-     *
      * @param \DOMElement $domElement the element whose children to move
      * @param \DOMElement $parentNode the parent element
      */

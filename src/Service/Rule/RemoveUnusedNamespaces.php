@@ -22,15 +22,11 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
     /**
-     * Regex pattern for matching XML namespaces.
-     *
      * @see https://regex101.com/r/EU11xA/1
      */
     private const string NAMESPACE_REGEX = '/xmlns:([a-zA-Z0-9\-]+)="([^"]+)"/';
 
     /**
-     * Regex pattern for matching SVG elements with namespaces.
-     *
      * @see https://regex101.com/r/pxqIJN/1
      */
     private const string ELEMENT_TEMPLATE_REGEX = '/%s:[a-zA-Z0-9\-]+/';
@@ -48,8 +44,6 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     }
 
     /**
-     * Removes unused XML namespaces from the SVG document.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      *
      * @throws XmlProcessingException if the XML content cannot be processed
@@ -61,11 +55,6 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     }
 
     /**
-     * Cleans unused namespaces from the provided DOM document.
-     *
-     * This method identifies all namespace declarations, counts their usage within the
-     * document, and removes any that are not used.
-     *
      * @param \DOMDocument $domDocument the DOM document to clean
      *
      * @return string the SVG content with unused namespaces removed
@@ -88,11 +77,6 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     }
 
     /**
-     * Counts the usage of each declared namespace within the SVG content.
-     *
-     * It uses regular expressions to find all namespace declarations and then counts
-     * how many times elements with each namespace prefix appear.
-     *
      * @param string $content the raw SVG content
      *
      * @return array<string, int> a map of namespace attributes to their usage count
@@ -117,8 +101,6 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     }
 
     /**
-     * Removes a specific namespace attribute from the root SVG element.
-     *
      * @param \DOMDocument $domDocument        the DOM document to modify
      * @param string       $namespaceAttribute The namespace attribute to remove (e.g., "xmlns:xlink").
      */

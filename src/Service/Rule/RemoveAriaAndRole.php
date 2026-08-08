@@ -32,12 +32,6 @@ final readonly class RemoveAriaAndRole implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Removes `role` and `aria-*` attributes from all elements in the SVG document.
-     *
-     * These attributes are related to accessibility but are often not essential
-     * for the visual rendering of the SVG. Removing them can reduce file size,
-     * but it may impact the accessibility of the image.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]

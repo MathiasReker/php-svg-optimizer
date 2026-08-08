@@ -144,6 +144,30 @@ final class ConcreteProviderTest extends TestCase
         rmdir($tempDir);
     }
 
+    /**
+     * @throws XmlProcessingException
+     * @throws IOException
+     */
+    #[Test]
+    public function saveToFileThrowsIOExceptionWhenWriteFails(): void
+    {
+        $input = '<svg>unwritable</svg>';
+        $provider = $this->getConcreteProvider($input);
+        $provider->optimize($provider->loadContent());
+
+        $directoryAsFilePath = sys_get_temp_dir() . '/svgtest_dir_as_file_' . uniqid();
+        mkdir($directoryAsFilePath);
+
+        try {
+            $this->expectException(IOException::class);
+            $this->expectExceptionMessage('Failed to write optimized content to the output file: ' . $directoryAsFilePath);
+
+            @$provider->saveToFile($directoryAsFilePath);
+        } finally {
+            rmdir($directoryAsFilePath);
+        }
+    }
+
     #[\Override]
     protected function tearDown(): void
     {

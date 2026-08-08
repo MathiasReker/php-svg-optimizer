@@ -14,8 +14,6 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 use MathiasReker\PhpSvgOptimizer\Type\Option;
 
 /**
- * Handles command-line options and determines user intent for the SVG optimizer CLI.
- *
  * @no-named-arguments
  */
 final readonly class OptionIntent
@@ -28,10 +26,6 @@ final readonly class OptionIntent
     ) {}
 
     /**
-     * Check if the dry-run option is set.
-     *
-     * When set, the optimizer will only calculate potential savings without modifying files.
-     *
      * @return bool true if the dry-run option is present, false otherwise
      */
     public function isDryRun(): bool
@@ -40,10 +34,6 @@ final readonly class OptionIntent
     }
 
     /**
-     * Check if the quiet option is set.
-     *
-     * When set, suppresses all output except errors.
-     *
      * @return bool true if the quiet option is present, false otherwise
      */
     public function isQuiet(): bool
@@ -52,10 +42,6 @@ final readonly class OptionIntent
     }
 
     /**
-     * Check if the help option is set.
-     *
-     * When set, displays help information for the CLI command.
-     *
      * @return bool true if the help option is present, false otherwise
      */
     public function isHelp(): bool
@@ -64,10 +50,6 @@ final readonly class OptionIntent
     }
 
     /**
-     * Check if the version option is set.
-     *
-     * When set, displays the version of the php-svg-optimizer library.
-     *
      * @return bool true if the version option is present, false otherwise
      */
     public function isVersion(): bool
@@ -76,10 +58,6 @@ final readonly class OptionIntent
     }
 
     /**
-     * Get the value of the configuration file path option.
-     *
-     * Allows the user to provide a path to a JSON file with custom optimization rules.
-     *
      * @return string the path to the configuration file, or an empty string if not set
      *
      * @throws \InvalidArgumentException
@@ -92,10 +70,6 @@ final readonly class OptionIntent
     }
 
     /**
-     * Check if the allow-risky option is set.
-     *
-     * Explicitly enables risky rules, allowing them to be applied during SVG optimization.
-     *
      * @return bool true if risky rules are allowed, false otherwise
      */
     public function allowRisky(): bool
@@ -104,8 +78,6 @@ final readonly class OptionIntent
     }
 
     /**
-     * Checks whether the command should apply all available optimization rules.
-     *
      * @return bool true if all optimization rules should be applied; false otherwise
      */
     public function withAllRules(): bool

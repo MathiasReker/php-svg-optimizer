@@ -1468,11 +1468,104 @@ final class RemoveUnsafeElementsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
                 XML,
         ];
+
+        yield 'Unwraps a tag with double-encoded HTML entity obfuscated javascript href' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="&amp;#106;avascript:alert(1)">x</a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">x</svg>
+                XML,
+        ];
+
+        yield 'Removes style url() dangerous protocol only revealed after re-normalization' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="background:url(\26#106;avascript:alert1)" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Preserves safe srcset attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <image srcset="a.png 1x, b.png 2x" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><image srcset="a.png 1x, b.png 2x" width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes a tag carrying attributeName href directly on itself' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a attributeName="href"></a>
+                    <circle cx="5" cy="5" r="3"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="3"/></svg>
+                XML,
+        ];
+
+        yield 'Removes use tag carrying attributeName xlink:href directly on itself' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <use attributeName="xlink:href"/>
+                    <circle cx="5" cy="5" r="3"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><circle cx="5" cy="5" r="3"/></svg>
+                XML,
+        ];
     }
 
     #[Test]
     public function ruleIsMarkedAsRisky(): void
     {
         self::assertFalse(RemoveUnsafeElements::isRisky());
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    #[Test]
+    public function removeIfDangerousSkipsNonDomElementNodes(): void
+    {
+        $domDocument = new \DOMDocument();
+        $domText = $domDocument->createTextNode('sample');
+
+        $removeUnsafeElements = new RemoveUnsafeElements();
+        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'removeIfDangerous');
+
+        $reflectionMethod->invoke($removeUnsafeElements, $domText);
+
+        self::assertSame('sample', $domText->textContent);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    #[Test]
+    public function unwrapNodeDoesNothingWhenElementHasNoParent(): void
+    {
+        $domDocument = new \DOMDocument();
+        $domElement = $domDocument->createElement('a');
+
+        self::assertNull($domElement->parentNode);
+
+        $removeUnsafeElements = new RemoveUnsafeElements();
+        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'unwrapNode');
+
+        $reflectionMethod->invoke($removeUnsafeElements, $domElement);
+
+        self::assertNull($domElement->parentNode);
     }
 }

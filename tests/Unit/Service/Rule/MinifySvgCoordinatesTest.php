@@ -293,6 +293,11 @@ final class MinifySvgCoordinatesTest extends TestCase
             '<svg><rect x="10px" y="20pt" width="30%" height="40em"/></svg>',
             '<svg><rect x="10px" y="20pt" width="30%" height="40em"/></svg>',
         ];
+
+        yield 'Empty d attribute on namespaced path is left unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d=""/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d=""/></svg>',
+        ];
     }
 
     #[Test]

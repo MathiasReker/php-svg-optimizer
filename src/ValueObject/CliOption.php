@@ -27,33 +27,22 @@ final readonly class CliOption
         private string $description,
     ) {}
 
-    /**
-     * Get the shorthand name of the argument option.
-     */
     public function getShorthand(): string
     {
         return $this->shorthand;
     }
 
-    /**
-     * Get the full name of the argument option.
-     */
     public function getFull(): string
     {
         return $this->full;
     }
 
-    /**
-     * Get the description of the argument option.
-     */
     public function getDescription(): string
     {
         return $this->description;
     }
 
     /**
-     * Check if the argument option has a specific name.
-     *
      * @param string $name The name to check against the shorthand and full names
      */
     public function hasName(string $name): bool

@@ -17,12 +17,6 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 final readonly class ConfigLoader
 {
     /**
-     * Loads a configuration file or JSON string and returns it as an array.
-     *
-     * This method checks if the input is a file path or a raw JSON string.
-     * If it's a file path, it reads the file's content. The method then validates
-     * the JSON and decodes it into an associative array.
-     *
      * @param string $config The path to a config file or a JSON string
      *
      * @return array<array-key, bool> The configuration as an associative array

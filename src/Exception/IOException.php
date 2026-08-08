@@ -12,8 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Exception;
 
 /**
- * Exception thrown when an IO operation fails.
- *
  * @no-named-arguments
  */
 final class IOException extends \RuntimeException

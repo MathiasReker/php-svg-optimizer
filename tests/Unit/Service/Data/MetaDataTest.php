@@ -24,40 +24,16 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Metrics::class)]
 final class MetaDataTest extends TestCase
 {
-    /**
-     * The original size of the SVG file in bytes.
-     * This is used to test the MetaData's methods.
-     */
     private const int ORIGINAL_SIZE = 1_000;
 
-    /**
-     * The optimized size of the SVG file in bytes.
-     * This is used to test the MetaData's methods.
-     */
     private const int OPTIMIZED_SIZE = 800;
 
-    /**
-     * The time taken to optimize the SVG file in seconds.
-     * Used for testing purposes in unit tests.
-     */
     private const float OPTIMIZED_TIME = 0.001;
 
-    /**
-     * The size of the SVG file after optimization in bytes.
-     * This is used to test the MetaData's methods.
-     */
     private const int ZERO_SIZE = 0;
 
-    /**
-     * The number of bytes saved after optimization.
-     * This is used to test the MetaData's methods.
-     */
     private const int EXPECTED_SAVED_BYTES = 200;
 
-    /**
-     * The percentage of size saved after optimization.
-     * This is used to test the MetaData's methods.
-     */
     private const float EXPECTED_SAVED_PERCENTAGE = 20.0;
 
     /**

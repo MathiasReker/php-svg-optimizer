@@ -35,12 +35,6 @@ final readonly class RemoveTitleAndDesc implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Removes `<title>` and `<desc>` elements from the SVG document.
-     *
-     * These elements are primarily for accessibility and providing metadata.
-     * While useful, they are not required for rendering and can be removed to
-     * reduce file size if they are not needed.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]

@@ -14,8 +14,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data\Trait;
 trait BaseEnumTrait
 {
     /**
-     * Convert enum cases to their string values.
-     *
      * @param list<\BackedEnum> $cases
      *
      * @return list<string>

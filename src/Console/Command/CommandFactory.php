@@ -31,8 +31,6 @@ final readonly class CommandFactory
     ) {}
 
     /**
-     * Create a new Command instance with the provided options.
-     *
      * @param CommandOption $commandOption The options for the command
      *
      * @return Command The created command instance
@@ -48,9 +46,6 @@ final readonly class CommandFactory
         );
     }
 
-    /**
-     * Helper to build a reusable OutputHelper.
-     */
     private function buildOutputHelper(): OutputManager
     {
         return new OutputManager($this->stream);

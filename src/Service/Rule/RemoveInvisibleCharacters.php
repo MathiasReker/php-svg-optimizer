@@ -21,11 +21,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
     /**
-     * Regex pattern for removing invisible characters in HTML entity format.
-     *
-     * This regex removes all invisible or non-printing characters, including
-     * control characters, whitespace, tabs, newlines, zero-width spaces, soft hyphens, etc.
-     *
      * @see https://regex101.com/r/7HAFNv/1
      */
     private const string INVISIBLE_CHARACTERS_REGEX = '/&#x(?:200B|200C|200D|2028|2029|AD|0A|0D|09|D);/u';
@@ -43,13 +38,6 @@ final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor impl
     }
 
     /**
-     * Removes invisible characters from the SVG document.
-     *
-     * This method targets various non-printing characters, such as zero-width
-     * spaces and soft hyphens, that may be present in the SVG content as HTML
-     * entities. Removing them can reduce file size without affecting the visual
-     * rendering.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      *
      * @throws XmlProcessingException if the XML content cannot be processed
@@ -61,8 +49,6 @@ final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor impl
     }
 
     /**
-     * Applies a regular expression to remove invisible characters from the SVG content.
-     *
      * @param string $content the raw SVG content
      *
      * @return string the cleaned SVG content

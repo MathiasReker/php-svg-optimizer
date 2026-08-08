@@ -17,12 +17,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 trait RemoveElementsByTagNameTrait
 {
     /**
-     * Remove all elements with the given tag name from the \DOMDocument.
-     *
-     * This method removes all elements with the specified tag name from the
-     * \DOMDocument. It repeatedly removes elements until none with the given tag
-     * name remain.
-     *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      * @param string       $tagName     The tag name of the elements to be removed
      */

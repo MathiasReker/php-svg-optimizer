@@ -21,43 +21,30 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
 {
     /**
-     * This regex removes leading zeros from decimal values (e.g., 0.5 -> .5).
-     *
      * @see https://regex101.com/r/JVNlRF/1
      */
     private const string REMOVE_LEADING_ZERO_REGEX = '/(?<=^|\D)0(\.\d+)/';
 
     /**
-     * This regex removes trailing zeros from decimal values (e.g., 1.230 -> 1.23).
-     *
      * @see https://regex101.com/r/6XmnVQ/1
      */
     private const string REMOVE_TRAILING_ZEROS_REGEX = '/(\.\d*?)0+(\D|$)/';
 
     /**
-     * This regex removes decimal points that are not followed by a digit (e.g., 2. -> 2).
-     *
      * @see https://regex101.com/r/HpT7H6/1
      */
     private const string REMOVE_TRAILING_DECIMAL_POINT_REGEX = '/(?<=\d)\.(?=\D|$)/';
 
     /**
-     * This regex replaces standalone decimal points with 0.
-     *
      * @see https://regex101.com/r/UH8ubo/1
      */
     private const string REPLACE_STANDALONE_DOT_REGEX = '/(?<=^|\s)\.(?=\s|$)/';
 
     /**
-     * This regex removes decimal points that are followed by zeros only (e.g., 2.0 -> 2).
-     *
      * @see https://regex101.com/r/zaCn7k/1
      */
     private const string REMOVE_DECIMAL_IF_ZERO_REGEX = '/(?<=\d)\.0+(\D|$)/';
 
-    /**
-     * Mapping of SVG elements to attributes to minify.
-     */
     private const array ELEMENTS_TO_ATTRIBUTES = [
         '//svg:path' => [SvgAttribute::D->value],
         '//svg:rect | //svg:circle | //svg:ellipse | //svg:line | //svg:polyline | //svg:polygon | //svg:svg' => [
@@ -93,13 +80,6 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Minifies numerical values in SVG coordinate and dimension attributes.
-     *
-     * This method targets attributes like `d`, `points`, `x`, `y`, `width`,
-     * `height`, and `viewBox`, applying several regex-based optimizations to
-     * reduce the length of floating-point numbers (e.g., removing leading
-     * zeros, trailing zeros, and unnecessary decimal points).
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
@@ -114,8 +94,6 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Minifies the specified attributes on elements found by the given XPath query.
-     *
      * @param \DOMXPath    $domXPath   the XPath object for querying the document
      * @param string       $query      the XPath query to find elements
      * @param list<string> $attributes the attributes to minify on the found elements
@@ -135,8 +113,6 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Minifies the specified attributes on a single DOM element.
-     *
      * @param \DOMElement  $domElement the element to process
      * @param list<string> $attributes the attributes to minify on the element
      */
@@ -150,11 +126,6 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Applies a series of minification techniques to a string of coordinates.
-     *
-     * This includes removing leading and trailing zeros from floating-point
-     * numbers and removing unnecessary decimal points.
-     *
      * @param string $value the string containing coordinates to minify
      *
      * @return string the minified coordinate string

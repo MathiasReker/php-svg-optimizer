@@ -33,12 +33,6 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Removes unused `<mask>` elements and empty `<defs>` containers from the SVG.
-     *
-     * This method first identifies and removes any `<mask>` element that is not
-     * referenced by a `mask` attribute elsewhere in the document. It then
-     * cleans up any `<defs>` element that has become empty as a result.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
@@ -51,11 +45,6 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Finds and removes `<mask>` elements that are not referenced.
-     *
-     * It iterates through all `<mask>` elements. If a mask has no `id` or if its
-     * `id` is not used in any `mask` attribute, the mask element is removed.
-     *
      * @param \DOMDocument $domDocument the DOM document to modify
      * @param \DOMXPath    $domXPath    the XPath object for querying the document
      */
@@ -86,8 +75,6 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Removes `<defs>` elements that do not contain any child elements.
-     *
      * @param \DOMDocument $domDocument the DOM document to modify
      */
     private function removeEmptyDefs(\DOMDocument $domDocument): void

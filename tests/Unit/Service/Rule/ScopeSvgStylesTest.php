@@ -416,5 +416,27 @@ final class ScopeSvgStylesTest extends TestCase
                 self::assertStringContainsString('data-class="b"', $output);
             },
         ];
+
+        yield 'Skips scoping element with empty id attribute but still scopes real id' => [
+            '<svg><rect id=""/><rect id="real"/></svg>',
+            static function (string $output): void {
+                self::assertStringContainsString('id=""', $output);
+                self::assertMatchesRegularExpression('/id="real-[a-f0-9\-]+"/', $output);
+            },
+        ];
+    }
+
+    #[Test]
+    public function optimizeDoesNothingWhenNoSvgElementIsFound(): void
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<root><child/></root>');
+
+        $before = $domDocument->saveXML();
+
+        $scopeSvgStyles = new ScopeSvgStyles();
+        $scopeSvgStyles->optimize($domDocument);
+
+        self::assertSame($before, $domDocument->saveXML());
     }
 }

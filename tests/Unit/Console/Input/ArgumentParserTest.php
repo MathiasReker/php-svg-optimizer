@@ -38,9 +38,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Finder::class)]
 final class ArgumentParserTest extends TestCase
 {
-    /**
-     * The index of the next positional argument.
-     */
     private const int EXPECTED_POSITIONAL_ARGUMENT_INDEX = 2;
 
     private const int EXPECTED_POSITIONAL_ARGUMENT_START_INDEX = 3;
@@ -388,6 +385,64 @@ final class ArgumentParserTest extends TestCase
 
         $this->expectNotToPerformAssertions();
         $argumentParser->validateOptions();
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getOptionThrowsExceptionIfOptionHasNoValue(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            '--config',
+        ];
+
+        $argumentParser = new ArgumentParser($args);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Option "--config" requires a value.');
+
+        $argumentParser->getOption(Option::Config);
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getPathsThrowsIfNoPositionalArgumentsFoundAfterCommand(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            'onlypositional',
+        ];
+
+        $argumentParser = new ArgumentParser($args);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('No positional arguments found. Please provide at least one SVG file or directory.');
+
+        $argumentParser->getPaths();
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getPathsThrowsIfPathIsNotValidDirectoryOrFile(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            'process',
+            '/definitely/not/a/real/path/xyz123',
+        ];
+
+        $argumentParser = new ArgumentParser($args);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('"/definitely/not/a/real/path/xyz123" is not a valid directory or file.');
+
+        $argumentParser->getPaths();
     }
 
     #[\Override]

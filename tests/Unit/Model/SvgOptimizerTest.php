@@ -49,7 +49,6 @@ final class SvgOptimizerTest extends TestCase
         $rule = new class implements SvgOptimizerRuleInterface {
             public function optimize(\DOMDocument $domDocument): void
             {
-                // no-op for test
             }
 
             public static function shouldCheckSize(): bool
@@ -77,7 +76,6 @@ final class SvgOptimizerTest extends TestCase
         $rule = new class implements SvgOptimizerRuleInterface {
             public function optimize(\DOMDocument $domDocument): void
             {
-                // no-op for test
             }
 
             public static function shouldCheckSize(): bool
@@ -276,6 +274,89 @@ final class SvgOptimizerTest extends TestCase
         $svgOptimizer->configureRules($ruleFlags);
 
         self::assertSame(1, $svgOptimizer->getRulesCount());
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     */
+    #[Test]
+    public function optimizeRevertsWhenRuleGrowsContentAndShouldCheckSizeIsTrue(): void
+    {
+        $originalContent = '<svg><rect/></svg>';
+
+        $provider = new class($originalContent) implements SvgProviderInterface {
+            private string $lastOutput = '';
+
+            public function __construct(
+                private readonly string $testInput,
+            ) {}
+
+            public function getInputContent(): string
+            {
+                return $this->testInput;
+            }
+
+            public function loadContent(): \DOMDocument
+            {
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML($this->testInput);
+
+                return $domDocument;
+            }
+
+            public function optimize(\DOMDocument $domDocument): SvgProviderInterface
+            {
+                $this->lastOutput = $this->serialize($domDocument);
+
+                return $this;
+            }
+
+            public function getOutputContent(): string
+            {
+                return $this->lastOutput;
+            }
+
+            public function saveToFile(string $path): SvgProviderInterface
+            {
+                return $this;
+            }
+
+            public function serialize(\DOMDocument $domDocument): string
+            {
+                $xml = $domDocument->saveXML($domDocument->documentElement);
+
+                return false === $xml ? '' : $xml;
+            }
+        };
+
+        $growingRule = new class implements SvgOptimizerRuleInterface {
+            public function optimize(\DOMDocument $domDocument): void
+            {
+                $domDocument->documentElement?->setAttribute(
+                    'data-extra-padding-attribute',
+                    'this-makes-the-serialized-content-significantly-longer-than-before'
+                );
+            }
+
+            public static function shouldCheckSize(): bool
+            {
+                return true;
+            }
+
+            public static function isRisky(): bool
+            {
+                return false;
+            }
+        };
+
+        $svgOptimizer = new SvgOptimizer($provider);
+        $svgOptimizer->addRule($growingRule);
+
+        $svgOptimizer->optimize();
+
+        self::assertSame($originalContent, $svgOptimizer->getContent());
     }
 
     /**

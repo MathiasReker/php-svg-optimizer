@@ -16,19 +16,10 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Filesystem;
  */
 final class Finder
 {
-    /**
-     * The directory to search in.
-     */
     private string $directory;
 
-    /**
-     * Whether to only find files.
-     */
     private bool $onlyFiles = false;
 
-    /**
-     * The file extension to filter by.
-     */
     private string $extension = '';
 
     /**
@@ -41,9 +32,6 @@ final class Finder
         return $this;
     }
 
-    /**
-     * Set the finder to only return files, not directories.
-     */
     public function files(): self
     {
         $this->onlyFiles = true;
@@ -52,8 +40,6 @@ final class Finder
     }
 
     /**
-     * Set the file extension to filter by.
-     *
      * @param string $extension The file extension to filter by
      */
     public function withExtension(string $extension): self
@@ -64,8 +50,6 @@ final class Finder
     }
 
     /**
-     * Find files in the specified directory based on the set criteria.
-     *
      * @return list<string>
      */
     public function find(): array
@@ -82,8 +66,6 @@ final class Finder
     }
 
     /**
-     * Search the directory recursively for files matching the criteria.
-     *
      * @return list<string>
      *
      * @throws \UnexpectedValueException
@@ -113,8 +95,6 @@ final class Finder
     }
 
     /**
-     * Check if the file matches the filter criteria.
-     *
      * @param \SplFileInfo $fileInfo The file information to check
      *
      * @return bool True if the file matches the filter, false otherwise

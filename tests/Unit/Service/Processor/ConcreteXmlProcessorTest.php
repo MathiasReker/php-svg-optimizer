@@ -28,8 +28,6 @@ use PHPUnit\Framework\TestCase;
 final class ConcreteXmlProcessorTest extends TestCase
 {
     /**
-     * Test processing with a valid callback that changes fill color from blue to red.
-     *
      * @throws XmlProcessingException
      */
     #[Test]
@@ -54,8 +52,6 @@ final class ConcreteXmlProcessorTest extends TestCase
     }
 
     /**
-     * Test processing with callback returning non-string (should throw).
-     *
      * @throws XmlProcessingException
      */
     #[Test]
@@ -77,6 +73,36 @@ final class ConcreteXmlProcessorTest extends TestCase
         $this->expectExceptionMessage('Callback must return a string.');
 
         $processor->process($domDocument, $callback);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function processWithCallbackThrowingGenericExceptionWrapsAsXmlProcessingException(): void
+    {
+        $svg = '<svg><rect width="100" height="100"/></svg>';
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML($svg);
+
+        $runtimeException = new \RuntimeException('boom');
+        $callback = static function () use ($runtimeException): string {
+            throw $runtimeException;
+        };
+
+        $processor = new /**
+                          * @no-named-arguments
+                          */
+        readonly class extends AbstractXmlProcessor {
+        };
+
+        try {
+            $processor->process($domDocument, $callback);
+            self::fail('Expected XmlProcessingException was not thrown.');
+        } catch (XmlProcessingException $xmlProcessingException) {
+            self::assertSame('Failed to process the XML content.', $xmlProcessingException->getMessage());
+            self::assertSame($runtimeException, $xmlProcessingException->getPrevious());
+        }
     }
 
     /**

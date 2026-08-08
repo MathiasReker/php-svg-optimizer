@@ -26,8 +26,6 @@ final readonly class CommandHelp
     ) {}
 
     /**
-     * Get the title of the command line argument option.
-     *
      * @return string The title of the command line argument option
      */
     public function getTitle(): string
@@ -36,8 +34,6 @@ final readonly class CommandHelp
     }
 
     /**
-     * Get the description of the command line argument option.
-     *
      * @return string The description of the command line argument option
      */
     public function getDescription(): string

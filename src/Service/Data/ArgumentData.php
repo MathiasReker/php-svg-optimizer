@@ -22,9 +22,6 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommand;
  */
 final class ArgumentData
 {
-    /**
-     * The path to the binary.
-     */
     private const string BINARY_PATH = 'vendor/bin/svg-optimizer';
 
     /** @var array<string, CliOption> */
@@ -36,9 +33,6 @@ final class ArgumentData
     /** @var list<ExampleCommand> */
     private readonly array $examples;
 
-    /**
-     * Initializes the options, commands, and examples for the command line interface.
-     */
     public function __construct()
     {
         foreach (Option::cases() as $option) {
@@ -104,8 +98,6 @@ final class ArgumentData
     }
 
     /**
-     * Returns the detailed options as an array of option names with their values.
-     *
      * @return array<string, CliOption>
      */
     public function getOptions(): array
@@ -114,8 +106,6 @@ final class ArgumentData
     }
 
     /**
-     * Retrieves a single option's details by its name.
-     *
      * @return CliOption Returns the option details
      *
      * @throws \InvalidArgumentException If the option is not found
@@ -132,8 +122,6 @@ final class ArgumentData
     }
 
     /**
-     * Returns the detailed commands as an array of command names with their values.
-     *
      * @return array<string, CommandHelp>
      */
     public function getCommands(): array
@@ -142,8 +130,6 @@ final class ArgumentData
     }
 
     /**
-     * Retrieves a single option's details by its name.
-     *
      * @param string $option The name of the option (e.g., 'help', 'config')
      *
      * @return CliOption Returns the option details
@@ -157,8 +143,6 @@ final class ArgumentData
     }
 
     /**
-     * Returns the detailed commands as an array of command names with their values.
-     *
      * @return list<ExampleCommand>
      */
     public function getExamples(): array
@@ -167,8 +151,6 @@ final class ArgumentData
     }
 
     /**
-     * Retrieves the command format string.
-     *
      * @return string The command format
      */
     public function getFormat(): string

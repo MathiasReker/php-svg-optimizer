@@ -20,9 +20,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
  */
 final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
 {
-    /**
-     * Deprecated attributes to remove.
-     */
     private const array ATTRIBUTES_TO_REMOVE = [
         SvgAttribute::BaseProfile->value,
         SvgAttribute::ContentScriptType->value,
@@ -47,9 +44,6 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
         SvgAttribute::GlyphOrientationHorizontal->value,
     ];
 
-    /**
-     * Attributes that should be replaced with modern equivalents.
-     */
     private const array ATTRIBUTES_TO_REPLACE = [
         SvgAttribute::XlinkHref->value => SvgAttribute::Href->value,
         SvgAttribute::XlinkTitle->value => SvgAttribute::Title->value,
@@ -69,13 +63,6 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     }
 
     /**
-     * Removes deprecated attributes and replaces outdated ones with modern equivalents.
-     *
-     * This rule performs two main actions:
-     * 1. Replaces attributes like `xlink:href` with the modern `href`.
-     * 2. Removes a list of attributes that are deprecated or no longer in use
-     *    in modern SVG specifications.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
@@ -90,8 +77,6 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     }
 
     /**
-     * Replaces specified deprecated attributes with their modern counterparts.
-     *
      * @param \DOMXPath             $domXPath   the XPath object for querying the document
      * @param array<string, string> $attributes a map of old attribute names to new attribute names
      */
@@ -114,10 +99,6 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     }
 
     /**
-     * Removes the `xmlns:xlink` namespace declaration from the root `<svg>` element.
-     *
-     * This is typically done after `xlink:` attributes have been replaced.
-     *
      * @param \DOMDocument $domDocument the DOM document to modify
      */
     private function removeNamespaceFromSvgTags(\DOMDocument $domDocument): void
@@ -130,8 +111,6 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     }
 
     /**
-     * Removes a list of specified deprecated attributes from all elements.
-     *
      * @param \DOMXPath    $domXPath   the XPath object for querying the document
      * @param list<string> $attributes a list of attribute names to remove
      */

@@ -16,8 +16,5 @@ namespace MathiasReker\PhpSvgOptimizer\Contract\Console\Command;
  */
 interface CommandInterface
 {
-    /**
-     * Execute the command.
-     */
     public function run(): void;
 }

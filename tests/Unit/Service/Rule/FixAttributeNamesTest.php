@@ -259,5 +259,10 @@ final class FixAttributeNamesTest extends TestCase
             '<svg viewBox="0 0 100 100"><rect/></svg>',
             '<svg viewBox="0 0 100 100"><rect/></svg>',
         ];
+
+        yield 'Normalizes namespaced attribute with wrong case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:Href="foo.svg"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="foo.svg"/></svg>',
+        ];
     }
 }

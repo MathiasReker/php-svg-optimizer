@@ -25,42 +25,20 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
  */
 final class SvgOptimizer
 {
-    /**
-     * Array of optimization rules to be applied to the SVG document.
-     *
-     * @var list<SvgOptimizerRuleInterface> Array of optimization strategies
-     */
+    /** @var list<SvgOptimizerRuleInterface> Array of optimization strategies */
     private array $rules = [];
 
-    /**
-     * The optimized SVG content.
-     *
-     * @var string The SVG content after optimization
-     */
+    /** @var string The SVG content after optimization */
     private string $domDocumentContent = '';
 
-    /**
-     * Indicates whether risky optimization rules are allowed.
-     */
     private bool $allowRisky = false;
 
-    /**
-     * The SVG validator used to check the validity of the SVG content.
-     *
-     * @var SvgValidator The SVG validator
-     */
+    /** @var SvgValidator The SVG validator */
     private readonly SvgValidator $svgValidator;
 
-    /**
-     * Flag indicating whether the SVG content has been optimized.
-     *
-     * @var bool True if the SVG content has been optimized, false otherwise
-     */
+    /** @var bool True if the SVG content has been optimized, false otherwise */
     private bool $isOptimized = false;
 
-    /**
-     * Holds the time spent optimizing, in seconds.
-     */
     private float $optimizationTime = 0.0;
 
     /**
@@ -73,8 +51,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Get metadata related to the SVG content.
-     *
      * @return Metrics The metadata containing information about the SVG file sizes
      *
      * @throws \LogicException If metadata is requested before optimization
@@ -95,8 +71,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Check if there are any optimization rules configured.
-     *
      * @return bool True if there are rules, false otherwise
      */
     public function hasRules(): bool
@@ -105,8 +79,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Get the number of optimization rules added to the optimizer.
-     *
      * @return int The number of optimization rules
      */
     public function getRulesCount(): int
@@ -115,8 +87,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Checks whether risky optimization rules are allowed.
-     *
      * @return bool True if risky rules are allowed, false otherwise
      */
     public function isRiskyRulesAllowed(): bool
@@ -124,13 +94,6 @@ final class SvgOptimizer
         return $this->allowRisky;
     }
 
-    /**
-     * Enables the use of risky optimization rules.
-     *
-     * Risky rules are disabled by default because they may alter the SVG in ways
-     * that impact compatibility, rendering behavior, or semantic meaning. Call
-     * this method explicitly to allow such rules to run.
-     */
     public function allowRisky(): self
     {
         $this->allowRisky = true;
@@ -139,8 +102,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Optimize the SVG content by applying all added optimization rules.
-     *
      * @return $this The current instance of SvgOptimizer for method chaining
      *
      * @throws SvgValidationException        If the SVG content is not valid
@@ -175,11 +136,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Determines whether any of the configured rules are classified as risky.
-     *
-     * A rule is considered risky if its class implements SvgOptimizerRuleInterface::isRisky()
-     * and that method returns true.
-     *
      * @return bool True if one or more configured rules are risky, false otherwise
      */
     public function hasRiskyRules(): bool
@@ -194,8 +150,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Apply all configured optimization rules to the provided \DOMDocument.
-     *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      *
      * @throws XmlProcessingException
@@ -235,8 +189,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Get the optimized SVG content.
-     *
      * @return string The optimized SVG content, or an empty string if not yet optimized
      */
     public function getContent(): string
@@ -245,8 +197,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Configure which rules to use based on flags.
-     *
      * @param array<class-string<SvgOptimizerRuleInterface>, bool> $ruleFlags
      */
     public function configureRules(array $ruleFlags): void
@@ -259,8 +209,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Add an optimization rule to the optimizer.
-     *
      * @param SvgOptimizerRuleInterface $svgOptimizerRule The optimization rule to add
      */
     public function addRule(SvgOptimizerRuleInterface $svgOptimizerRule): void
@@ -269,8 +217,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Save the optimized SVG content to a file.
-     *
      * @param string $outputPath The path to save the optimized SVG content to
      */
     public function saveToFile(string $outputPath): self

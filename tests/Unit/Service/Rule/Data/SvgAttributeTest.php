@@ -80,4 +80,15 @@ final class SvgAttributeTest extends TestCase
 
         self::assertSame($expected, SvgAttribute::dangerousExact());
     }
+
+    #[Test]
+    public function valuesReturnsAllAttributeValues(): void
+    {
+        $values = SvgAttribute::values();
+
+        self::assertCount(\count(SvgAttribute::cases()), $values);
+        self::assertContains('fill', $values);
+        self::assertContains('id', $values);
+        self::assertContains('viewBox', $values);
+    }
 }

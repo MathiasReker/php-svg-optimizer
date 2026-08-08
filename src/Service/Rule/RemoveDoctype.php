@@ -32,11 +32,6 @@ final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOp
     }
 
     /**
-     * Removes the DOCTYPE declaration from the SVG document.
-     *
-     * The DOCTYPE is not necessary for modern browsers to render SVGs correctly
-     * and can be safely removed to reduce file size.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]

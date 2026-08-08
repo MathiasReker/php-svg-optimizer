@@ -20,27 +20,17 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRuleInterface
 {
     /**
-     * This regex matches the `enable-background` attribute value.
-     *
      * @see https://regex101.com/r/p9gXyH/1
      */
     private const string ENABLE_BACKGROUND_REGEX = '/^new\s0\s0\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)$/';
 
     /**
-     * This regex matches the `enable-background` property in a style attribute.
-     *
      * @see https://regex101.com/r/s5vF6g/1
      */
     private const string STYLE_REGEX = '/\s*enable-background\s*:\s*[^;]+;\s*/i';
 
-    /**
-     * XPath query to select all elements that have an `enable-background` attribute.
-     */
     private const string ENABLE_BACKGROUND_QUERY = '//*[@enable-background]';
 
-    /**
-     * XPath query to select all elements that have a `style` attribute.
-     */
     private const string STYLE_QUERY = '//*[@style]';
 
     #[\Override]
@@ -56,13 +46,6 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
     }
 
     /**
-     * Removes the `enable-background` attribute and corresponding inline style.
-     *
-     * This attribute is deprecated and no longer required by modern SVG renderers.
-     * The rule removes the attribute if its dimensions match the element's
-     * `width` and `height`. It also removes the `enable-background` property
-     * from any inline `style` attributes.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
@@ -75,8 +58,6 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
     }
 
     /**
-     * Handles the `enable-background` attribute on elements.
-     *
      * @param \DOMXPath $domXPath the XPath object for querying the document
      */
     private function handleEnableBackgroundAttribute(\DOMXPath $domXPath): void
@@ -98,8 +79,6 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
     }
 
     /**
-     * Handles the `enable-background` property within `style` attributes.
-     *
      * @param \DOMXPath $domXPath the XPath object for querying the document
      */
     private function handleStyleAttribute(\DOMXPath $domXPath): void

@@ -259,5 +259,16 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
                 XML,
         ];
+
+        yield 'Drops colon-less declaration but still converts valid one' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="foo;fill:red"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/></svg>
+                XML,
+        ];
     }
 }

@@ -15,22 +15,11 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Support\SvgDefaults;
 
 /**
- * Provides attribute-level security analysis: whether an attribute's name or
- * value is dangerous, and removing dangerous attributes from a document.
- *
- * This is kept separate from the element-removal logic in
- * `RemoveUnsafeElements` so that each concern stays independently readable.
- *
  * @no-named-arguments
  */
 trait DangerousAttributeValueTrait
 {
     /**
-     * Removes dangerous attributes from all elements in the document.
-     *
-     * This method iterates through every attribute of every element and removes
-     * it if it is determined to be dangerous by `isDangerousAttribute`.
-     *
      * @param \DOMDocument $domDocument the DOM document to clean
      */
     private function removeDangerousAttributes(\DOMDocument $domDocument): void
@@ -52,12 +41,6 @@ trait DangerousAttributeValueTrait
     }
 
     /**
-     * Determines if an attribute is dangerous.
-     *
-     * An attribute is considered dangerous if its name starts with "on" (e.g.,
-     * `onclick`), if it contains a dangerous protocol (e.g., `javascript:`),
-     * or if it's a `style` attribute with unsafe content.
-     *
      * @param \DOMAttr $domAttr the attribute to check
      *
      * @return bool true if the attribute is dangerous
@@ -76,8 +59,6 @@ trait DangerousAttributeValueTrait
     }
 
     /**
-     * Checks if an attribute name is dangerous.
-     *
      * @param string $name the attribute name
      *
      * @return bool true if the name is dangerous
@@ -94,13 +75,6 @@ trait DangerousAttributeValueTrait
     }
 
     /**
-     * Normalizes a string value for security analysis.
-     *
-     * This method performs several steps to canonicalize the input string,
-     * making it harder to bypass security checks with obfuscation techniques.
-     * This includes decoding HTML entities, decoding CSS escapes, removing
-     * control characters, and transliterating homoglyphs.
-     *
      * @param string $value the input string
      *
      * @return string the normalized string
@@ -133,11 +107,6 @@ trait DangerousAttributeValueTrait
     }
 
     /**
-     * Replaces characters that look like letters/numbers with their ASCII equivalents.
-     *
-     * This is used to counter obfuscation attempts where an attacker might use
-     * full-width characters or other homoglyphs to disguise malicious code.
-     *
      * @param string $value the input string
      *
      * @return string the transliterated string
@@ -158,8 +127,6 @@ trait DangerousAttributeValueTrait
     }
 
     /**
-     * Checks if a string matches a given regular expression pattern.
-     *
      * @param string $value   the string to check
      * @param string $pattern the regex pattern
      *
@@ -171,8 +138,6 @@ trait DangerousAttributeValueTrait
     }
 
     /**
-     * Checks if an attribute value is dangerous.
-     *
      * @param string $name  the attribute name
      * @param string $value the normalized attribute value
      *
@@ -204,11 +169,6 @@ trait DangerousAttributeValueTrait
     }
 
     /**
-     * Checks if a SMIL `values` attribute contains any dangerous protocols.
-     *
-     * The `values` attribute can contain a semicolon-separated list of values,
-     * so each part must be checked.
-     *
      * @param string $value the attribute value
      *
      * @return bool true if a dangerous protocol is found
@@ -229,10 +189,6 @@ trait DangerousAttributeValueTrait
     }
 
     /**
-     * Checks if an attribute that can contain a URL has a dangerous value.
-     *
-     * This applies to attributes like `href` and `xlink:href`.
-     *
      * @param string $value the attribute value
      *
      * @return bool true if the URL is dangerous
@@ -249,8 +205,6 @@ trait DangerousAttributeValueTrait
     }
 
     /**
-     * Checks if a style attribute value is dangerous.
-     *
      * @param string $value the style attribute value
      *
      * @return bool true if the value is dangerous, false otherwise
@@ -275,8 +229,6 @@ trait DangerousAttributeValueTrait
     }
 
     /**
-     * Checks if a srcset attribute value is dangerous.
-     *
      * @param string $value the srcset attribute value
      *
      * @return bool true if the value is dangerous, false otherwise

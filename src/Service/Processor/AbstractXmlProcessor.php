@@ -20,12 +20,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 abstract readonly class AbstractXmlProcessor
 {
     /**
-     * Processes the SVG content by applying a callback and validating the result.
-     *
-     * This method saves the XML content of the provided \DOMDocument, applies a callback
-     * function to optimize the SVG, checks the callback's result type, validates the
-     * optimized content, and loads the content back into the \DOMDocument.
-     *
      * @param \DOMDocument $domDocument the \DOMDocument containing the SVG content to be processed
      * @param callable     $callback    a callable function that will be applied to optimize the SVG content
      *
@@ -71,11 +65,6 @@ abstract readonly class AbstractXmlProcessor
     }
 
     /**
-     * Returns an instance of SvgValidator for validating SVG content.
-     *
-     * This method provides a dedicated SvgValidator instance to validate the SVG content
-     * after processing. It can be overridden in subclasses if a different validator is needed.
-     *
      * @return SvgValidator An instance of SvgValidator for validating SVG content
      */
     final protected function getValidator(): SvgValidator

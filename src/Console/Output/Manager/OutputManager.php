@@ -28,8 +28,6 @@ final readonly class OutputManager
     ) {}
 
     /**
-     * Print a message to the output stream.
-     *
      * @param string $message The message to print
      */
     public function printError(string $message): void
@@ -37,12 +35,6 @@ final readonly class OutputManager
         $this->stream->writeln('Error: ' . $message);
     }
 
-    /**
-     * Print help information for the application.
-     *
-     * This method outputs the usage instructions, available options, commands,
-     * and examples for using the PHP SVG Optimizer.
-     */
     public function printHelp(): void
     {
         $argumentData = new ArgumentData();
@@ -74,8 +66,6 @@ final readonly class OutputManager
     }
 
     /**
-     * Print the version information of the application.
-     *
      * @param string $name    Name of the application
      * @param string $version Version of the application
      * @param string $author  Author of the application
@@ -87,8 +77,6 @@ final readonly class OutputManager
     }
 
     /**
-     * Print the result of an SVG optimization.
-     *
      * @param string $filePath            Path to the SVG file
      * @param float  $reductionPercentage Percentage of size reduction
      */
@@ -98,8 +86,6 @@ final readonly class OutputManager
     }
 
     /**
-     * Print a summary of the optimization results.
-     *
      * @param int   $fileCount       Number of files optimized
      * @param int   $originalSize    Total original size in bytes
      * @param int   $optimizedSize   Total optimized size in bytes

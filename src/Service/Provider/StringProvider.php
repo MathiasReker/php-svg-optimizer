@@ -28,8 +28,6 @@ final class StringProvider extends AbstractProvider
     }
 
     /**
-     * Load the input string into a \DOMDocument instance.
-     *
      * @throws XmlProcessingException If the input content is not valid XML
      */
     #[\Override]
@@ -38,9 +36,6 @@ final class StringProvider extends AbstractProvider
         return $this->domDocumentWrapper->loadFromString($this->inputContent);
     }
 
-    /**
-     * Get the input SVG content.
-     */
     #[\Override]
     public function getInputContent(): string
     {

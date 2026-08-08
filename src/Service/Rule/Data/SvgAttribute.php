@@ -526,8 +526,6 @@ enum SvgAttribute: string implements SvgDataInterface
     case XHeight = 'x-height';
 
     /**
-     * Returns all enum values as a string array.
-     *
      * @return list<string>
      */
     public static function values(): array
@@ -562,8 +560,6 @@ enum SvgAttribute: string implements SvgDataInterface
     }
 
     /**
-     * Returns exact dangerous SVG attribute values.
-     *
      * @return list<string>
      */
     public static function dangerousExact(): array
@@ -583,8 +579,6 @@ enum SvgAttribute: string implements SvgDataInterface
     }
 
     /**
-     * Returns dangerous SVG attribute values.
-     *
      * @return list<string>
      */
     public static function dangerous(): array
@@ -593,8 +587,6 @@ enum SvgAttribute: string implements SvgDataInterface
     }
 
     /**
-     * Returns dangerous SVG attribute enum cases.
-     *
      * @return list<self>
      */
     public static function dangerousCases(): array

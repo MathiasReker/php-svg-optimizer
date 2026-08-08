@@ -17,15 +17,11 @@ namespace MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream;
 interface StreamInterface
 {
     /**
-     * Write a message to the output stream.
-     *
      * @param string $message The message to write
      */
     public function write(string $message): void;
 
     /**
-     * Write a message to the output stream, followed by a newline.
-     *
      * @param string $message The message to write
      */
     public function writeln(string $message): void;

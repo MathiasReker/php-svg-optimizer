@@ -23,14 +23,8 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOption;
  */
 final readonly class Command implements CommandInterface
 {
-    /**
-     * The aggregator for collecting metadata about processed SVG files.
-     */
     private MetaDataAggregator $metaDataAggregator;
 
-    /**
-     * The processor for handling SVG files.
-     */
     private SvgFileProcessor $svgFileProcessor;
 
     /**
@@ -48,8 +42,6 @@ final readonly class Command implements CommandInterface
     }
 
     /**
-     * Builds the SVG file processor with the provided command options and output helper.
-     *
      * @return SvgFileProcessor The configured SVG file processor
      */
     private function buildProcessor(): SvgFileProcessor
@@ -62,8 +54,6 @@ final readonly class Command implements CommandInterface
     }
 
     /**
-     * Executes the SVG optimization command.
-     *
      * @throws \LogicException
      * @throws \ValueError
      */
@@ -83,8 +73,6 @@ final readonly class Command implements CommandInterface
     }
 
     /**
-     * Processes a single path, handling exceptions and errors.
-     *
      * @param string $path The path to process, either a file or directory
      *
      * @throws \LogicException
@@ -104,9 +92,6 @@ final readonly class Command implements CommandInterface
         }
     }
 
-    /**
-     * Prints a summary of the optimization results.
-     */
     private function printSummary(): void
     {
         $this->outputManager->printTotalSummary(

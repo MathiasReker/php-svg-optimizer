@@ -33,13 +33,6 @@ final readonly class RemoveWidthHeightAttributes implements SvgOptimizerRuleInte
     }
 
     /**
-     * Removes the `width` and `height` attributes from the root `<svg>` element.
-     *
-     * Removing these attributes allows the SVG to scale fluidly within its
-     * container, which is often desirable for responsive design. However, this
-     * is considered a risky operation as it can alter the intended display
-     * size of the SVG if a `viewBox` is not properly set.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]

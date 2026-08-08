@@ -24,8 +24,6 @@ final readonly class ExampleCommand
     ) {}
 
     /**
-     * Get the example command.
-     *
      * @return string The example command
      */
     public function getCommand(): string

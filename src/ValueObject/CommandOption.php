@@ -30,8 +30,6 @@ final readonly class CommandOption
     ) {}
 
     /**
-     * Check if the command is set to run in dry-run mode.
-     *
      * @return bool true if dry-run is enabled; false otherwise
      */
     public function isDryRun(): bool
@@ -40,8 +38,6 @@ final readonly class CommandOption
     }
 
     /**
-     * Get the path to the configuration file.
-     *
      * @return string the configuration file path
      */
     public function getConfigPath(): string
@@ -50,10 +46,6 @@ final readonly class CommandOption
     }
 
     /**
-     * Determines whether risky optimization rules are allowed.
-     *
-     * Risky rules may change the visual output of SVGs.
-     *
      * @return bool true if risky rules are allowed; false otherwise
      */
     public function allowRisky(): bool
@@ -62,10 +54,6 @@ final readonly class CommandOption
     }
 
     /**
-     * Determines if all available optimization rules should be applied.
-     *
-     * If true, all rules will be applied. Risky rules will only be applied if `allowRisky()` is true.
-     *
      * @return bool true if all rules should be applied, false otherwise
      */
     public function withAllRules(): bool

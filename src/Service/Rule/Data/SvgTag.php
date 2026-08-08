@@ -100,8 +100,6 @@ enum SvgTag: string implements SvgDataInterface
     case A = 'a';
 
     /**
-     * Returns all tag values as an array of strings.
-     *
      * @return list<string>
      */
     public static function values(): array

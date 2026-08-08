@@ -31,11 +31,6 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Removes duplicate elements from the SVG document.
-     *
-     * An element is considered a duplicate if it has the same parent, tag name,
-     * and attributes as another element that has already been processed.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      *
      * @throws \JsonException
@@ -47,12 +42,6 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Traverses the document and removes duplicate elements.
-     *
-     * It builds a signature for each element based on its parent, tag name, and
-     * attributes. If an identical signature is encountered again, the element
-     * is removed.
-     *
      * @param \DOMDocument $domDocument the DOM document to process
      *
      * @throws \JsonException
@@ -82,12 +71,6 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Trims whitespace from the values of all attributes on a given element.
-     *
-     * This ensures that attributes with functionally identical but textually
-     * different values (e.g., `class=" a "` vs. `class="a"`) are treated as
-     * the same for the purpose of duplicate detection.
-     *
      * @param \DOMElement $domElement the element whose attributes to normalize
      */
     private function normalizeAttributes(\DOMElement $domElement): void
@@ -101,11 +84,6 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Generates a unique signature for an element based on its tag name and attributes.
-     *
-     * The signature is created by sorting the attributes alphabetically and then
-     * JSON-encoding them, which provides a consistent and comparable representation.
-     *
      * @throws \JsonException
      */
     private function buildSignature(\DOMElement $domElement): string

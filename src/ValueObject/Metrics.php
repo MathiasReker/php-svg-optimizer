@@ -32,8 +32,6 @@ final readonly class Metrics
     ) {}
 
     /**
-     * Get the original size of the SVG file.
-     *
      * @return int The original size of the SVG file in bytes
      */
     public function getOriginalSize(): int
@@ -42,8 +40,6 @@ final readonly class Metrics
     }
 
     /**
-     * Get the optimized size of the SVG file.
-     *
      * @return int The optimized size of the SVG file in bytes
      */
     public function getOptimizedSize(): int
@@ -52,8 +48,6 @@ final readonly class Metrics
     }
 
     /**
-     * Get the number of bytes saved through optimization.
-     *
      * @return int The number of bytes saved through optimization
      */
     public function getSavedBytes(): int
@@ -62,8 +56,6 @@ final readonly class Metrics
     }
 
     /**
-     * Get the percentage of bytes saved through optimization.
-     *
      * @return float The percentage of bytes saved through optimization
      */
     public function getSavedPercentage(): float
@@ -72,8 +64,6 @@ final readonly class Metrics
     }
 
     /**
-     * Get the optimization time.
-     *
      * @return float The time it took to optimize the SVG file in seconds
      */
     public function getOptimizationTime(): float

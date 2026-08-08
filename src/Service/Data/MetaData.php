@@ -36,8 +36,6 @@ final readonly class MetaData
     }
 
     /**
-     * Converts the metadata to a value object.
-     *
      * @return Metrics The value object representing the metadata
      */
     public function toValueObject(): Metrics
@@ -52,8 +50,6 @@ final readonly class MetaData
     }
 
     /**
-     * Calculates the number of bytes saved through optimization.
-     *
      * @return int The number of bytes saved
      */
     private function calculateSavedBytes(): int
@@ -62,8 +58,6 @@ final readonly class MetaData
     }
 
     /**
-     * Calculates the percentage of bytes saved through optimization.
-     *
      * @return float The percentage of bytes saved
      */
     private function calculateSavedPercentage(): float

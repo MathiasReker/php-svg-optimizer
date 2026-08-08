@@ -30,9 +30,6 @@ enum Option: string
 
     case Version = 'version';
 
-    /**
-     * Get the shorthand for the option.
-     */
     public function getShorthand(): string
     {
         return match ($this->value) {
@@ -46,9 +43,6 @@ enum Option: string
         };
     }
 
-    /**
-     * Get the full name for the option.
-     */
     public function getFull(): string
     {
         return match ($this->value) {
@@ -62,9 +56,6 @@ enum Option: string
         };
     }
 
-    /**
-     * Get the description for the option.
-     */
     public function getDescription(): string
     {
         return match ($this->value) {

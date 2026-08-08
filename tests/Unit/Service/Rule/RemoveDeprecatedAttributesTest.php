@@ -329,4 +329,25 @@ final class RemoveDeprecatedAttributesTest extends TestCase
         self::assertNotNull($root);
         self::assertFalse($root->hasAttribute('xmlns:xlink'));
     }
+
+    /**
+     * @throws \ReflectionException
+     */
+    #[Test]
+    public function removeAttributesDoesNothingWhenAttributeListIsEmpty(): void
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" baseProfile="tiny"><rect/></svg>');
+
+        $domXPath = new \DOMXPath($domDocument);
+
+        $before = $domDocument->saveXML();
+
+        $removeDeprecatedAttributes = new RemoveDeprecatedAttributes();
+        $reflectionMethod = new \ReflectionMethod($removeDeprecatedAttributes, 'removeAttributes');
+
+        $reflectionMethod->invoke($removeDeprecatedAttributes, $domXPath, []);
+
+        self::assertSame($before, $domDocument->saveXML());
+    }
 }

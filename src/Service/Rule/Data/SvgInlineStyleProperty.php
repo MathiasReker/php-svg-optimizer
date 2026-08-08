@@ -62,8 +62,6 @@ enum SvgInlineStyleProperty: string implements SvgDataInterface
     case Fill = 'fill';
 
     /**
-     * Returns all property values as a string array.
-     *
      * @return list<string>
      */
     public static function values(): array

@@ -33,12 +33,6 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Removes empty text-related elements from the SVG document.
-     *
-     * This method recursively traverses the DOM and removes `<text>` and `<tspan>`
-     * elements that contain no meaningful content, as well as `<tref>` elements
-     * with an empty `xlink:href` attribute.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
@@ -51,8 +45,6 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Recursively traverses a DOM element and removes empty text-related elements.
-     *
      * @param \DOMElement $domElement the element to process
      */
     private function removeEmptyTextRecursive(\DOMElement $domElement): void
@@ -68,8 +60,6 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Removes a given element if it is an empty text-related element.
-     *
      * @param \DOMElement $domElement the element to check and potentially remove
      */
     private function removeIfEmpty(\DOMElement $domElement): void
@@ -88,11 +78,6 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Determines if an element is effectively empty.
-     *
-     * An element is considered empty if it has no child elements and no
-     * non-whitespace text content.
-     *
      * @param \DOMElement $domElement the element to check
      *
      * @return bool true if the element is empty, false otherwise

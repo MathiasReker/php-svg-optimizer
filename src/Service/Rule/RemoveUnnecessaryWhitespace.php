@@ -22,15 +22,11 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
     /**
-     * This regex matches attribute-value pairs, capturing the attribute name and its value.
-     *
      * @see https://regex101.com/r/3p3eY3/1
      */
     private const string ATTRIBUTE_REGEX = '/(\S+)\s*=\s*"([^"]*)"/';
 
     /**
-     * This regex matches one or more whitespace characters.
-     *
      * @see https://regex101.com/r/OuyK7V/1
      */
     private const string WHITESPACE_REGEX = '/\s+/';
@@ -48,13 +44,6 @@ final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor im
     }
 
     /**
-     * Removes unnecessary whitespace from attribute values.
-     *
-     * This method processes the raw SVG content to normalize whitespace within
-     * attribute values. For `style` attributes, all whitespace is removed. For
-     * other attributes, consecutive whitespace characters are collapsed into a
-     * single space.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      *
      * @throws XmlProcessingException if the XML content cannot be processed

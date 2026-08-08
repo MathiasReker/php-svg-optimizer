@@ -20,29 +20,14 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\CliOption;
  */
 final readonly class ArgumentParser
 {
-    /**
-     * Index of the first positional argument.
-     */
     private const int OPTION_KEY_INDEX = 0;
 
-    /**
-     * Index of the second positional argument.
-     */
     private const int OPTION_VALUE_INDEX = 1;
 
-    /**
-     * Minimum number of arguments required.
-     */
     private const int MINIMUM_ARG_COUNT = 2;
 
-    /**
-     * Limit for key and value.
-     */
     private const int OPTION_LIMIT = 2;
 
-    /**
-     * The ArgumentData instance.
-     */
     private ArgumentData $argumentData;
 
     /**
@@ -55,8 +40,6 @@ final readonly class ArgumentParser
     }
 
     /**
-     * Check if the given option is present in the command-line arguments.
-     *
      * @return bool True if the option is present, false otherwise
      */
     public function hasOption(Option $option): bool
@@ -77,8 +60,6 @@ final readonly class ArgumentParser
     }
 
     /**
-     * Get the key of the given option from the command-line arguments.
-     *
      * @param string $option The option to get the key of
      *
      * @return string The key of the option
@@ -89,8 +70,6 @@ final readonly class ArgumentParser
     }
 
     /**
-     * Get the value of the given option from the command-line arguments.
-     *
      * @param Option $option The option to get the value of
      *
      * @return string The value of the option
@@ -111,8 +90,6 @@ final readonly class ArgumentParser
     }
 
     /**
-     * Check if the given argument is an option.
-     *
      * @return bool True if the argument is an option, false otherwise
      */
     private function isOption(string $option): bool
@@ -121,8 +98,6 @@ final readonly class ArgumentParser
     }
 
     /**
-     * Get the value of the given option from the command-line arguments.
-     *
      * @param string $option The option to get the value of
      *
      * @return string The value of the option
@@ -140,13 +115,6 @@ final readonly class ArgumentParser
     }
 
     /**
-     * Validates that all options passed via the command-line arguments
-     * are recognized and supported by the application.
-     *
-     * This method checks both long-form options (e.g., --dry-run) and
-     * shorthand versions (e.g., -d). If an unknown option is found,
-     * an \InvalidArgumentException is thrown with a helpful message.
-     *
      * @throws \InvalidArgumentException If any unsupported or unknown option is provided
      */
     public function validateOptions(): void
@@ -170,8 +138,6 @@ final readonly class ArgumentParser
     }
 
     /**
-     * Check if the argument list is empty.
-     *
      * @return bool True if the argument list is empty, false otherwise
      */
     public function isEmpty(): bool
@@ -180,8 +146,6 @@ final readonly class ArgumentParser
     }
 
     /**
-     * Get the list of positional arguments (file paths) from the command-line arguments.
-     *
      * @return list<string>
      *
      * @throws \InvalidArgumentException If no positional arguments are found
@@ -210,8 +174,6 @@ final readonly class ArgumentParser
     }
 
     /**
-     * Get the index of the next positional argument after options/subcommands.
-     *
      * @return int The index of the first positional argument
      *
      * @throws \InvalidArgumentException If no positional argument is found
@@ -222,8 +184,6 @@ final readonly class ArgumentParser
     }
 
     /**
-     * Get the index of the next positional argument after options/subcommands.
-     *
      * @return int The index of the first positional argument
      *
      * @throws \InvalidArgumentException If no positional argument is found

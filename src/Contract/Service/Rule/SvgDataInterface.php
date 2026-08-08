@@ -14,8 +14,6 @@ namespace MathiasReker\PhpSvgOptimizer\Contract\Service\Rule;
 interface SvgDataInterface
 {
     /**
-     * Returns all values as strings.
-     *
      * @return list<string>
      */
     public static function values(): array;

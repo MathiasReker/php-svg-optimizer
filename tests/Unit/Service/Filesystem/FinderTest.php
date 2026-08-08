@@ -190,6 +190,16 @@ final class FinderTest extends TestCase
         self::assertSame(realpath($svgUpper), $results[0]);
     }
 
+    #[Test]
+    public function returnsEmptyArrayWhenDirectoryCannotBeOpened(): void
+    {
+        $restrictedDir = 'C:\System Volume Information';
+
+        $finder = (new Finder())->in($restrictedDir);
+
+        self::assertSame([], $finder->find());
+    }
+
     #[\Override]
     protected function setUp(): void
     {

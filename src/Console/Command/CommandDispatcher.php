@@ -32,8 +32,6 @@ final readonly class CommandDispatcher
     ) {}
 
     /**
-     * Create a new SvgOptimizerApplication instance from command line arguments.
-     *
      * @param array<int, string> $argv The command line arguments
      */
     public static function fromArgs(array $argv): self
@@ -42,10 +40,6 @@ final readonly class CommandDispatcher
     }
 
     /**
-     * Run the application.
-     *
-     * This method processes the command line arguments and executes the appropriate command.
-     *
      * @throws \ValueError
      * @throws \RuntimeException If the application is not run in a CLI environment or if an error occurs during command execution
      * @throws \LogicException

@@ -236,6 +236,146 @@ final class SvgOptimizerCommandTest extends TestCase
         self::assertSame($originalContent, $newContent);
     }
 
+    /**
+     * @throws \LogicException
+     * @throws \RuntimeException
+     * @throws \ValueError
+     */
+    #[Test]
+    public function runWithRiskyRuleInConfigButRiskyNotAllowedPrintsErrorAndDoesNotThrow(): void
+    {
+        $svgFile = $this->tempDir . '/risky.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $memoryStream = new MemoryStream();
+
+        $command = new Command(
+            [$svgFile],
+            new CommandOption(
+                false,
+                '{"scopeSvgStyles":true}',
+                false,
+                false,
+            ),
+            new OutputManager($memoryStream)
+        );
+
+        $command->run();
+
+        self::assertStringContainsString(
+            'Error: Risky rules are disabled. Use --allow-risky to enable it.',
+            $memoryStream->getContent()
+        );
+    }
+
+    /**
+     * @throws \LogicException
+     * @throws \RuntimeException
+     * @throws \ValueError
+     */
+    #[Test]
+    public function runWithInvalidJsonConfigPrintsJsonExceptionMessage(): void
+    {
+        $svgFile = $this->tempDir . '/invalid-json.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $memoryStream = new MemoryStream();
+        $configPath = '{invalid json';
+
+        $command = new Command(
+            [$svgFile],
+            new CommandOption(
+                false,
+                $configPath,
+                false,
+                false,
+            ),
+            new OutputManager($memoryStream)
+        );
+
+        $command->run();
+
+        self::assertStringContainsString(
+            \sprintf('Error: Invalid JSON in configuration file "%s":', $configPath),
+            $memoryStream->getContent()
+        );
+    }
+
+    /**
+     * @throws \LogicException
+     * @throws \RuntimeException
+     * @throws \ValueError
+     */
+    #[Test]
+    public function runWithNonArrayJsonConfigPrintsInvalidArgumentExceptionMessage(): void
+    {
+        $svgFile = $this->tempDir . '/non-array-json.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $memoryStream = new MemoryStream();
+
+        $command = new Command(
+            [$svgFile],
+            new CommandOption(
+                false,
+                '42',
+                false,
+                false,
+            ),
+            new OutputManager($memoryStream)
+        );
+
+        $command->run();
+
+        self::assertStringContainsString(
+            'Error: Configuration must be a valid file path or a JSON string.',
+            $memoryStream->getContent()
+        );
+    }
+
+    /**
+     * @throws \LogicException
+     * @throws \RuntimeException
+     * @throws \ValueError
+     */
+    #[Test]
+    public function runWithUnwritableFilePrintsRuntimeExceptionMessage(): void
+    {
+        $svgFile = $this->tempDir . '/readonly.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+        chmod($svgFile, 0o444);
+
+        try {
+            $memoryStream = new MemoryStream();
+
+            $command = new Command(
+                [$svgFile],
+                new CommandOption(
+                    false,
+                    '',
+                    false,
+                    false,
+                ),
+                new OutputManager($memoryStream)
+            );
+
+            set_error_handler(static fn (): bool => true, \E_WARNING);
+
+            try {
+                $command->run();
+            } finally {
+                restore_error_handler();
+            }
+
+            self::assertStringContainsString(
+                \sprintf('Error: Failed processing "%s": Failed to write optimized content to the output file: %s', $svgFile, $svgFile),
+                $memoryStream->getContent()
+            );
+        } finally {
+            chmod($svgFile, 0o666);
+        }
+    }
+
     #[\Override]
     protected function setUp(): void
     {

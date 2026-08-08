@@ -31,11 +31,6 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Removes attributes that have an empty or whitespace-only value.
-     *
-     * This method iterates through all elements in the document and removes any
-     * attribute whose value is an empty string or consists only of whitespace.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]

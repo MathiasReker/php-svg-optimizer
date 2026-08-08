@@ -17,8 +17,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Formatter;
 final readonly class ByteFormatter
 {
     /**
-     * Format a byte value into a human-readable string.
-     *
      * @param int $bytes The number of bytes
      *
      * @return string Formatted byte string (e.g., "1.23 MB")

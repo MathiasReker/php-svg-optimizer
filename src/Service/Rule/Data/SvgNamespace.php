@@ -24,8 +24,6 @@ enum SvgNamespace: string implements SvgDataInterface
     case Inkscape = 'http://www.inkscape.org/namespaces/inkscape';
 
     /**
-     * Returns all tag values as an array of strings.
-     *
      * @return list<string>
      */
     public static function values(): array
@@ -33,9 +31,6 @@ enum SvgNamespace: string implements SvgDataInterface
         return self::valuesFromCases(self::cases());
     }
 
-    /**
-     * Returns the standard prefix for the namespace.
-     */
     public function prefix(): string
     {
         return match ($this->value) {

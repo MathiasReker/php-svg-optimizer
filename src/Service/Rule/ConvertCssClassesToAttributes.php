@@ -22,8 +22,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleInterface
 {
     /**
-     * Regex pattern to extract class selectors and their declarations.
-     *
      * @see https://regex101.com/r/qOS1io/1
      */
     private const string CLASS_SELECTOR_REGEX = '/\.([a-zA-Z0-9_-]+)\s*\{([^}]+)}/';
@@ -41,13 +39,6 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     /**
-     * Converts CSS style declarations into inline attributes on SVG elements.
-     *
-     * This method finds `<style>` blocks, parses class selectors, and applies
-     * the corresponding CSS properties as attributes to the elements that use
-     * those classes. This can make the SVG more self-contained and can enable
-     * further optimizations.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
@@ -79,11 +70,6 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     /**
-     * Creates a map of class names to the elements that use them.
-     *
-     * This is an efficient way to look up all elements associated with a
-     * particular class without repeatedly querying the DOM.
-     *
      * @param \DOMDocument $domDocument the DOM document to scan
      *
      * @return array<string, list<\DOMElement>> a map of class names to element arrays
@@ -108,8 +94,6 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     /**
-     * Gets a lookup array of CSS properties that can be converted to attributes.
-     *
      * @return array<string, int> a map for quick property lookup
      */
     private function getConvertibleProperties(): array
@@ -125,8 +109,6 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     /**
-     * Parses a CSS string, applies convertible styles to elements, and returns the remaining CSS.
-     *
      * @param string                           $css               the CSS content from a `<style>` block
      * @param array<string, list<\DOMElement>> $classMap          the class-to-element map
      * @param array<string, int>               $convertibleLookup the lookup map for convertible properties
@@ -175,9 +157,6 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     /**
-     * Splits a string of CSS declarations into two groups: those that can be
-     * converted to attributes and those that cannot.
-     *
      * @param string             $declarations      The CSS declaration block (e.g., "fill:red; font-size:12px").
      * @param array<string, int> $convertibleLookup the lookup map for convertible properties
      *
@@ -212,11 +191,6 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     /**
-     * Updates an element's `class` attribute after its styles have been processed.
-     *
-     * If all declarations for a class were converted, the class is removed from
-     * the element. If some non-convertible declarations remain, the class is kept.
-     *
      * @param \DOMElement           $domElement     the element to update
      * @param string                $class          the class that was processed
      * @param array<string, string> $nonConvertible the remaining non-convertible declarations
@@ -240,8 +214,6 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     /**
-     * Reconstructs a CSS rule string from a class name and its non-convertible declarations.
-     *
      * @param string                $class          the class name
      * @param array<string, string> $nonConvertible the map of non-convertible properties and values
      *

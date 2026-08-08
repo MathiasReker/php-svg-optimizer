@@ -21,37 +21,20 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
  */
 abstract class AbstractProvider implements SvgProviderInterface
 {
-    /**
-     * Default directory permissions for newly created directories.
-     */
     private const int DIRECTORY_PERMISSION = 0o755;
 
-    /**
-     * Holds the optimized SVG content.
-     */
     protected string $outputContent = '';
 
-    /**
-     * The DOMDocumentWrapper instance.
-     */
     protected readonly DomDocumentWrapper $domDocumentWrapper;
 
-    /**
-     * Input content to be loaded in child classes.
-     */
     protected string $inputContent = '';
 
-    /**
-     * Initializes the DomDocumentWrapper instance.
-     */
     public function __construct()
     {
         $this->domDocumentWrapper = new DomDocumentWrapper();
     }
 
     /**
-     * Optimize the provided \DOMDocument instance.
-     *
      * @throws XmlProcessingException
      */
     #[\Override]
@@ -62,19 +45,11 @@ abstract class AbstractProvider implements SvgProviderInterface
         return $this;
     }
 
-    /**
-     * Abstract method to load content into \DOMDocument.
-     */
     abstract public function loadContent(): \DOMDocument;
 
-    /**
-     * Abstract method to get the input content.
-     */
     abstract public function getInputContent(): string;
 
     /**
-     * Save the optimized SVG content to a file.
-     *
      * @param string $path The path to save the optimized SVG content to
      *
      * @throws IOException If the output file cannot be written
@@ -94,8 +69,6 @@ abstract class AbstractProvider implements SvgProviderInterface
     }
 
     /**
-     * Ensures that the directory for the output file exists. Creates it if necessary.
-     *
      * @param string $directoryPath The directory path to check/create
      */
     private function ensureDirectoryExists(string $directoryPath): bool
@@ -112,9 +85,6 @@ abstract class AbstractProvider implements SvgProviderInterface
         return mkdir($directoryPath, self::DIRECTORY_PERMISSION, true);
     }
 
-    /**
-     * Get the optimized SVG content.
-     */
     #[\Override]
     final public function getOutputContent(): string
     {
@@ -122,8 +92,6 @@ abstract class AbstractProvider implements SvgProviderInterface
     }
 
     /**
-     * Serialize a \DOMDocument to a string without the XML declaration.
-     *
      * @param \DOMDocument $domDocument The \DOMDocument to serialize
      *
      * @return string The serialized XML content

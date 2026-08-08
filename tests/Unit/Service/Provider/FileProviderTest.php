@@ -33,10 +33,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(XmlFormatter::class)]
 final class FileProviderTest extends TestCase
 {
-    /**
-     * The path to the test input SVG file.
-     * This file is used for testing the FileProvider's methods.
-     */
     private const string TEST_INPUT_FILE = 'input.svg';
 
     /**
@@ -169,7 +165,7 @@ final class FileProviderTest extends TestCase
     #[Test]
     public function loadContentThrowsXmlProcessingException(): void
     {
-        file_put_contents(self::TEST_INPUT_FILE, '<svg><invalid></svg>'); // malformed XML
+        file_put_contents(self::TEST_INPUT_FILE, '<svg><invalid></svg>');
 
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
 
@@ -252,6 +248,57 @@ final class FileProviderTest extends TestCase
         $this->expectExceptionMessage('Failed to create directory for output file: ' . $nonWritablePath);
 
         $fileProvider->saveToFile($nonWritablePath);
+    }
+
+    /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    #[Test]
+    public function getInputContentThrowsIOExceptionWhenFileIsNotReadable(): void
+    {
+        $probeFile = sys_get_temp_dir() . '/' . uniqid('unreadable_probe_', true) . '.svg';
+        file_put_contents($probeFile, '<svg></svg>');
+        chmod($probeFile, 0o000);
+        clearstatcache(true, $probeFile);
+        $chmodMakesUnreadable = !is_readable($probeFile);
+        chmod($probeFile, 0o644);
+        unlink($probeFile);
+
+        $userName = (string) getenv('USERNAME');
+        $filePath = sys_get_temp_dir() . '/' . uniqid('unreadable_', true) . '.svg';
+        file_put_contents($filePath, '<svg></svg>');
+
+        try {
+            if ($chmodMakesUnreadable) {
+                chmod($filePath, 0o000);
+            } else {
+                exec('icacls ' . escapeshellarg($filePath) . ' /deny ' . escapeshellarg($userName . ':R') . ' 2>&1');
+            }
+
+            clearstatcache(true, $filePath);
+
+            self::assertIsNotReadable(
+                $filePath,
+                'Precondition failed: could not make the file unreadable in this environment.'
+            );
+
+            $this->expectException(IOException::class);
+            $this->expectExceptionMessage(\sprintf('Input file is not readable: %s', $filePath));
+
+            new FileProvider($filePath);
+        } finally {
+            if ($chmodMakesUnreadable) {
+                chmod($filePath, 0o644);
+            } else {
+                exec('icacls ' . escapeshellarg($filePath) . ' /remove:d ' . escapeshellarg($userName) . ' 2>&1');
+            }
+
+            clearstatcache(true, $filePath);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
     }
 
     #[\Override]

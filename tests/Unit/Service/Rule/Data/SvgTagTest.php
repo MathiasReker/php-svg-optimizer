@@ -52,4 +52,15 @@ final class SvgTagTest extends TestCase
 
         self::assertSame($expected, SvgTag::conditionalDangerous());
     }
+
+    #[Test]
+    public function valuesReturnsAllTagValues(): void
+    {
+        $values = SvgTag::values();
+
+        self::assertCount(\count(SvgTag::cases()), $values);
+        self::assertContains('svg', $values);
+        self::assertContains('path', $values);
+        self::assertContains('g', $values);
+    }
 }

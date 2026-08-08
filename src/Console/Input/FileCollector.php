@@ -20,8 +20,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 final class FileCollector
 {
     /**
-     * Collect unique .svg files from the given paths.
-     *
      * @param list<string> $paths
      *
      * @return list<string>
@@ -42,8 +40,6 @@ final class FileCollector
     }
 
     /**
-     * Resolve all .svg files from a given path (file or directory).
-     *
      * @return list<string>
      */
     private function resolveSvgFiles(string $path): array
@@ -72,9 +68,6 @@ final class FileCollector
         return [];
     }
 
-    /**
-     * Checks if a file has a .svg extension.
-     */
     private function hasSvgExtension(string $filePath): bool
     {
         return SvgTag::Svg->value === mb_strtolower(pathinfo($filePath, \PATHINFO_EXTENSION));

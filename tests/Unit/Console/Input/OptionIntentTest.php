@@ -162,6 +162,26 @@ final class OptionIntentTest extends TestCase
         self::assertFalse($optionIntent->allowRisky());
     }
 
+    #[Test]
+    public function withAllRulesOptionIsSet(): void
+    {
+        $args = ['vendor/bin/svg-optimizer', '--with-all-rules'];
+        $argumentParser = new ArgumentParser($args);
+
+        $optionIntent = new OptionIntent($argumentParser);
+        self::assertTrue($optionIntent->withAllRules());
+    }
+
+    #[Test]
+    public function withAllRulesOptionIsNotSet(): void
+    {
+        $args = ['vendor/bin/svg-optimizer'];
+        $argumentParser = new ArgumentParser($args);
+
+        $optionIntent = new OptionIntent($argumentParser);
+        self::assertFalse($optionIntent->withAllRules());
+    }
+
     /**
      * @throws \InvalidArgumentException
      */

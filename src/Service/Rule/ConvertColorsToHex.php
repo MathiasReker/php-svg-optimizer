@@ -20,19 +20,11 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
 {
     /**
-     * Regex pattern for RGB color values.
-     *
-     * This regular expression matches RGB color values in the format rgb(R, G, B).
-     *
      * @see https://regex101.com/r/DUVXtz/1
      */
     private const string RGB_REGEX = '/^rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/';
 
     /**
-     * Regex pattern for HEX color values.
-     *
-     * This regular expression matches both full (#RRGGBB) and shorthand (#RGB) HEX color values.
-     *
      * @see https://regex101.com/r/wg9AQj/1
      */
     private const string HEX_REGEX = '/^#([a-fA-F0-9]{3,6})$/';
@@ -50,14 +42,6 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Converts color values to a more compact hexadecimal format.
-     *
-     * This rule processes all elements in the SVG, converting `rgb()` color
-     * values to their hexadecimal equivalents (e.g., `#RRGGBB`). It also
-     * shortens them where possible (e.g., `#RGB`) and normalizes existing
-     * hex values to lowercase. This is applied to both color attributes and
-     * inline `style` properties.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
@@ -85,11 +69,6 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Processes a `style` attribute string to convert color values.
-     *
-     * This method finds color-related properties within the style string and
-     * applies the `convertColorValue` transformation to their values.
-     *
      * @param string       $style           the inline style string
      * @param list<string> $colorAttributes a list of color-related CSS properties
      *
@@ -112,12 +91,6 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Converts a single color value to its hexadecimal representation.
-     *
-     * This method handles `rgb()` values, converting them to `#RRGGBB` or `#RGB`
-     * format. It also normalizes existing hexadecimal colors to lowercase.
-     * Other color formats are returned unchanged.
-     *
      * @param string $value the color value to convert
      *
      * @return string the converted hexadecimal color or the original value

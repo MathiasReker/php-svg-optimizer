@@ -20,14 +20,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
  */
 final readonly class SortAttributes implements SvgOptimizerRuleInterface
 {
-    /**
-     * Default order for attributes to be sorted.
-     * 'id', 'width', and 'height' come first, followed by other attributes in alphabetical order.
-     *
-     * This array defines the priority of attributes. Attributes listed here will
-     * appear first when sorting, followed by the rest of the attributes sorted
-     * alphabetically by their name.
-     */
     private const array ATTRIBUTE_ORDER = [
         SvgAttribute::Xmlns->value,
         SvgAttribute::Id->value,
@@ -48,12 +40,6 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Sorts the attributes of all elements in the SVG document.
-     *
-     * This can improve consistency and may have a minor positive impact on
-     * compression. The sorting order is predefined, with common attributes
-     * like `id`, `width`, and `height` appearing first.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
@@ -71,11 +57,6 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Sorts the attributes of a single DOM element.
-     *
-     * The attributes are sorted according to a predefined order, and then
-     * alphabetically.
-     *
      * @param \DOMElement $domElement the element whose attributes to sort
      */
     private function sortElementAttributes(\DOMElement $domElement): void
@@ -94,8 +75,6 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Extracts all attributes from a DOM element into an associative array.
-     *
      * @param \DOMElement $domElement the element to extract attributes from
      *
      * @return array<string, string> a map of attribute names to their values
@@ -115,11 +94,6 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Sorts an array of attributes.
-     *
-     * The sorting is based on a predefined priority list, with the remaining
-     * attributes sorted alphabetically.
-     *
      * @param array<string, string> $attributes the attributes to sort
      *
      * @return array<string, string> the sorted attributes

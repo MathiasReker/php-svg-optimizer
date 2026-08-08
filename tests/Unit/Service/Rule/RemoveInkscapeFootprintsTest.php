@@ -282,6 +282,19 @@ final class RemoveInkscapeFootprintsTest extends TestCase
                 <svg><g inkscape:groupmode="layer" sodipodi:role="layer"><rect inkscape:label="Rect" sodipodi:abswidth="100" width="100" height="100" fill="blue"/></g></svg>
                 XML,
         ];
+
+        yield 'Removes genuine Sodipodi and Inkscape namespaced elements' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                    <sodipodi:namedview id="base"/>
+                    <inkscape:custom id="thing"/>
+                    <rect width="100" height="100" fill="cyan"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="cyan"/></svg>
+                XML,
+        ];
     }
 
     #[Test]

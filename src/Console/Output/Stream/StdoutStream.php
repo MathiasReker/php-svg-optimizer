@@ -32,9 +32,6 @@ class StdoutStream extends AbstractStream implements StreamInterface
         $this->stream = $stream;
     }
 
-    /**
-     * Close the stream resource when the object is destroyed.
-     */
     public function __destruct()
     {
         if (\is_resource($this->stream)) {

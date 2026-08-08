@@ -38,8 +38,6 @@ final readonly class SvgFileProcessor
     ) {}
 
     /**
-     * Process a path - directory or file.
-     *
      * @throws \RuntimeException
      * @throws \JsonException
      * @throws \LogicException
@@ -58,8 +56,6 @@ final readonly class SvgFileProcessor
     }
 
     /**
-     * Process all SVG files in a directory recursively.
-     *
      * @throws \RuntimeException
      * @throws \JsonException
      * @throws \LogicException
@@ -80,8 +76,6 @@ final readonly class SvgFileProcessor
     }
 
     /**
-     * Processes a given path, which may represent a directory or a single SVG file.
-     *
      * @throws \RuntimeException
      * @throws \JsonException
      * @throws \LogicException
@@ -112,12 +106,6 @@ final readonly class SvgFileProcessor
     }
 
     /**
-     * Retrieve the configuration array for rule options.
-     *
-     * If a configuration file path is provided via command-line options,
-     * the configuration is loaded from that file. Otherwise, an empty
-     * configuration array is returned.
-     *
      * @return array<array-key, bool> The configuration array for rule flags
      *
      * @throws \JsonException            If the configuration file contains invalid JSON

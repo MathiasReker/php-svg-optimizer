@@ -19,9 +19,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
  */
 final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterface
 {
-    /**
-     * Default attributes to remove if they have these values.
-     */
     private const array DEFAULT_SVG_ATTRIBUTES = [
         SvgAttribute::Stroke->value => 'none',
         SvgAttribute::StrokeWidth->value => '1',
@@ -30,9 +27,6 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
         SvgAttribute::StrokeMiterlimit->value => '4',
     ];
 
-    /**
-     * XPath query to select all attributes.
-     */
     private const string XPATH_ALL_ATTRIBUTES = '//@*';
 
     #[\Override]
@@ -48,13 +42,6 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Removes attributes from SVG elements if their values are set to the
-     * default for that attribute.
-     *
-     * For example, it will remove `stroke="none"` or `stroke-width="1"` because
-     * these are the default rendering values. This helps to reduce file size
-     * without affecting the visual output.
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]

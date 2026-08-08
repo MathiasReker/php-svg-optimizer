@@ -32,9 +32,6 @@ class MemoryStream extends AbstractStream implements StreamInterface
         $this->stream = $stream;
     }
 
-    /**
-     * Write a message to the memory stream.
-     */
     public function getContent(): string
     {
         rewind($this->stream);
@@ -42,9 +39,6 @@ class MemoryStream extends AbstractStream implements StreamInterface
         return stream_get_contents($this->stream);
     }
 
-    /**
-     * Close the stream resource when the object is destroyed.
-     */
     public function __destruct()
     {
         if (\is_resource($this->stream)) {

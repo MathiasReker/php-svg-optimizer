@@ -83,7 +83,6 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
 
                     <!-- A comment -->
 
-
                 </svg>
                 XML,
             <<<'XML'

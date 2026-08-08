@@ -196,6 +196,30 @@ final class DomDocumentWrapperTest extends TestCase
         $this->domDocumentWrapper->loadFromFile('/non/existent/file.xml');
     }
 
+    /**
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function loadFromFileThrowsExceptionOnEmptyFilePath(): void
+    {
+        $this->expectException(XmlProcessingException::class);
+        $this->expectExceptionMessage('File path cannot be empty.');
+
+        $this->domDocumentWrapper->loadFromFile('');
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function loadFromStringThrowsExceptionOnEmptyContent(): void
+    {
+        $this->expectException(XmlProcessingException::class);
+        $this->expectExceptionMessage('XML content cannot be empty.');
+
+        $this->domDocumentWrapper->loadFromString('');
+    }
+
     #[\Override]
     protected function setUp(): void
     {

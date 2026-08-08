@@ -16,29 +16,14 @@ namespace MathiasReker\PhpSvgOptimizer\Model;
  */
 final class MetaDataAggregator
 {
-    /**
-     * The total original size of all SVG files processed, in bytes.
-     */
     private int $totalOriginalSize = 0;
 
-    /**
-     * The total optimized size of all SVG files processed, in bytes.
-     */
     private int $totalOptimizedSize = 0;
 
-    /**
-     * The number of SVG files that have been optimized.
-     */
     private int $optimizedFileCount = 0;
 
-    /**
-     * The total optimization time for all SVG files processed, in seconds.
-     */
     private float $totalOptimizationTime = 0.0;
 
-    /**
-     * Initializes the total sizes to zero.
-     */
     public function addFileData(int $originalSize, int $optimizedSize, float $optimizationTime): void
     {
         $this->totalOriginalSize += $originalSize;
@@ -48,8 +33,6 @@ final class MetaDataAggregator
     }
 
     /**
-     * Returns the total original size of all SVG files processed.
-     *
      * @return int The total original size in bytes
      */
     public function getTotalOriginalSize(): int
@@ -58,8 +41,6 @@ final class MetaDataAggregator
     }
 
     /**
-     * Returns the total optimized size of all SVG files processed.
-     *
      * @return int The total optimized size in bytes
      */
     public function getTotalOptimizedSize(): int
@@ -68,8 +49,6 @@ final class MetaDataAggregator
     }
 
     /**
-     * Returns the total percentage of bytes saved through optimization.
-     *
      * @return float The percentage of bytes saved
      */
     public function getSavedPercentage(): float
@@ -82,8 +61,6 @@ final class MetaDataAggregator
     }
 
     /**
-     * Returns the total number of bytes saved through optimization.
-     *
      * @return int The total bytes saved
      */
     public function getSavedBytes(): int
@@ -92,8 +69,6 @@ final class MetaDataAggregator
     }
 
     /**
-     * Returns the total optimization time for all SVG files processed, in seconds.
-     *
      * @return float Time in seconds
      */
     public function getOptimizationTime(): float
@@ -101,17 +76,12 @@ final class MetaDataAggregator
         return $this->totalOptimizationTime;
     }
 
-    /**
-     * The number of SVG files that have been optimized.
-     */
     public function getOptimizedFileCount(): int
     {
         return $this->optimizedFileCount;
     }
 
     /**
-     * Determines whether any SVG files were successfully optimized.
-     *
      * @return bool True if one or more files were optimized, false otherwise
      */
     public function hasOptimizedFiles(): bool
@@ -120,8 +90,6 @@ final class MetaDataAggregator
     }
 
     /**
-     * Determines whether any bytes were saved during optimization.
-     *
      * @return bool True if one or more bytes were saved, false otherwise
      */
     public function hasSavedBytes(): bool

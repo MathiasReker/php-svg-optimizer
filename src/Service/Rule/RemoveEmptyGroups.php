@@ -32,12 +32,6 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Removes empty group (`<g>`) elements from the SVG document.
-     *
-     * This method recursively traverses the DOM and removes any `<g>` element
-     * that has no attributes and contains no meaningful content (i.e., no
-     * child elements, non-whitespace text, or comments).
-     *
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
@@ -49,8 +43,6 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Recursively traverses a DOM element and removes empty group elements.
-     *
      * @param \DOMElement $domElement the element to process
      */
     private function removeEmptyGroupsRecursive(\DOMElement $domElement): void
@@ -71,11 +63,6 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Determines if a group element is effectively empty.
-     *
-     * A group is considered empty if it has no attributes and no child nodes
-     * that are elements, non-whitespace text, or comments.
-     *
      * @param \DOMElement $domElement the group element to check
      *
      * @return bool true if the group is empty, false otherwise
