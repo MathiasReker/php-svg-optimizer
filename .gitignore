@@ -3,3 +3,5 @@ vendor/
 .php-cs-fixer.cache
 .DS_Store
 .phpunit.cache/
+.infection/
+infection.log

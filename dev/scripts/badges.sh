@@ -24,6 +24,31 @@ COLOR="red"
 curl -s -o dev/artifacts/coverage.svg \
   "https://img.shields.io/badge/code_coverage-${PERCENT_INT}%25-${COLOR}?style=flat"
 
+# --- TYPE COVERAGE BADGE ---
+TYPE_COVERAGE_JSON=$(./vendor/bin/phpstan analyse -c phpstan-type-coverage.neon --no-progress --error-format=json 2>/dev/null) || true
+
+TYPE_TOTAL_FILLED=0
+TYPE_TOTAL_POSSIBLE=0
+
+while IFS= read -r LINE; do
+    [[ -z $LINE ]] && continue
+    TYPE_PCT=$(echo "$LINE" | grep -oE '[0-9]+\.[0-9]+' | head -1)
+    TYPE_TOTAL=$(echo "$LINE" | grep -oE 'out of [0-9]+' | grep -oE '[0-9]+')
+    TYPE_FILLED=$(awk -v p="$TYPE_PCT" -v t="$TYPE_TOTAL" 'BEGIN { printf "%.0f", (p / 100) * t }')
+    TYPE_TOTAL_FILLED=$((TYPE_TOTAL_FILLED + TYPE_FILLED))
+    TYPE_TOTAL_POSSIBLE=$((TYPE_TOTAL_POSSIBLE + TYPE_TOTAL))
+done < <(echo "$TYPE_COVERAGE_JSON" | grep -oE '(Class constant|Param|Property|Return) type coverage is [0-9]+\.[0-9]+ % out of [0-9]+ possible')
+
+TYPE_PERCENT_INT=0
+(( TYPE_TOTAL_POSSIBLE > 0 )) && TYPE_PERCENT_INT=$(awk -v f="$TYPE_TOTAL_FILLED" -v t="$TYPE_TOTAL_POSSIBLE" 'BEGIN { printf "%.0f", (f / t) * 100 }')
+
+TYPE_COLOR="red"
+(( TYPE_PERCENT_INT >= 80 )) && TYPE_COLOR="green"
+(( TYPE_PERCENT_INT >= 50 && TYPE_PERCENT_INT < 80 )) && TYPE_COLOR="yellow"
+
+curl -s -o dev/artifacts/type-coverage.svg \
+  "https://img.shields.io/badge/type_coverage-${TYPE_PERCENT_INT}%25-${TYPE_COLOR}?style=flat"
+
 # --- TESTS & ASSERTIONS ---
 PHPUNIT_OUTPUT=$(./vendor/bin/phpunit --colors=never 2>&1)
 

@@ -5,7 +5,7 @@
 [![CI status](https://github.com/MathiasReker/php-svg-optimizer/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/MathiasReker/php-svg-optimizer/actions/workflows/ci.yml)
 [![Codacy Security Scan](https://github.com/MathiasReker/php-svg-optimizer/actions/workflows/codacy.yml/badge.svg)](https://github.com/MathiasReker/php-svg-optimizer/actions/workflows/codacy.yml)
 [![PHPStan Level](https://img.shields.io/badge/PHPStan-Level%20max-blue)](#)
-[![Type Coverage](https://img.shields.io/badge/type%20coverage-100%25-brightgreen)](#)
+[![Type Coverage](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/type-coverage.svg)](#)
 [![Code Coverage](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/coverage.svg)](#)
 [![Tests](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/tests.svg)](#)
 [![Assertions](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/assertions.svg)](#)

@@ -1,0 +1,10 @@
+includes:
+    - phpstan.neon
+
+parameters:
+    type_coverage:
+        return: 0
+        param: 0
+        property: 0
+        constant: 0
+        measure: true
