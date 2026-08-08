@@ -59,20 +59,21 @@ final class ConcreteProviderTest extends TestCase
                 private readonly string $testInput,
             ) {
                 parent::__construct();
-                $this->inputContent = $testInput;
             }
 
             public function loadContent(): \DOMDocument
             {
                 $domDocument = new \DOMDocument();
-                $domDocument->loadXML($this->testInput);
+                if ('' !== $this->testInput) {
+                    $domDocument->loadXML($this->testInput);
+                }
 
                 return $domDocument;
             }
 
             public function getInputContent(): string
             {
-                return $this->inputContent;
+                return $this->testInput;
             }
         };
     }

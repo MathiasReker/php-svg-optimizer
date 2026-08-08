@@ -60,7 +60,7 @@ abstract readonly class AbstractXmlProcessor
         }
 
         try {
-            if (!$domDocument->loadXML($content)) {
+            if ('' === $content || !$domDocument->loadXML($content)) {
                 throw new XmlProcessingException('Failed to load optimized XML content.');
             }
         } catch (\Throwable $throwable) {

@@ -196,18 +196,6 @@ final class SvgOptimizer
     /**
      * Apply all configured optimization rules to the provided \DOMDocument.
      *
-     * Each rule is applied in the order it was added. If a rule has
-     * `shouldCheckSize()` enabled, the method compares the SVG content
-     * size before and after applying the rule:
-     *
-     * - If the rule reduces the file size, the change is kept and
-     *   considered the new "best" version of the SVG content.
-     * - If the rule increases or does not improve the file size, the
-     *   \DOMDocument is reverted to the previous best version.
-     *
-     * This ensures that only optimizations that improve (reduce) the SVG
-     * size are retained, while preserving improvements from earlier rules.
-     *
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      *
      * @throws XmlProcessingException
@@ -224,14 +212,26 @@ final class SvgOptimizer
             $rule->optimize($domDocument);
 
             if ($rule::shouldCheckSize()) {
-                $newContent = $this->svgProvider->serialize($domDocument);
-                if (mb_strlen($newContent, '8bit') > mb_strlen($originalContent, '8bit')) {
-                    $domDocument->loadXML($originalContent);
-                } else {
-                    $originalContent = $newContent;
-                }
+                $originalContent = $this->checkAndRevert($domDocument, $originalContent);
             }
         }
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
+    private function checkAndRevert(\DOMDocument $domDocument, string $originalContent): string
+    {
+        $newContent = $this->svgProvider->serialize($domDocument);
+        if (mb_strlen($newContent, '8bit') > mb_strlen($originalContent, '8bit')) {
+            if ('' !== $originalContent) {
+                $domDocument->loadXML($originalContent);
+            }
+
+            return $originalContent;
+        }
+
+        return $newContent;
     }
 
     /**

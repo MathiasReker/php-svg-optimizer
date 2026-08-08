@@ -62,6 +62,10 @@ final readonly class DomDocumentWrapper
      */
     public function loadFromFile(string $filePath): \DOMDocument
     {
+        if ('' === $filePath) {
+            throw new XmlProcessingException('File path cannot be empty.');
+        }
+
         return $this->loadDomDocument(static fn (\DOMDocument $domDocument): bool => $domDocument->load($filePath, self::LOAD_FLAGS));
     }
 
@@ -121,6 +125,10 @@ final readonly class DomDocumentWrapper
      */
     public function loadFromString(string $content): \DOMDocument
     {
+        if ('' === $content) {
+            throw new XmlProcessingException('XML content cannot be empty.');
+        }
+
         return $this->loadDomDocument(
             static fn (\DOMDocument $domDocument): bool => $domDocument->loadXML(
                 $content,
