@@ -243,11 +243,19 @@ final class FileProviderTest extends TestCase
 
         $fileProvider->optimize($domDocument);
 
-        $nonWritablePath = '/non/writable/path/output.svg';
-        $this->expectException(IOException::class);
-        $this->expectExceptionMessage('Failed to create directory for output file: ' . $nonWritablePath);
+        $blockingFile = (string) tempnam(sys_get_temp_dir(), 'svgtest_blocking_');
+        $unreachablePath = $blockingFile . '/output.svg';
 
-        $fileProvider->saveToFile($nonWritablePath);
+        $this->expectException(IOException::class);
+        $this->expectExceptionMessage('Failed to create directory for output file: ' . $unreachablePath);
+
+        set_error_handler(static fn (): bool => true, \E_WARNING);
+        try {
+            $fileProvider->saveToFile($unreachablePath);
+        } finally {
+            restore_error_handler();
+            unlink($blockingFile);
+        }
     }
 
     /**

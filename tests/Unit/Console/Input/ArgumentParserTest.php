@@ -58,6 +58,31 @@ final class ArgumentParserTest extends TestCase
         self::assertFalse($hasDryRunOption);
     }
 
+    #[Test]
+    public function hasOptionIgnoresPositionalArgumentMatchingAnOptionKeyWithoutADash(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            'config',
+            'process',
+            'file.svg',
+        ];
+
+        $argumentParser = new ArgumentParser($args);
+
+        self::assertFalse($argumentParser->hasOption(Option::Config));
+    }
+
+    #[Test]
+    public function hasOptionIgnoresTheScriptNameSlot(): void
+    {
+        $args = ['-v'];
+
+        $argumentParser = new ArgumentParser($args);
+
+        self::assertFalse($argumentParser->hasOption(Option::Version));
+    }
+
     /**
      * @throws \InvalidArgumentException
      */
@@ -202,6 +227,14 @@ final class ArgumentParserTest extends TestCase
         $argumentParser = new ArgumentParser([]);
 
         self::assertTrue($argumentParser->isEmpty());
+    }
+
+    #[Test]
+    public function isEmptyReturnsFalseAtTheMinimumArgumentCountBoundary(): void
+    {
+        $argumentParser = new ArgumentParser(['vendor/bin/svg-optimizer', 'file.svg']);
+
+        self::assertFalse($argumentParser->isEmpty());
     }
 
     /**

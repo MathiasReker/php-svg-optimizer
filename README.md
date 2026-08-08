@@ -7,6 +7,7 @@
 [![PHPStan Level](https://img.shields.io/badge/PHPStan-Level%20max-blue)](#)
 [![Type Coverage](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/type-coverage.svg)](#)
 [![Code Coverage](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/coverage.svg)](#)
+[![Mutation Score](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/mutation-score.svg)](#)
 [![Tests](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/tests.svg)](#)
 [![Assertions](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/assertions.svg)](#)
 [![Filesize](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/filesize.svg)](#)
@@ -985,6 +986,12 @@ Run tests:
 
 ```bash
 composer test
+```
+
+Run mutation testing:
+
+```bash
+composer test:mutation
 ```
 
 Fix code style:

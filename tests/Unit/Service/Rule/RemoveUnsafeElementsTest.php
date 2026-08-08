@@ -1469,6 +1469,42 @@ final class RemoveUnsafeElementsTest extends TestCase
                 XML,
         ];
 
+        yield 'Removes xml-stylesheet processing instruction nested inside the root element' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <?xml-stylesheet type="text/css" href="http://malicious.com/style.css"?>
+                    <rect/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes case-varied xml-stylesheet processing instruction nested inside the root element' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <?XML-STYLESHEET type="text/css" href="http://malicious.com/style.css"?>
+                    <rect/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Keeps non-stylesheet processing instruction nested inside the root element' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <?some-other-instruction data="harmless"?>
+                    <rect/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><?some-other-instruction data="harmless"?><rect/></svg>
+                XML,
+        ];
+
         yield 'Unwraps a tag with double-encoded HTML entity obfuscated javascript href' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
@@ -1525,6 +1561,51 @@ final class RemoveUnsafeElementsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><circle cx="5" cy="5" r="3"/></svg>
                 XML,
         ];
+
+        yield 'Removes a dangerous href tag processed after an attributeName-hijack tag of the same type' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="javascript:alert(1)"/>
+                    <a attributeName="href"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Reassembles and detects a javascript protocol split by a null-byte CSS hex escape' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a href="java\00script:alert(1)"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes a dangerous src attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect src="javascript:alert(1)"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Keeps a safe src attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect src="safe.png"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect src="safe.png"/></svg>
+                XML,
+        ];
     }
 
     #[Test]
@@ -1548,6 +1629,48 @@ final class RemoveUnsafeElementsTest extends TestCase
         $reflectionMethod->invoke($removeUnsafeElements, $domText);
 
         self::assertSame('sample', $domText->textContent);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    #[Test]
+    public function normalizeValueDecodesTheMaximumValidUnicodeCodepointHexEscape(): void
+    {
+        $removeUnsafeElements = new RemoveUnsafeElements();
+        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'normalizeValue');
+
+        $result = $reflectionMethod->invoke($removeUnsafeElements, 'a\\10ffffb');
+
+        self::assertSame('a' . mb_chr(0x10_FF_FF, 'UTF-8') . 'b', $result);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    #[Test]
+    public function normalizeValueRejectsOneAboveTheMaximumValidUnicodeCodepointHexEscape(): void
+    {
+        $removeUnsafeElements = new RemoveUnsafeElements();
+        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'normalizeValue');
+
+        $result = $reflectionMethod->invoke($removeUnsafeElements, 'a\\110000b');
+
+        self::assertSame('ab', $result);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    #[Test]
+    public function normalizeValueDecodesHexEscapesAsMultiByteUtf8(): void
+    {
+        $removeUnsafeElements = new RemoveUnsafeElements();
+        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'normalizeValue');
+
+        $result = $reflectionMethod->invoke($removeUnsafeElements, 'a\\1f600z');
+
+        self::assertSame('a' . mb_chr(0x1_F6_00, 'UTF-8') . 'z', $result);
     }
 
     /**
