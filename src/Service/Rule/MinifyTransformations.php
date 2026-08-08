@@ -24,7 +24,7 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
      *
      * @see https://regex101.com/r/JUBzng/1
      */
-    private const string PERCENTAGE_REGEX = '/(\d+)%/';
+    private const string PERCENTAGE_REGEX = '/(\d+(?:\.\d+)?)%/';
 
     /**
      * Regex pattern to match identity translate transformations.

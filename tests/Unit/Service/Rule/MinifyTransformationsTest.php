@@ -230,6 +230,19 @@ final class MinifyTransformationsTest extends TestCase
                 XML,
         ];
 
+        yield 'Handles Transformations with Decimal Percentages' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="translate(12.5%,10%)">
+                        <circle cx="50" cy="50" r="20"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(0.125,0.1)"><circle cx="50" cy="50" r="20"/></g></svg>
+                XML,
+        ];
+
         yield 'Handles Mixed Identity Transformations with Non-Identity' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
