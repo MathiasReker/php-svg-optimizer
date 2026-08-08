@@ -26,17 +26,12 @@ final class FileCollector
      */
     public function collectSvgFiles(array $paths): array
     {
-        $realFiles = [];
-
+        $files = [];
         foreach ($paths as $path) {
-            $files = $this->resolveSvgFiles($path);
-
-            foreach ($files as $file) {
-                $realFiles[$file] = true;
-            }
+            $files[] = $this->resolveSvgFiles($path);
         }
 
-        return array_keys($realFiles);
+        return array_values(array_unique(array_merge(...$files)));
     }
 
     /**

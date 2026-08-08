@@ -50,6 +50,10 @@ final readonly class ConfigLoader
             throw new \InvalidArgumentException('Configuration must be a valid file path or a JSON string.');
         }
 
+        if ([] === $decodedConfig) {
+            return [];
+        }
+
         return array_combine(
             array_map(strval(...), array_keys($decodedConfig)),
             array_map(boolval(...), $decodedConfig)
