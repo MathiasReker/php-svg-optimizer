@@ -230,15 +230,18 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
 
                 $selectors = array_map(trim(...), explode(',', $selector));
 
-                foreach ($selectors as &$single) {
+                $scopedSelectors = [];
+                foreach ($selectors as $single) {
                     [$single, $scopedClasses] = $this->scopeClasses($single, $hash);
                     $newClassReplacements = [...$newClassReplacements, ...$scopedClasses];
 
                     [$single, $scopedIds] = $this->scopeSelectorIds($single, $hash, $idReplacements);
                     $newIdReplacements = [...$newIdReplacements, ...$scopedIds];
+
+                    $scopedSelectors[] = $single;
                 }
 
-                return \sprintf('%s{%s}', implode(', ', $selectors), $body);
+                return \sprintf('%s{%s}', implode(', ', $scopedSelectors), $body);
             },
             $css
         );
@@ -356,11 +359,10 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
             return;
         }
 
-        foreach ($classes as &$class) {
-            if (\array_key_exists($class, $classReplacements)) {
-                $class = $classReplacements[$class];
-            }
-        }
+        $classes = array_map(
+            static fn (string $class): string => $classReplacements[$class] ?? $class,
+            $classes
+        );
 
         $domElement->setAttribute(SvgAttribute::Class_->value, implode(' ', $classes));
     }

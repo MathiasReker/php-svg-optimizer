@@ -118,7 +118,7 @@ final readonly class SvgFileProcessor
      * the configuration is loaded from that file. Otherwise, an empty
      * configuration array is returned.
      *
-     * @return array<string, bool> The configuration array for rule flags
+     * @return array<array-key, bool> The configuration array for rule flags
      *
      * @throws \JsonException            If the configuration file contains invalid JSON
      * @throws \ValueError

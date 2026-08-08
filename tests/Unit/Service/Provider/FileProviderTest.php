@@ -220,7 +220,7 @@ final class FileProviderTest extends TestCase
     /**
      * @throws FileNotFoundException
      * @throws IOException
-     * @throws XmlProcessingException
+     * @throws \ReflectionException
      */
     #[Test]
     public function optimizeThrowsTypeErrorOnInvalidInput(): void
@@ -229,7 +229,8 @@ final class FileProviderTest extends TestCase
 
         $this->expectException(\TypeError::class);
 
-        $fileProvider->optimize(null);
+        $reflectionMethod = new \ReflectionMethod($fileProvider, 'optimize');
+        $reflectionMethod->invoke($fileProvider, null);
     }
 
     /**

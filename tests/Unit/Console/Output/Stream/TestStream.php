@@ -11,17 +11,15 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output\Stream;
 
-use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream;
 
-final class TestStream extends StdoutStream
+final class TestStream extends AbstractStream
 {
     /**
      * @throws \RuntimeException
      */
     public function __construct()
     {
-        parent::__construct();
-
         $stream = fopen('php://memory', 'w+');
 
         if (false === $stream) {

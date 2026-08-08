@@ -25,7 +25,7 @@ final readonly class ConfigLoader
      *
      * @param string $config The path to a config file or a JSON string
      *
-     * @return array<string, bool> The configuration as an associative array
+     * @return array<array-key, bool> The configuration as an associative array
      *
      * @throws \InvalidArgumentException If the file cannot be read or the JSON is invalid
      * @throws \JsonException            If the JSON decoding fails
