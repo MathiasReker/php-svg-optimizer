@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-#
-# Builds the badge SVGs in dev/artifacts. Mutation testing (infection) is by far the
-# slowest part of this script - a full run over src/ takes several minutes. Skip it
-# with --skip-mutation or SKIP_MUTATION=1 when you just need the other badges quickly;
-# the existing mutation-score.svg/mutation-coverage.svg are left untouched in that case.
 
 set -euo pipefail
 
@@ -23,7 +18,8 @@ curl -s -o dev/artifacts/filesize.svg \
   "https://img.shields.io/badge/size-${SIZE_KB}KB-brightgreen?style=flat"
 
 # --- CODE COVERAGE BADGE ---
-FRACTION=$(./vendor/bin/phpunit --coverage-text | grep 'Lines:' | head -1 | awk '{print $3}')
+COVERAGE_TEXT=$(./vendor/bin/phpunit --coverage-text) || true
+FRACTION=$(echo "$COVERAGE_TEXT" | grep 'Lines:' | head -1 | awk '{print $3}')
 
 [[ $FRACTION == .* ]] && FRACTION="0$FRACTION"
 
@@ -97,7 +93,9 @@ else
 fi
 
 # --- TESTS & ASSERTIONS ---
-PHPUNIT_OUTPUT=$(./vendor/bin/phpunit --colors=never 2>&1)
+# `|| true` for the same reason as the coverage run above: a failing test must not abort
+# badge generation.
+PHPUNIT_OUTPUT=$(./vendor/bin/phpunit --colors=never 2>&1) || true
 
 if echo "$PHPUNIT_OUTPUT" | grep -q 'OK'; then
     TESTS=$(echo "$PHPUNIT_OUTPUT" | grep -Eo '[0-9]+ tests?' | awk '{print $1}')

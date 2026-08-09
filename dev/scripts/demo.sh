@@ -21,7 +21,7 @@ echo ">"
 echo ">"
 
 type_effect "> # Optimize every SVG in a directory with one command"
-type_effect "> vendor/bin/svg-optimizer --with-all-rules --ansi process php-svg-optimizer/dev/resources/svg"
+type_effect "> vendor/bin/svg-optimizer -a process php-svg-optimizer/dev/resources/svg"
 
 vendor/bin/svg-optimizer --with-all-rules --ansi process php-svg-optimizer/dev/resources/svg
 
