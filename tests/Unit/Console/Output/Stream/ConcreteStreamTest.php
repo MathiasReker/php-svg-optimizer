@@ -30,9 +30,12 @@ final class ConcreteStreamTest extends TestCase
     #[Test]
     public function supportsColorIsFalseByDefaultOnANonTtyStream(): void
     {
-        $this->withEnv(['NO_COLOR' => false, 'FORCE_COLOR' => false, 'CLICOLOR_FORCE' => false], static function (): void {
-            self::assertFalse((new MemoryStream())->supportsColor());
-        });
+        $this->withEnv(
+            ['NO_COLOR' => false, 'FORCE_COLOR' => false, 'CLICOLOR_FORCE' => false],
+            static function (): void {
+                self::assertFalse((new MemoryStream())->supportsColor());
+            }
+        );
     }
 
     /**
@@ -41,9 +44,12 @@ final class ConcreteStreamTest extends TestCase
     #[Test]
     public function supportsColorIsFalseWhenNoColorIsSet(): void
     {
-        $this->withEnv(['NO_COLOR' => '1', 'FORCE_COLOR' => '1'], static function (): void {
-            self::assertFalse((new MemoryStream())->supportsColor());
-        });
+        $this->withEnv(
+            ['NO_COLOR' => '1', 'FORCE_COLOR' => '1'],
+            static function (): void {
+                self::assertFalse((new MemoryStream())->supportsColor());
+            }
+        );
     }
 
     /**
@@ -52,9 +58,12 @@ final class ConcreteStreamTest extends TestCase
     #[Test]
     public function supportsColorIsTrueWhenForceColorIsSetToANonZeroValue(): void
     {
-        $this->withEnv(['NO_COLOR' => false, 'FORCE_COLOR' => '1'], static function (): void {
-            self::assertTrue((new MemoryStream())->supportsColor());
-        });
+        $this->withEnv(
+            ['NO_COLOR' => false, 'FORCE_COLOR' => '1'],
+            static function (): void {
+                self::assertTrue((new MemoryStream())->supportsColor());
+            }
+        );
     }
 
     /**
@@ -63,9 +72,12 @@ final class ConcreteStreamTest extends TestCase
     #[Test]
     public function supportsColorIsFalseWhenForceColorIsSetToZero(): void
     {
-        $this->withEnv(['NO_COLOR' => false, 'FORCE_COLOR' => '0'], static function (): void {
-            self::assertFalse((new MemoryStream())->supportsColor());
-        });
+        $this->withEnv(
+            ['NO_COLOR' => false, 'FORCE_COLOR' => '0'],
+            static function (): void {
+                self::assertFalse((new MemoryStream())->supportsColor());
+            }
+        );
     }
 
     /**
@@ -74,9 +86,12 @@ final class ConcreteStreamTest extends TestCase
     #[Test]
     public function supportsColorIsTrueWhenCliColorForceIsSetToANonZeroValue(): void
     {
-        $this->withEnv(['NO_COLOR' => false, 'FORCE_COLOR' => false, 'CLICOLOR_FORCE' => '1'], static function (): void {
-            self::assertTrue((new MemoryStream())->supportsColor());
-        });
+        $this->withEnv(
+            ['NO_COLOR' => false, 'FORCE_COLOR' => false, 'CLICOLOR_FORCE' => '1'],
+            static function (): void {
+                self::assertTrue((new MemoryStream())->supportsColor());
+            }
+        );
     }
 
     /**
@@ -85,9 +100,12 @@ final class ConcreteStreamTest extends TestCase
     #[Test]
     public function supportsColorIsFalseWhenCliColorForceIsSetToZero(): void
     {
-        $this->withEnv(['NO_COLOR' => false, 'FORCE_COLOR' => false, 'CLICOLOR_FORCE' => '0'], static function (): void {
-            self::assertFalse((new MemoryStream())->supportsColor());
-        });
+        $this->withEnv(
+            ['NO_COLOR' => false, 'FORCE_COLOR' => false, 'CLICOLOR_FORCE' => '0'],
+            static function (): void {
+                self::assertFalse((new MemoryStream())->supportsColor());
+            }
+        );
     }
 
     /**

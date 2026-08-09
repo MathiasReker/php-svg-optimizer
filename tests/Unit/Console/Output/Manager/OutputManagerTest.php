@@ -282,6 +282,7 @@ final class OutputManagerTest extends TestCase
         $outputManager = new OutputManager($memoryStream, true);
 
         $outputManager->printHelp();
+
         $output = $memoryStream->getContent();
 
         self::assertStringContainsString("\033[1mUsage:\033[0m", $output);
@@ -300,6 +301,7 @@ final class OutputManagerTest extends TestCase
         $outputManager = new OutputManager($memoryStream, true);
 
         $outputManager->printHelp();
+
         $output = $memoryStream->getContent();
 
         $expectedShorthand = "\033[36m" . \sprintf('%-3s', Option::Help->getShorthand()) . "\033[0m";
@@ -319,6 +321,7 @@ final class OutputManagerTest extends TestCase
         $outputManager = new OutputManager($memoryStream, true);
 
         $outputManager->printHelp();
+
         $output = $memoryStream->getContent();
 
         $expectedTitle = "\033[36m" . \sprintf('%-25s', Command::Process->getTitle()) . "\033[0m";
