@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output\Stream;
 
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -20,8 +21,98 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(AbstractStream::class)]
+#[CoversClass(MemoryStream::class)]
 final class ConcreteStreamTest extends TestCase
 {
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function supportsColorIsFalseByDefaultOnANonTtyStream(): void
+    {
+        $this->withEnv(['NO_COLOR' => false, 'FORCE_COLOR' => false, 'CLICOLOR_FORCE' => false], static function (): void {
+            self::assertFalse((new MemoryStream())->supportsColor());
+        });
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function supportsColorIsFalseWhenNoColorIsSet(): void
+    {
+        $this->withEnv(['NO_COLOR' => '1', 'FORCE_COLOR' => '1'], static function (): void {
+            self::assertFalse((new MemoryStream())->supportsColor());
+        });
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function supportsColorIsTrueWhenForceColorIsSetToANonZeroValue(): void
+    {
+        $this->withEnv(['NO_COLOR' => false, 'FORCE_COLOR' => '1'], static function (): void {
+            self::assertTrue((new MemoryStream())->supportsColor());
+        });
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function supportsColorIsFalseWhenForceColorIsSetToZero(): void
+    {
+        $this->withEnv(['NO_COLOR' => false, 'FORCE_COLOR' => '0'], static function (): void {
+            self::assertFalse((new MemoryStream())->supportsColor());
+        });
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function supportsColorIsTrueWhenCliColorForceIsSetToANonZeroValue(): void
+    {
+        $this->withEnv(['NO_COLOR' => false, 'FORCE_COLOR' => false, 'CLICOLOR_FORCE' => '1'], static function (): void {
+            self::assertTrue((new MemoryStream())->supportsColor());
+        });
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function supportsColorIsFalseWhenCliColorForceIsSetToZero(): void
+    {
+        $this->withEnv(['NO_COLOR' => false, 'FORCE_COLOR' => false, 'CLICOLOR_FORCE' => '0'], static function (): void {
+            self::assertFalse((new MemoryStream())->supportsColor());
+        });
+    }
+
+    /**
+     * @param array<string, false|string> $env
+     *
+     * @param-immediately-invoked-callable $callback
+     */
+    private function withEnv(array $env, callable $callback): void
+    {
+        $original = [];
+
+        foreach ($env as $name => $value) {
+            $original[$name] = getenv($name);
+            false === $value ? putenv($name) : putenv($name . '=' . $value);
+        }
+
+        try {
+            $callback();
+        } finally {
+            foreach ($original as $name => $value) {
+                false === $value ? putenv($name) : putenv($name . '=' . $value);
+            }
+        }
+    }
+
     /**
      * @throws \RuntimeException
      */

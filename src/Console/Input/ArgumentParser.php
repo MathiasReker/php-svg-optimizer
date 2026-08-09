@@ -28,6 +28,8 @@ final readonly class ArgumentParser
 
     private const int OPTION_LIMIT = 2;
 
+    private const string END_OF_OPTIONS_MARKER = '--';
+
     private ArgumentData $argumentData;
 
     /**
@@ -48,7 +50,7 @@ final readonly class ArgumentParser
             $arguments = array_map(
                 fn (string $arg): CliOption => $this->argumentData->getOptionByName($this->getOptionKey($arg)),
                 array_filter(
-                    \array_slice($this->args, 1),
+                    \array_slice($this->argsBeforeEndOfOptionsMarker(), 1),
                     $this->isOption(...)
                 )
             );
@@ -57,6 +59,23 @@ final readonly class ArgumentParser
         } catch (\InvalidArgumentException) {
             return false;
         }
+    }
+
+    /**
+     * @return array<int, string> The arguments up to (excluding) the first literal "--", or all
+     *                            arguments if there is none. A "--" marks the end of option parsing,
+     *                            so that a path/filename starting with "-" isn't mistaken for an
+     *                            unknown option.
+     */
+    private function argsBeforeEndOfOptionsMarker(): array
+    {
+        foreach ($this->args as $index => $arg) {
+            if (self::END_OF_OPTIONS_MARKER === $arg) {
+                return \array_slice($this->args, 0, $index);
+            }
+        }
+
+        return $this->args;
     }
 
     /**
@@ -78,7 +97,7 @@ final readonly class ArgumentParser
      */
     public function getOption(Option $option): string
     {
-        foreach ($this->args as $arg) {
+        foreach ($this->argsBeforeEndOfOptionsMarker() as $arg) {
             if ($this->isOption($arg)
                 && $this->argumentData->getOptionByName($this->getOptionKey($arg)) === $this->argumentData->getOption($option->value)
             ) {
@@ -126,7 +145,7 @@ final readonly class ArgumentParser
             $validOptionKeys[] = $option->getShorthand();
         }
 
-        foreach ($this->args as $arg) {
+        foreach ($this->argsBeforeEndOfOptionsMarker() as $arg) {
             if ($this->isOption($arg)) {
                 $optionName = $this->getOptionKey($arg);
 
@@ -153,6 +172,10 @@ final readonly class ArgumentParser
     public function getPaths(): array
     {
         $paths = \array_slice($this->args, $this->getArgumentStartIndex());
+
+        if ([] !== $paths && self::END_OF_OPTIONS_MARKER === $paths[0]) {
+            $paths = \array_slice($paths, 1);
+        }
 
         if ([] === $paths) {
             throw new \InvalidArgumentException('No positional arguments found. Please provide at least one SVG file or directory.');

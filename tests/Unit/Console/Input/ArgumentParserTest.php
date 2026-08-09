@@ -461,6 +461,90 @@ final class ArgumentParserTest extends TestCase
      * @throws \InvalidArgumentException
      */
     #[Test]
+    public function getPathsAllowsAFileNameStartingWithADashAfterTheEndOfOptionsMarker(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/dash_file_' . uniqid();
+        mkdir($tempDir);
+        $dashFile = $tempDir . '/-weird-name.svg';
+        file_put_contents($dashFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $args = [
+            'vendor/bin/svg-optimizer',
+            'process',
+            '--',
+            $dashFile,
+        ];
+
+        $argumentParser = new ArgumentParser($args);
+
+        try {
+            $svgFiles = $argumentParser->getPaths();
+
+            self::assertSame([(string) realpath($dashFile)], $svgFiles);
+        } finally {
+            unlink($dashFile);
+            rmdir($tempDir);
+        }
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function validateOptionsIgnoresArgumentsAfterTheEndOfOptionsMarker(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            'process',
+            '--',
+            '-not-an-option.svg',
+        ];
+
+        $argumentParser = new ArgumentParser($args);
+
+        $this->expectNotToPerformAssertions();
+        $argumentParser->validateOptions();
+    }
+
+    #[Test]
+    public function hasOptionIgnoresArgumentsAfterTheEndOfOptionsMarker(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            'process',
+            '--',
+            '--dry-run',
+        ];
+
+        $argumentParser = new ArgumentParser($args);
+
+        self::assertFalse($argumentParser->hasOption(Option::DryRun));
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getPathsThrowsIfOnlyTheEndOfOptionsMarkerFollowsTheCommand(): void
+    {
+        $args = [
+            'vendor/bin/svg-optimizer',
+            'process',
+            '--',
+        ];
+
+        $argumentParser = new ArgumentParser($args);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('No positional arguments found. Please provide at least one SVG file or directory.');
+
+        $argumentParser->getPaths();
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
     public function getPathsThrowsIfPathIsNotValidDirectoryOrFile(): void
     {
         $args = [

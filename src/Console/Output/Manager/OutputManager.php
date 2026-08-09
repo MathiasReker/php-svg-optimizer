@@ -20,11 +20,21 @@ use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
  */
 final readonly class OutputManager
 {
+    /**
+     * Standard 8-color ANSI SGR codes only (no 256-color/truecolor), for maximum
+     * terminal compatibility. The palette mirrors Git's own conventions: green for
+     * success, red for errors, yellow for version/ref-like identifiers, cyan for
+     * flags/commands, and bold for section headers.
+     */
     private const string COLOR_GREEN = "\033[32m";
+
+    private const string COLOR_RED = "\033[31m";
 
     private const string COLOR_YELLOW = "\033[33m";
 
-    private const string COLOR_RED = "\033[31m";
+    private const string COLOR_CYAN = "\033[36m";
+
+    private const string BOLD = "\033[1m";
 
     private const string COLOR_RESET = "\033[0m";
 
@@ -51,24 +61,27 @@ final readonly class OutputManager
 
         $this->stream->writeln('PHP SVG Optimizer');
         $this->stream->writeln('');
-        $this->stream->writeln('Usage:');
+        $this->stream->writeln($this->colorize('Usage:', self::BOLD));
         $this->stream->writeln('  ' . $argumentData->getFormat());
         $this->stream->writeln('');
 
-        $this->stream->writeln('Options:');
+        $this->stream->writeln($this->colorize('Options:', self::BOLD));
         foreach ($argumentData->getOptions() as $cliOption) {
-            $this->stream->writeln(\sprintf('  %-3s  %-20s %s', $cliOption->getShorthand(), $cliOption->getFull(), $cliOption->getDescription()));
+            $shorthand = $this->colorize(\sprintf('%-3s', $cliOption->getShorthand()), self::COLOR_CYAN);
+            $full = $this->colorize(\sprintf('%-20s', $cliOption->getFull()), self::COLOR_CYAN);
+            $this->stream->writeln(\sprintf('  %s  %s %s', $shorthand, $full, $cliOption->getDescription()));
         }
 
         $this->stream->writeln('');
-        $this->stream->writeln('Commands:');
+        $this->stream->writeln($this->colorize('Commands:', self::BOLD));
         $this->stream->writeln('');
         foreach ($argumentData->getCommands() as $commandHelp) {
-            $this->stream->writeln(\sprintf('  %-25s %s', $commandHelp->getTitle(), $commandHelp->getDescription()));
+            $title = $this->colorize(\sprintf('%-25s', $commandHelp->getTitle()), self::COLOR_CYAN);
+            $this->stream->writeln(\sprintf('  %s %s', $title, $commandHelp->getDescription()));
         }
 
         $this->stream->writeln('');
-        $this->stream->writeln('Examples:');
+        $this->stream->writeln($this->colorize('Examples:', self::BOLD));
         $this->stream->writeln('');
         foreach ($argumentData->getExamples() as $exampleCommandValueObject) {
             $this->stream->writeln('  ' . $exampleCommandValueObject->getCommand());
@@ -82,7 +95,8 @@ final readonly class OutputManager
      */
     public function printVersion(string $name, string $version, string $author): void
     {
-        $this->stream->writeln(\sprintf('%s v%s by %s and contributors', $name, $version, $author));
+        $versionText = $this->colorize('v' . $version, self::COLOR_YELLOW);
+        $this->stream->writeln(\sprintf('%s %s by %s and contributors', $name, $versionText, $author));
         $this->stream->writeln('PHP runtime: ' . \PHP_VERSION);
     }
 
@@ -111,7 +125,7 @@ final readonly class OutputManager
         float $optimizationTime,
     ): void {
         $this->stream->writeln('');
-        $this->stream->writeln('Summary:');
+        $this->stream->writeln($this->colorize('Summary:', self::BOLD));
         $this->stream->writeln(\sprintf('  Files optimized:      %d', $fileCount));
         $this->stream->writeln(\sprintf('  Original total size:  %s', ByteFormatter::formatBytes($originalSize)));
         $this->stream->writeln(\sprintf('  Optimized total size: %s', ByteFormatter::formatBytes($optimizedSize)));
@@ -126,13 +140,11 @@ final readonly class OutputManager
     {
         $formatted = \sprintf('%.2f%%', $percentage);
 
-        $color = match (true) {
-            $percentage >= 80.0 => self::COLOR_GREEN,
-            $percentage >= 50.0 => self::COLOR_YELLOW,
-            default => self::COLOR_RED,
-        };
+        if ($percentage <= 0.0) {
+            return $formatted;
+        }
 
-        return $this->colorize($formatted, $color);
+        return $this->colorize($formatted, self::COLOR_GREEN);
     }
 
     /**

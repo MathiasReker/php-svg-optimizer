@@ -77,20 +77,6 @@ Commands:
 Process                   Provide a list of directories or files to process.
 ```
 
-#### Colored output
-
-Optimization results and error messages are colored (green/yellow/red, based on the percentage saved) when running in
-an interactive terminal. This is automatic and needs no flags. To control it explicitly, for example in CI logs or when
-piping output to a file:
-
-```bash
-vendor/bin/svg-optimizer --ansi process /path/to/file.svg     # force color, even without a terminal
-vendor/bin/svg-optimizer --no-ansi process /path/to/file.svg  # disable color, even in a terminal
-```
-
-Color is also disabled automatically when the [`NO_COLOR`](https://no-color.org) environment variable is set. If both
-`--ansi` and `--no-ansi` are given, `--no-ansi` takes precedence.
-
 #### Examples:
 
 ```bash

@@ -75,6 +75,34 @@ final class OutputManagerTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
+    public function printVersionWithColorEnabledColorsVersionYellow(): void
+    {
+        $memoryStream = new MemoryStream();
+        $outputManager = new OutputManager($memoryStream, true);
+
+        $outputManager->printVersion('PHP SVG Optimizer', '1.2.3', 'Mathias Reker');
+
+        $expected = "PHP SVG Optimizer \033[33mv1.2.3\033[0m by Mathias Reker and contributors" . \PHP_EOL .
+            'PHP runtime: ' . \PHP_VERSION . \PHP_EOL;
+
+        self::assertSame($expected, $memoryStream->getContent());
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printVersionWithColorDisabledNeverAddsAnsiCodes(): void
+    {
+        $this->outputManager->printVersion('PHP SVG Optimizer', '1.2.3', 'Mathias Reker');
+
+        self::assertStringNotContainsString("\033[", $this->memoryStream->getContent());
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
     public function printOptimizationResult(): void
     {
         $this->outputManager->printOptimizationResult('file.svg', 42.567_89);
@@ -117,15 +145,15 @@ final class OutputManagerTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
-    public function printOptimizationResultWithColorEnabledColorsMidPercentageYellow(): void
+    public function printOptimizationResultWithColorEnabledColorsAnyPositivePercentageGreen(): void
     {
         $memoryStream = new MemoryStream();
         $outputManager = new OutputManager($memoryStream, true);
 
-        $outputManager->printOptimizationResult('file.svg', 50.0);
+        $outputManager->printOptimizationResult('file.svg', 0.01);
 
         self::assertSame(
-            "file.svg (\033[33m50.00%\033[0m)" . \PHP_EOL,
+            "file.svg (\033[32m0.01%\033[0m)" . \PHP_EOL,
             $memoryStream->getContent()
         );
     }
@@ -134,15 +162,32 @@ final class OutputManagerTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
-    public function printOptimizationResultWithColorEnabledColorsLowPercentageRed(): void
+    public function printOptimizationResultWithColorEnabledLeavesZeroPercentageUncolored(): void
     {
         $memoryStream = new MemoryStream();
         $outputManager = new OutputManager($memoryStream, true);
 
-        $outputManager->printOptimizationResult('file.svg', 49.99);
+        $outputManager->printOptimizationResult('file.svg', 0.0);
 
         self::assertSame(
-            "file.svg (\033[31m49.99%\033[0m)" . \PHP_EOL,
+            'file.svg (0.00%)' . \PHP_EOL,
+            $memoryStream->getContent()
+        );
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printOptimizationResultWithColorEnabledLeavesNegativePercentageUncolored(): void
+    {
+        $memoryStream = new MemoryStream();
+        $outputManager = new OutputManager($memoryStream, true);
+
+        $outputManager->printOptimizationResult('file.svg', -5.0);
+
+        self::assertSame(
+            'file.svg (-5.00%)' . \PHP_EOL,
             $memoryStream->getContent()
         );
     }
@@ -194,9 +239,102 @@ final class OutputManagerTest extends TestCase
         );
 
         self::assertStringContainsString(
-            "\033[33m50.00%\033[0m",
+            "\033[32m50.00%\033[0m",
             $memoryStream->getContent()
         );
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printTotalSummaryWithColorEnabledBoldsSummaryHeader(): void
+    {
+        $memoryStream = new MemoryStream();
+        $outputManager = new OutputManager($memoryStream, true);
+
+        $outputManager->printTotalSummary(3, 10_240, 5_120, 5_120, 50.0, 0.001);
+
+        self::assertStringContainsString(
+            "\033[1mSummary:\033[0m",
+            $memoryStream->getContent()
+        );
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printTotalSummaryWithColorDisabledNeverAddsAnsiCodes(): void
+    {
+        $this->outputManager->printTotalSummary(3, 10_240, 5_120, 5_120, 50.0, 0.001);
+
+        self::assertStringNotContainsString("\033[", $this->memoryStream->getContent());
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printHelpWithColorEnabledBoldsSectionHeaders(): void
+    {
+        $memoryStream = new MemoryStream();
+        $outputManager = new OutputManager($memoryStream, true);
+
+        $outputManager->printHelp();
+        $output = $memoryStream->getContent();
+
+        self::assertStringContainsString("\033[1mUsage:\033[0m", $output);
+        self::assertStringContainsString("\033[1mOptions:\033[0m", $output);
+        self::assertStringContainsString("\033[1mCommands:\033[0m", $output);
+        self::assertStringContainsString("\033[1mExamples:\033[0m", $output);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printHelpWithColorEnabledColorsOptionFlagsCyan(): void
+    {
+        $memoryStream = new MemoryStream();
+        $outputManager = new OutputManager($memoryStream, true);
+
+        $outputManager->printHelp();
+        $output = $memoryStream->getContent();
+
+        $expectedShorthand = "\033[36m" . \sprintf('%-3s', Option::Help->getShorthand()) . "\033[0m";
+        $expectedFull = "\033[36m" . \sprintf('%-20s', Option::Help->getFull()) . "\033[0m";
+
+        self::assertStringContainsString($expectedShorthand, $output);
+        self::assertStringContainsString($expectedFull, $output);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printHelpWithColorEnabledColorsCommandTitleCyan(): void
+    {
+        $memoryStream = new MemoryStream();
+        $outputManager = new OutputManager($memoryStream, true);
+
+        $outputManager->printHelp();
+        $output = $memoryStream->getContent();
+
+        $expectedTitle = "\033[36m" . \sprintf('%-25s', Command::Process->getTitle()) . "\033[0m";
+
+        self::assertStringContainsString($expectedTitle, $output);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printHelpWithColorDisabledNeverAddsAnsiCodes(): void
+    {
+        $this->outputManager->printHelp();
+
+        self::assertStringNotContainsString("\033[", $this->memoryStream->getContent());
     }
 
     /**
