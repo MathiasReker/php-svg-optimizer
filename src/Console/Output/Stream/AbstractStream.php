@@ -36,4 +36,16 @@ abstract class AbstractStream implements StreamInterface
     {
         fwrite($this->stream, $message);
     }
+
+    /**
+     * @return bool True if the stream supports ANSI color output, false otherwise
+     */
+    final public function supportsColor(): bool
+    {
+        if (false !== getenv('NO_COLOR')) {
+            return false;
+        }
+
+        return stream_isatty($this->stream);
+    }
 }

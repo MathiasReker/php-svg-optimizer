@@ -14,8 +14,8 @@
 [![Assertions](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/assertions.svg)](#)
 [![Filesize](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/filesize.svg)](#)
 [![Contributors](https://img.shields.io/github/contributors/MathiasReker/php-svg-optimizer.svg)](https://github.com/MathiasReker/php-svg-optimizer/graphs/contributors)
-[![Forks](https://img.shields.io/github/forks/MathiasReker/php-svg-optimizer.svg)](https://github.com/MathiasReker/php-svg-optimizer/network/members)
-[![Stargazers](https://img.shields.io/github/stars/MathiasReker/php-svg-optimizer.svg)](https://github.com/MathiasReker/php-svg-optimizer/stargazers)
+[![Forks](https://img.shields.io/github/forks/MathiasReker/php-svg-optimizer.svg?style=flat)](https://github.com/MathiasReker/php-svg-optimizer/network/members)
+[![Stargazers](https://img.shields.io/github/stars/MathiasReker/php-svg-optimizer.svg?style=flat)](https://github.com/MathiasReker/php-svg-optimizer/stargazers)
 [![Issues](https://img.shields.io/github/issues/MathiasReker/php-svg-optimizer.svg)](https://github.com/MathiasReker/php-svg-optimizer/issues)
 [![MIT License](https://img.shields.io/github/license/MathiasReker/php-svg-optimizer.svg)](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/LICENSE)
 [![PHP](https://img.shields.io/badge/PHP-777BB4?style=flat&logo=php&logoColor=white)](#)
@@ -28,7 +28,7 @@ The resulting SVGs remain visually identical to the original but are smaller, cl
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^8.6    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^8.7    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
@@ -70,10 +70,26 @@ Options:
 -a , --with-all-rules     Enable all non-risky rules. Use --allow-risky to include risky rules as well.
 -q , --quiet              Suppress all output except errors.
 -v , --version            Display the version of the library.
+    --ansi                Force ANSI color output, even when output is not an interactive terminal.
+    --no-ansi             Disable ANSI color output.
 
 Commands:
 Process                   Provide a list of directories or files to process.
 ```
+
+#### Colored output
+
+Optimization results and error messages are colored (green/yellow/red, based on the percentage saved) when running in
+an interactive terminal. This is automatic and needs no flags. To control it explicitly, for example in CI logs or when
+piping output to a file:
+
+```bash
+vendor/bin/svg-optimizer --ansi process /path/to/file.svg     # force color, even without a terminal
+vendor/bin/svg-optimizer --no-ansi process /path/to/file.svg  # disable color, even in a terminal
+```
+
+Color is also disabled automatically when the [`NO_COLOR`](https://no-color.org) environment variable is set. If both
+`--ansi` and `--no-ansi` are given, `--no-ansi` takes precedence.
 
 #### Examples:
 

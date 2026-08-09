@@ -56,6 +56,15 @@ final class CliOptionTest extends TestCase
         self::assertFalse($this->cliOption->hasName('--unknown'));
     }
 
+    #[Test]
+    public function hasNameWithEmptyShorthandNeverMatchesEmptyString(): void
+    {
+        $cliOption = new CliOption('', '--ansi', 'Force ANSI color output.');
+
+        self::assertFalse($cliOption->hasName(''));
+        self::assertTrue($cliOption->hasName('--ansi'));
+    }
+
     #[\Override]
     protected function setUp(): void
     {

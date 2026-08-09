@@ -47,6 +47,10 @@ final readonly class CliOption
      */
     public function hasName(string $name): bool
     {
-        return \in_array($name, [$this->shorthand, $this->full], true);
+        if ('' !== $this->shorthand && $name === $this->shorthand) {
+            return true;
+        }
+
+        return $name === $this->full;
     }
 }

@@ -30,6 +30,10 @@ enum Option: string
 
     case Version = 'version';
 
+    case Ansi = 'ansi';
+
+    case NoAnsi = 'no-ansi';
+
     public function getShorthand(): string
     {
         return match ($this->value) {
@@ -40,6 +44,7 @@ enum Option: string
             self::WithAllRules->value => '-a',
             self::Quiet->value => '-q',
             self::Version->value => '-v',
+            self::Ansi->value, self::NoAnsi->value => '',
         };
     }
 
@@ -53,6 +58,8 @@ enum Option: string
             self::WithAllRules->value => '--with-all-rules',
             self::Quiet->value => '--quiet',
             self::Version->value => '--version',
+            self::Ansi->value => '--ansi',
+            self::NoAnsi->value => '--no-ansi',
         };
     }
 
@@ -66,6 +73,8 @@ enum Option: string
             self::WithAllRules->value => 'Enable all non-risky rules. Use --allow-risky to include risky rules as well.',
             self::Quiet->value => 'Suppress all output except errors.',
             self::Version->value => 'Display the version of the library.',
+            self::Ansi->value => 'Force ANSI color output, even when output is not an interactive terminal.',
+            self::NoAnsi->value => 'Disable ANSI color output.',
         };
     }
 }

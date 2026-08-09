@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" width="200" height="50">
-  <!-- Hand-written style text using paths -->
-  <path d="M10 30 C15 10, 35 10, 40 30 S65 50, 70 30" stroke="black" fill="transparent" stroke-width="2"/>
-  <path d="M80 30 C85 10, 105 10, 110 30 S135 50, 140 30" stroke="black" fill="transparent" stroke-width="2"/>
-  <path d="M150 30 Q155 10, 160 30 T170 30" stroke="black" fill="transparent" stroke-width="2"/>
-</svg>

@@ -84,4 +84,20 @@ final readonly class OptionIntent
     {
         return $this->argumentParser->hasOption(Option::WithAllRules);
     }
+
+    /**
+     * @return bool true if the ansi option is present, false otherwise
+     */
+    public function forceColor(): bool
+    {
+        return $this->argumentParser->hasOption(Option::Ansi);
+    }
+
+    /**
+     * @return bool true if the no-ansi option is present, false otherwise
+     */
+    public function forceNoColor(): bool
+    {
+        return $this->argumentParser->hasOption(Option::NoAnsi);
+    }
 }

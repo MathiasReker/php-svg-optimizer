@@ -136,7 +136,10 @@ final class ArgumentDataTest extends TestCase
         $options = [];
         foreach (Option::cases() as $option) {
             $options[] = [$option->getFull(), $option->getFull()];
-            $options[] = [$option->getShorthand(), $option->getFull()];
+
+            if ('' !== $option->getShorthand()) {
+                $options[] = [$option->getShorthand(), $option->getFull()];
+            }
         }
 
         return $options;

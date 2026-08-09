@@ -11,8 +11,14 @@
   height="220px"
   viewBox="0 0 400 220"
   style="enable-background:new 0 0 400 220;"
+  enable-background="new 0 0 400 220"
   xml:space="preserve"
+  data-name="Layer_1"
 >
+  <metadata>Created with Adobe Illustrator</metadata>
+
+  <g></g>
+
   <style type="text/css">
     .st0{fill:#F3F4F6;}
     .st1{fill:#FFFFFF;stroke:#D1D5DB;stroke-miterlimit:10;}
@@ -31,6 +37,9 @@
     <g id="Text">
       <text transform="matrix(1 0 0 1 40 60)" class="st3 st4 st5">
         Illustrator Sample
+      </text>
+      <text transform="matrix(1 0 0 1 40 86)" class="st3 st4 st6">
+        Typical AI SVG export
       </text>
       <text transform="matrix(1 0 0 1 40 86)" class="st3 st4 st6">
         Typical AI SVG export

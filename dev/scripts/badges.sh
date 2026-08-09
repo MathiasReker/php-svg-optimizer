@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
+#
+# Builds the badge SVGs in dev/artifacts. Mutation testing (infection) is by far the
+# slowest part of this script - a full run over src/ takes several minutes. Skip it
+# with --skip-mutation or SKIP_MUTATION=1 when you just need the other badges quickly;
+# the existing mutation-score.svg/mutation-coverage.svg are left untouched in that case.
+
 set -euo pipefail
+
+SKIP_MUTATION="${SKIP_MUTATION:-0}"
+
+for ARG in "$@"; do
+    [[ "$ARG" == "--skip-mutation" ]] && SKIP_MUTATION=1
+done
 
 mkdir -p dev/artifacts
 
@@ -49,37 +61,40 @@ TYPE_COLOR="red"
 curl -s -o dev/artifacts/type-coverage.svg \
   "https://img.shields.io/badge/type_coverage-${TYPE_PERCENT_INT}%25-${TYPE_COLOR}?style=flat"
 
-# --- MUTATION SCORE BADGE ---
-MUTATION_SUMMARY_JSON=$(mktemp)
-./vendor/bin/infection --threads=max --no-interaction --no-progress --logger-summary-json="$MUTATION_SUMMARY_JSON" > /dev/null 2>&1 || true
+# --- MUTATION SCORE & MUTATION COVERAGE BADGES ---
+if [[ "$SKIP_MUTATION" == "1" ]]; then
+    echo "Skipping mutation testing (--skip-mutation/SKIP_MUTATION=1); leaving existing mutation-score.svg and mutation-coverage.svg untouched."
+else
+    MUTATION_SUMMARY_JSON=$(mktemp)
+    ./vendor/bin/infection --threads=max --no-interaction --no-progress --logger-summary-json="$MUTATION_SUMMARY_JSON" > /dev/null 2>&1 || true
 
-MUTATION_PERCENT_INT=0
-if [[ -s $MUTATION_SUMMARY_JSON ]]; then
-    MUTATION_MSI=$(grep -oE '"msi":[0-9.]+' "$MUTATION_SUMMARY_JSON" | grep -oE '[0-9.]+')
-    [[ -n $MUTATION_MSI ]] && MUTATION_PERCENT_INT=$(awk -v m="$MUTATION_MSI" 'BEGIN { printf "%.0f", m }')
+    MUTATION_PERCENT_INT=0
+    if [[ -s $MUTATION_SUMMARY_JSON ]]; then
+        MUTATION_MSI=$(grep -oE '"msi":[0-9.]+' "$MUTATION_SUMMARY_JSON" | grep -oE '[0-9.]+')
+        [[ -n $MUTATION_MSI ]] && MUTATION_PERCENT_INT=$(awk -v m="$MUTATION_MSI" 'BEGIN { printf "%.0f", m }')
+    fi
+
+    MUTATION_COLOR="red"
+    (( MUTATION_PERCENT_INT >= 80 )) && MUTATION_COLOR="green"
+    (( MUTATION_PERCENT_INT >= 50 && MUTATION_PERCENT_INT < 80 )) && MUTATION_COLOR="yellow"
+
+    curl -s -o dev/artifacts/mutation-score.svg \
+      "https://img.shields.io/badge/mutation_score-${MUTATION_PERCENT_INT}%25-${MUTATION_COLOR}?style=flat"
+
+    MUTATION_COVERAGE_PERCENT_INT=0
+    if [[ -s $MUTATION_SUMMARY_JSON ]]; then
+        MUTATION_COVERAGE=$(grep -oE '"mutationCodeCoverage":[0-9.]+' "$MUTATION_SUMMARY_JSON" | grep -oE '[0-9.]+')
+        [[ -n $MUTATION_COVERAGE ]] && MUTATION_COVERAGE_PERCENT_INT=$(awk -v m="$MUTATION_COVERAGE" 'BEGIN { printf "%.0f", m }')
+    fi
+    rm -f "$MUTATION_SUMMARY_JSON"
+
+    MUTATION_COVERAGE_COLOR="red"
+    (( MUTATION_COVERAGE_PERCENT_INT >= 80 )) && MUTATION_COVERAGE_COLOR="green"
+    (( MUTATION_COVERAGE_PERCENT_INT >= 50 && MUTATION_COVERAGE_PERCENT_INT < 80 )) && MUTATION_COVERAGE_COLOR="yellow"
+
+    curl -s -o dev/artifacts/mutation-coverage.svg \
+      "https://img.shields.io/badge/mutation_coverage-${MUTATION_COVERAGE_PERCENT_INT}%25-${MUTATION_COVERAGE_COLOR}?style=flat"
 fi
-
-MUTATION_COLOR="red"
-(( MUTATION_PERCENT_INT >= 80 )) && MUTATION_COLOR="green"
-(( MUTATION_PERCENT_INT >= 50 && MUTATION_PERCENT_INT < 80 )) && MUTATION_COLOR="yellow"
-
-curl -s -o dev/artifacts/mutation-score.svg \
-  "https://img.shields.io/badge/mutation_score-${MUTATION_PERCENT_INT}%25-${MUTATION_COLOR}?style=flat"
-
-# --- MUTATION COVERAGE BADGE ---
-MUTATION_COVERAGE_PERCENT_INT=0
-if [[ -s $MUTATION_SUMMARY_JSON ]]; then
-    MUTATION_COVERAGE=$(grep -oE '"mutationCodeCoverage":[0-9.]+' "$MUTATION_SUMMARY_JSON" | grep -oE '[0-9.]+')
-    [[ -n $MUTATION_COVERAGE ]] && MUTATION_COVERAGE_PERCENT_INT=$(awk -v m="$MUTATION_COVERAGE" 'BEGIN { printf "%.0f", m }')
-fi
-rm -f "$MUTATION_SUMMARY_JSON"
-
-MUTATION_COVERAGE_COLOR="red"
-(( MUTATION_COVERAGE_PERCENT_INT >= 80 )) && MUTATION_COVERAGE_COLOR="green"
-(( MUTATION_COVERAGE_PERCENT_INT >= 50 && MUTATION_COVERAGE_PERCENT_INT < 80 )) && MUTATION_COVERAGE_COLOR="yellow"
-
-curl -s -o dev/artifacts/mutation-coverage.svg \
-  "https://img.shields.io/badge/mutation_coverage-${MUTATION_COVERAGE_PERCENT_INT}%25-${MUTATION_COVERAGE_COLOR}?style=flat"
 
 # --- TESTS & ASSERTIONS ---
 PHPUNIT_OUTPUT=$(./vendor/bin/phpunit --colors=never 2>&1)

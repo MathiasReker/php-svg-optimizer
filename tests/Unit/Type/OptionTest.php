@@ -98,5 +98,21 @@ final class OptionTest extends TestCase
             '--version',
             'Display the version of the library.',
         ];
+
+        yield 'Ansi' => [
+            Option::Ansi,
+            'ansi',
+            '',
+            '--ansi',
+            'Force ANSI color output, even when output is not an interactive terminal.',
+        ];
+
+        yield 'NoAnsi' => [
+            Option::NoAnsi,
+            'no-ansi',
+            '',
+            '--no-ansi',
+            'Disable ANSI color output.',
+        ];
     }
 }

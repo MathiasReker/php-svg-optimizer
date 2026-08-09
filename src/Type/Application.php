@@ -18,7 +18,7 @@ enum Application: string
 {
     case Name = 'PHP SVG Optimizer';
 
-    case Version = '8.6.0';
+    case Version = '8.7.0';
 
     case Author = 'Mathias Reker';
 }

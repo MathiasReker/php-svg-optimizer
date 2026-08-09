@@ -140,6 +140,66 @@ final class CommandDispatcherTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
+    public function runWithoutAnsiOptionDoesNotColorOutput(): void
+    {
+        $svgFile = $this->tempDir . '/no-ansi.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $result = $this->runCli(['process', $svgFile]);
+
+        self::assertSame(0, $result['exitCode']);
+        self::assertStringNotContainsString("\033[", $result['stdout']);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function runWithAnsiOptionForcesColoredOutputEvenWithoutATty(): void
+    {
+        $svgFile = $this->tempDir . '/ansi.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $result = $this->runCli(['--ansi', 'process', $svgFile]);
+
+        self::assertSame(0, $result['exitCode']);
+        self::assertStringContainsString("\033[", $result['stdout']);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function runWithNoAnsiOptionNeverColorsOutput(): void
+    {
+        $svgFile = $this->tempDir . '/explicit-no-ansi.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $result = $this->runCli(['--no-ansi', 'process', $svgFile]);
+
+        self::assertSame(0, $result['exitCode']);
+        self::assertStringNotContainsString("\033[", $result['stdout']);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function runWithBothAnsiAndNoAnsiOptionsNoAnsiWins(): void
+    {
+        $svgFile = $this->tempDir . '/both-ansi-flags.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $result = $this->runCli(['--ansi', '--no-ansi', 'process', $svgFile]);
+
+        self::assertSame(0, $result['exitCode']);
+        self::assertStringNotContainsString("\033[", $result['stdout']);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
     public function runWithDryRunOptionDoesNotModifyFile(): void
     {
         $svgFile = $this->tempDir . '/dryrun.svg';

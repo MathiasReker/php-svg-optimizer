@@ -87,6 +87,122 @@ final class OutputManagerTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
+    public function printOptimizationResultWithColorDisabledNeverAddsAnsiCodes(): void
+    {
+        $this->outputManager->printOptimizationResult('file.svg', 100.0);
+        $output = $this->memoryStream->getContent();
+
+        self::assertSame('file.svg (100.00%)' . \PHP_EOL, $output);
+        self::assertStringNotContainsString("\033[", $output);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printOptimizationResultWithColorEnabledColorsHighPercentageGreen(): void
+    {
+        $memoryStream = new MemoryStream();
+        $outputManager = new OutputManager($memoryStream, true);
+
+        $outputManager->printOptimizationResult('file.svg', 80.0);
+
+        self::assertSame(
+            "file.svg (\033[32m80.00%\033[0m)" . \PHP_EOL,
+            $memoryStream->getContent()
+        );
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printOptimizationResultWithColorEnabledColorsMidPercentageYellow(): void
+    {
+        $memoryStream = new MemoryStream();
+        $outputManager = new OutputManager($memoryStream, true);
+
+        $outputManager->printOptimizationResult('file.svg', 50.0);
+
+        self::assertSame(
+            "file.svg (\033[33m50.00%\033[0m)" . \PHP_EOL,
+            $memoryStream->getContent()
+        );
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printOptimizationResultWithColorEnabledColorsLowPercentageRed(): void
+    {
+        $memoryStream = new MemoryStream();
+        $outputManager = new OutputManager($memoryStream, true);
+
+        $outputManager->printOptimizationResult('file.svg', 49.99);
+
+        self::assertSame(
+            "file.svg (\033[31m49.99%\033[0m)" . \PHP_EOL,
+            $memoryStream->getContent()
+        );
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printErrorWithColorEnabledWrapsMessageInRed(): void
+    {
+        $memoryStream = new MemoryStream();
+        $outputManager = new OutputManager($memoryStream, true);
+
+        $outputManager->printError('Something went wrong');
+
+        self::assertSame(
+            "\033[31mError: Something went wrong\033[0m" . \PHP_EOL,
+            $memoryStream->getContent()
+        );
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printErrorWithColorDisabledNeverAddsAnsiCodes(): void
+    {
+        $this->outputManager->printError('Something went wrong');
+
+        self::assertStringNotContainsString("\033[", $this->memoryStream->getContent());
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printTotalSummaryWithColorEnabledColorsSavedPercentage(): void
+    {
+        $memoryStream = new MemoryStream();
+        $outputManager = new OutputManager($memoryStream, true);
+
+        $outputManager->printTotalSummary(
+            3,
+            10_240,
+            5_120,
+            5_120,
+            50.0,
+            0.001,
+        );
+
+        self::assertStringContainsString(
+            "\033[33m50.00%\033[0m",
+            $memoryStream->getContent()
+        );
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
     public function printHelpIncludesOptions(): void
     {
         $this->outputManager->printHelp();
@@ -164,6 +280,6 @@ final class OutputManagerTest extends TestCase
     protected function setUp(): void
     {
         $this->memoryStream = new MemoryStream();
-        $this->outputManager = new OutputManager($this->memoryStream);
+        $this->outputManager = new OutputManager($this->memoryStream, false);
     }
 }

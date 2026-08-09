@@ -1,14 +1,14 @@
-<svg width="360" height="200" viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg">
+<svg width="360" height="200" viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
   <title>Sketch Sample</title>
   <desc>Sample SVG similar to Sketch export</desc>
 
   <g fill="none" fill-rule="evenodd">
     <!-- Background -->
-    <rect width="360" height="200" rx="12" fill="#F2F4F7"/>
+    <rect width="360" height="200" rx="12.00" fill="#F2F4F7"/>
 
     <!-- Card -->
     <g transform="translate(24 24)">
-      <rect width="312" height="100" rx="8" fill="#FFFFFF" stroke="#E4E7EC"/>
+      <rect width="312" height="100" rx="8" fill="#FFFFFF" stroke="#E4E7EC" sketch:layerType="MSShapeGroup" class=""/>
 
       <!-- Header -->
       <text x="16" y="28"

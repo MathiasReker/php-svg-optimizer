@@ -9,7 +9,9 @@
 >
   <title>Affinity Designer Sample</title>
 
-  <g id="Document" data-name="Document">
+  <g></g>
+
+  <g id="Document" data-name="Document" layerLocked="false">
     <!-- Background -->
     <rect
       id="Background"
@@ -18,8 +20,9 @@
       y="0"
       width="360"
       height="220"
-      rx="12"
+      rx="12.00"
       fill="#F3F4F6"
+      class=""
     />
 
     <!-- Card -->
@@ -30,7 +33,7 @@
         width="312"
         height="120"
         rx="10"
-        fill="#FFFFFF"
+        fill="rgb(255, 255, 255)"
         stroke="#D1D5DB"
         stroke-width="1"
       />
@@ -71,6 +74,18 @@
           rx="6"
           fill="#6366F1"
         />
+        <text
+          id="Button-Label"
+          data-name="Button Label"
+          x="52"
+          y="21"
+          text-anchor="middle"
+          fill="#FFFFFF"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="13"
+        >
+          Action
+        </text>
         <text
           id="Button-Label"
           data-name="Button Label"

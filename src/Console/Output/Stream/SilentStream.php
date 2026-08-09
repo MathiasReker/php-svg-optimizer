@@ -31,4 +31,9 @@ final class SilentStream implements StreamInterface
     public function write(string $message): void
     {
     }
+
+    public function supportsColor(): bool
+    {
+        return false;
+    }
 }

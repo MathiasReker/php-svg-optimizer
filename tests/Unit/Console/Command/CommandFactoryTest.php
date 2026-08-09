@@ -52,7 +52,7 @@ final class CommandFactoryTest extends TestCase
             ]
         );
 
-        $commandFactory = new CommandFactory($memoryStream, $argumentParser);
+        $commandFactory = new CommandFactory($memoryStream, $argumentParser, false);
 
         self::assertSame($memoryStream, $commandFactory->stream);
         self::assertSame($argumentParser, $commandFactory->argumentParser);

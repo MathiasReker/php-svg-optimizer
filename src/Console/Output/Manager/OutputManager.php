@@ -20,11 +20,21 @@ use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
  */
 final readonly class OutputManager
 {
+    private const string COLOR_GREEN = "\033[32m";
+
+    private const string COLOR_YELLOW = "\033[33m";
+
+    private const string COLOR_RED = "\033[31m";
+
+    private const string COLOR_RESET = "\033[0m";
+
     /**
-     * @param StreamInterface $stream The output stream to write messages to
+     * @param StreamInterface $stream       The output stream to write messages to
+     * @param bool            $colorEnabled Whether ANSI color output should be used
      */
     public function __construct(
         private StreamInterface $stream,
+        private bool $colorEnabled,
     ) {}
 
     /**
@@ -32,7 +42,7 @@ final readonly class OutputManager
      */
     public function printError(string $message): void
     {
-        $this->stream->writeln('Error: ' . $message);
+        $this->stream->writeln($this->colorize('Error: ' . $message, self::COLOR_RED));
     }
 
     public function printHelp(): void
@@ -82,7 +92,7 @@ final readonly class OutputManager
      */
     public function printOptimizationResult(string $filePath, float $reductionPercentage): void
     {
-        $this->stream->writeln(\sprintf('%s (%.2f%%)', $filePath, $reductionPercentage));
+        $this->stream->writeln(\sprintf('%s (%s)', $filePath, $this->formatPercentage($reductionPercentage)));
     }
 
     /**
@@ -105,7 +115,36 @@ final readonly class OutputManager
         $this->stream->writeln(\sprintf('  Files optimized:      %d', $fileCount));
         $this->stream->writeln(\sprintf('  Original total size:  %s', ByteFormatter::formatBytes($originalSize)));
         $this->stream->writeln(\sprintf('  Optimized total size: %s', ByteFormatter::formatBytes($optimizedSize)));
-        $this->stream->writeln(\sprintf('  Space saved:          %s (%.2f%%)', ByteFormatter::formatBytes($savedBytes), $savedPercentage));
+        $this->stream->writeln(\sprintf('  Space saved:          %s (%s)', ByteFormatter::formatBytes($savedBytes), $this->formatPercentage($savedPercentage)));
         $this->stream->writeln(\sprintf('  Optimization time:    %.4f s', $optimizationTime));
+    }
+
+    /**
+     * @param float $percentage The percentage value to format
+     */
+    private function formatPercentage(float $percentage): string
+    {
+        $formatted = \sprintf('%.2f%%', $percentage);
+
+        $color = match (true) {
+            $percentage >= 80.0 => self::COLOR_GREEN,
+            $percentage >= 50.0 => self::COLOR_YELLOW,
+            default => self::COLOR_RED,
+        };
+
+        return $this->colorize($formatted, $color);
+    }
+
+    /**
+     * @param string $text  The text to colorize
+     * @param string $color The ANSI color code to wrap the text with
+     */
+    private function colorize(string $text, string $color): string
+    {
+        if (!$this->colorEnabled) {
+            return $text;
+        }
+
+        return $color . $text . self::COLOR_RESET;
     }
 }

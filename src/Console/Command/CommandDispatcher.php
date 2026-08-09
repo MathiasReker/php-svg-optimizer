@@ -51,7 +51,12 @@ final readonly class CommandDispatcher
         $stream = $optionIntent->isQuiet()
             ? new SilentStream()
             : new StdoutStream();
-        $outputManager = new OutputManager($stream);
+        $colorEnabled = match (true) {
+            $optionIntent->forceNoColor() => false,
+            $optionIntent->forceColor() => true,
+            default => $stream->supportsColor(),
+        };
+        $outputManager = new OutputManager($stream, $colorEnabled);
 
         try {
             $argumentParser->validateOptions();
@@ -86,7 +91,7 @@ final readonly class CommandDispatcher
                 $optionIntent->allowRisky(),
                 $optionIntent->withAllRules(),
             );
-            (new CommandFactory($stream, $argumentParser))
+            (new CommandFactory($stream, $argumentParser, $colorEnabled))
                 ->create($commandOption)
                 ->run();
         } catch (\InvalidArgumentException $invalidArgumentException) {

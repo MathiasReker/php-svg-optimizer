@@ -182,6 +182,39 @@ final class OptionIntentTest extends TestCase
         self::assertFalse($optionIntent->withAllRules());
     }
 
+    #[Test]
+    public function forceColorOptionIsSet(): void
+    {
+        $args = ['vendor/bin/svg-optimizer', '--ansi'];
+        $argumentParser = new ArgumentParser($args);
+
+        $optionIntent = new OptionIntent($argumentParser);
+        self::assertTrue($optionIntent->forceColor());
+        self::assertFalse($optionIntent->forceNoColor());
+    }
+
+    #[Test]
+    public function forceNoColorOptionIsSet(): void
+    {
+        $args = ['vendor/bin/svg-optimizer', '--no-ansi'];
+        $argumentParser = new ArgumentParser($args);
+
+        $optionIntent = new OptionIntent($argumentParser);
+        self::assertFalse($optionIntent->forceColor());
+        self::assertTrue($optionIntent->forceNoColor());
+    }
+
+    #[Test]
+    public function neitherColorOptionIsSet(): void
+    {
+        $args = ['vendor/bin/svg-optimizer'];
+        $argumentParser = new ArgumentParser($args);
+
+        $optionIntent = new OptionIntent($argumentParser);
+        self::assertFalse($optionIntent->forceColor());
+        self::assertFalse($optionIntent->forceNoColor());
+    }
+
     /**
      * @throws \InvalidArgumentException
      */

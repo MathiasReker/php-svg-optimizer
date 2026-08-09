@@ -145,7 +145,7 @@ final class SvgOptimizerCommandTest extends TestCase
 
         $command = $reflectionClass->newInstanceWithoutConstructor();
 
-        $outputManager = new OutputManager(new MemoryStream());
+        $outputManager = new OutputManager(new MemoryStream(), false);
 
         $commandOption = new CommandOption(
             false,
@@ -181,7 +181,7 @@ final class SvgOptimizerCommandTest extends TestCase
             self::fail('Constructor not found in SvgOptimizerCommand');
         }
 
-        $outputManager = new OutputManager(new MemoryStream());
+        $outputManager = new OutputManager(new MemoryStream(), false);
         $command = $reflectionClass->newInstanceWithoutConstructor();
 
         $commandOption = new CommandOption(
@@ -228,7 +228,7 @@ final class SvgOptimizerCommandTest extends TestCase
                 false,
                 false,
             ),
-            new OutputManager(new MemoryStream())
+            new OutputManager(new MemoryStream(), false)
         );
         $command->run();
 
@@ -257,7 +257,7 @@ final class SvgOptimizerCommandTest extends TestCase
                 false,
                 false,
             ),
-            new OutputManager($memoryStream)
+            new OutputManager($memoryStream, false)
         );
 
         $command->run();
@@ -290,7 +290,7 @@ final class SvgOptimizerCommandTest extends TestCase
                 false,
                 false,
             ),
-            new OutputManager($memoryStream)
+            new OutputManager($memoryStream, false)
         );
 
         $command->run();
@@ -322,7 +322,7 @@ final class SvgOptimizerCommandTest extends TestCase
                 false,
                 false,
             ),
-            new OutputManager($memoryStream)
+            new OutputManager($memoryStream, false)
         );
 
         $command->run();
@@ -356,7 +356,7 @@ final class SvgOptimizerCommandTest extends TestCase
                     false,
                     false,
                 ),
-                new OutputManager($memoryStream)
+                new OutputManager($memoryStream, false)
             );
 
             set_error_handler(static fn (): bool => true, \E_WARNING);

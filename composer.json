@@ -109,6 +109,7 @@
         "analyze:type-coverage": "@php vendor/bin/phpstan analyse --level=max --error-format=table",
         "analyze:validate": "composer validate --strict",
         "build:badges": "bash dev/scripts/badges.sh",
+        "build:badges-fast": "bash dev/scripts/badges.sh --skip-mutation",
         "lint:all": [
             "@lint:normalize",
             "bash -c 'composer lint:phpcbf; composer lint:rector; composer lint:php-cs-fixer'"

@@ -5,10 +5,13 @@
   stroke-width="1.5"
   stroke="currentColor"
   aria-hidden="true"
+  heroicon="bolt"
 >
-  <path
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    d="M12 6v12m6-6H6"
-  />
+  <g>
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      d="M12 6v12m6-6H6"
+    />
+  </g>
 </svg>

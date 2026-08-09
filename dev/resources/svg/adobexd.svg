@@ -9,18 +9,21 @@
 >
   <title>Adobe XD Sample</title>
 
-  <g id="Artboard" fill="none" fill-rule="evenodd">
+  <g></g>
+
+  <g id="Artboard" fill="none" fill-rule="evenodd" stroke="none" artboardType="base">
     <!-- Background -->
-    <rect width="360" height="200" rx="12" fill="#F9FAFB"/>
+    <rect width="360" height="200" rx="12.0" fill="#F9FAFB"/>
 
     <!-- Card -->
-    <g id="Card" transform="translate(24 24)">
+    <g id="Card" transform="translate(24 24) scale(1)" class="">
       <rect
         width="312"
         height="120"
         rx="10"
-        fill="#FFFFFF"
+        fill="rgb(255, 255, 255)"
         stroke="#E5E7EB"
+        stroke-width="1"
       />
 
       <!-- Title -->
@@ -53,6 +56,16 @@
           rx="6"
           fill="#6366F1"
         />
+        <text
+          x="52"
+          y="21"
+          text-anchor="middle"
+          fill="#FFFFFF"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="13"
+        >
+          Action
+        </text>
         <text
           x="52"
           y="21"

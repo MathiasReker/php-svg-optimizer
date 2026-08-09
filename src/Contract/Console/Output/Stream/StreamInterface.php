@@ -25,4 +25,9 @@ interface StreamInterface
      * @param string $message The message to write
      */
     public function writeln(string $message): void;
+
+    /**
+     * @return bool True if the stream supports ANSI color output, false otherwise
+     */
+    public function supportsColor(): bool;
 }
