@@ -325,6 +325,38 @@ final class FlattenGroupsTest extends TestCase
                 XML,
         ];
 
+        yield 'Flattens a plain group following a skipped clip-path group' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#d)">
+                        <rect width="10" height="10"/>
+                    </g>
+                    <g>
+                        <circle r="5"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#d)"><rect width="10" height="10"/></g><circle r="5"/></svg>
+                XML,
+        ];
+
+        yield 'Flattens a plain group following a skipped mask group' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <g mask="url(#m)">
+                        <rect width="10" height="10"/>
+                    </g>
+                    <g>
+                        <circle r="5"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><g mask="url(#m)"><rect width="10" height="10"/></g><circle r="5"/></svg>
+                XML,
+        ];
+
         yield 'Group with empty attributes' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -347,5 +379,27 @@ final class FlattenGroupsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><g id="shared"><rect width="10" height="10"/></g></defs><use xlink:href="#shared"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><g id="shared"><rect width="10" height="10"/></g></defs><use xlink:href="#shared"/></svg>',
         ];
+
+        yield 'Keeps referenceable group with id outside defs instead of duplicating it onto children' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="g1" fill="blue"><rect width="10" height="10"/><circle cx="5" cy="5" r="5"/></g><use xlink:href="#g1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="g1" fill="blue"><rect width="10" height="10"/><circle cx="5" cy="5" r="5"/></g><use xlink:href="#g1"/></svg>',
+        ];
+
+        yield 'Flattens a plain group following a skipped group inside defs' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><g id="shared"><rect width="10" height="10"/></g></defs><use xlink:href="#shared"/><g><circle r="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><g id="shared"><rect width="10" height="10"/></g></defs><use xlink:href="#shared"/><circle r="5"/></svg>',
+        ];
+    }
+
+    #[Test]
+    public function isRiskyReturnsFalse(): void
+    {
+        self::assertFalse(FlattenGroups::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsTrue(): void
+    {
+        self::assertTrue(FlattenGroups::shouldCheckSize());
     }
 }

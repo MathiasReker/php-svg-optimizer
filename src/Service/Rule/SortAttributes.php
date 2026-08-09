@@ -13,7 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 
 /**
  * @no-named-arguments
@@ -45,10 +44,6 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $domXPath = new \DOMXPath($domDocument);
-        $domXPath->registerNamespace(SvgNamespace::Svg->prefix(), SvgNamespace::Svg->value);
-        $domXPath->registerNamespace(SvgNamespace::Xlink->prefix(), SvgNamespace::Xlink->value);
-
         $domNodeList = $domDocument->getElementsByTagName('*');
 
         foreach ($domNodeList as $element) {

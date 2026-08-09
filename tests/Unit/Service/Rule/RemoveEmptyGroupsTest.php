@@ -181,6 +181,22 @@ final class RemoveEmptyGroupsTest extends TestCase
                 XML,
         ];
 
+        yield 'Keeps group with only non-whitespace text and no elements' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <g>meaningful text</g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><g>meaningful text</g></svg>
+                XML,
+        ];
+
+        yield 'Removes an empty group nested after a leading text node in the parent' => [
+            '<svg xmlns="http://www.w3.org/2000/svg">leading text<g/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg">leading text</svg>',
+        ];
+
         yield 'Keeps mixed content group (text + element)' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
@@ -228,5 +244,17 @@ final class RemoveEmptyGroupsTest extends TestCase
             '<svg><defs><g/></defs></svg>',
             '<svg><defs/></svg>',
         ];
+    }
+
+    #[Test]
+    public function isRiskyReturnsFalse(): void
+    {
+        self::assertFalse(RemoveEmptyGroups::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsTrue(): void
+    {
+        self::assertTrue(RemoveEmptyGroups::shouldCheckSize());
     }
 }

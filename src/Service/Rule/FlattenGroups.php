@@ -14,7 +14,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
  * @no-named-arguments
@@ -48,7 +47,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         $domElementList = $domXPath->query(self::XPATH_GROUP_ELEMENTS);
 
         foreach ($domElementList as $domElement) {
-            if ($domElement->parentNode?->nodeName === SvgTag::Defs->value && $domElement->hasAttribute(SvgAttribute::Id->value)) {
+            if ($domElement->hasAttribute(SvgAttribute::Id->value)) {
                 continue;
             }
 

@@ -232,6 +232,101 @@ final class RemoveUnsafeElementsTest extends TestCase
                 XML,
         ];
 
+        yield 'CSS via bare @import without url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>@import "http://example.com/style.css";</style>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes style element with javascript url() outside @import' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>rect { fill: url(javascript:alert(1)); }</style>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes style element with external http url() outside @import' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>rect { fill: url(http://evil.com/gradient.svg#grad); }</style>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes style element with expression()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>rect { width: expression(alert(1)); }</style>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes style element with entity-encoded javascript url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>rect { fill: url(&#x6A;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3A;alert(1)); }</style>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps style element with fragment url() reference' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>rect { fill: url(#grad); }</style>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><style>rect { fill: url(#grad); }</style><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps style element with data:image url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>rect { fill: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA); }</style>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><style>rect { fill: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA); }</style><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps plain safe CSS in style element' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>rect { fill: red; stroke: #00FF00; }</style>
+                    <rect width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><style>rect { fill: red; stroke: #00FF00; }</style><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
         yield 'CSS via xml-stylesheet' => [
             <<<'XML'
                 <?xml-stylesheet href="http://example.com/style.css"?>

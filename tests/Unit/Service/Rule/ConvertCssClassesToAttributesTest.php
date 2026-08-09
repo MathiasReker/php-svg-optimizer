@@ -245,6 +245,32 @@ final class ConvertCssClassesToAttributesTest extends TestCase
                 XML,
         ];
 
+        yield 'Converts grouped comma-separated class selectors sharing a declaration block' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>.foo, .bar { fill: #f00; }</style>
+                    <rect class="foo"/>
+                    <circle class="bar"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect fill="#f00"/><circle fill="#f00"/></svg>
+                XML,
+        ];
+
+        yield 'Preserves non-class CSS rules such as id selectors instead of dropping them' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <style>#foo { fill: red; } .bar { stroke: blue; }</style>
+                    <rect id="foo"/>
+                    <circle class="bar"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><style>#foo{fill: red;}</style><rect id="foo"/><circle stroke="blue"/></svg>
+                XML,
+        ];
+
         yield 'Handles multiple classes on one element' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">

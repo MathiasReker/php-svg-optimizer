@@ -37,7 +37,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     /**
      * @see https://regex101.com/r/hN9M9b/1
      */
-    private const string STYLE_NODE_DANGEROUS_REGEX = '/@import\s+url\(|<\s*(script|iframe|object|textarea|embed|link|svg)/i';
+    private const string STYLE_NODE_DANGEROUS_TAG_REGEX = '/<\s*(script|iframe|object|textarea|embed|link|svg)/i';
 
     /**
      * @see https://regex101.com/r/WQHx9p/1
@@ -248,11 +248,20 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             }
 
             $text = $style->textContent ?? '';
-            if ($this->matchesPattern($text, self::STYLE_NODE_DANGEROUS_REGEX)
-                && $style->parentNode instanceof \DOMNode
-            ) {
+            if ($this->isStyleNodeDangerous($text) && $style->parentNode instanceof \DOMNode) {
                 $style->parentNode->removeChild($style);
             }
         }
+    }
+
+    /**
+     * @param string $text the text content of a `<style>` element
+     *
+     * @return bool true if the style element's content is dangerous
+     */
+    private function isStyleNodeDangerous(string $text): bool
+    {
+        return $this->matchesPattern($text, self::STYLE_NODE_DANGEROUS_TAG_REGEX)
+            || $this->isStyleAttributeDangerous($text);
     }
 }

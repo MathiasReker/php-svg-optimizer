@@ -24,7 +24,12 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     /**
      * @see https://regex101.com/r/qOS1io/1
      */
-    private const string CLASS_SELECTOR_REGEX = '/\.([a-zA-Z0-9_-]+)\s*\{([^}]+)}/';
+    private const string CSS_RULE_REGEX = '/([^{}]+)\{([^}]+)}/';
+
+    /**
+     * @see https://regex101.com/r/qOS1io/2
+     */
+    private const string SIMPLE_CLASS_SELECTOR_REGEX = '/^\.([a-zA-Z0-9_-]+)$/';
 
     #[\Override]
     public static function isRisky(): bool
@@ -117,19 +122,35 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
      */
     private function processCss(string $css, array $classMap, array $convertibleLookup): string
     {
-        preg_match_all(self::CLASS_SELECTOR_REGEX, $css, $matches, \PREG_SET_ORDER);
+        preg_match_all(self::CSS_RULE_REGEX, $css, $matches, \PREG_SET_ORDER);
         $remainingCss = [];
 
         foreach ($matches as $match) {
-            $class = trim($match[1]);
             $declarations = trim($match[2]);
+            $selectors = array_map(trim(...), explode(',', trim($match[1])));
 
-            [$convertible, $nonConvertible] = $this->splitDeclarations($declarations, $convertibleLookup);
+            $unconvertibleSelectors = [];
 
-            $this->applyStylesToElements($class, $classMap, $convertible, $nonConvertible);
+            foreach ($selectors as $selector) {
+                if (1 !== preg_match(self::SIMPLE_CLASS_SELECTOR_REGEX, $selector, $selectorMatch)) {
+                    $unconvertibleSelectors[] = $selector;
 
-            if ([] !== $nonConvertible) {
-                $remainingCss[] = $this->rebuildCssRule($class, $nonConvertible);
+                    continue;
+                }
+
+                $class = $selectorMatch[1];
+
+                [$convertible, $nonConvertible] = $this->splitDeclarations($declarations, $convertibleLookup);
+
+                $this->applyStylesToElements($class, $classMap, $convertible, $nonConvertible);
+
+                if ([] !== $nonConvertible) {
+                    $remainingCss[] = $this->rebuildCssRule($class, $nonConvertible);
+                }
+            }
+
+            if ([] !== $unconvertibleSelectors) {
+                $remainingCss[] = \sprintf('%s{%s}', implode(',', $unconvertibleSelectors), $declarations);
             }
         }
 

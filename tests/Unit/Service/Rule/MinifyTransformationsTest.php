@@ -308,6 +308,45 @@ final class MinifyTransformationsTest extends TestCase
                 XML,
         ];
 
+        yield 'Removes Comma-Separated Identity Matrix' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="matrix(1,0,0,1,0,0)">
+                        <circle cx="10" cy="10" r="5"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><circle cx="10" cy="10" r="5"/></g></svg>
+                XML,
+        ];
+
+        yield 'Removes Comma-Separated Identity Matrix With Spaces' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="matrix(1, 0, 0, 1, 0, 0)">
+                        <circle cx="10" cy="10" r="5"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><circle cx="10" cy="10" r="5"/></g></svg>
+                XML,
+        ];
+
+        yield 'Keeps Comma-Separated Non-Identity Matrix' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <g transform="matrix(1,0,0,1,10,20)">
+                        <circle cx="10" cy="10" r="5"/>
+                    </g>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="matrix(1,0,0,1,10,20)"><circle cx="10" cy="10" r="5"/></g></svg>
+                XML,
+        ];
+
         yield 'Keeps Non-Identity Matrix' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">

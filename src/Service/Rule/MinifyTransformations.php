@@ -67,7 +67,7 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     /**
      * @see https://regex101.com/r/o39rvr/1
      */
-    private const string MATRIX_IDENTITY_REGEX = '/\bmatrix\(\s*1(?:e[+-]?\d+)?\s+0(?:e[+-]?\d+)?\s+0(?:e[+-]?\d+)?\s+1(?:e[+-]?\d+)?\s+0(?:e[+-]?\d+)?\s+0(?:e[+-]?\d+)?\s*\)/i';
+    private const string MATRIX_IDENTITY_REGEX = '/\bmatrix\(\s*1(?:e[+-]?\d+)?\s*[\s,]\s*0(?:e[+-]?\d+)?\s*[\s,]\s*0(?:e[+-]?\d+)?\s*[\s,]\s*1(?:e[+-]?\d+)?\s*[\s,]\s*0(?:e[+-]?\d+)?\s*[\s,]\s*0(?:e[+-]?\d+)?\s*\)/i';
 
     private const string XPATH_TRANSFORM_ATTRIBUTES = '//*[@transform]';
 

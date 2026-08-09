@@ -161,4 +161,16 @@ final class SortAttributesTest extends TestCase
                 XML,
         ];
     }
+
+    #[Test]
+    public function isRiskyReturnsFalse(): void
+    {
+        self::assertFalse(SortAttributes::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(SortAttributes::shouldCheckSize());
+    }
 }
