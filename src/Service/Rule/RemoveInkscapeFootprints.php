@@ -117,6 +117,27 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      */
     private function removeNamespacedAttributes(\DOMXPath $domXPath): void
     {
+        $namespaceUris = $this->getConfiguredNamespaceUris();
+
+        if ([] === $namespaceUris) {
+            return;
+        }
+
+        /** @var \DOMNodeList<\DOMElement> $nodes */
+        $nodes = $domXPath->query(self::XPATH_ALL_ELEMENTS);
+
+        foreach (iterator_to_array($nodes, true) as $domElement) {
+            $this->removeNodeAttributes($domElement, $namespaceUris);
+        }
+    }
+
+    /**
+     * @return list<string> the namespace URIs configured for removal
+     */
+    private function getConfiguredNamespaceUris(): array
+    {
+        $namespaceUris = [];
+
         foreach (self::ATTRIBUTES_TO_REMOVE as $pattern) {
             if (!str_contains($pattern, ':')) {
                 continue;
@@ -132,51 +153,40 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
                 continue;
             }
 
-            $this->processNodes($domXPath, self::NAMESPACE_URIS[$prefix]);
+            $namespaceUris[] = self::NAMESPACE_URIS[$prefix];
         }
+
+        return $namespaceUris;
     }
 
     /**
-     * @param \DOMXPath $domXPath     the XPath object for querying the document
-     * @param string    $namespaceUri the namespace URI of the attributes to remove
+     * @param \DOMElement  $domElement    the element to clean
+     * @param list<string> $namespaceUris the namespace URIs of the attributes to remove
      */
-    private function processNodes(\DOMXPath $domXPath, string $namespaceUri): void
+    private function removeNodeAttributes(\DOMElement $domElement, array $namespaceUris): void
     {
-        /** @var \DOMNodeList<\DOMElement> $nodes */
-        $nodes = $domXPath->query(self::XPATH_ALL_ELEMENTS);
-
-        foreach (iterator_to_array($nodes, true) as $domElement) {
-            $this->removeNodeAttributes($domElement, $namespaceUri);
+        foreach ($this->getAttributesToRemove($domElement, $namespaceUris) as [$namespaceUri, $localName]) {
+            $domElement->removeAttributeNS($namespaceUri, $localName);
         }
     }
 
     /**
-     * @param \DOMElement $domElement   the element to clean
-     * @param string      $namespaceUri the namespace URI of the attributes to remove
-     */
-    private function removeNodeAttributes(\DOMElement $domElement, string $namespaceUri): void
-    {
-        $attributesToRemove = $this->getAttributesToRemove($domElement, $namespaceUri);
-
-        foreach ($attributesToRemove as $attributeToRemove) {
-            $domElement->removeAttributeNS($namespaceUri, $attributeToRemove);
-        }
-    }
-
-    /**
-     * @param \DOMElement $domElement   the element to inspect
-     * @param string      $namespaceUri the namespace URI to match
+     * @param \DOMElement  $domElement    the element to inspect
+     * @param list<string> $namespaceUris the namespace URIs to match
      *
-     * @return list<string> a list of attribute local names to be removed
+     * @return list<array{string, string}> a list of [namespaceUri, localName] pairs to be removed
      */
-    private function getAttributesToRemove(\DOMElement $domElement, string $namespaceUri): array
+    private function getAttributesToRemove(\DOMElement $domElement, array $namespaceUris): array
     {
         $attributesToRemove = [];
 
         /** @var \DOMAttr $attribute */
         foreach ($domElement->attributes as $attribute) {
-            if ($attribute->namespaceURI === $namespaceUri && null !== $attribute->localName) {
-                $attributesToRemove[] = $attribute->localName;
+            if (null !== $attribute->namespaceURI
+                && \in_array($attribute->namespaceURI, $namespaceUris, true)
+                && null !== $attribute->localName
+            ) {
+                $attributesToRemove[] = [$attribute->namespaceURI, $attribute->localName];
             }
         }
 

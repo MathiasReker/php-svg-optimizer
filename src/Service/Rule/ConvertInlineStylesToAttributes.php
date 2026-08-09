@@ -150,7 +150,18 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
      */
     private function isConvertibleProperty(string $prop): bool
     {
-        return $this->isValidPropertyName($prop) && \in_array($prop, SvgInlineStyleProperty::values(), true);
+        return $this->isValidPropertyName($prop) && \array_key_exists($prop, $this->getConvertibleLookup());
+    }
+
+    /**
+     * @return array<string, int> a map for quick property lookup
+     */
+    private function getConvertibleLookup(): array
+    {
+        /** @var array<string, int>|null $lookup */
+        static $lookup = null;
+
+        return $lookup ??= array_flip(SvgInlineStyleProperty::values());
     }
 
     /**

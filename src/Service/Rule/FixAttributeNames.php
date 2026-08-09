@@ -52,6 +52,12 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
     private function getLookupTable(): array
     {
         /** @var array<string, string>|null $lookup */
+        static $lookup = null;
+
+        if (null !== $lookup) {
+            return $lookup;
+        }
+
         $lookup = [];
         foreach (SvgAttribute::cases() as $case) {
             $lookup[$this->normalizeName($case->value)] = $case->value;
