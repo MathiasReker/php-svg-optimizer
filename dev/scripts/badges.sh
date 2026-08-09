@@ -69,7 +69,7 @@ curl -s -o dev/artifacts/mutation-score.svg \
 # --- MUTATION COVERAGE BADGE ---
 MUTATION_COVERAGE_PERCENT_INT=0
 if [[ -s $MUTATION_SUMMARY_JSON ]]; then
-    MUTATION_COVERAGE=$(grep -oE '"covered_msi":[0-9.]+' "$MUTATION_SUMMARY_JSON" | grep -oE '[0-9.]+')
+    MUTATION_COVERAGE=$(grep -oE '"coveredCodeMsi":[0-9.]+' "$MUTATION_SUMMARY_JSON" | grep -oE '[0-9.]+')
     [[ -n $MUTATION_COVERAGE ]] && MUTATION_COVERAGE_PERCENT_INT=$(awk -v m="$MUTATION_COVERAGE" 'BEGIN { printf "%.0f", m }')
 fi
 rm -f "$MUTATION_SUMMARY_JSON"
