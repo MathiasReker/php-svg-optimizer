@@ -59,18 +59,17 @@ final class ArgumentParserTest extends TestCase
     }
 
     #[Test]
-    public function hasOptionIgnoresPositionalArgumentMatchingAnOptionKeyWithoutADash(): void
+    public function hasOptionDetectsAnOptionPresentAlongsideANonOptionPositionalArgument(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',
-            'config',
             'process',
-            'file.svg',
+            '--dry-run',
         ];
 
         $argumentParser = new ArgumentParser($args);
 
-        self::assertFalse($argumentParser->hasOption(Option::Config));
+        self::assertTrue($argumentParser->hasOption(Option::DryRun));
     }
 
     #[Test]

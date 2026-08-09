@@ -337,5 +337,15 @@ final class FlattenGroupsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" stroke="" stroke-width="2" fill=""/></svg>
                 XML,
         ];
+
+        yield 'Groups with defs elements' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><g/></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs/></svg>',
+        ];
+
+        yield 'Keeps referenceable group with id inside defs' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><g id="shared"><rect width="10" height="10"/></g></defs><use xlink:href="#shared"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><g id="shared"><rect width="10" height="10"/></g></defs><use xlink:href="#shared"/></svg>',
+        ];
     }
 }

@@ -218,5 +218,15 @@ final class RemoveEmptyGroupsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><g><!-- comment --></g></svg>
                 XML,
         ];
+
+        yield 'Groups with only empty text nodes' => [
+            "<svg><g>\n\t\n</g></svg>",
+            '<svg/>',
+        ];
+
+        yield 'Groups with defs elements' => [
+            '<svg><defs><g/></defs></svg>',
+            '<svg><defs/></svg>',
+        ];
     }
 }

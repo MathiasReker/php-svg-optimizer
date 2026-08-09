@@ -124,5 +124,41 @@ final class SortAttributesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100"><rect width="30" height="30" x="10" y="10"/><circle cx="50" cy="50" fill="red" r="20"/></svg>
                 XML,
         ];
+
+        yield 'Handles Empty Elements' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <rect/>
+                    <circle/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect/><circle/></svg>
+                XML,
+        ];
+
+        yield 'Handles Attributes Without Values' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                    <rect disabled="" x="10" y="10" width="30" height="30"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="30" height="30" disabled="" x="10" y="10"/></svg>
+                XML,
+        ];
+
+        yield 'Handles Namespaced Attributes' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100">
+                    <a xlink:href="#foo" href="#bar">
+                        <rect x="10" y="10" width="30" height="30"/>
+                    </a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100"><a href="#bar" xlink:href="#foo"><rect width="30" height="30" x="10" y="10"/></a></svg>
+                XML,
+        ];
     }
 }

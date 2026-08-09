@@ -8,6 +8,7 @@
 [![Type Coverage](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/type-coverage.svg)](#)
 [![Code Coverage](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/coverage.svg)](#)
 [![Mutation Score](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/mutation-score.svg)](#)
+[![Mutation Coverage](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/mutation-coverage.svg)](#)
 [![Tests](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/tests.svg)](#)
 [![Assertions](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/assertions.svg)](#)
 [![Filesize](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/dev/artifacts/filesize.svg)](#)

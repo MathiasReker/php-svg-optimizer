@@ -58,7 +58,6 @@ if [[ -s $MUTATION_SUMMARY_JSON ]]; then
     MUTATION_MSI=$(grep -oE '"msi":[0-9.]+' "$MUTATION_SUMMARY_JSON" | grep -oE '[0-9.]+')
     [[ -n $MUTATION_MSI ]] && MUTATION_PERCENT_INT=$(awk -v m="$MUTATION_MSI" 'BEGIN { printf "%.0f", m }')
 fi
-rm -f "$MUTATION_SUMMARY_JSON"
 
 MUTATION_COLOR="red"
 (( MUTATION_PERCENT_INT >= 80 )) && MUTATION_COLOR="green"
@@ -66,6 +65,21 @@ MUTATION_COLOR="red"
 
 curl -s -o dev/artifacts/mutation-score.svg \
   "https://img.shields.io/badge/mutation_score-${MUTATION_PERCENT_INT}%25-${MUTATION_COLOR}?style=flat"
+
+# --- MUTATION COVERAGE BADGE ---
+MUTATION_COVERAGE_PERCENT_INT=0
+if [[ -s $MUTATION_SUMMARY_JSON ]]; then
+    MUTATION_COVERAGE=$(grep -oE '"covered_msi":[0-9.]+' "$MUTATION_SUMMARY_JSON" | grep -oE '[0-9.]+')
+    [[ -n $MUTATION_COVERAGE ]] && MUTATION_COVERAGE_PERCENT_INT=$(awk -v m="$MUTATION_COVERAGE" 'BEGIN { printf "%.0f", m }')
+fi
+rm -f "$MUTATION_SUMMARY_JSON"
+
+MUTATION_COVERAGE_COLOR="red"
+(( MUTATION_COVERAGE_PERCENT_INT >= 80 )) && MUTATION_COVERAGE_COLOR="green"
+(( MUTATION_COVERAGE_PERCENT_INT >= 50 && MUTATION_COVERAGE_PERCENT_INT < 80 )) && MUTATION_COVERAGE_COLOR="yellow"
+
+curl -s -o dev/artifacts/mutation-coverage.svg \
+  "https://img.shields.io/badge/mutation_coverage-${MUTATION_COVERAGE_PERCENT_INT}%25-${MUTATION_COVERAGE_COLOR}?style=flat"
 
 # --- TESTS & ASSERTIONS ---
 PHPUNIT_OUTPUT=$(./vendor/bin/phpunit --colors=never 2>&1)

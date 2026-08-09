@@ -73,6 +73,10 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
             return false;
         }
 
+        if (!$domElement->hasChildNodes()) {
+            return true;
+        }
+
         foreach ($domElement->childNodes as $child) {
             if ($child instanceof \DOMElement) {
                 return false;

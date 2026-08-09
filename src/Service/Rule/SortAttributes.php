@@ -66,7 +66,7 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
 
         /** @var \DOMAttr $domAttr */
         foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
-            $domElement->removeAttribute($domAttr->name);
+            $domElement->removeAttribute($domAttr->nodeName);
         }
 
         foreach ($sortedAttributes as $name => $value) {
@@ -87,7 +87,7 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
         $domAttributes = $domElement->attributes;
 
         foreach ($domAttributes as $domAttribute) {
-            $attributes[$domAttribute->localName ?? $domAttribute->name] = $domAttribute->value;
+            $attributes[$domAttribute->nodeName] = $domAttribute->value;
         }
 
         return $attributes;
