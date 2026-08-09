@@ -141,25 +141,19 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function removeAlwaysDangerousTags(\DOMDocument $domDocument): void
     {
-        foreach (SvgTag::dangerous() as $tag) {
-            $this->removeAllElementsByTagName($domDocument, $tag);
-        }
-    }
-
-    /**
-     * @param \DOMDocument $domDocument the DOM document to modify
-     * @param string       $tagName     the name of the tag to remove
-     */
-    private function removeAllElementsByTagName(\DOMDocument $domDocument, string $tagName): void
-    {
+        $dangerousTags = SvgTag::dangerous();
         $domNodeList = $domDocument->getElementsByTagName('*');
         $nodesToRemove = [];
 
         foreach ($domNodeList as $node) {
             $localName = $node->localName ?? $node->tagName;
 
-            if (0 === strcasecmp($localName, $tagName)) {
-                $nodesToRemove[] = $node;
+            foreach ($dangerousTags as $tag) {
+                if (0 === strcasecmp($localName, $tag)) {
+                    $nodesToRemove[] = $node;
+
+                    break;
+                }
             }
         }
 
