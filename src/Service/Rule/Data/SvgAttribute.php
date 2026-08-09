@@ -530,7 +530,10 @@ enum SvgAttribute: string implements SvgDataInterface
      */
     public static function values(): array
     {
-        return self::valuesFromCases(self::cases());
+        /** @var list<string>|null $cache */
+        static $cache = null;
+
+        return $cache ??= self::valuesFromCases(self::cases());
     }
 
     /**
@@ -538,7 +541,10 @@ enum SvgAttribute: string implements SvgDataInterface
      */
     public static function colors(): array
     {
-        return self::valuesFromCases(self::colorCases());
+        /** @var list<string>|null $cache */
+        static $cache = null;
+
+        return $cache ??= self::valuesFromCases(self::colorCases());
     }
 
     /**
@@ -564,7 +570,10 @@ enum SvgAttribute: string implements SvgDataInterface
      */
     public static function dangerousExact(): array
     {
-        return self::valuesFromCases(self::dangerousExactCases());
+        /** @var list<string>|null $cache */
+        static $cache = null;
+
+        return $cache ??= self::valuesFromCases(self::dangerousExactCases());
     }
 
     /**
@@ -583,7 +592,10 @@ enum SvgAttribute: string implements SvgDataInterface
      */
     public static function dangerous(): array
     {
-        return self::valuesFromCases(self::dangerousCases());
+        /** @var list<string>|null $cache */
+        static $cache = null;
+
+        return $cache ??= self::valuesFromCases(self::dangerousCases());
     }
 
     /**

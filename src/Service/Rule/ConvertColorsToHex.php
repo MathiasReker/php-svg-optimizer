@@ -48,12 +48,13 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     public function optimize(\DOMDocument $domDocument): void
     {
         $colorAttributes = SvgAttribute::colors();
+        $stylePattern = $this->buildStylePattern($colorAttributes);
         $domNodeList = $domDocument->getElementsByTagName('*');
 
         foreach ($domNodeList as $element) {
             if ($element->hasAttribute(SvgAttribute::Style->value)) {
                 $style = $element->getAttribute(SvgAttribute::Style->value);
-                $style = $this->processStyle($style, $colorAttributes);
+                $style = $this->processStyle($style, $stylePattern);
                 $element->setAttribute(SvgAttribute::Style->value, $style);
             }
 
@@ -69,20 +70,28 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
     }
 
     /**
-     * @param string       $style           the inline style string
      * @param list<string> $colorAttributes a list of color-related CSS properties
      *
-     * @return string the processed style string with converted colors
+     * @return string the regex pattern matching those properties in a style declaration
      */
-    private function processStyle(string $style, array $colorAttributes): string
+    private function buildStylePattern(array $colorAttributes): string
     {
         $attributes = array_map(
             static fn (string $a): string => preg_quote($a, '/'),
             $colorAttributes
         );
 
-        $pattern = '/\b(' . implode('|', $attributes) . ')\s*:\s*([^;]+)/i';
+        return '/\b(' . implode('|', $attributes) . ')\s*:\s*([^;]+)/i';
+    }
 
+    /**
+     * @param string $style   the inline style string
+     * @param string $pattern the regex pattern matching color-related CSS properties
+     *
+     * @return string the processed style string with converted colors
+     */
+    private function processStyle(string $style, string $pattern): string
+    {
         return preg_replace_callback(
             $pattern,
             fn (array $m): string => $m[1] . ':' . $this->convertColorValue(trim($m[2])),

@@ -104,7 +104,10 @@ enum SvgTag: string implements SvgDataInterface
      */
     public static function values(): array
     {
-        return array_map(static fn (self $tag) => $tag->value, self::cases());
+        /** @var list<string>|null $cache */
+        static $cache = null;
+
+        return $cache ??= array_map(static fn (self $tag) => $tag->value, self::cases());
     }
 
     /**
@@ -112,7 +115,10 @@ enum SvgTag: string implements SvgDataInterface
      */
     public static function dangerous(): array
     {
-        return self::valuesFromCases(self::dangerousCases());
+        /** @var list<string>|null $cache */
+        static $cache = null;
+
+        return $cache ??= self::valuesFromCases(self::dangerousCases());
     }
 
     /**
@@ -128,7 +134,10 @@ enum SvgTag: string implements SvgDataInterface
      */
     public static function conditionalDangerous(): array
     {
-        return self::valuesFromCases(self::conditionalDangerousCases());
+        /** @var list<string>|null $cache */
+        static $cache = null;
+
+        return $cache ??= self::valuesFromCases(self::conditionalDangerousCases());
     }
 
     /**

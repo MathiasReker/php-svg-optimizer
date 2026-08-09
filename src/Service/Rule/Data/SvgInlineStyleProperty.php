@@ -66,6 +66,9 @@ enum SvgInlineStyleProperty: string implements SvgDataInterface
      */
     public static function values(): array
     {
-        return self::valuesFromCases(self::cases());
+        /** @var list<string>|null $cache */
+        static $cache = null;
+
+        return $cache ??= self::valuesFromCases(self::cases());
     }
 }
