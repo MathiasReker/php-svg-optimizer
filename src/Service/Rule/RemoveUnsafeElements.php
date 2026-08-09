@@ -148,8 +148,8 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         foreach ($domNodeList as $node) {
             $localName = $node->localName ?? $node->tagName;
 
-            foreach ($dangerousTags as $tag) {
-                if (0 === strcasecmp($localName, $tag)) {
+            foreach ($dangerousTags as $dangerouTag) {
+                if (0 === strcasecmp($localName, $dangerouTag)) {
                     $nodesToRemove[] = $node;
 
                     break;
@@ -255,7 +255,10 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function isStyleNodeDangerous(string $text): bool
     {
-        return $this->matchesPattern($text, self::STYLE_NODE_DANGEROUS_TAG_REGEX)
-            || $this->isStyleAttributeDangerous($text);
+        if ($this->matchesPattern($text, self::STYLE_NODE_DANGEROUS_TAG_REGEX)) {
+            return true;
+        }
+
+        return $this->isStyleAttributeDangerous($text);
     }
 }
