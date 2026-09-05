@@ -106,9 +106,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         /** @var array<string, int>|null $lookup */
         static $lookup = null;
 
-        if (null === $lookup) {
-            $lookup = array_flip(SvgInlineStyleProperty::values());
-        }
+        $lookup ??= array_flip(SvgInlineStyleProperty::values());
 
         return $lookup;
     }

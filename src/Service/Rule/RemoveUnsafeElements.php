@@ -148,8 +148,8 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         foreach ($domNodeList as $node) {
             $localName = $node->localName ?? $node->tagName;
 
-            foreach ($dangerousTags as $dangerouTag) {
-                if (0 === strcasecmp($localName, $dangerouTag)) {
+            foreach ($dangerousTags as $dangerousTag) {
+                if (0 === strcasecmp($localName, $dangerousTag)) {
                     $nodesToRemove[] = $node;
 
                     break;
