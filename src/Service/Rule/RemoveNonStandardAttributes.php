@@ -13,6 +13,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgElementAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 
 /**
  * @no-named-arguments
@@ -20,6 +22,10 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInterface
 {
     private const string XPATH_ALL_WITH_ATTRIBUTES = '//*[@*]';
+
+    private const string XML_EVENTS_NAMESPACE = 'http://www.w3.org/2001/xml-events';
+
+    private const string DATA_ATTRIBUTE_REGEX = '/^data-[\-\w.\x{00B7}-\x{FFFF}]+$/u';
 
     #[\Override]
     public static function isRisky(): bool
@@ -39,15 +45,39 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $allowed = $this->getAllowedLookup();
         $domXPath = new \DOMXPath($domDocument);
 
         /** @var \DOMNodeList<\DOMElement> $elements */
         $elements = $domXPath->query(self::XPATH_ALL_WITH_ATTRIBUTES);
 
         foreach ($elements as $element) {
-            $this->removeNonStandardAttributesFromElement($element, $allowed);
+            $this->removeNonStandardAttributesFromElement($element, $this->getAllowedLookupFor($element));
         }
+    }
+
+    /**
+     * Known SVG elements allow the attributes the specification defines for them; other elements fall back to every
+     * known SVG attribute. Event handler attributes and `xml:base`, which redirects relative URLs, are never allowed.
+     *
+     * @param \DOMElement $domElement the element whose attributes are checked
+     *
+     * @return array<string, true> a map where keys are the allowed attribute names
+     */
+    private function getAllowedLookupFor(\DOMElement $domElement): array
+    {
+        /** @var array<string, array<string, true>> $cache */
+        static $cache = [];
+
+        $element = (string) $domElement->localName;
+
+        if (!SvgElementAttributes::isKnownElement($element)) {
+            return $this->getAllowedLookup();
+        }
+
+        return $cache[$element] ??= array_diff_key(
+            SvgElementAttributes::forElement($element),
+            array_flip([...SvgAttribute::eventHandlers(), SvgAttribute::XmlBase->value]),
+        );
     }
 
     /**
@@ -63,6 +93,10 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
             foreach (SvgAttribute::cases() as $attr) {
                 $lookup[$attr->value] = true;
             }
+
+            foreach ([...SvgAttribute::eventHandlers(), ...SvgAttribute::htmlOnly()] as $name) {
+                unset($lookup[$name]);
+            }
         }
 
         return $lookup;
@@ -74,31 +108,44 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
      */
     private function removeNonStandardAttributesFromElement(\DOMElement $domElement, array $allowed): void
     {
-        for ($i = $domElement->attributes->length - 1; $i >= 0; --$i) {
-            $attr = $domElement->attributes->item($i);
-            if (!$attr instanceof \DOMAttr) {
-                continue;
+        /** @var \DOMAttr $attr */
+        foreach (iterator_to_array($domElement->attributes, false) as $attr) {
+            if (!$this->isAttributeAllowed($attr, $allowed)) {
+                $domElement->removeAttributeNode($attr);
             }
-
-            if ($this->isAttributeAllowed($attr->name, $allowed)) {
-                continue;
-            }
-
-            $domElement->removeAttributeNode($attr);
         }
     }
 
     /**
-     * @param string              $name    the name of the attribute
+     * @param \DOMAttr            $domAttr the attribute to check
      * @param array<string, true> $allowed a lookup map of allowed attribute names
      *
      * @return bool true if the attribute is allowed, false otherwise
      */
-    private function isAttributeAllowed(string $name, array $allowed): bool
+    private function isAttributeAllowed(\DOMAttr $domAttr, array $allowed): bool
     {
-        return str_starts_with($name, 'xml:')
-            || str_starts_with($name, 'xlink:')
-            || str_starts_with($name, 'data-')
-            || \array_key_exists($name, $allowed);
+        $name = $this->qualifiedName($domAttr);
+
+        return \array_key_exists($name, $allowed)
+            || 1 === preg_match(self::DATA_ATTRIBUTE_REGEX, $name);
+    }
+
+    /**
+     * Resolves the attribute to its canonical prefixed name based on its namespace URI,
+     * so an attribute is only allowed when bound to the namespace its prefix implies.
+     *
+     * @param \DOMAttr $domAttr the attribute to resolve
+     *
+     * @return string the canonical name, or an empty string if the attribute belongs to a foreign namespace
+     */
+    private function qualifiedName(\DOMAttr $domAttr): string
+    {
+        return match ($domAttr->namespaceURI) {
+            null => $domAttr->nodeName,
+            SvgNamespace::Xlink->value => 'xlink:' . $domAttr->name,
+            SvgNamespace::Xml->value => 'xml:' . $domAttr->name,
+            self::XML_EVENTS_NAMESPACE => 'ev:' . $domAttr->name,
+            default => '',
+        };
     }
 }
