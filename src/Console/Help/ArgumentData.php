@@ -1,0 +1,164 @@
+<?php
+
+/**
+ *     This file is part of the php-svg-optimizer package.
+ *     (c) Mathias Reker <github@reker.dk>
+ *     For the full copyright and license information, please view the LICENSE
+ *     file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace MathiasReker\PhpSvgOptimizer\Console\Help;
+
+use MathiasReker\PhpSvgOptimizer\Console\Type\Command;
+use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandHelp;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\ExampleCommand;
+
+/**
+ * @no-named-arguments
+ */
+final class ArgumentData
+{
+    private const string BINARY_PATH = 'vendor/bin/svg-optimizer';
+
+    /** @var array<string, CliOption> */
+    private array $options;
+
+    /** @var array<string, CommandHelp> */
+    private readonly array $commands;
+
+    /** @var list<ExampleCommand> */
+    private readonly array $examples;
+
+    public function __construct()
+    {
+        foreach (Option::cases() as $option) {
+            $this->options[$option->value] = new CliOption(
+                $option->getShorthand(),
+                $option->getFull(),
+                $option->getDescription()
+            );
+        }
+
+        $this->commands = [
+            Command::Process->value => new CommandHelp(
+                Command::Process->getTitle(),
+                Command::Process->getDescription()
+            ),
+        ];
+
+        $this->examples = [
+            new ExampleCommand(
+                \sprintf(
+                    '%s %s %s %s /path/to/svgs',
+                    self::BINARY_PATH,
+                    Option::WithAllRules->getFull(),
+                    Option::DryRun->getFull(),
+                    Command::Process->value,
+                )
+            ),
+            new ExampleCommand(
+                \sprintf(
+                    '%s %s=config.json %s /path/to/file.svg',
+                    self::BINARY_PATH,
+                    Option::Config->getFull(),
+                    Command::Process->value,
+                )
+            ),
+            new ExampleCommand(
+                \sprintf(
+                    '%s %s %s %s /path/to/file.svg',
+                    self::BINARY_PATH,
+                    Option::Quiet->getFull(),
+                    Option::WithAllRules->getFull(),
+                    Command::Process->value,
+                )
+            ),
+            new ExampleCommand(
+                \sprintf(
+                    '%s %s %s %s /path/to/file.svg',
+                    self::BINARY_PATH,
+                    Option::WithAllRules->getFull(),
+                    Option::AllowRisky->getFull(),
+                    Command::Process->value,
+                )
+            ),
+            new ExampleCommand(
+                \sprintf(
+                    '%s %s %s /path/to/file.svg',
+                    self::BINARY_PATH,
+                    Option::WithAllRules->getFull(),
+                    Command::Process->value,
+                )
+            ),
+        ];
+    }
+
+    /**
+     * @return array<string, CliOption>
+     */
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
+
+    /**
+     * @return CliOption Returns the option details
+     *
+     * @throws \InvalidArgumentException If the option is not found
+     */
+    public function getOptionByName(string $name): CliOption
+    {
+        foreach ($this->options as $option) {
+            if ($option->hasName($name)) {
+                return $option;
+            }
+        }
+
+        throw new \InvalidArgumentException(\sprintf('Option "%s" not found.', $name));
+    }
+
+    /**
+     * @return array<string, CommandHelp>
+     */
+    public function getCommands(): array
+    {
+        return $this->commands;
+    }
+
+    /**
+     * @param string $option The name of the option (e.g., 'help', 'config')
+     *
+     * @return CliOption Returns the option details
+     *
+     * @throws \InvalidArgumentException If the option is not found
+     */
+    public function getOption(string $option): CliOption
+    {
+        return $this->options[$option]
+            ?? throw new \InvalidArgumentException(\sprintf('Option "%s" not found.', $option));
+    }
+
+    /**
+     * @return list<ExampleCommand>
+     */
+    public function getExamples(): array
+    {
+        return $this->examples;
+    }
+
+    /**
+     * @return string The command format
+     */
+    public function getFormat(): string
+    {
+        return \sprintf(
+            '%s [options] %s <path1> <path2> ...',
+            self::BINARY_PATH,
+            Command::Process->value,
+        );
+    }
+}

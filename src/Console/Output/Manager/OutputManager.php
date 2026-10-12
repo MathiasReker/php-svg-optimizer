@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Output\Manager;
 
+use MathiasReker\PhpSvgOptimizer\Console\Help\ArgumentData;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Formatter\ByteFormatter;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
-use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
 
 /**
  * @no-named-arguments

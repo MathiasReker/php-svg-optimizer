@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 
-use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
+use MathiasReker\PhpSvgOptimizer\Console\Filesystem\Finder;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**

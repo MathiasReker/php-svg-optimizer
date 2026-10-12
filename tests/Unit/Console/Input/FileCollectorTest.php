@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 
+use MathiasReker\PhpSvgOptimizer\Console\Filesystem\Finder;
 use MathiasReker\PhpSvgOptimizer\Console\Input\FileCollector;
-use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

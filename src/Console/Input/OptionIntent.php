@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 
-use MathiasReker\PhpSvgOptimizer\Type\Option;
+use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
 
 /**
  * @no-named-arguments

@@ -11,15 +11,15 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 
+use MathiasReker\PhpSvgOptimizer\Console\Filesystem\Finder;
+use MathiasReker\PhpSvgOptimizer\Console\Help\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Console\Input\FileCollector;
-use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
-use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
-use MathiasReker\PhpSvgOptimizer\Type\Command;
-use MathiasReker\PhpSvgOptimizer\Type\Option;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CliOption;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandHelp;
-use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommand;
+use MathiasReker\PhpSvgOptimizer\Console\Type\Command;
+use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandHelp;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\ExampleCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

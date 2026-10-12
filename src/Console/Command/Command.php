@@ -12,11 +12,11 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
+use MathiasReker\PhpSvgOptimizer\Console\Output\MetaDataAggregator;
+use MathiasReker\PhpSvgOptimizer\Console\Processor\SvgFileProcessor;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
-use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\SvgFileProcessor;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOption;
 
 /**
  * @no-named-arguments

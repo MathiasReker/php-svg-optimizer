@@ -13,8 +13,8 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Command;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOption;
 
 /**
  * @no-named-arguments

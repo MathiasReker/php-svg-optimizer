@@ -11,16 +11,16 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output\Manager;
 
+use MathiasReker\PhpSvgOptimizer\Console\Help\ArgumentData;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Formatter\ByteFormatter;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
-use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\ByteFormatter;
-use MathiasReker\PhpSvgOptimizer\Type\Command;
-use MathiasReker\PhpSvgOptimizer\Type\Option;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CliOption;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CommandHelp;
-use MathiasReker\PhpSvgOptimizer\ValueObject\ExampleCommand;
+use MathiasReker\PhpSvgOptimizer\Console\Type\Command;
+use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandHelp;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\ExampleCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

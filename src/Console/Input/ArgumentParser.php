@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 
-use MathiasReker\PhpSvgOptimizer\Service\Data\ArgumentData;
-use MathiasReker\PhpSvgOptimizer\Type\Option;
-use MathiasReker\PhpSvgOptimizer\ValueObject\CliOption;
+use MathiasReker\PhpSvgOptimizer\Console\Help\ArgumentData;
+use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
 
 /**
  * @no-named-arguments
