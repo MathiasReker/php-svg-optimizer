@@ -9,7 +9,11 @@
         "minify",
         "compress",
         "clean",
-        "sanitize"
+        "sanitize",
+        "sanitizer",
+        "optimizer",
+        "xss",
+        "cli"
     ],
     "authors": [
         {
@@ -17,7 +21,12 @@
             "role": "Senior Developer"
         }
     ],
-    "homepage": "https://github.com/mathiasreker/php-svg-optimizer",
+    "homepage": "https://github.com/MathiasReker/php-svg-optimizer",
+    "support": {
+        "issues": "https://github.com/MathiasReker/php-svg-optimizer/issues",
+        "source": "https://github.com/MathiasReker/php-svg-optimizer",
+        "security": "https://github.com/MathiasReker/php-svg-optimizer/security/policy"
+    },
     "require": {
         "php": "^8.3",
         "ext-dom": "*",
