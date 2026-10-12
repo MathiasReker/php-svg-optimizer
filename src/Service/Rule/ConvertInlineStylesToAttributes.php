@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
 
 /**
  * @internal
@@ -22,10 +23,9 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
 final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRuleInterface
 {
     use AsciiCaseTrait;
+    use CssDeclarationTrait;
 
     private const string PROPERTY_NAME_REGEX = '/^[a-z_-][a-z0-9_-]*$/i';
-
-    private const string STYLE_SPLIT_REGEX = '/\s*;\s*/';
 
     private const string STYLED_ELEMENTS_QUERY = '//*[@style]';
 
@@ -80,12 +80,12 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
             return;
         }
 
-        $declarations = preg_split(self::STYLE_SPLIT_REGEX, $style, -1, \PREG_SPLIT_NO_EMPTY);
-        if (false === $declarations) {
+        // A string or parenthesis that is not closed leaves the declarations ambiguous.
+        if (!$this->isSplittableCssDeclarationBlock($style)) {
             return;
         }
 
-        $remaining = $this->processDeclarations($domElement, $declarations);
+        $remaining = $this->processDeclarations($domElement, $this->splitCssDeclarations($style));
 
         if ([] === $remaining) {
             $domElement->removeAttribute(SvgAttribute::Style->value);

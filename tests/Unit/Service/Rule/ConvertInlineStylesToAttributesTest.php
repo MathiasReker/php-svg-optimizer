@@ -305,6 +305,36 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
             '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:green"/></svg>',
             '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:green"/></svg>',
         ];
+
+        yield 'Keeps a semicolon inside url() as part of the value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:url(data:image/png;base64,AA);stroke:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="url(data:image/png;base64,AA)" stroke="red"/></svg>',
+        ];
+
+        yield 'Keeps a semicolon inside a string as part of the value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:&quot;a;b&quot;;fill:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:&quot;a;b&quot;" fill="red"/></svg>',
+        ];
+
+        yield 'Keeps an escaped semicolon as part of the value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="background:a\;b;fill:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="background:a\;b" fill="red"/></svg>',
+        ];
+
+        yield 'Keeps a semicolon inside nested parentheses as part of the value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:url(a(b;c));stroke:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="url(a(b;c))" stroke="red"/></svg>',
+        ];
+
+        yield 'Leaves a style with an unclosed parenthesis untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:url(a;stroke:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:url(a;stroke:red"/></svg>',
+        ];
+
+        yield 'Leaves a style with an unclosed string untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:&quot;a;fill:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:&quot;a;fill:red"/></svg>',
+        ];
     }
 
     #[Test]

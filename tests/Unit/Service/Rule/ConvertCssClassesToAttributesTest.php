@@ -395,6 +395,26 @@ final class ConvertCssClassesToAttributesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{stro&#x212A;e:red}</style><path class="a"/></svg>',
             "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>.a{stro\u{212A}e:red}</style><path class=\"a\"/></svg>",
         ];
+
+        yield 'Keeps a semicolon inside url() as part of the value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:url(data:image/png;base64,AA);stroke:red}</style><path class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path fill="url(data:image/png;base64,AA)" stroke="red"/></svg>',
+        ];
+
+        yield 'Keeps a semicolon inside a string as part of the value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{font-family:"a;b";fill:red}</style><text class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{font-family:"a;b"}</style><text class="a" fill="red"/></svg>',
+        ];
+
+        yield 'Keeps style sheets with an unclosed parenthesis untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:url(a;stroke:red}</style><path class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:url(a;stroke:red}</style><path class="a"/></svg>',
+        ];
+
+        yield 'Keeps style sheets with a brace inside a string untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{font-family:"}";fill:red}</style><text class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{font-family:"}";fill:red}</style><text class="a"/></svg>',
+        ];
     }
 
     #[Test]

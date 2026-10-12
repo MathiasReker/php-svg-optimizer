@@ -17,6 +17,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ClassAttributeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
 
 /**
  * Style sheets for specific media or with nested blocks (such as `@media`) or comments are left untouched, as are `!important` declarations
@@ -31,6 +32,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
 {
     use AsciiCaseTrait;
     use ClassAttributeTrait;
+    use CssDeclarationTrait;
 
     private const string CSS_RULE_REGEX = '/([^{}]+)\{([^}]+)}/';
 
@@ -157,12 +159,15 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     /**
      * @param string $css the CSS content from a `<style>` block
      *
-     * @return bool true if the CSS consists of plain rules only
+     * @return bool true if the CSS consists of plain rules only, with declaration blocks that can be split safely
      */
     private function isPlainCss(string $css): bool
     {
+        preg_match_all(self::CSS_RULE_REGEX, $css, $matches);
+
         return !str_contains($css, self::COMMENT_START)
-            && '' === trim((string) preg_replace(self::CSS_RULE_REGEX, '', $css));
+            && '' === trim((string) preg_replace(self::CSS_RULE_REGEX, '', $css))
+            && [] === array_filter($matches[2], fn (string $declarations): bool => !$this->isSplittableCssDeclarationBlock($declarations));
     }
 
     /**
@@ -257,7 +262,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         $convertible = [];
         $nonConvertible = [];
 
-        foreach (explode(';', $declarations) as $decl) {
+        foreach ($this->splitCssDeclarations($declarations) as $decl) {
             if (!str_contains($decl, ':')) {
                 continue;
             }
