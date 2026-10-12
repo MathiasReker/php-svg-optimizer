@@ -11,9 +11,13 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Exception;
 
+use MathiasReker\PhpSvgOptimizer\Contract\Exception\SvgOptimizerExceptionInterface;
+
 /**
+ * @api
+ *
  * @no-named-arguments
  */
-final class RiskyRulesNotAllowedException extends \Exception
+final class RiskyRulesNotAllowedException extends \Exception implements SvgOptimizerExceptionInterface
 {
 }

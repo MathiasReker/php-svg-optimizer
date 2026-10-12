@@ -163,6 +163,8 @@ jobs:
 
 > It is recommended to catch exceptions when using this library.
 > Doing so ensures that your application can handle unexpected input gracefully and avoid unintended crashes.
+> Every exception thrown by the library implements
+> `MathiasReker\PhpSvgOptimizer\Contract\Exception\SvgOptimizerExceptionInterface`, so you can catch them all at once.
 
 ### Example specifying rules
 
