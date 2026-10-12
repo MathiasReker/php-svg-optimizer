@@ -155,4 +155,73 @@ enum Rule: string
     {
         return lcfirst($this->name);
     }
+
+    /**
+     * The order the rules run in, whatever order they are enabled in. Untrusted content is sanitized first, styles become
+     * attributes before attributes are cleaned up, values are minified before defaults are compared, and the structure is
+     * simplified before shapes are converted, so a second run finds (almost) nothing left to do.
+     */
+    private const array EXECUTION_ORDER = [
+        // Sanitize and remove what is never rendered.
+        self::RemoveUnsafeElements,
+        self::RemoveDoctype,
+        self::RemoveComments,
+        self::RemoveMetadata,
+        self::RemoveInkscapeFootprints,
+        self::RemoveNonStandardTags,
+        self::FixAttributeNames,
+        self::RemoveDeprecatedAttributes,
+        self::RemoveTitleAndDesc,
+        self::RemoveNonStandardAttributes,
+        self::RemoveDataAttributes,
+        self::RemoveAriaAndRole,
+        self::RemoveInvisibleCharacters,
+        self::RemoveEnableBackgroundAttribute,
+        self::RemoveStyleTypeAttributes,
+        self::RemoveXmlSpaceDefault,
+        self::RemoveWidthHeightAttributes,
+        // Turn styles into attributes.
+        self::ScopeSvgStyles,
+        self::ConvertCssClassesToAttributes,
+        self::ConvertInlineStylesToAttributes,
+        // Clean up attributes and references.
+        self::RemoveEmptyAttributes,
+        self::RemoveUnusedMasks,
+        // Minify values, then drop the ones that equal their default.
+        self::MinifyNumericValues,
+        self::MinifyListValues,
+        self::MinifySvgCoordinates,
+        self::ConvertColorsToHex,
+        self::RemoveUnusedIds,
+        self::ConvertOneStopGradients,
+        self::RemoveDefaultAttributes,
+        // Simplify the structure.
+        self::RemoveZeroSizeShapes,
+        self::RemoveEmptyTextElements,
+        self::RemoveDuplicateElements,
+        self::FlattenGroups,
+        self::RemoveEmptyGroups,
+        self::RemoveEmptyContainers,
+        self::RemoveUselessDefs,
+        self::MinifyTransformations,
+        // Convert shapes.
+        self::ConvertEllipseToCircle,
+        self::ConvertShapesToPath,
+        self::MinifyPathData,
+        // Format the output.
+        self::RemoveUnusedNamespaces,
+        self::RemoveUnnecessaryWhitespace,
+        self::ConvertEmptyTagsToSelfClosing,
+        self::SortAttributes,
+    ];
+
+    /**
+     * @return int The position of the rule in the execution order; rules run in ascending priority
+     *
+     * @internal
+     */
+    public function priority(): int
+    {
+        return (int) array_search($this, self::EXECUTION_ORDER, true);
+    }
 }

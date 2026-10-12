@@ -482,6 +482,70 @@ final class SvgOptimizerFacadeTest extends TestCase
         yield 'reserved processing instruction target' => ["<svg xmlns=\"http://www.w3.org/2000/svg\">\n<?xml-foo bar?>\n<rect width=\"1\" height=\"1\"/></svg>", false];
     }
 
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[DataProvider('provideOptimizingTwiceGivesTheSameResultCases')]
+    #[Test]
+    public function optimizingTwiceGivesTheSameResult(string $file, bool $allowRisky): void
+    {
+        $svg = file_get_contents($file);
+        self::assertIsString($svg);
+
+        $once = SvgOptimizerFacade::fromString($svg)->allowRisky($allowRisky)->withAllRules()->optimize()->getContent();
+        $twice = SvgOptimizerFacade::fromString($once)->allowRisky($allowRisky)->withAllRules()->optimize()->getContent();
+
+        self::assertSame($once, $twice);
+    }
+
+    /**
+     * @return iterable<string, array{string, bool}>
+     */
+    public static function provideOptimizingTwiceGivesTheSameResultCases(): iterable
+    {
+        $files = glob(__DIR__ . '/../../../../dev/resources/svg/*.svg');
+        self::assertIsArray($files);
+        self::assertNotSame([], $files);
+
+        foreach ($files as $file) {
+            yield basename($file) => [$file, false];
+
+            yield basename($file) . ', risky' => [$file, true];
+        }
+    }
+
+    /**
+     * Enabling a rule again, as the command line does for a configuration combined with all rules, runs it once.
+     *
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function enablingRulesAgainDoesNotChangeTheResult(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1 1)"><g transform="translate(2 2)"><rect width="1" height="1"/></g></g></svg>';
+
+        $enabled = ['flattenGroups', 'minifyTransformations', 'convertShapesToPath'];
+        $flags = array_map(
+            static fn (\ReflectionParameter $reflectionParameter): bool => \in_array($reflectionParameter->getName(), $enabled, true),
+            (new \ReflectionMethod(SvgOptimizerFacade::class, 'withRules'))->getParameters(),
+        );
+
+        $withAllRules = SvgOptimizerFacade::fromString($svg)->withAllRules()->optimize()->getContent();
+        $withRulesAgain = SvgOptimizerFacade::fromString($svg)
+            ->withAllRules()
+            ->withRules(...$flags)
+            ->optimize()
+            ->getContent();
+
+        self::assertCount(3, array_filter($flags));
+
+        self::assertSame($withAllRules, $withRulesAgain);
+    }
+
     #[\Override]
     protected function setUp(): void
     {

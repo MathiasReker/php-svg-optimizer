@@ -20,7 +20,13 @@ use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
+use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -36,6 +42,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(MetaData::class)]
+#[CoversClass(Rule::class)]
 final class SvgOptimizerTest extends TestCase
 {
     private SvgProviderInterface $svgProvider;
@@ -275,6 +282,67 @@ final class SvgOptimizerTest extends TestCase
         $svgOptimizer->configureRules($ruleFlags);
 
         self::assertSame(1, $svgOptimizer->getRulesCount());
+    }
+
+    #[Test]
+    public function configureRulesEnablesEachRuleOnce(): void
+    {
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
+
+        $svgOptimizer->configureRules([RemoveComments::class => true, SortAttributes::class => true]);
+        $svgOptimizer->configureRules([RemoveComments::class => true, RemoveMetadata::class => true]);
+
+        self::assertSame(3, $svgOptimizer->getRulesCount());
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     */
+    #[Test]
+    public function configureRulesRunsRulesByPriorityWhateverTheOrderTheyAreEnabledIn(): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg"><rect style="stroke-width:1"/></svg>'));
+
+        // Defaults are only removed after styles became attributes.
+        $svgOptimizer->configureRules([RemoveDefaultAttributes::class => true]);
+        $svgOptimizer->configureRules([ConvertInlineStylesToAttributes::class => true]);
+        $svgOptimizer->optimize();
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>', $svgOptimizer->getContent());
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     */
+    #[Test]
+    public function configureRulesRunsRulesWithoutPriorityLast(): void
+    {
+        $styleRule = new class implements SvgOptimizerRuleInterface {
+            public function optimize(\DOMDocument $domDocument): void
+            {
+                $domDocument->documentElement?->setAttribute('style', 'fill:red');
+            }
+
+            public static function shouldCheckSize(): bool
+            {
+                return false;
+            }
+
+            public static function isRisky(): bool
+            {
+                return false;
+            }
+        };
+
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg"/>'));
+        $svgOptimizer->configureRules([$styleRule::class => true, ConvertInlineStylesToAttributes::class => true]);
+        $svgOptimizer->optimize();
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg" style="fill:red"/>', $svgOptimizer->getContent());
     }
 
     /**

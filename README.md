@@ -426,6 +426,11 @@ rules should be enabled or disabled.
 $svgOptimizer->withRules();
 ```
 
+Rules always run in the same order, whatever order they are enabled in: untrusted content is sanitized first, styles
+are turned into attributes before attributes are cleaned up, and values are minified before shapes are converted, so
+optimizing an optimized file again leaves it (almost always) unchanged. A rule enabled more than once, for example with
+both `withAllRules()` and `withRules()`, runs once.
+
 ---
 
 ## Parameters

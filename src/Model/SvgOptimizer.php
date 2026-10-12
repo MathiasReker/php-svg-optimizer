@@ -19,6 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
+use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 
 /**
@@ -201,15 +202,42 @@ final class SvgOptimizer
     }
 
     /**
+     * Enables rules once each, however often they are configured, and orders all rules by their priority.
+     *
      * @param array<class-string<SvgOptimizerRuleInterface>, bool> $ruleFlags
      */
     public function configureRules(array $ruleFlags): void
     {
         foreach ($ruleFlags as $ruleClass => $enabled) {
-            if ($enabled) {
+            if ($enabled && !$this->hasRule($ruleClass)) {
                 $this->addRule(new $ruleClass());
             }
         }
+
+        // The sort is stable, so rules without a priority keep the order they were added in, after the others.
+        usort(
+            $this->rules,
+            static fn (SvgOptimizerRuleInterface $a, SvgOptimizerRuleInterface $b): int => self::priority($a) <=> self::priority($b),
+        );
+    }
+
+    /**
+     * @param class-string<SvgOptimizerRuleInterface> $ruleClass
+     */
+    private function hasRule(string $ruleClass): bool
+    {
+        foreach ($this->rules as $rule) {
+            if ($rule::class === $ruleClass) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function priority(SvgOptimizerRuleInterface $svgOptimizerRule): int
+    {
+        return Rule::tryFrom($svgOptimizerRule::class)?->priority() ?? \PHP_INT_MAX;
     }
 
     /**
