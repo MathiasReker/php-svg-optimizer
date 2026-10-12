@@ -94,10 +94,16 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
 {
     "convertColorsToHex": true,
     "convertCssClassesToAttributes": true,
+    "convertEllipseToCircle": true,
     "convertEmptyTagsToSelfClosing": true,
     "convertInlineStylesToAttributes": true,
+    "convertOneStopGradients": true,
+    "convertShapesToPath": true,
     "fixAttributeNames": false,
     "flattenGroups": true,
+    "minifyListValues": true,
+    "minifyNumericValues": true,
+    "minifyPathData": true,
     "minifySvgCoordinates": true,
     "minifyTransformations": true,
     "removeAriaAndRole": true,
@@ -108,6 +114,7 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
     "removeDoctype": true,
     "removeDuplicateElements": true,
     "removeEmptyAttributes": true,
+    "removeEmptyContainers": true,
     "removeEmptyGroups": true,
     "removeEmptyTextElements": true,
     "removeEnableBackgroundAttribute": false,
@@ -116,12 +123,17 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
     "removeMetadata": true,
     "removeNonStandardAttributes": false,
     "removeNonStandardTags": false,
+    "removeStyleTypeAttributes": true,
     "removeTitleAndDesc": true,
     "removeUnnecessaryWhitespace": true,
     "removeUnsafeElements": false,
+    "removeUnusedIds": false,
     "removeUnusedMasks": true,
     "removeUnusedNamespaces": true,
+    "removeUselessDefs": true,
     "removeWidthHeightAttributes": false,
+    "removeXmlSpaceDefault": true,
+    "removeZeroSizeShapes": true,
     "scopeSvgStyles": false,
     "sortAttributes": true
 }
@@ -168,10 +180,16 @@ try {
         ->withRules(
             convertColorsToHex: true,
             convertCssClassesToAttributes: true,
+            convertEllipseToCircle: true,
             convertEmptyTagsToSelfClosing: true,
             convertInlineStylesToAttributes: true,
+            convertOneStopGradients: true,
+            convertShapesToPath: true,
             fixAttributeNames: false,
             flattenGroups: true,
+            minifyListValues: true,
+            minifyNumericValues: true,
+            minifyPathData: true,
             minifySvgCoordinates: true,
             minifyTransformations: true,
             removeAriaAndRole: true,
@@ -182,6 +200,7 @@ try {
             removeDoctype: true,
             removeDuplicateElements: true,
             removeEmptyAttributes: true,
+            removeEmptyContainers: true,
             removeEmptyGroups: true,
             removeEmptyTextElements: true,
             removeEnableBackgroundAttribute: false,
@@ -190,12 +209,17 @@ try {
             removeMetadata: true,
             removeNonStandardAttributes: false,
             removeNonStandardTags: false,
+            removeStyleTypeAttributes: true,
             removeTitleAndDesc: true,
             removeUnnecessaryWhitespace: true,
             removeUnsafeElements: false,
+            removeUnusedIds: false,
             removeUnusedMasks: true,
             removeUnusedNamespaces: true,
+            removeUselessDefs: true,
             removeWidthHeightAttributes: false,
+            removeXmlSpaceDefault: true,
+            removeZeroSizeShapes: true,
             scopeSvgStyles: false,
             sortAttributes: true,
         )
@@ -316,7 +340,9 @@ try {
             removeNonStandardAttributes: true,
             removeNonStandardTags: true,
             removeUnsafeElements: true,
+            removeUnusedIds: true,
             removeWidthHeightAttributes: true,
+            scopeSvgStyles: true,
         )
         ->allowRisky()
         ->optimize()
@@ -410,10 +436,10 @@ alter behavior or semantics in certain use cases and should be enabled with care
 
 ### `convertColorsToHex`
 
-Normalizes all color definitions to hexadecimal notation. Color values expressed as functional formats (such as `rgb()`
-or `rgba()`) are converted to their hexadecimal equivalents, using shorthand notation where possible.
-This improves consistency across the SVG, reduces textual variation, and can slightly decrease file size while
-maintaining visual fidelity.
+Normalizes color definitions to their shortest exact notation. Functional formats (such as `rgb()` or `rgba()`) are
+converted to hexadecimal, `#aabbcc` is shortened to `#abc`, and a CSS color name and its hexadecimal value are swapped
+when the other form is shorter (for example `#ff0000` becomes `red` and `white` becomes `#fff`). `currentColor`,
+`transparent`, `none` and `url()` references are left as they are.
 
 ```php
 $svgOptimizer->convertColorsToHex();
@@ -427,6 +453,18 @@ Replaces CSS class-based styling with equivalent inline SVG attributes on each a
 
 ```php
 $svgOptimizer->convertCssClassesToAttributes();
+```
+
+---
+
+### `convertEllipseToCircle`
+
+Converts `<ellipse>` elements whose `rx` and `ry` are equal into `<circle>` elements with a single `r`. The radius is
+copied as written, so no value is recalculated. Ellipses with child elements, a `style` attribute, or in a document
+with a `<style>` element are kept.
+
+```php
+$svgOptimizer->convertEllipseToCircle();
 ```
 
 ---
@@ -450,6 +488,33 @@ styling, and makes attribute-level optimizations more effective downstream.
 
 ```php
 $svgOptimizer->convertInlineStylesToAttributes();
+```
+
+---
+
+### `convertOneStopGradients`
+
+Replaces a gradient that has a single `<stop>` with that stop's color where it is used as a `fill` or `stroke`, and
+removes the gradient. Gradients referenced in any other way, stops with an opacity, a `style` or a color that is not a
+plain hex or named color, and documents with a `<style>` or `<script>` element are left untouched. A gradient in object
+bounding box units is only replaced on rects, circles and ellipses, as it is not rendered on, for example, a straight
+line.
+
+```php
+$svgOptimizer->convertOneStopGradients();
+```
+
+---
+
+### `convertShapesToPath`
+
+Converts `<rect>`, `<line>`, `<polyline>` and `<polygon>` elements into `<path>` elements when that makes the file
+smaller. The path data reuses the original numbers (a rect is drawn with relative moves), so no coordinate is
+recalculated or rounded. Rounded rects, values with units, shapes with child elements or a `style` attribute, and
+documents with a `<style>` or `<marker>` element are kept as they are.
+
+```php
+$svgOptimizer->convertShapesToPath();
 ```
 
 ---
@@ -478,6 +543,42 @@ $svgOptimizer->flattenGroups();
 
 ---
 
+### `minifyListValues`
+
+Shortens the notation of number lists such as `viewBox`, `points`, `stroke-dasharray`, `keyTimes` and the `values` of
+numeric animations. Numbers are shortened without rounding and lists use the fewest separators the attribute allows.
+Values with units, percentages or keywords are left untouched.
+
+```php
+$svgOptimizer->minifyListValues();
+```
+
+---
+
+### `minifyNumericValues`
+
+Shortens the notation of single-number attribute values such as `opacity`, `stroke-width`, `x` or `font-size`:
+leading and trailing zeros and a `+` sign are dropped, and `px` is removed from lengths, as one pixel equals one user
+unit. Only the notation changes; values are never rounded.
+
+```php
+$svgOptimizer->minifyNumericValues();
+```
+
+---
+
+### `minifyPathData`
+
+Rewrites path data (`d`) in its shortest equivalent form: repeated command letters and unneeded separators are
+dropped, number literals are shortened, and relative linetos along one axis become `h`/`v`. Coordinates are never
+recalculated or rounded, and path data that is not valid is left untouched.
+
+```php
+$svgOptimizer->minifyPathData();
+```
+
+---
+
 ### `minifySvgCoordinates`
 
 Reduces numeric precision in coordinate values and other numeric attributes where excessive precision is unnecessary.
@@ -492,9 +593,11 @@ $svgOptimizer->minifySvgCoordinates();
 
 ### `minifyTransformations`
 
-Optimizes `transform` attributes by simplifying expressions, removing redundant transformations, and normalizing
-transform syntax. This reduces attribute length and improves parsing efficiency while maintaining equivalent geometric
-transformations.
+Shortens `transform`, `gradientTransform` and `patternTransform` values without recalculating them: numbers and
+separators are written in their shortest form, identity transformations such as `translate(0)`, `scale(1)` and
+`rotate(0)` are removed, default arguments are dropped (`translate(10 0)` becomes `translate(10)`), and a matrix that
+only translates or scales is written as `translate()` or `scale()`. Values that do not parse as a transform list are
+left untouched.
 
 ```php
 $svgOptimizer->minifyTransformations();
@@ -592,10 +695,23 @@ $svgOptimizer->removeEmptyAttributes();
 
 ---
 
+### `removeEmptyContainers`
+
+Removes container elements such as `<defs>`, `<g>`, `<symbol>`, `<mask>`, `<clipPath>`, `<pattern>`, `<marker>` and
+`<switch>` when they have no content and no `id`. Containers that become empty are removed as well. Groups with a
+`filter` are kept, as a filter can paint on its own.
+
+```php
+$svgOptimizer->removeEmptyContainers();
+```
+
+---
+
 ### `removeEmptyGroups`
 
-Deletes `<g>` elements that do not contain any child elements. This simplifies the DOM tree and removes unnecessary
-structural nodes.
+Deletes `<g>` elements that have no attributes and do not contain any child elements, text or comments. This simplifies
+the DOM tree and removes unnecessary structural nodes. `removeEmptyContainers` applies the same clean-up to more
+container types and also removes empty groups that carry attributes other than `id` and `filter`.
 
 ```php
 $svgOptimizer->removeEmptyGroups();
@@ -628,8 +744,9 @@ $svgOptimizer->removeEnableBackgroundAttribute();
 
 ### `removeInkscapeFootprints`
 
-Strips Inkscape-specific metadata, attributes, and elements that are added during export but are not required for
-rendering. This cleans up SVGs generated by Inkscape and significantly reduces noise and file size.
+Strips editor-specific metadata, attributes, and elements that are added during export but are not required for
+rendering. This covers Inkscape, Sodipodi, Adobe Illustrator, Sketch, Serif and Microsoft Visio, matched by namespace
+URI, including Illustrator's private data in a `<foreignObject>` that requires an Illustrator extension.
 
 ```php
 $svgOptimizer->removeInkscapeFootprints();
@@ -662,7 +779,13 @@ $svgOptimizer->removeMetadata();
 ### `removeNonStandardAttributes`
 
 Removes SVG attributes that are non-standard, unsafe, or not part of the official SVG specification.
-This includes attributes not in the SvgAttribute enum, excluding safe prefixes like xml:, xlink:, or data-*.
+Each SVG element keeps only the attributes the specification defines for it, plus the shared attribute groups that
+apply to it (core, presentation, ARIA, conditional processing, animation, filter primitive and similar), so for example
+`points` is removed from a `<rect>`. Elements the specification does not define fall back to the full list of known SVG
+attributes, without HTML-only attributes such as `src`, `srcset` and `action`. Event handler attributes (`on*`) and
+`xml:base` are always removed.
+Prefixed attributes are matched by namespace: only known `xlink:`, `xml:` and `ev:` attributes are kept, and attributes bound to any
+other namespace are removed. `data-*` attributes are kept when their name is valid.
 
 ```php
 $svgOptimizer->removeNonStandardAttributes();
@@ -677,6 +800,17 @@ This is useful for sanitizing SVGs that may contain editor-specific or foreign X
 
 ```php
 $svgOptimizer->removeNonStandardTags();
+```
+
+---
+
+### `removeStyleTypeAttributes`
+
+Removes the `type` attribute of `<style>` when it is `text/css` and of `<script>` when it is a JavaScript MIME type,
+as these are the defaults. Other values, such as `module`, are kept.
+
+```php
+$svgOptimizer->removeStyleTypeAttributes();
 ```
 
 ---
@@ -715,6 +849,18 @@ $svgOptimizer->removeUnusedNamespaces();
 
 ---
 
+### `removeUselessDefs`
+
+Removes definitions that can never be used because neither they nor any descendant has an `id`: children of
+`<defs>` (except `<style>`, `<script>` and fonts), and gradients, patterns, clip paths, masks, markers, symbols and
+filters anywhere in the document. A `<defs>` left empty is removed as well.
+
+```php
+$svgOptimizer->removeUselessDefs();
+```
+
+---
+
 ### `removeWidthHeightAttributes` (**risky**)
 
 Removes the `width` and `height` attributes from the root `<svg>` element, relying solely on the `viewBox` for scaling.
@@ -726,15 +872,52 @@ $svgOptimizer->removeWidthHeightAttributes();
 
 ---
 
+### `removeXmlSpaceDefault`
+
+Removes `xml:space="default"` where it has no effect, that is, when no ancestor sets `xml:space="preserve"` and no
+CSS `white-space` could be affected by it.
+
+```php
+$svgOptimizer->removeXmlSpaceDefault();
+```
+
+---
+
+### `removeZeroSizeShapes`
+
+Removes shapes the SVG specification says are not rendered: circles and ellipses with a zero radius, rects with a
+zero width or height, and paths, polylines and polygons without any data. Shapes with an `id`, child elements or a
+`style` attribute, and documents with a `<style>` element, are kept.
+
+```php
+$svgOptimizer->removeZeroSizeShapes();
+```
+
+---
+
 ### `removeUnsafeElements`
 
 Sanitizes SVG content by removing elements and attributes that can pose security risks. This includes scripting
 capabilities, external resource references, and interactive event handlers. The rule is intended for use with untrusted
 SVG input and helps prevent script execution, data exfiltration, and other attack vectors when embedding SVGs in web
-applications.
+applications. It also removes processing instructions, comments that could break out when the SVG is inlined in HTML,
+elements from non-SVG namespaces (such as XHTML or MathML), and animations that rewrite `href`.
 
 ```php
 $svgOptimizer->removeUnsafeElements();
+```
+
+---
+
+### `removeUnusedIds` (**risky**)
+
+Removes `id` attributes that nothing in the document references, through `url(#id)`, `href`, ARIA attributes,
+animation timing or `<style>` rules. The ids of the root `<svg>`, `<symbol>` and `<view>` elements are kept, and nothing
+is removed when the document contains a script or an event handler attribute. The rule is risky because CSS,
+JavaScript or links outside the SVG may target the removed ids.
+
+```php
+$svgOptimizer->removeUnusedIds();
 ```
 
 ---
@@ -755,6 +938,7 @@ $svgOptimizer->removeUnusedMasks();
 Scopes all IDs and class names within SVG elements to avoid style collisions.
 Each embedded SVG gets unique identifiers, and CSS rules are rewritten accordingly.
 This ensures multiple SVGs can coexist in the same document without interfering with each other.
+Names that are already scoped are left unchanged, so optimizing a scoped SVG again does not change it.
 
 ```php
 $svgOptimizer->scopeSvgStyles();
@@ -782,10 +966,16 @@ of available rules, shown with the values that `withAllRules()` (without `allowR
 $svgOptimizer->withRules(
     convertColorsToHex: true,
     convertCssClassesToAttributes: true,
+    convertEllipseToCircle: true,
     convertEmptyTagsToSelfClosing: true,
     convertInlineStylesToAttributes: true,
+    convertOneStopGradients: true,
+    convertShapesToPath: true,
     fixAttributeNames: true,
     flattenGroups: true,
+    minifyListValues: true,
+    minifyNumericValues: true,
+    minifyPathData: true,
     minifySvgCoordinates: true,
     minifyTransformations: true,
     removeAriaAndRole: true,
@@ -796,6 +986,7 @@ $svgOptimizer->withRules(
     removeDoctype: true,
     removeDuplicateElements: true,
     removeEmptyAttributes: true,
+    removeEmptyContainers: true,
     removeEmptyGroups: true,
     removeEmptyTextElements: true,
     removeEnableBackgroundAttribute: false,
@@ -804,12 +995,17 @@ $svgOptimizer->withRules(
     removeMetadata: true,
     removeNonStandardAttributes: true,
     removeNonStandardTags: true,
+    removeStyleTypeAttributes: true,
     removeTitleAndDesc: true,
     removeUnnecessaryWhitespace: true,
     removeUnsafeElements: true,
+    removeUnusedIds: false,
     removeUnusedMasks: true,
     removeUnusedNamespaces: true,
+    removeUselessDefs: true,
     removeWidthHeightAttributes: false,
+    removeXmlSpaceDefault: true,
+    removeZeroSizeShapes: true,
     scopeSvgStyles: false,
     sortAttributes: true,
 );

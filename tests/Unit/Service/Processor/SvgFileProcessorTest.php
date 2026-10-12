@@ -29,13 +29,19 @@ use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEllipseToCircle;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEmptyTagsToSelfClosing;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertOneStopGradients;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertShapesToPath;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FixAttributeNames;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyListValues;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyNumericValues;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyPathData;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveAriaAndRole;
@@ -46,6 +52,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDoctype;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDuplicateElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyContainers;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyGroups;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
@@ -54,12 +61,17 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardTags;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveStyleTypeAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedMasks;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessDefs;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveXmlSpaceDefault;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveZeroSizeShapes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
@@ -95,13 +107,19 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(AbstractXmlProcessor::class)]
 #[CoversClass(ConvertColorsToHex::class)]
 #[CoversClass(ConvertCssClassesToAttributes::class)]
+#[CoversClass(ConvertEllipseToCircle::class)]
 #[CoversClass(ConvertEmptyTagsToSelfClosing::class)]
 #[CoversClass(ConvertInlineStylesToAttributes::class)]
+#[CoversClass(ConvertOneStopGradients::class)]
+#[CoversClass(ConvertShapesToPath::class)]
 #[CoversClass(SvgAttribute::class)]
 #[CoversClass(SvgNamespace::class)]
 #[CoversClass(SvgTag::class)]
 #[CoversClass(FixAttributeNames::class)]
 #[CoversClass(FlattenGroups::class)]
+#[CoversClass(MinifyListValues::class)]
+#[CoversClass(MinifyNumericValues::class)]
+#[CoversClass(MinifyPathData::class)]
 #[CoversClass(MinifySvgCoordinates::class)]
 #[CoversClass(MinifyTransformations::class)]
 #[CoversClass(RemoveAriaAndRole::class)]
@@ -111,6 +129,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RemoveDoctype::class)]
 #[CoversClass(RemoveDuplicateElements::class)]
 #[CoversClass(RemoveEmptyAttributes::class)]
+#[CoversClass(RemoveEmptyContainers::class)]
 #[CoversClass(RemoveEmptyGroups::class)]
 #[CoversClass(RemoveEmptyTextElements::class)]
 #[CoversClass(RemoveEnableBackgroundAttribute::class)]
@@ -120,13 +139,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RemoveTitleAndDesc::class)]
 #[CoversClass(RemoveUnnecessaryWhitespace::class)]
 #[CoversClass(RemoveUnsafeElements::class)]
+#[CoversClass(RemoveUnusedIds::class)]
 #[CoversClass(RemoveUnusedMasks::class)]
 #[CoversClass(RemoveUnusedNamespaces::class)]
+#[CoversClass(RemoveUselessDefs::class)]
 #[CoversClass(RemoveWidthHeightAttributes::class)]
+#[CoversClass(RemoveXmlSpaceDefault::class)]
+#[CoversClass(RemoveZeroSizeShapes::class)]
 #[CoversClass(ScopeSvgStyles::class)]
 #[CoversClass(SortAttributes::class)]
 #[CoversClass(RemoveNonStandardAttributes::class)]
 #[CoversClass(RemoveNonStandardTags::class)]
+#[CoversClass(RemoveStyleTypeAttributes::class)]
 final class SvgFileProcessorTest extends TestCase
 {
     private string $tempDir;
@@ -162,14 +186,18 @@ final class SvgFileProcessorTest extends TestCase
             $this->metaDataAggregator
         );
 
+        $originalSize = filesize($this->svgFile);
+
         $svgFileProcessor->processPath($this->svgFile);
 
         $contents = file_get_contents($this->svgFile);
         self::assertIsString($contents);
         self::assertStringContainsString('<svg', $contents);
 
-        self::assertGreaterThanOrEqual(0, $this->metaDataAggregator->getTotalOriginalSize());
-        self::assertGreaterThanOrEqual(0, $this->metaDataAggregator->getTotalOptimizedSize());
+        self::assertSame(1, $this->metaDataAggregator->getOptimizedFileCount());
+        self::assertSame($originalSize, $this->metaDataAggregator->getTotalOriginalSize());
+        self::assertSame(mb_strlen($contents), $this->metaDataAggregator->getTotalOptimizedSize());
+        self::assertStringContainsString($this->svgFile . ' (', $this->memoryStream->getContent());
     }
 
     /**
@@ -198,9 +226,16 @@ final class SvgFileProcessorTest extends TestCase
             $this->metaDataAggregator
         );
 
+        $svgFileSize = filesize($this->svgFile);
+        $file2Size = filesize($file2);
+        self::assertNotFalse($svgFileSize);
+        self::assertNotFalse($file2Size);
+        $originalSize = $svgFileSize + $file2Size;
+
         $svgFileProcessor->processPath($this->tempDir);
 
-        self::assertGreaterThanOrEqual(0, $this->metaDataAggregator->getTotalOriginalSize());
+        self::assertSame(2, $this->metaDataAggregator->getOptimizedFileCount());
+        self::assertSame($originalSize, $this->metaDataAggregator->getTotalOriginalSize());
     }
 
     /**

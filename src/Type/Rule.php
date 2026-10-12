@@ -13,10 +13,16 @@ namespace MathiasReker\PhpSvgOptimizer\Type;
 
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEllipseToCircle;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEmptyTagsToSelfClosing;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertOneStopGradients;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertShapesToPath;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FixAttributeNames;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyListValues;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyNumericValues;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyPathData;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveAriaAndRole;
@@ -27,6 +33,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDoctype;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDuplicateElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyContainers;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyGroups;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
@@ -35,12 +42,17 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardTags;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveStyleTypeAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedMasks;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessDefs;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveXmlSpaceDefault;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveZeroSizeShapes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 
@@ -53,13 +65,25 @@ enum Rule: string
 
     case ConvertCssClassesToAttributes = ConvertCssClassesToAttributes::class;
 
+    case ConvertEllipseToCircle = ConvertEllipseToCircle::class;
+
     case ConvertEmptyTagsToSelfClosing = ConvertEmptyTagsToSelfClosing::class;
 
     case ConvertInlineStylesToAttributes = ConvertInlineStylesToAttributes::class;
 
+    case ConvertOneStopGradients = ConvertOneStopGradients::class;
+
+    case ConvertShapesToPath = ConvertShapesToPath::class;
+
     case FixAttributeNames = FixAttributeNames::class;
 
     case FlattenGroups = FlattenGroups::class;
+
+    case MinifyListValues = MinifyListValues::class;
+
+    case MinifyNumericValues = MinifyNumericValues::class;
+
+    case MinifyPathData = MinifyPathData::class;
 
     case MinifySvgCoordinates = MinifySvgCoordinates::class;
 
@@ -87,6 +111,8 @@ enum Rule: string
 
     case RemoveEmptyAttributes = RemoveEmptyAttributes::class;
 
+    case RemoveEmptyContainers = RemoveEmptyContainers::class;
+
     case RemoveInkscapeFootprints = RemoveInkscapeFootprints::class;
 
     case RemoveInvisibleCharacters = RemoveInvisibleCharacters::class;
@@ -97,17 +123,27 @@ enum Rule: string
 
     case RemoveNonStandardTags = RemoveNonStandardTags::class;
 
+    case RemoveStyleTypeAttributes = RemoveStyleTypeAttributes::class;
+
     case RemoveTitleAndDesc = RemoveTitleAndDesc::class;
 
     case RemoveUnnecessaryWhitespace = RemoveUnnecessaryWhitespace::class;
 
     case RemoveUnsafeElements = RemoveUnsafeElements::class;
 
+    case RemoveUnusedIds = RemoveUnusedIds::class;
+
     case RemoveUnusedMasks = RemoveUnusedMasks::class;
 
     case RemoveUnusedNamespaces = RemoveUnusedNamespaces::class;
 
+    case RemoveUselessDefs = RemoveUselessDefs::class;
+
     case RemoveWidthHeightAttributes = RemoveWidthHeightAttributes::class;
+
+    case RemoveXmlSpaceDefault = RemoveXmlSpaceDefault::class;
+
+    case RemoveZeroSizeShapes = RemoveZeroSizeShapes::class;
 
     case ScopeSvgStyles = ScopeSvgStyles::class;
 

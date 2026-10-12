@@ -112,6 +112,18 @@ final readonly class SvgOptimizerFacade
      * @param bool $removeWidthHeightAttributes     Whether to remove width and height attributes
      * @param bool $scopeSvgStyles                  Whether to rewrite IDs and class names in SVG styles to prevent conflicts
      * @param bool $sortAttributes                  Whether to sort attributes
+     * @param bool $convertEllipseToCircle          Whether to convert ellipses with equal radii to circles
+     * @param bool $convertShapesToPath             Whether to convert rect, line, polyline and polygon elements to paths
+     * @param bool $minifyNumericValues             Whether to shorten the notation of numeric attribute values
+     * @param bool $minifyPathData                  Whether to minify path data without changing coordinates
+     * @param bool $removeEmptyContainers           Whether to remove empty container elements that cannot be referenced
+     * @param bool $removeUselessDefs               Whether to remove definitions without an id
+     * @param bool $removeZeroSizeShapes            Whether to remove shapes with a zero size
+     * @param bool $convertOneStopGradients         Whether to replace gradients with a single stop by its color
+     * @param bool $minifyListValues                Whether to shorten the notation of number lists
+     * @param bool $removeStyleTypeAttributes       Whether to remove default type attributes on style and script elements
+     * @param bool $removeUnusedIds                 Whether to remove ids that are not referenced in the document
+     * @param bool $removeXmlSpaceDefault           Whether to remove xml:space="default" where it has no effect
      *
      * @return $this The SvgOptimizerFacade instance
      */
@@ -148,14 +160,32 @@ final readonly class SvgOptimizerFacade
         bool $removeWidthHeightAttributes = false,
         bool $scopeSvgStyles = false,
         bool $sortAttributes = false,
+        bool $convertEllipseToCircle = false,
+        bool $convertShapesToPath = false,
+        bool $minifyNumericValues = false,
+        bool $minifyPathData = false,
+        bool $removeEmptyContainers = false,
+        bool $removeUselessDefs = false,
+        bool $removeZeroSizeShapes = false,
+        bool $convertOneStopGradients = false,
+        bool $minifyListValues = false,
+        bool $removeStyleTypeAttributes = false,
+        bool $removeUnusedIds = false,
+        bool $removeXmlSpaceDefault = false,
     ): self {
         $rules = [
             Rule::ConvertColorsToHex->value => $convertColorsToHex,
             Rule::ConvertCssClassesToAttributes->value => $convertCssClassesToAttributes,
+            Rule::ConvertEllipseToCircle->value => $convertEllipseToCircle,
             Rule::ConvertEmptyTagsToSelfClosing->value => $convertEmptyTagsToSelfClosing,
             Rule::ConvertInlineStylesToAttributes->value => $convertInlineStylesToAttributes,
+            Rule::ConvertOneStopGradients->value => $convertOneStopGradients,
+            Rule::ConvertShapesToPath->value => $convertShapesToPath,
             Rule::FixAttributeNames->value => $fixAttributeNames,
             Rule::FlattenGroups->value => $flattenGroups,
+            Rule::MinifyListValues->value => $minifyListValues,
+            Rule::MinifyNumericValues->value => $minifyNumericValues,
+            Rule::MinifyPathData->value => $minifyPathData,
             Rule::MinifySvgCoordinates->value => $minifySvgCoordinates,
             Rule::MinifyTransformations->value => $minifyTransformations,
             Rule::RemoveAriaAndRole->value => $removeAriaAndRole,
@@ -166,6 +196,7 @@ final readonly class SvgOptimizerFacade
             Rule::RemoveDoctype->value => $removeDoctype,
             Rule::RemoveDuplicateElements->value => $removeDuplicateElements,
             Rule::RemoveEmptyAttributes->value => $removeEmptyAttributes,
+            Rule::RemoveEmptyContainers->value => $removeEmptyContainers,
             Rule::RemoveEmptyGroups->value => $removeEmptyGroups,
             Rule::RemoveEmptyTextElements->value => $removeEmptyTextElements,
             Rule::RemoveEnableBackgroundAttribute->value => $removeEnableBackgroundAttribute,
@@ -174,12 +205,17 @@ final readonly class SvgOptimizerFacade
             Rule::RemoveMetadata->value => $removeMetadata,
             Rule::RemoveNonStandardAttributes->value => $removeNonStandardAttributes,
             Rule::RemoveNonStandardTags->value => $removeNonStandardTags,
+            Rule::RemoveStyleTypeAttributes->value => $removeStyleTypeAttributes,
             Rule::RemoveTitleAndDesc->value => $removeTitleAndDesc,
             Rule::RemoveUnnecessaryWhitespace->value => $removeUnnecessaryWhitespace,
             Rule::RemoveUnsafeElements->value => $removeUnsafeElements,
+            Rule::RemoveUnusedIds->value => $removeUnusedIds,
             Rule::RemoveUnusedMasks->value => $removeUnusedMasks,
             Rule::RemoveUnusedNamespaces->value => $removeUnusedNamespaces,
+            Rule::RemoveUselessDefs->value => $removeUselessDefs,
             Rule::RemoveWidthHeightAttributes->value => $removeWidthHeightAttributes,
+            Rule::RemoveXmlSpaceDefault->value => $removeXmlSpaceDefault,
+            Rule::RemoveZeroSizeShapes->value => $removeZeroSizeShapes,
             Rule::ScopeSvgStyles->value => $scopeSvgStyles,
             Rule::SortAttributes->value => $sortAttributes,
         ];

@@ -18,7 +18,6 @@ use MathiasReker\PhpSvgOptimizer\Model\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Filesystem\Finder;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
-use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\ValueObject\CommandOption;
 
 /**
@@ -87,7 +86,7 @@ final readonly class SvgFileProcessor
         $svgOptimizerFacade = SvgOptimizerFacade::fromFile($filePath)
             ->allowRisky($this->commandOption->allowRisky())
             ->withAllRules($this->commandOption->withAllRules())
-            ->withRules(...array_map(fn (Rule $rule) => $this->getConfig()[$rule->configKey()] ?? false, Rule::cases()))
+            ->withRules(...$this->ruleFlags())
             ->optimize();
 
         $metrics = $svgOptimizerFacade->getMetaData();
@@ -103,6 +102,28 @@ final readonly class SvgFileProcessor
         );
 
         $this->outputManager->printOptimizationResult($filePath, $metrics->getSavedPercentage());
+    }
+
+    /**
+     * The flags are passed positionally in the order of the parameters of `withRules()`, which does not follow the
+     * order of the rule enum, as new parameters are appended to keep the method backwards compatible.
+     *
+     * @return list<bool>
+     *
+     * @throws \JsonException
+     * @throws \LogicException
+     * @throws \ValueError
+     */
+    private function ruleFlags(): array
+    {
+        $config = $this->getConfig();
+        $flags = [];
+
+        foreach ((new \ReflectionMethod(SvgOptimizerFacade::class, 'withRules'))->getParameters() as $parameter) {
+            $flags[] = $config[$parameter->getName()] ?? false;
+        }
+
+        return $flags;
     }
 
     /**
