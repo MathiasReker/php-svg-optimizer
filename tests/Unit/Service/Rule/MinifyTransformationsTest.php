@@ -70,7 +70,7 @@ final class MinifyTransformationsTest extends TestCase
                 XML,
         ];
 
-        yield 'Retains Non-Identity Transforms' => [
+        yield 'Shortens Non-Identity Transforms' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g transform="translate(10,20) scale(2,2)">
@@ -79,7 +79,7 @@ final class MinifyTransformationsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(10,20) scale(2,2)"><rect x="10" y="10" width="30" height="30"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(10 20)scale(2)"><rect x="10" y="10" width="30" height="30"/></g></svg>
                 XML,
         ];
 
@@ -92,7 +92,7 @@ final class MinifyTransformationsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(10,20)"><rect x="10" y="10" width="30" height="30"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(10 20)"><rect x="10" y="10" width="30" height="30"/></g></svg>
                 XML,
         ];
 
@@ -144,7 +144,7 @@ final class MinifyTransformationsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(10,10) rotate(45) scale(0.5)"><rect x="10" y="10" width="30" height="30"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(10 10)rotate(45)scale(.5)"><rect x="10" y="10" width="30" height="30"/></g></svg>
                 XML,
         ];
 
@@ -163,7 +163,7 @@ final class MinifyTransformationsTest extends TestCase
                 XML,
         ];
 
-        yield 'Handles Transformations with Percentages' => [
+        yield 'Keeps Transformations with Percentages' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g transform="scale(50%,50%)">
@@ -172,7 +172,7 @@ final class MinifyTransformationsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="scale(0.5,0.5)"><rect x="10" y="10" width="30" height="30"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="scale(50%,50%)"><rect x="10" y="10" width="30" height="30"/></g></svg>
                 XML,
         ];
 
@@ -185,7 +185,7 @@ final class MinifyTransformationsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(10,20) scale(2,0.5) rotate(45) skewX(10) skewY(20)"><rect x="10" y="10" width="30" height="30"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(10 20)scale(2 .5)rotate(45)skewX(10)skewY(20)"><rect x="10" y="10" width="30" height="30"/></g></svg>
                 XML,
         ];
 
@@ -204,7 +204,7 @@ final class MinifyTransformationsTest extends TestCase
                 XML,
         ];
 
-        yield 'Handles Complex Transformations with Percentages' => [
+        yield 'Keeps Complex Transformations with Percentages and Units' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g transform="translate(10%,20%) scale(50%,50%) rotate(45deg)">
@@ -213,11 +213,11 @@ final class MinifyTransformationsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(0.1,0.2) scale(0.5,0.5) rotate(45deg)"><rect x="10" y="10" width="30" height="30"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(10%,20%) scale(50%,50%) rotate(45deg)"><rect x="10" y="10" width="30" height="30"/></g></svg>
                 XML,
         ];
 
-        yield 'Handles Single Transformations with Percentages' => [
+        yield 'Keeps Single Transformations with Percentages' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g transform="scale(75%)">
@@ -226,11 +226,11 @@ final class MinifyTransformationsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="scale(0.75)"><circle cx="50" cy="50" r="20"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="scale(75%)"><circle cx="50" cy="50" r="20"/></g></svg>
                 XML,
         ];
 
-        yield 'Handles Transformations with Decimal Percentages' => [
+        yield 'Keeps Transformations with Decimal Percentages' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g transform="translate(12.5%,10%)">
@@ -239,7 +239,7 @@ final class MinifyTransformationsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(0.125,0.1)"><circle cx="50" cy="50" r="20"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(12.5%,10%)"><circle cx="50" cy="50" r="20"/></g></svg>
                 XML,
         ];
 
@@ -282,7 +282,7 @@ final class MinifyTransformationsTest extends TestCase
                 XML,
         ];
 
-        yield 'Keeps Rotation with Non-Zero Angle and Zero Center' => [
+        yield 'Drops Zero Center from Rotation' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g transform="rotate(90 0 0)">
@@ -291,7 +291,7 @@ final class MinifyTransformationsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="rotate(90 0 0)"><circle cx="10" cy="10" r="5"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="rotate(90)"><circle cx="10" cy="10" r="5"/></g></svg>
                 XML,
         ];
 
@@ -334,7 +334,7 @@ final class MinifyTransformationsTest extends TestCase
                 XML,
         ];
 
-        yield 'Keeps Comma-Separated Non-Identity Matrix' => [
+        yield 'Writes Comma-Separated Translation Matrix as Translate' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g transform="matrix(1,0,0,1,10,20)">
@@ -343,11 +343,11 @@ final class MinifyTransformationsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="matrix(1,0,0,1,10,20)"><circle cx="10" cy="10" r="5"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(10 20)"><circle cx="10" cy="10" r="5"/></g></svg>
                 XML,
         ];
 
-        yield 'Keeps Non-Identity Matrix' => [
+        yield 'Writes Translation Matrix as Translate' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g transform="matrix(1 0 0 1 10 20)">
@@ -356,11 +356,11 @@ final class MinifyTransformationsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="matrix(1 0 0 1 10 20)"><circle cx="10" cy="10" r="5"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(10 20)"><circle cx="10" cy="10" r="5"/></g></svg>
                 XML,
         ];
 
-        yield 'Handles Degenerate Matrix with Zeros' => [
+        yield 'Writes Degenerate Matrix with Zeros as Scale' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g transform="matrix(0 0 0 0 0 0)">
@@ -369,7 +369,7 @@ final class MinifyTransformationsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="matrix(0 0 0 0 0 0)"><circle cx="10" cy="10" r="5"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="scale(0)"><circle cx="10" cy="10" r="5"/></g></svg>
                 XML,
         ];
 
@@ -386,7 +386,7 @@ final class MinifyTransformationsTest extends TestCase
                 XML,
         ];
 
-        yield 'Handles Transform Attribute with Extra Semicolons or Commas' => [
+        yield 'Keeps Transform Attribute with Semicolons' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g transform="translate(0,0); scale(1,1);">
@@ -395,8 +395,325 @@ final class MinifyTransformationsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><circle cx="10" cy="10" r="5"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g transform="translate(0,0); scale(1,1);"><circle cx="10" cy="10" r="5"/></g></svg>
                 XML,
         ];
+
+        yield 'Shortens numbers' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(010.50, -0.50)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10.5-.5)"/></svg>',
+        ];
+
+        yield 'Never rounds long decimals' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(0.123456789012345678901, 1.000000000000000000001)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(.123456789012345678901 1.000000000000000000001)"/></svg>',
+        ];
+
+        yield 'Never treats a near-one scale as identity' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(1.0000000000000000001, 1.0000000000000000001)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(1.0000000000000000001)"/></svg>',
+        ];
+
+        yield 'Never treats a near-zero translation as identity' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(0.0000000000000000001, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(.0000000000000000001)"/></svg>',
+        ];
+
+        yield 'Never treats a near-zero rotation as identity' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(0.0000000000000000001)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(.0000000000000000001)"/></svg>',
+        ];
+
+        yield 'Never treats a near-zero skew as identity' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="skewX(-0.0000000000000000001)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="skewX(-.0000000000000000001)"/></svg>',
+        ];
+
+        yield 'Shortens exponents' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.50E+02, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.5e2)"/></svg>',
+        ];
+
+        yield 'Omits separator before a negative number' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1, -2)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1-2)"/></svg>',
+        ];
+
+        yield 'Omits separator before a fraction after a fraction' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(45.5, 0.5, 0.5)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(45.5.5.5)"/></svg>',
+        ];
+
+        yield 'Omits separator before a fraction after an exponent' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1e2, 0.5)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1e2.5)"/></svg>',
+        ];
+
+        yield 'Keeps separator before a fraction after an integer' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(45, 0.5, 1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(45 .5 1)"/></svg>',
+        ];
+
+        yield 'Drops zero vertical translation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(5, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(5)"/></svg>',
+        ];
+
+        yield 'Keeps zero horizontal translation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(0, 5)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(0 5)"/></svg>',
+        ];
+
+        yield 'Removes negative zero translation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(-0, -0.0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g/></svg>',
+        ];
+
+        yield 'Collapses uniform scale' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2, 2.0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"/></svg>',
+        ];
+
+        yield 'Collapses negative uniform scale' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(-1, -1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(-1)"/></svg>',
+        ];
+
+        yield 'Keeps non-uniform scale' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2, 3)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2 3)"/></svg>',
+        ];
+
+        yield 'Keeps scale with different notations of equal values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(1e1, 10)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(1e1 10)"/></svg>',
+        ];
+
+        yield 'Keeps scale of one and two' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(1, 2)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(1 2)"/></svg>',
+        ];
+
+        yield 'Keeps scale of two and one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2, 1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2 1)"/></svg>',
+        ];
+
+        yield 'Removes identity scale written with decimals' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(1.0, 01)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g/></svg>',
+        ];
+
+        yield 'Keeps negative scale' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(-1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(-1)"/></svg>',
+        ];
+
+        yield 'Removes zero rotation around a center' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(0, 10, 10)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g/></svg>',
+        ];
+
+        yield 'Removes negative zero rotation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(-0.0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g/></svg>',
+        ];
+
+        yield 'Keeps rotation center with a zero coordinate' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(45, 0, 5)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(45 0 5)"/></svg>',
+        ];
+
+        yield 'Keeps rotation center with a zero vertical coordinate' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(45, 5, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(45 5 0)"/></svg>',
+        ];
+
+        yield 'Drops zero rotation center written with decimals' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(45, 0.0, -0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(45)"/></svg>',
+        ];
+
+        yield 'Removes zero skews' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="skewX(0.0) skewY(-0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g/></svg>',
+        ];
+
+        yield 'Keeps non-zero skews' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="skewX(0.5) skewY(-0.5)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="skewX(.5)skewY(-.5)"/></svg>',
+        ];
+
+        yield 'Writes scaling matrix as scale' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(2, 0, 0, 3, 0, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2 3)"/></svg>',
+        ];
+
+        yield 'Writes uniform scaling matrix as scale' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(2, 0, 0, 2.0, 0, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"/></svg>',
+        ];
+
+        yield 'Writes horizontal translation matrix as translate' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(1, 0, 0, 1, 5, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(5)"/></svg>',
+        ];
+
+        yield 'Writes vertical translation matrix as translate' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(1, 0, 0, 1, 0, 5)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(0 5)"/></svg>',
+        ];
+
+        yield 'Keeps skewing matrix' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(1, 0.5, 0, 1, 0, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(1 .5 0 1 0 0)"/></svg>',
+        ];
+
+        yield 'Keeps matrix skewing the other axis' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(1, 0, 0.5, 1, 0, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(1 0 .5 1 0 0)"/></svg>',
+        ];
+
+        yield 'Keeps matrix that scales and translates horizontally' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(2, 0, 0, 1, 3, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(2 0 0 1 3 0)"/></svg>',
+        ];
+
+        yield 'Keeps matrix that scales and translates vertically' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(2, 0, 0, 3, 0, 5)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(2 0 0 3 0 5)"/></svg>',
+        ];
+
+        yield 'Keeps matrix with vertical scale and translation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(1, 0, 0, 2, 3, 4)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(1 0 0 2 3 4)"/></svg>',
+        ];
+
+        yield 'Never merges transforms' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1, 2) translate(3, 4)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1 2)translate(3 4)"/></svg>',
+        ];
+
+        yield 'Removes separators between transforms' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1) , scale(2)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1)scale(2)"/></svg>',
+        ];
+
+        yield 'Removes comma between transforms' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1),scale(2)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1)scale(2)"/></svg>',
+        ];
+
+        yield 'Allows whitespace before the parenthesis' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate (5, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(5)"/></svg>',
+        ];
+
+        yield 'Keeps value that is not shorter' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1,2)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1,2)"/></svg>',
+        ];
+
+        yield 'Keeps already minified value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(5)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(5)"/></svg>',
+        ];
+
+        yield 'Keeps translate with too many arguments' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(0, 0, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(0, 0, 0)"/></svg>',
+        ];
+
+        yield 'Keeps rotate with two arguments' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(0, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(0, 0)"/></svg>',
+        ];
+
+        yield 'Keeps matrix with five arguments' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(1, 0, 0, 1, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(1, 0, 0, 1, 0)"/></svg>',
+        ];
+
+        yield 'Keeps skew with two arguments' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="skewX(0, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="skewX(0, 0)"/></svg>',
+        ];
+
+        yield 'Keeps transform without arguments' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate() scale(1, 1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate() scale(1, 1)"/></svg>',
+        ];
+
+        yield 'Keeps unknown transform functions' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translateX(0) scale(1, 1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translateX(0) scale(1, 1)"/></svg>',
+        ];
+
+        yield 'Keeps transform functions with wrong case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="Translate(0) scale(1, 1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="Translate(0) scale(1, 1)"/></svg>',
+        ];
+
+        yield 'Keeps transforms with units' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10px, 0) scale(1, 1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10px, 0) scale(1, 1)"/></svg>',
+        ];
+
+        yield 'Keeps unclosed transform' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(0, 0) scale(1, 1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(0, 0) scale(1, 1"/></svg>',
+        ];
+
+        yield 'Keeps transform with double comma' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1,,2) scale(1, 1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1,,2) scale(1, 1)"/></svg>',
+        ];
+
+        yield 'Keeps transforms separated by two commas' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1),,scale(1, 1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1),,scale(1, 1)"/></svg>',
+        ];
+
+        yield 'Keeps transform list with a leading comma' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform=", translate(0, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform=", translate(0, 0)"/></svg>',
+        ];
+
+        yield 'Keeps transform with trailing text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(0, 0) x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(0, 0) x"/></svg>',
+        ];
+
+        yield 'Keeps numbers without separators' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.5.5) scale(1, 1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.5.5) scale(1, 1)"/></svg>',
+        ];
+
+        yield 'Keeps empty transform' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform=""/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform=""/></svg>',
+        ];
+
+        yield 'Minifies gradient and pattern transforms' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient gradientTransform="translate(5, 0) rotate(0)"/><pattern patternTransform="scale(2, 2)"/><radialGradient gradientTransform="scale(1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient gradientTransform="translate(5)"/><pattern patternTransform="scale(2)"/><radialGradient/></svg>',
+        ];
+
+        yield 'Keeps other attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g data-transform="translate(5, 0)" transform-origin="0 0" class="scale(1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g data-transform="translate(5, 0)" transform-origin="0 0" class="scale(1)"/></svg>',
+        ];
+    }
+
+    #[Test]
+    public function isRiskyReturnsFalse(): void
+    {
+        self::assertFalse(MinifyTransformations::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(MinifyTransformations::shouldCheckSize());
     }
 }

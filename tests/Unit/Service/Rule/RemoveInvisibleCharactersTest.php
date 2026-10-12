@@ -140,4 +140,16 @@ final class RemoveInvisibleCharactersTest extends TestCase
                 XML,
         ];
     }
+
+    #[Test]
+    public function ruleIsMarkedAsNotRisky(): void
+    {
+        self::assertFalse(RemoveInvisibleCharacters::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(RemoveInvisibleCharacters::shouldCheckSize());
+    }
 }

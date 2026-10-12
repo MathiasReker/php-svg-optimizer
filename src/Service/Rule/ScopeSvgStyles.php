@@ -14,37 +14,22 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdRenameTrait;
 
 final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
 {
-    /**
-     * @see https://regex101.com/r/aoMXmR/1
-     */
+    use IdRenameTrait;
+
     private const string CSS_RULE_REGEX = '/(?<selector>[^{]+?){(?<body>[^}]+)}/';
 
-    /**
-     * @see https://regex101.com/r/3fFyX5/1
-     */
     private const string TAG_SELECTOR_REGEX = '/^[a-zA-Z][\w-]*$/';
 
-    /**
-     * @see https://regex101.com/r/wqnnqt/1
-     */
     private const string CLASS_SELECTOR_REGEX = '/\.([\w\-]+)/';
 
-    /**
-     * @see https://regex101.com/r/W8IG1C/1
-     */
     private const string ID_SELECTOR_REGEX = '/#([\w\-]+)/';
 
-    /**
-     * @see https://regex101.com/r/RPou2d/1
-     */
-    private const string URL_REFERENCE_REGEX = '/url\(#([\w\-]+)\)/';
+    private const string URL_REFERENCE_REGEX = '/url\(([\'"]?)#([^\s\'")]+)\1\)/';
 
-    /**
-     * @see https://regex101.com/r/kNrSO5/1
-     */
     private const string WHITESPACE_REGEX = '/\s+/';
 
     private const string SVG_QUERY = '//*[local-name()="svg"]';
@@ -53,7 +38,16 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
 
     private const string CLASS_QUERY = './/*[@class]';
 
-    private const string URL_REFERENCE_QUERY = './/@*[contains(., "url(#")]';
+    /**
+     * Attributes and style elements that may hold `url(#id)`, `url('#id')` or `url("#id")` references.
+     */
+    private const string URL_REFERENCE_QUERY = './/@*[contains(., "url(")] | .//*[local-name()="style"][contains(., "url(")]';
+
+    /**
+     * Names this rule has already scoped end with the scope hash, so running the rule again leaves them unchanged.
+     * A name of the document that happens to end with a hyphen and ten hexadecimal digits is treated the same way.
+     */
+    private const string SCOPED_NAME_REGEX = '/-[0-9a-f]{10}(?:-\d+)?$/';
 
     #[\Override]
     public static function isRisky(): bool
@@ -71,19 +65,12 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
+
+        /** @var \DOMNodeList<\DOMElement> $svgs */
         $svgs = $domXPath->query(self::SVG_QUERY);
-
-        if (false === $svgs || 0 === $svgs->length) {
-            return;
-        }
-
         $multiple = $svgs->length > 1;
 
         foreach ($svgs as $index => $node) {
-            if (!$node instanceof \DOMElement) {
-                continue;
-            }
-
             $xml = $domDocument->saveXML($node);
             if (false === $xml) {
                 continue;
@@ -99,10 +86,11 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     private function scopeSingleSvg(\DOMXPath $domXPath, \DOMElement $domElement, string $hash): void
     {
         $idReplacements = $this->scopeIds($domXPath, $domElement, $hash);
-        $classReplacements = $this->processStyleBlocks($domElement, $hash, $idReplacements);
+        $classReplacements = $this->processStyleBlocks($domElement, $hash);
 
         $this->updateClassAttributes($domXPath, $domElement, $classReplacements);
         $this->updateUrlReferences($domXPath, $domElement, $idReplacements);
+        $this->updateIdReferenceAttributes($domXPath, $domElement, $idReplacements);
     }
 
     /**
@@ -112,18 +100,12 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     {
         $result = [];
 
+        /** @var \DOMNodeList<\DOMElement> $nodes */
         $nodes = $domXPath->query(self::ID_QUERY, $domElement);
-        if (false === $nodes) {
-            return $result;
-        }
 
         foreach ($nodes as $node) {
-            if (!$node instanceof \DOMElement) {
-                continue;
-            }
-
             $original = $node->getAttribute(SvgAttribute::Id->value);
-            if ('' === $original) {
+            if ('' === $original || $this->isScoped($original)) {
                 continue;
             }
 
@@ -136,54 +118,38 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     }
 
     /**
-     * @param array<string, string> $idReplacements
-     *
      * @return array<string, string> a map of original to new class names
      */
-    private function processStyleBlocks(
-        \DOMElement $domElement,
-        string $hash,
-        array $idReplacements,
-    ): array {
+    private function processStyleBlocks(\DOMElement $domElement, string $hash): array
+    {
         $classReplacements = [];
 
         foreach ($domElement->getElementsByTagName(SvgTag::Style->value) as $domNodeList) {
-            $css = trim($domNodeList->nodeValue ?? '');
+            $css = trim($domNodeList->textContent);
             if ('' === $css) {
                 continue;
             }
 
-            [$processedCss, $newClassReplacements, $newIdReplacements] = $this->processCssRules(
-                $css,
-                $hash,
-                $idReplacements
-            );
+            [$processedCss, $newClassReplacements] = $this->processCssRules($css, $hash);
 
             $classReplacements = [...$classReplacements, ...$newClassReplacements];
-            $idReplacements = [...$idReplacements, ...$newIdReplacements];
 
-            $domNodeList->nodeValue = $processedCss;
+            $domNodeList->textContent = $processedCss;
         }
 
         return $classReplacements;
     }
 
     /**
-     * @param array<string, string> $idReplacements
-     *
-     * @return array{string, array<string, string>, array<string, string>}
+     * @return array{string, array<string, string>}
      */
-    private function processCssRules(
-        string $css,
-        string $hash,
-        array $idReplacements,
-    ): array {
+    private function processCssRules(string $css, string $hash): array
+    {
         $newClassReplacements = [];
-        $newIdReplacements = [];
 
         $result = preg_replace_callback(
             self::CSS_RULE_REGEX,
-            function (array $match) use ($hash, &$newClassReplacements, &$newIdReplacements, $idReplacements): string {
+            function (array $match) use ($hash, &$newClassReplacements): string {
                 $selector = trim($match['selector']);
                 $body = $match['body'];
 
@@ -198,10 +164,7 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
                     [$single, $scopedClasses] = $this->scopeClasses($single, $hash);
                     $newClassReplacements = [...$newClassReplacements, ...$scopedClasses];
 
-                    [$single, $scopedIds] = $this->scopeSelectorIds($single, $hash, $idReplacements);
-                    $newIdReplacements = [...$newIdReplacements, ...$scopedIds];
-
-                    $scopedSelectors[] = $single;
+                    $scopedSelectors[] = $this->scopeSelectorIds($single, $hash);
                 }
 
                 return \sprintf('%s{%s}', implode(', ', $scopedSelectors), $body);
@@ -209,7 +172,15 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
             $css
         );
 
-        return [$result ?? '', $newClassReplacements, $newIdReplacements];
+        return [$result ?? '', $newClassReplacements];
+    }
+
+    /**
+     * @param string $name an id or class name
+     */
+    private function isScoped(string $name): bool
+    {
+        return 1 === preg_match(self::SCOPED_NAME_REGEX, $name);
     }
 
     private function isUnsafeSelector(string $selector): bool
@@ -232,8 +203,13 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
 
         $newSelector = (string) preg_replace_callback(
             self::CLASS_SELECTOR_REGEX,
-            static function (array $match) use ($hash, &$scopedClasses): string {
+            function (array $match) use ($hash, &$scopedClasses): string {
                 $original = $match[1];
+
+                if ($this->isScoped($original)) {
+                    return $match[0];
+                }
+
                 $scoped = $original . '-' . $hash;
                 $scopedClasses[$original] = $scoped;
 
@@ -246,35 +222,15 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     }
 
     /**
-     * @param array<string, string> $idReplacements
-     *
-     * @return array{string, array<string, string>}
+     * Ids are renamed exactly like scopeIds() renames them on the elements.
      */
-    private function scopeSelectorIds(
-        string $selector,
-        string $hash,
-        array $idReplacements,
-    ): array {
-        $scopedIds = [];
-
-        $newSelector = (string) preg_replace_callback(
+    private function scopeSelectorIds(string $selector, string $hash): string
+    {
+        return (string) preg_replace_callback(
             self::ID_SELECTOR_REGEX,
-            static function (array $match) use ($hash, &$scopedIds, $idReplacements): string {
-                $original = $match[1];
-
-                if (\array_key_exists($original, $idReplacements)) {
-                    return '#' . $idReplacements[$original];
-                }
-
-                $scoped = $original . '-' . $hash;
-                $scopedIds[$original] = $scoped;
-
-                return '#' . $scoped;
-            },
+            fn (array $match): string => $this->isScoped($match[1]) ? $match[0] : '#' . $match[1] . '-' . $hash,
             $selector
         );
-
-        return [$newSelector, $scopedIds];
     }
 
     /**
@@ -289,16 +245,10 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
             return;
         }
 
+        /** @var \DOMNodeList<\DOMElement> $nodes */
         $nodes = $domXPath->query(self::CLASS_QUERY, $domElement);
-        if (false === $nodes) {
-            return;
-        }
 
         foreach ($nodes as $node) {
-            if (!$node instanceof \DOMElement) {
-                continue;
-            }
-
             $this->updateSingleClassAttribute($node, $classReplacements);
         }
     }
@@ -333,28 +283,16 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
             return;
         }
 
-        $attributes = $domXPath->query(self::URL_REFERENCE_QUERY, $domElement);
-        if (false === $attributes) {
-            return;
-        }
+        /** @var \DOMNodeList<\DOMNode> $nodes */
+        $nodes = $domXPath->query(self::URL_REFERENCE_QUERY, $domElement);
 
-        foreach ($attributes as $attribute) {
-            if (!$attribute instanceof \DOMAttr) {
-                continue;
-            }
-
-            $value = $attribute->nodeValue;
-
-            $attribute->nodeValue = preg_replace_callback(
+        foreach ($nodes as $node) {
+            $node->textContent = (string) preg_replace_callback(
                 self::URL_REFERENCE_REGEX,
-                static function (array $match) use ($idReplacements): string {
-                    $id = $match[1];
-
-                    return \array_key_exists($id, $idReplacements)
-                        ? 'url(#' . $idReplacements[$id] . ')'
-                        : $match[0];
-                },
-                (string) $value
+                static fn (array $match): string => \array_key_exists($match[2], $idReplacements)
+                    ? 'url(' . $match[1] . '#' . $idReplacements[$match[2]] . $match[1] . ')'
+                    : $match[0],
+                $node->textContent
             );
         }
     }

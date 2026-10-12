@@ -21,14 +21,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
  */
 final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
-    /**
-     * @see https://regex101.com/r/EU11xA/1
-     */
     private const string NAMESPACE_REGEX = '/xmlns:([a-zA-Z0-9\-]+)="([^"]+)"/';
 
-    /**
-     * @see https://regex101.com/r/pxqIJN/1
-     */
     private const string ELEMENT_TEMPLATE_REGEX = '/%s:[a-zA-Z0-9\-]+/';
 
     #[\Override]
@@ -85,16 +79,13 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     {
         $namespaceCounts = [];
 
-        $namespacePattern = self::NAMESPACE_REGEX;
+        preg_match_all(self::NAMESPACE_REGEX, $content, $matches);
 
-        $result = preg_match_all($namespacePattern, $content, $matches);
-        if (false !== $result && $result > 0) {
-            foreach ($matches[1] as $prefix) {
-                $namespaceKey = \sprintf('%s:%s', SvgAttribute::Xmlns->value, $prefix);
-                $elementPattern = \sprintf(self::ELEMENT_TEMPLATE_REGEX, preg_quote($prefix, '/'));
-                preg_match_all($elementPattern, $content, $elementMatches);
-                $namespaceCounts[$namespaceKey] = \count($elementMatches[0]);
-            }
+        // The prefix pattern only allows characters that are literal in a regex.
+        foreach ($matches[1] as $prefix) {
+            $namespaceKey = \sprintf('%s:%s', SvgAttribute::Xmlns->value, $prefix);
+            preg_match_all(\sprintf(self::ELEMENT_TEMPLATE_REGEX, $prefix), $content, $elementMatches);
+            $namespaceCounts[$namespaceKey] = \count($elementMatches[0]);
         }
 
         return $namespaceCounts;
@@ -108,7 +99,7 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     {
         $root = $domDocument->documentElement;
 
-        if ($root instanceof \DOMElement && $root->hasAttribute($namespaceAttribute)) {
+        if ($root instanceof \DOMElement) {
             $root->removeAttribute($namespaceAttribute);
         }
     }

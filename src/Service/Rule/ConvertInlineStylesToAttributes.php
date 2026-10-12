@@ -14,18 +14,21 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
 
 final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRuleInterface
 {
-    /**
-     * @see https://regex101.com/r/Wlb5xS/1
-     */
+    use AsciiCaseTrait;
+
     private const string PROPERTY_NAME_REGEX = '/^[a-z_-][a-z0-9_-]*$/i';
 
-    /**
-     * @see https://regex101.com/r/UUdVJ3/1
-     */
     private const string STYLE_SPLIT_REGEX = '/\s*;\s*/';
+
+    private const string STYLED_ELEMENTS_QUERY = '//*[@style]';
+
+    private const string STYLE_SHEET_QUERY = '//*[local-name()="style"] | //processing-instruction("xml-stylesheet")';
+
+    private const string IMPORTANT_MARKER = '!';
 
     #[\Override]
     public static function isRisky(): bool
@@ -45,24 +48,22 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        foreach ($this->getElementsWithStyle($domDocument) as $domElement) {
-            $this->convertStyles($domElement);
-        }
-    }
-
-    /**
-     * @param \DOMDocument $domDocument the DOM document to search
-     *
-     * @return list<\DOMElement> a list of elements with inline styles
-     */
-    private function getElementsWithStyle(\DOMDocument $domDocument): array
-    {
         $domXPath = new \DOMXPath($domDocument);
 
-        /** @var \DOMNodeList<\DOMElement> $nodes */
-        $nodes = $domXPath->query('//*[@style]');
+        /** @var \DOMNodeList<\DOMNode> $styleSheets */
+        $styleSheets = $domXPath->query(self::STYLE_SHEET_QUERY);
 
-        return iterator_to_array($nodes, false);
+        // Presentation attributes lose to every style sheet rule, while inline styles beat them.
+        if ($styleSheets->length > 0) {
+            return;
+        }
+
+        /** @var \DOMNodeList<\DOMElement> $domNodeList */
+        $domNodeList = $domXPath->query(self::STYLED_ELEMENTS_QUERY);
+
+        foreach ($domNodeList as $domElement) {
+            $this->convertStyles($domElement);
+        }
     }
 
     /**
@@ -70,9 +71,9 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
      */
     private function convertStyles(\DOMElement $domElement): void
     {
-        $style = trim($domElement->getAttribute(SvgAttribute::Style->value));
+        $style = $domElement->getAttribute(SvgAttribute::Style->value);
 
-        if ('' === $style || !str_contains($style, ':')) {
+        if (!str_contains($style, ':')) {
             return;
         }
 
@@ -106,10 +107,8 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
                 continue;
             }
 
-            if ($this->isConvertibleProperty($prop)) {
-                if (!$domElement->hasAttribute($prop)) {
-                    $domElement->setAttribute($prop, $value);
-                }
+            if ($this->isConvertibleProperty($prop) && !str_contains($value, self::IMPORTANT_MARKER)) {
+                $domElement->setAttribute($prop, $value);
 
                 continue;
             }
@@ -125,15 +124,13 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
      */
     private function parseDeclaration(string $declaration): array
     {
-        $declaration = trim($declaration);
-
-        if ('' === $declaration || !str_contains($declaration, ':')) {
+        if (!str_contains($declaration, ':')) {
             return ['', ''];
         }
 
         [$prop, $value] = explode(':', $declaration, 2);
 
-        $prop = mb_strtolower(trim($prop));
+        $prop = $this->asciiLowercase(trim($prop));
         $value = trim($value);
 
         if ('' === $prop || '' === $value) {

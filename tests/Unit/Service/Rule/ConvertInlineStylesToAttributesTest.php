@@ -159,15 +159,45 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
                 XML,
         ];
 
-        yield 'Keeps existing attributes without overwriting' => [
+        yield 'Overwrites existing attributes, which the inline style beats' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
                     <rect fill="#000" style="fill:#f00;stroke:#0f0"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect fill="#000" stroke="#0f0"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><rect fill="#f00" stroke="#0f0"/></svg>
                 XML,
+        ];
+
+        yield 'Keeps important declarations' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:green!important;stroke:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:green!important" stroke="red"/></svg>',
+        ];
+
+        yield 'Keeps inline styles when a style element exists' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}</style><rect style="fill:green"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}</style><rect style="fill:green"/></svg>',
+        ];
+
+        yield 'Uses the last of repeated declarations' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;fill:green"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="green"/></svg>',
+        ];
+
+        yield 'Converts properties with whitespace before the colon' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill :red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/></svg>',
+        ];
+
+        yield 'Keeps colons in values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:url(http://example.com/a.svg#g)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="url(http://example.com/a.svg#g)"/></svg>',
+        ];
+
+        yield 'Keeps properties that only match after non-ASCII case folding' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="stro&#x212A;e:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="stro&#x212A;e:red"/></svg>',
         ];
 
         yield 'Leaves unknown properties when valid SVG props converted' => [
@@ -270,5 +300,22 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/></svg>
                 XML,
         ];
+
+        yield 'Keeps inline styles when an external style sheet is linked' => [
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:green"/></svg>',
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:green"/></svg>',
+        ];
+    }
+
+    #[Test]
+    public function ruleIsMarkedAsNotRisky(): void
+    {
+        self::assertFalse(ConvertInlineStylesToAttributes::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(ConvertInlineStylesToAttributes::shouldCheckSize());
     }
 }

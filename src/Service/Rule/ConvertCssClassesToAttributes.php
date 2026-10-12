@@ -15,21 +15,30 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ClassAttributeTrait;
 
 /**
+ * Style sheets for specific media or with nested blocks (such as `@media`) or comments are left untouched, as are `!important` declarations
+ * and properties that other CSS may set, since presentation attributes lose to every style sheet rule. A class is only
+ * removed from its elements when no remaining CSS refers to it.
+ *
  * @no-named-arguments
  */
 final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleInterface
 {
-    /**
-     * @see https://regex101.com/r/qOS1io/1
-     */
+    use AsciiCaseTrait;
+    use ClassAttributeTrait;
+
     private const string CSS_RULE_REGEX = '/([^{}]+)\{([^}]+)}/';
 
-    /**
-     * @see https://regex101.com/r/qOS1io/2
-     */
     private const string SIMPLE_CLASS_SELECTOR_REGEX = '/^\.([a-zA-Z0-9_-]+)$/';
+
+    private const string COMMENT_START = '/*';
+
+    private const string IMPORTANT_MARKER = '!';
+
+    private const array ALL_MEDIA = ['', 'all'];
 
     #[\Override]
     public static function isRisky(): bool
@@ -50,21 +59,19 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     public function optimize(\DOMDocument $domDocument): void
     {
         $classMap = $this->buildClassElementMap($domDocument);
-
-        $convertibleLookup = $this->getConvertibleProperties();
+        $convertedClasses = [];
 
         /** @var \DOMNodeList<\DOMElement> $domNodeList */
         $domNodeList = $domDocument->getElementsByTagName(SvgTag::Style->value);
+        $otherCss = $this->collectOtherCss($domNodeList);
 
         foreach (iterator_to_array($domNodeList, false) as $domElement) {
-            $css = $domElement->textContent ?? '';
-
-            if ('' === $css) {
-                $domElement->parentNode?->removeChild($domElement);
+            if (!$this->isConvertibleStyleElement($domElement)) {
                 continue;
             }
 
-            $remainingCss = $this->processCss($css, $classMap, $convertibleLookup);
+            [$remainingCss, $classes] = $this->processCss($domElement->textContent, $classMap, $otherCss);
+            $convertedClasses = [...$convertedClasses, ...$classes];
 
             if ('' === $remainingCss) {
                 $domElement->parentNode?->removeChild($domElement);
@@ -72,6 +79,8 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
                 $domElement->textContent = $remainingCss;
             }
         }
+
+        $this->removeConvertedClasses($domNodeList, $classMap, $convertedClasses);
     }
 
     /**
@@ -84,18 +93,74 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         $map = [];
 
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
-            $classes = explode(' ', $domNodeList->getAttribute(SvgAttribute::Class_->value));
-            foreach ($classes as $class) {
-                $class = trim($class);
-                if ('' === $class) {
-                    continue;
-                }
-
+            foreach ($this->classList($domNodeList) as $class) {
                 $map[$class][] = $domNodeList;
             }
         }
 
         return $map;
+    }
+
+    /**
+     * @param \DOMElement $domElement a `<style>` element
+     *
+     * @return bool true if the style element applies to all media and consists of plain rules only
+     */
+    private function isConvertibleStyleElement(\DOMElement $domElement): bool
+    {
+        $media = $this->asciiLowercase(trim($domElement->getAttribute(SvgAttribute::Media->value)));
+
+        return \in_array($media, self::ALL_MEDIA, true) && $this->isPlainCss($domElement->textContent);
+    }
+
+    /**
+     * Presentation attributes lose to every style sheet rule, so a property that CSS other than the simple class
+     * rules may set is not converted.
+     *
+     * @param \DOMNodeList<\DOMElement> $styleElements the style elements of the document
+     *
+     * @return string the CSS that stays CSS: unconvertible style elements and rules with other selectors
+     */
+    private function collectOtherCss(\DOMNodeList $styleElements): string
+    {
+        $otherCss = '';
+
+        foreach ($styleElements as $styleElement) {
+            $otherCss .= $this->isConvertibleStyleElement($styleElement)
+                ? $this->otherRules($styleElement->textContent)
+                : $styleElement->textContent;
+        }
+
+        return $otherCss;
+    }
+
+    /**
+     * @param string $css plain CSS rules
+     *
+     * @return string the rules with a selector other than a single class
+     */
+    private function otherRules(string $css): string
+    {
+        return (string) preg_replace_callback(
+            self::CSS_RULE_REGEX,
+            static fn (array $match): string => [] === preg_grep(
+                self::SIMPLE_CLASS_SELECTOR_REGEX,
+                array_map(trim(...), explode(',', $match[1])),
+                \PREG_GREP_INVERT
+            ) ? '' : $match[0],
+            $css
+        );
+    }
+
+    /**
+     * @param string $css the CSS content from a `<style>` block
+     *
+     * @return bool true if the CSS consists of plain rules only
+     */
+    private function isPlainCss(string $css): bool
+    {
+        return !str_contains($css, self::COMMENT_START)
+            && '' === trim((string) preg_replace(self::CSS_RULE_REGEX, '', $css));
     }
 
     /**
@@ -106,26 +171,25 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         /** @var array<string, int>|null $lookup */
         static $lookup = null;
 
-        $lookup ??= array_flip(SvgInlineStyleProperty::values());
-
-        return $lookup;
+        return $lookup ??= array_flip(SvgInlineStyleProperty::values());
     }
 
     /**
-     * @param string                           $css               the CSS content from a `<style>` block
-     * @param array<string, list<\DOMElement>> $classMap          the class-to-element map
-     * @param array<string, int>               $convertibleLookup the lookup map for convertible properties
+     * @param string                           $css      the CSS content from a `<style>` block
+     * @param array<string, list<\DOMElement>> $classMap the class-to-element map
+     * @param string                           $otherCss the CSS that stays CSS
      *
-     * @return string the CSS that could not be converted to attributes
+     * @return array{string, list<string>} the CSS that could not be converted to attributes, and the converted classes
      */
-    private function processCss(string $css, array $classMap, array $convertibleLookup): string
+    private function processCss(string $css, array $classMap, string $otherCss): array
     {
         preg_match_all(self::CSS_RULE_REGEX, $css, $matches, \PREG_SET_ORDER);
         $remainingCss = [];
+        $convertedClasses = [];
 
         foreach ($matches as $match) {
             $declarations = trim($match[2]);
-            $selectors = array_map(trim(...), explode(',', trim($match[1])));
+            $selectors = array_map(trim(...), explode(',', $match[1]));
 
             $unconvertibleSelectors = [];
 
@@ -136,15 +200,8 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
                     continue;
                 }
 
-                $class = $selectorMatch[1];
-
-                [$convertible, $nonConvertible] = $this->splitDeclarations($declarations, $convertibleLookup);
-
-                $this->applyStylesToElements($class, $classMap, $convertible, $nonConvertible);
-
-                if ([] !== $nonConvertible) {
-                    $remainingCss[] = $this->rebuildCssRule($class, $nonConvertible);
-                }
+                $convertedClasses[] = $selectorMatch[1];
+                $remainingCss[] = $this->convertClassRule($selectorMatch[1], $declarations, $classMap, $otherCss);
             }
 
             if ([] !== $unconvertibleSelectors) {
@@ -152,54 +209,63 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
             }
         }
 
-        return implode('', $remainingCss);
+        return [implode('', $remainingCss), $convertedClasses];
+    }
+
+    /**
+     * Applies the convertible declarations of a single-class rule to the elements with that class.
+     *
+     * @param string                           $class        the class name
+     * @param string                           $declarations the declaration block of the rule
+     * @param array<string, list<\DOMElement>> $classMap     the class-to-element map
+     * @param string                           $otherCss     the CSS that stays CSS
+     *
+     * @return string the rule with the declarations that stay CSS, or an empty string if none do
+     */
+    private function convertClassRule(string $class, string $declarations, array $classMap, string $otherCss): string
+    {
+        [$convertible, $nonConvertible] = $this->splitDeclarations($declarations, $otherCss);
+        $this->applyStylesToElements($class, $classMap, $convertible);
+
+        return [] === $nonConvertible ? '' : $this->rebuildCssRule($class, $nonConvertible);
     }
 
     /**
      * @param array<string, list<\DOMElement>> $classMap
      * @param array<string, string>            $convertible
-     * @param array<string, string>            $nonConvertible
      */
-    private function applyStylesToElements(string $class, array $classMap, array $convertible, array $nonConvertible): void
+    private function applyStylesToElements(string $class, array $classMap, array $convertible): void
     {
-        if (!\array_key_exists($class, $classMap)) {
-            return;
-        }
-
-        foreach ($classMap[$class] as $element) {
+        foreach ($classMap[$class] ?? [] as $element) {
             foreach ($convertible as $prop => $value) {
                 $element->setAttribute($prop, $value);
             }
-
-            $this->updateElementClass($element, $class, $nonConvertible);
         }
     }
 
     /**
-     * @param string             $declarations      The CSS declaration block (e.g., "fill:red; font-size:12px").
-     * @param array<string, int> $convertibleLookup the lookup map for convertible properties
+     * @param string $declarations The CSS declaration block (e.g., "fill:red; font-size:12px").
+     * @param string $otherCss     the CSS that stays CSS
      *
      * @return array{array<string, string>, array<string, string>} a tuple containing convertible and non-convertible declarations
      */
-    private function splitDeclarations(string $declarations, array $convertibleLookup): array
+    private function splitDeclarations(string $declarations, string $otherCss): array
     {
+        $convertibleLookup = $this->getConvertibleProperties();
         $convertible = [];
         $nonConvertible = [];
 
         foreach (explode(';', $declarations) as $decl) {
-            $decl = trim($decl);
-            if ('' === $decl) {
-                continue;
-            }
-
             if (!str_contains($decl, ':')) {
                 continue;
             }
 
             [$prop, $value] = array_map(trim(...), explode(':', $decl, 2));
-            $propLower = mb_strtolower($prop);
+            $propLower = $this->asciiLowercase($prop);
 
-            if (\array_key_exists($propLower, $convertibleLookup)) {
+            if (\array_key_exists($propLower, $convertibleLookup)
+                && !str_contains($value, self::IMPORTANT_MARKER)
+                && !$this->declaresProperty($otherCss, $propLower)) {
                 $convertible[$propLower] = $value;
             } else {
                 $nonConvertible[$propLower] = $value;
@@ -210,25 +276,37 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     /**
-     * @param \DOMElement           $domElement     the element to update
-     * @param string                $class          the class that was processed
-     * @param array<string, string> $nonConvertible the remaining non-convertible declarations
+     * @param string $css      the CSS to search
+     * @param string $property a lowercase property name
+     *
+     * @return bool true if the CSS may declare the property
      */
-    private function updateElementClass(\DOMElement $domElement, string $class, array $nonConvertible): void
+    private function declaresProperty(string $css, string $property): bool
     {
-        if ([] !== $nonConvertible) {
-            $domElement->setAttribute(SvgAttribute::Class_->value, $class);
+        return 1 === preg_match('/[{;\s]' . preg_quote($property, '/') . '\s*:/i', $css);
+    }
 
-            return;
-        }
+    /**
+     * @param \DOMNodeList<\DOMElement>        $styleElements    the style elements of the document
+     * @param array<string, list<\DOMElement>> $classMap         the class-to-element map
+     * @param list<string>                     $convertedClasses the classes whose rules were converted
+     */
+    private function removeConvertedClasses(\DOMNodeList $styleElements, array $classMap, array $convertedClasses): void
+    {
+        $remainingCss = implode(' ', array_map(
+            static fn (\DOMElement $domElement): string => $domElement->textContent,
+            iterator_to_array($styleElements, false)
+        ));
 
-        $classes = explode(' ', $domElement->getAttribute(SvgAttribute::Class_->value));
-        $classes = array_filter($classes, static fn (string $c): bool => $c !== $class);
+        foreach ($convertedClasses as $class) {
+            // Class names of simple selectors consist of letters, digits, `_` and `-` only, so they need no escaping.
+            if (1 === preg_match('/\.' . $class . '(?![\w-])/', $remainingCss)) {
+                continue;
+            }
 
-        if ([] !== $classes) {
-            $domElement->setAttribute(SvgAttribute::Class_->value, implode(' ', $classes));
-        } else {
-            $domElement->removeAttribute(SvgAttribute::Class_->value);
+            foreach ($classMap[$class] ?? [] as $element) {
+                $this->removeClass($element, $class);
+            }
         }
     }
 
@@ -240,10 +318,11 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
      */
     private function rebuildCssRule(string $class, array $nonConvertible): string
     {
-        $props = [];
-        foreach ($nonConvertible as $prop => $value) {
-            $props[] = \sprintf('%s:%s', $prop, $value);
-        }
+        $props = array_map(
+            static fn (string $prop, string $value): string => $prop . ':' . $value,
+            array_keys($nonConvertible),
+            $nonConvertible
+        );
 
         return \sprintf('.%s{', $class) . implode(';', $props) . '}';
     }

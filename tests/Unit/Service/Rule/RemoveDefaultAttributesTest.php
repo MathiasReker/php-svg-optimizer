@@ -69,6 +69,11 @@ final class RemoveDefaultAttributesTest extends TestCase
                 XML,
         ];
 
+        yield 'Keeps every animated default attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path stroke="none" stroke-width="1" d="M0 0h1"><set attributeName="stroke" to="red"/><set attributeName=" stroke-width " to="2"/></path></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path stroke="none" stroke-width="1" d="M0 0h1"><set attributeName="stroke" to="red"/><set attributeName=" stroke-width " to="2"/></path></svg>',
+        ];
+
         yield 'Keeps Non-Default Stroke Attribute' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -148,5 +153,77 @@ final class RemoveDefaultAttributesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
         ];
+
+        yield 'Keeps default stroke when an ancestor sets a different stroke' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g stroke="red"><path stroke="none" d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g stroke="red"><path stroke="none" d="M0 0h1"/></g></svg>',
+        ];
+
+        yield 'Keeps default stroke-width when a distant ancestor sets a different width' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke-width="3"><g><path stroke-width="1" d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke-width="3"><g><path stroke-width="1" d="M0 0h1"/></g></svg>',
+        ];
+
+        yield 'Removes default when the nearest ancestor declaration is also default' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="red"><g stroke="none"><path stroke="none" d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="red"><g stroke="none"><path d="M0 0h1"/></g></svg>',
+        ];
+
+        yield 'Keeps default stroke when an ancestor style sets the property' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="stroke:red"><path stroke="none" d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="stroke:red"><path stroke="none" d="M0 0h1"/></g></svg>',
+        ];
+
+        yield 'Removes default stroke when an ancestor style only sets other properties' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="fill:red;stroke-width:2"><path stroke="none" d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="fill:red;stroke-width:2"><path d="M0 0h1"/></g></svg>',
+        ];
+
+        yield 'Removes default stroke when an ancestor style only sets a custom property' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="--stroke:red"><path stroke="none" d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="--stroke:red"><path d="M0 0h1"/></g></svg>',
+        ];
+
+        yield 'Removes default stroke below a root element with an id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" id="Layer_1"><path stroke="none" d="M0 0h1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" id="Layer_1"><path d="M0 0h1"/></svg>',
+        ];
+
+        yield 'Keeps default attributes when a style element is present' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g{stroke:red}</style><g><path stroke="none" d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g{stroke:red}</style><g><path stroke="none" d="M0 0h1"/></g></svg>',
+        ];
+
+        yield 'Keeps default stroke on an element that may be reused by use' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path id="p" stroke="none" d="M0 0h1"/><use xlink:href="#p" stroke="red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path id="p" stroke="none" d="M0 0h1"/><use xlink:href="#p" stroke="red"/></svg>',
+        ];
+
+        yield 'Keeps default stroke inside an ancestor that may be reused by use' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="g"><path stroke="none" d="M0 0h1"/></g><use xlink:href="#g" stroke="red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="g"><path stroke="none" d="M0 0h1"/></g><use xlink:href="#g" stroke="red"/></svg>',
+        ];
+
+        yield 'Keeps default stroke when an ancestor stroke is animated' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><set attributeName="stroke" to="red"/><path stroke="none" d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><set attributeName="stroke" to="red"/><path stroke="none" d="M0 0h1"/></g></svg>',
+        ];
+
+        yield 'Removes default stroke-linecap while keeping stroke animated elsewhere' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><set attributeName="stroke" to="red"/><path stroke-linecap="butt" d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><set attributeName="stroke" to="red"/><path d="M0 0h1"/></g></svg>',
+        ];
+    }
+
+    #[Test]
+    public function isRiskyReturnsFalse(): void
+    {
+        self::assertFalse(RemoveDefaultAttributes::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(RemoveDefaultAttributes::shouldCheckSize());
     }
 }

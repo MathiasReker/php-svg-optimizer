@@ -285,5 +285,127 @@ final class ConvertCssClassesToAttributesTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><rect fill="#f00" stroke="#00f"/></svg>
                 XML,
         ];
+
+        yield 'Keeps the other classes of an element whose rule is partly converted' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red;animation-name:x}.b:hover{stroke:blue}</style><path class="a b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{animation-name:x}.b:hover{stroke:blue}</style><path class="a b" fill="red"/></svg>',
+        ];
+
+        yield 'Keeps a class that a later rule still refers to' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}.a{animation-name:x}</style><path class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{animation-name:x}</style><path class="a" fill="red"/></svg>',
+        ];
+
+        yield 'Keeps a class that a selector of another style element refers to' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}</style><style>g .a{stroke:blue}</style><g><path class="a"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g .a{stroke:blue}</style><g><path class="a" fill="red"/></g></svg>',
+        ];
+
+        yield 'Removes a class whose name only prefixes a class that remaining CSS refers to' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}.a-b:hover,.ab:hover,#a:hover{stroke:blue}</style><path class="a a-b ab"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a-b:hover,.ab:hover,#a:hover{stroke:blue}</style><path class="a-b ab" fill="red"/></svg>',
+        ];
+
+        yield 'Converts classes separated by any whitespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}</style><path class="b&#9;a"/><path class="a&#10;"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path class="b" fill="red"/><path fill="red"/></svg>',
+        ];
+
+        yield 'Converts a style element that follows an empty one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style></style><style>.a{fill:red}</style><path class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path fill="red"/></svg>',
+        ];
+
+        yield 'Splits a class selector that follows another selector into its own rule' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g, .a{fill:red}</style><path class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}g{fill:red}</style><path class="a"/></svg>',
+        ];
+
+        yield 'Keeps properties that a rule with another selector also sets' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}.a{fill:green;stroke:blue}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}.a{fill:green}</style><rect class="a" stroke="blue"/></svg>',
+        ];
+
+        yield 'Keeps properties that an unconvertible style element sets' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@media screen{rect{fill:red}}</style><style>.a{fill:green}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@media screen{rect{fill:red}}</style><style>.a{fill:green}</style><rect class="a"/></svg>',
+        ];
+
+        yield 'Converts a property that other CSS only mentions' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>#x{transition: opacity 1s;fill-opacity:1}.a{opacity:.5}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>#x{transition: opacity 1s;fill-opacity:1}</style><rect opacity=".5"/></svg>',
+        ];
+
+        yield 'Keeps a property that other CSS sets in any case and spacing' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>#x{stroke:blue;FILL :red; opacity:0}.a{fill:green;opacity:1}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>#x{stroke:blue;FILL :red; opacity:0}.a{fill:green;opacity:1}</style><rect class="a"/></svg>',
+        ];
+
+        yield 'Keeps comments in declarations' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red/* c */}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red/* c */}</style><rect class="a"/></svg>',
+        ];
+
+        yield 'Keeps an important declaration ahead of a later class' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:green!important}.b{fill:red}</style><rect class="a b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:green!important}</style><rect class="a" fill="red"/></svg>',
+        ];
+
+        yield 'Keeps style elements for other media untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style media="print">.a{fill:red}</style><style>.b{stroke:red}</style><rect class="a b" fill="green"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style media="print">.a{fill:red}</style><rect class="a" fill="green" stroke="red"/></svg>',
+        ];
+
+        yield 'Converts style elements for all media' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style media=" ALL ">.a{fill:red}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/></svg>',
+        ];
+
+        yield 'Skips declarations without a colon' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{garbage;fill:red}</style><path class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path fill="red"/></svg>',
+        ];
+
+        yield 'Keeps colons in values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:url(http://example.com/a.svg#g)}</style><path class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path fill="url(http://example.com/a.svg#g)"/></svg>',
+        ];
+
+        yield 'Keeps important declarations' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red !important;stroke:blue}</style><path class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red !important}</style><path class="a" stroke="blue"/></svg>',
+        ];
+
+        yield 'Keeps style sheets with at-rules untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@media (min-width:1px){.a{fill:red}}</style><path class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@media (min-width:1px){.a{fill:red}}</style><path class="a"/></svg>',
+        ];
+
+        yield 'Keeps style sheets with comments untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>/* c */.a{fill:red}</style><path class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>/* c */.a{fill:red}</style><path class="a"/></svg>',
+        ];
+
+        yield 'Keeps style sheets with text outside rules untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}}</style><path class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}}</style><path class="a"/></svg>',
+        ];
+
+        yield 'Keeps properties that only match after non-ASCII case folding' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{stro&#x212A;e:red}</style><path class="a"/></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>.a{stro\u{212A}e:red}</style><path class=\"a\"/></svg>",
+        ];
+    }
+
+    #[Test]
+    public function ruleIsMarkedAsNotRisky(): void
+    {
+        self::assertFalse(ConvertCssClassesToAttributes::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(ConvertCssClassesToAttributes::shouldCheckSize());
     }
 }

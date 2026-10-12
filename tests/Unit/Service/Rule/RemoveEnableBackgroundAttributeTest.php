@@ -205,5 +205,27 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><rect x="10" y="10" width="30" height="30"/></svg>
                 XML,
         ];
+
+        yield 'Removes enable-background with surrounding whitespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background=" new 0 0 100 50 "/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"/>',
+        ];
+
+        yield 'Keeps other enable-background values untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background=" accumulate "/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background=" accumulate "/>',
+        ];
+    }
+
+    #[Test]
+    public function ruleIsMarkedAsRisky(): void
+    {
+        self::assertTrue(RemoveEnableBackgroundAttribute::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(RemoveEnableBackgroundAttribute::shouldCheckSize());
     }
 }

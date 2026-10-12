@@ -59,6 +59,26 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps spaces between values in a style declaration' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="stroke-dasharray: 1  2 ; enable-background: new 0 0 400 220" width="1" height="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="stroke-dasharray:1 2;enable-background:new 0 0 400 220" width="1" height="1"/></svg>',
+        ];
+
+        yield 'Keeps spaces in unquoted font family names' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family: Arial Black , sans-serif;">a</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:Arial Black,sans-serif">a</text></svg>',
+        ];
+
+        yield 'Keeps quoted strings in a style unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family: \'Times  New ; Roman\' , serif">a</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:\'Times  New ; Roman\',serif">a</text></svg>',
+        ];
+
+        yield 'Keeps spaces inside functions and before important' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill: rgb(1 , 2 , 3) !important; transform: translate(1px 2px)" width="1" height="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:rgb(1,2,3) !important;transform:translate(1px 2px)" width="1" height="1"/></svg>',
+        ];
+
         yield 'Removes Unnecessary Whitespace' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -423,5 +443,17 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="20"/><circle cx="50" cy="50" r="20"/></svg>
                 XML,
         ];
+    }
+
+    #[Test]
+    public function ruleIsMarkedAsNotRisky(): void
+    {
+        self::assertFalse(RemoveUnnecessaryWhitespace::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(RemoveUnnecessaryWhitespace::shouldCheckSize());
     }
 }

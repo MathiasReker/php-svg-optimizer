@@ -13,12 +13,15 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EmptyElementRemovalTrait;
 
 /**
  * @no-named-arguments
  */
 final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
 {
+    use EmptyElementRemovalTrait;
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -37,29 +40,10 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        if ($domDocument->documentElement instanceof \DOMElement) {
-            $this->removeEmptyGroupsRecursive($domDocument->documentElement);
-        }
-    }
-
-    /**
-     * @param \DOMElement $domElement the element to process
-     */
-    private function removeEmptyGroupsRecursive(\DOMElement $domElement): void
-    {
-        $children = iterator_to_array($domElement->childNodes, true);
-
-        foreach ($children as $child) {
-            if (!$child instanceof \DOMElement) {
-                continue;
-            }
-
-            $this->removeEmptyGroupsRecursive($child);
-
-            if ($child->tagName === SvgTag::G->value && $this->isEmptyGroup($child)) {
-                $child->parentNode?->removeChild($child);
-            }
-        }
+        $this->removeElementsBottomUp(
+            $domDocument,
+            fn (\DOMElement $domElement): bool => SvgTag::G->value === $domElement->tagName && $this->isEmptyGroup($domElement),
+        );
     }
 
     /**
@@ -71,10 +55,6 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
     {
         if ($domElement->attributes->length > 0) {
             return false;
-        }
-
-        if (!$domElement->hasChildNodes()) {
-            return true;
         }
 
         foreach ($domElement->childNodes as $child) {

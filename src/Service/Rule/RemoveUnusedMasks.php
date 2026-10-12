@@ -14,12 +14,17 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
 
 /**
  * @no-named-arguments
  */
 final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
 {
+    use ElementTrait;
+    use IdReferenceTrait;
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -38,62 +43,26 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $domXPath = new \DOMXPath($domDocument);
+        $referencedIds = $this->collectReferencedIds($domDocument);
 
-        $this->removeUnusedMasks($domDocument, $domXPath);
+        $this->removeUnusedMasks($domDocument, $referencedIds);
         $this->removeEmptyDefs($domDocument);
     }
 
     /**
-     * @param \DOMDocument $domDocument the DOM document to modify
-     * @param \DOMXPath    $domXPath    the XPath object for querying the document
+     * @param \DOMDocument        $domDocument   the DOM document to modify
+     * @param array<string, true> $referencedIds the ids referenced anywhere in the document
      */
-    private function removeUnusedMasks(\DOMDocument $domDocument, \DOMXPath $domXPath): void
+    private function removeUnusedMasks(\DOMDocument $domDocument, array $referencedIds): void
     {
-        $domNodeList = $domDocument->getElementsByTagName(SvgTag::Mask->value);
+        $masks = iterator_to_array($domDocument->getElementsByTagName(SvgTag::Mask->value), false);
 
-        for ($i = $domNodeList->length - 1; $i >= 0; --$i) {
-            $mask = $domNodeList->item($i);
-            if (!$mask instanceof \DOMElement) {
-                continue;
-            }
-
+        foreach ($masks as $mask) {
             $maskId = $mask->getAttribute(SvgAttribute::Id->value);
 
-            if ('' === $maskId) {
-                $mask->parentNode?->removeChild($mask);
-                continue;
-            }
-
-            $query = \sprintf('//*[contains(@%s, "url(#%s)")]', SvgAttribute::Mask->value, $maskId);
-            $references = $domXPath->query($query);
-
-            if (false !== $references && 0 === $references->length) {
+            if ('' === $maskId || !\array_key_exists($maskId, $referencedIds)) {
                 $mask->parentNode?->removeChild($mask);
             }
-        }
-    }
-
-    /**
-     * @param \DOMDocument $domDocument the DOM document to modify
-     */
-    private function removeEmptyDefs(\DOMDocument $domDocument): void
-    {
-        $domNodeList = $domDocument->getElementsByTagName(SvgTag::Defs->value);
-
-        for ($i = $domNodeList->length - 1; $i >= 0; --$i) {
-            $def = $domNodeList->item($i);
-            if (!$def instanceof \DOMElement) {
-                continue;
-            }
-
-            foreach ($def->childNodes as $child) {
-                if ($child instanceof \DOMElement) {
-                    continue 2;
-                }
-            }
-
-            $def->parentNode?->removeChild($def);
         }
     }
 }

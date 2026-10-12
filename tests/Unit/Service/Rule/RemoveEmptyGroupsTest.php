@@ -57,6 +57,11 @@ final class RemoveEmptyGroupsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps empty group that is a child of switch' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><switch><g/><text>fallback</text></switch><g/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><switch><g/><text>fallback</text></switch></svg>',
+        ];
+
         yield 'Removes completely empty group' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">

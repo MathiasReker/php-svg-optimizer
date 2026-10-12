@@ -148,4 +148,16 @@ final class RemoveUnusedNamespacesTest extends TestCase
                 XML,
         ];
     }
+
+    #[Test]
+    public function isRiskyReturnsFalse(): void
+    {
+        self::assertFalse(RemoveUnusedNamespaces::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(RemoveUnusedNamespaces::shouldCheckSize());
+    }
 }

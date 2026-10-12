@@ -59,6 +59,26 @@ final class FlattenGroupsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Does not apply the group transform to a clipPath child' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(10)"><clipPath id="c"><rect width="5" height="5"/></clipPath><rect clip-path="url(#c)" width="5" height="5"/></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><clipPath id="c"><rect width="5" height="5"/></clipPath><rect clip-path="url(#c)" width="5" height="5" transform="translate(10)"/></svg>',
+        ];
+
+        yield 'Keeps group with a font-relative value when the child sets its font size' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g stroke-width="1em"><path d="M0 0h1" font-size="10"/></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g stroke-width="1em"><path d="M0 0h1" font-size="10"/></g></svg>',
+        ];
+
+        yield 'Keeps group with a font-relative value when the child style sets its font size' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g stroke-width="1em"><path d="M0 0h1" style="font-size:10px"/></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g stroke-width="1em"><path d="M0 0h1" style="font-size:10px"/></g></svg>',
+        ];
+
+        yield 'Flattens a group with an absolute value when the child sets its font size' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g stroke-width="2"><path d="M0 0h1" font-size="10"/></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" font-size="10" stroke-width="2"/></svg>',
+        ];
+
         yield 'Flattens Groups' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -388,6 +408,181 @@ final class FlattenGroupsTest extends TestCase
         yield 'Flattens a plain group following a skipped group inside defs' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><g id="shared"><rect width="10" height="10"/></g></defs><use xlink:href="#shared"/><g><circle r="5"/></g></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><g id="shared"><rect width="10" height="10"/></g></defs><use xlink:href="#shared"/><circle r="5"/></svg>',
+        ];
+
+        yield 'Keeps group opacity instead of applying it to each overlapping child' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g opacity=".5"><g><g><rect width="10" height="10"/></g></g><g><g><rect x="5" width="10" height="10"/></g></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g opacity=".5"><rect width="10" height="10"/><rect x="5" width="10" height="10"/></g></svg>',
+        ];
+
+        yield 'Keeps group opacity when the child has its own opacity' => [
+            '<svg xmlns="http://www.w3.org/2000/svg">    <g opacity=".5">    <rect opacity=".5" width="10" height="10"/>    </g>    </svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g opacity=".5"><rect opacity=".5" width="10" height="10"/></g></svg>',
+        ];
+
+        yield 'Keeps group with filter' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g filter="url(#f)"><g><g><rect width="10" height="10"/></g></g><g><g><rect x="5" width="10" height="10"/></g></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g filter="url(#f)"><rect width="10" height="10"/><rect x="5" width="10" height="10"/></g></svg>',
+        ];
+
+        yield 'Keeps group with display none when a child sets display' => [
+            '<svg xmlns="http://www.w3.org/2000/svg">    <g display="none">    <rect display="inline" width="10" height="10"/>    </g>    </svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g display="none"><rect display="inline" width="10" height="10"/></g></svg>',
+        ];
+
+        yield 'Keeps group class when the child has its own class' => [
+            '<svg xmlns="http://www.w3.org/2000/svg">    <g class="a">    <rect class="b" width="10" height="10"/>    </g>    </svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g class="a"><rect class="b" width="10" height="10"/></g></svg>',
+        ];
+
+        yield 'Keeps group style when the child has its own style' => [
+            '<svg xmlns="http://www.w3.org/2000/svg">    <g style="fill:red">    <rect style="stroke:blue" width="10" height="10"/>    </g>    </svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="fill:red"><rect style="stroke:blue" width="10" height="10"/></g></svg>',
+        ];
+
+        yield 'Keeps group that is a direct child of switch' => [
+            '<svg xmlns="http://www.w3.org/2000/svg">    <switch>    <g>    <rect width="10" height="10"/>    <circle r="5"/>    </g>    </switch>    </svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><switch><g><rect width="10" height="10"/><circle r="5"/></g></switch></svg>',
+        ];
+
+        yield 'Keeps group whose children include an animation element targeting it' => [
+            '<svg xmlns="http://www.w3.org/2000/svg">    <g>    <animate attributeName="opacity" from="1" to="0" dur="1s"/>    <rect width="10" height="10"/>    </g>    </svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><animate attributeName="opacity" from="1" to="0" dur="1s"/><rect width="10" height="10"/></g></svg>',
+        ];
+
+        yield 'Keeps groups when a style element may target them' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g{fill:red}</style>    <g>    <rect width="10" height="10"/>    </g>    </svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g{fill:red}</style><g><rect width="10" height="10"/></g></svg>',
+        ];
+
+        yield 'Composes identical group and child transforms' => [
+            '<svg xmlns="http://www.w3.org/2000/svg">    <g transform="scale(2)">    <path transform="scale(2)" d="M0 0h1"/>    </g>    </svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path transform="scale(2) scale(2)" d="M0 0h1"/></svg>',
+        ];
+
+        yield 'Applies group transform before the child transform' => [
+            '<svg xmlns="http://www.w3.org/2000/svg">    <g transform="rotate(45)">    <path transform="translate(10)" d="M0 0h1"/>    </g>    </svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path transform="rotate(45) translate(10)" d="M0 0h1"/></svg>',
+        ];
+
+        yield 'Ignores an empty group transform' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform=""><path transform="scale(2)" d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path transform="scale(2)" d="M0 0h1"/></svg>',
+        ];
+
+        yield 'Pushes inherited presentation attributes to a child of a flattened group' => [
+            '<svg xmlns="http://www.w3.org/2000/svg">    <g fill="red" stroke="blue">    <path fill="green" d="M0 0h1"/>    </g>    </svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path fill="green" d="M0 0h1" stroke="blue"/></svg>',
+        ];
+
+        yield 'Replaces an explicit inherit value with the group value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg">    <g fill="red">    <path fill="inherit" d="M0 0h1"/>    </g>    </svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path fill="red" d="M0 0h1"/></svg>',
+        ];
+
+        yield 'Keeps group when a child font-size may be relative to the group font-size' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g font-size="20"><g><text font-size="2em">a</text></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g font-size="20"><text font-size="2em">a</text></g></svg>',
+        ];
+
+        yield 'Keeps group when a child style inherits from it' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><g><path style="fill:inherit" d="M0 0h1"/></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><path style="fill:inherit" d="M0 0h1"/></g></svg>',
+        ];
+
+        yield 'Keeps transformed group around a nested svg element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><g><svg width="10" height="10"/></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><svg width="10" height="10"/></g></svg>',
+        ];
+
+        yield 'Keeps transformed group around a child with an animateTransform' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect width="20" height="20"><animateTransform attributeName="transform" type="rotate" values="0;90" dur="1s"/></rect></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect width="20" height="20"><animateTransform attributeName="transform" type="rotate" values="0;90" dur="1s"/></rect></g></svg>',
+        ];
+
+        yield 'Keeps transformed group around a child with an animateMotion' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect width="20" height="20"><animateMotion path="M0 0h10" dur="1s"/></rect></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect width="20" height="20"><animateMotion path="M0 0h10" dur="1s"/></rect></g></svg>',
+        ];
+
+        yield 'Keeps transformed group around a child whose transform is set by an animation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect width="20" height="20"><set attributeName=" transform " to="scale(2)"/></rect></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect width="20" height="20"><set attributeName=" transform " to="scale(2)"/></rect></g></svg>',
+        ];
+
+        yield 'Keeps transformed group around a child targeted by an animation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect id="r" width="20" height="20"/></g><animateTransform href="#r" attributeName="transform" type="rotate" values="0;90" dur="1s"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect id="r" width="20" height="20"/></g><animateTransform href="#r" attributeName="transform" type="rotate" values="0;90" dur="1s"/></svg>',
+        ];
+
+        yield 'Keeps transformed group around a child targeted by an animation through xml:id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect xml:id="r" width="20" height="20"/></g><animateMotion href="#r" path="M0 0h10" dur="1s"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect xml:id="r" width="20" height="20"/></g><animateMotion href="#r" path="M0 0h10" dur="1s"/></svg>',
+        ];
+
+        yield 'Keeps transformed group around a child with id 0 targeted by an animation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect id="0" width="20" height="20"/></g><animateMotion href="#0" path="M0 0h10" dur="1s"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect id="0" width="20" height="20"/></g><animateMotion href="#0" path="M0 0h10" dur="1s"/></svg>',
+        ];
+
+        yield 'Flattens transformed group around a child without an id when an animation has an empty target' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect width="20" height="20"/></g><animateMotion href="#" path="M0 0h10" dur="1s"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="20" height="20" transform="translate(50 50)"/><animateMotion href="#" path="M0 0h10" dur="1s"/></svg>',
+        ];
+
+        yield 'Pushes attributes that follow the transform to the children' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)" fill="red"><path d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" transform="scale(2)" fill="red"/></svg>',
+        ];
+
+        yield 'Flattens transformed group around a child with an id that no animation targets' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect id="r" width="20" height="20"/></g><animateTransform href="#s" attributeName="transform" type="rotate" values="0;90" dur="1s"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r" width="20" height="20" transform="translate(50 50)"/><animateTransform href="#s" attributeName="transform" type="rotate" values="0;90" dur="1s"/></svg>',
+        ];
+
+        yield 'Flattens transformed group around a child that animates another attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><rect width="20" height="20"><animate attributeName="fill" values="red;blue" dur="1s"/></rect></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="20" height="20" transform="translate(50 50)"><animate attributeName="fill" values="red;blue" dur="1s"/></rect></svg>',
+        ];
+
+        yield 'Flattens transformed group around text that animates another attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 50)"><text>a<animate attributeName="fill" values="red;blue" dur="1s"/></text></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text transform="translate(50 50)">a<animate attributeName="fill" values="red;blue" dur="1s"/></text></svg>',
+        ];
+
+        yield 'Flattens group without a transform around a child with an animateTransform' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><rect width="20" height="20"><animateTransform attributeName="transform" type="rotate" values="0;90" dur="1s"/></rect></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="20" height="20" fill="red"><animateTransform attributeName="transform" type="rotate" values="0;90" dur="1s"/></rect></svg>',
+        ];
+
+        yield 'Keeps group with a font-size when the child sets its own font size' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g font-size="20"><text font-size="2em">a</text></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g font-size="20"><text font-size="2em">a</text></g></svg>',
+        ];
+
+        yield 'Flattens group with a font-relative value when the child sets no font size' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g letter-spacing="1em"><text>a</text></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text letter-spacing="1em">a</text></svg>',
+        ];
+
+        yield 'Replaces an explicit inherit value with surrounding whitespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><path fill=" inherit " d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path fill="red" d="M0 0h1"/></svg>',
+        ];
+
+        yield 'Ignores a blank group transform' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform=" "><path d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1"/></svg>',
+        ];
+
+        yield 'Ignores a blank child transform' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><path transform=" " d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path transform="scale(2)" d="M0 0h1"/></svg>',
+        ];
+
+        yield 'Keeps group with a namespaced attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a"><g a:fill="red"><g><rect width="10" height="10"/></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a"><g a:fill="red"><rect width="10" height="10"/></g></svg>',
         ];
     }
 

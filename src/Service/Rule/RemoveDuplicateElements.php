@@ -12,12 +12,28 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
+ * Removes an element that is identical to its preceding element sibling, but
+ * only where the duplicate has no visual effect. Rendered duplicates are always
+ * kept: painting a shape twice changes paint order, translucency and
+ * anti-aliased edges.
+ *
  * @no-named-arguments
  */
 final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterface
 {
+    /**
+     * Elements for which an identical directly following copy is redundant.
+     */
+    private const array NON_RENDERING_TAGS = [
+        SvgTag::Desc->value,
+        SvgTag::Metadata->value,
+        SvgTag::Stop->value,
+        SvgTag::Title->value,
+    ];
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -38,49 +54,49 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->removeDuplicateElements($domDocument);
+        $elements = iterator_to_array($domDocument->getElementsByTagName('*'), false);
+
+        foreach ($elements as $element) {
+            if ($this->isRedundant($element)) {
+                $element->parentNode?->removeChild($element);
+            }
+        }
     }
 
     /**
-     * @param \DOMDocument $domDocument the DOM document to process
+     * @param \DOMElement $domElement the element to check
      *
      * @throws \JsonException
      */
-    private function removeDuplicateElements(\DOMDocument $domDocument): void
+    private function isRedundant(\DOMElement $domElement): bool
     {
-        $elements = iterator_to_array($domDocument->getElementsByTagName('*'), true);
+        $parent = $domElement->parentNode;
+        $previous = $domElement->previousElementSibling;
 
-        $seen = [];
-
-        foreach ($elements as $element) {
-            $this->normalizeAttributes($element);
-
-            $parent = $element->parentNode;
-            if (!$parent instanceof \DOMElement) {
-                continue;
-            }
-
-            $key = spl_object_hash($parent) . '::' . $this->buildSignature($element);
-
-            if (\array_key_exists($key, $seen)) {
-                $parent->removeChild($element);
-            } else {
-                $seen[$key] = true;
-            }
+        if (!$parent instanceof \DOMElement || !$previous instanceof \DOMElement) {
+            return false;
         }
+
+        if (!$this->isNonRendering($domElement, $parent)) {
+            return false;
+        }
+
+        return $this->buildSignature($previous) === $this->buildSignature($domElement);
     }
 
     /**
-     * @param \DOMElement $domElement the element whose attributes to normalize
+     * @param \DOMElement $domElement the element to check
+     * @param \DOMElement $parent     the parent of the element
      */
-    private function normalizeAttributes(\DOMElement $domElement): void
+    private function isNonRendering(\DOMElement $domElement, \DOMElement $parent): bool
     {
-        foreach ($domElement->attributes as $attribute) {
-            $trimmedValue = trim((string) $attribute->nodeValue);
-            if ($trimmedValue !== $attribute->nodeValue) {
-                $domElement->setAttribute($attribute->nodeName, $trimmedValue);
-            }
+        if (\in_array($domElement->localName, self::NON_RENDERING_TAGS, true)) {
+            return true;
         }
+
+        // Children of defs are never rendered directly; scripts would run twice.
+        return SvgTag::Defs->value === $parent->localName
+            && SvgTag::Script->value !== $domElement->localName;
     }
 
     /**

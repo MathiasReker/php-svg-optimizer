@@ -20,29 +20,14 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
  */
 final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
 {
-    /**
-     * @see https://regex101.com/r/JVNlRF/1
-     */
     private const string REMOVE_LEADING_ZERO_REGEX = '/(?<=^|\D)0(\.\d+)/';
 
-    /**
-     * @see https://regex101.com/r/6XmnVQ/1
-     */
     private const string REMOVE_TRAILING_ZEROS_REGEX = '/(\.\d*?)0+(\D|$)/';
 
-    /**
-     * @see https://regex101.com/r/HpT7H6/1
-     */
     private const string REMOVE_TRAILING_DECIMAL_POINT_REGEX = '/(?<=\d)\.(?=\D|$)/';
 
-    /**
-     * @see https://regex101.com/r/UH8ubo/1
-     */
     private const string REPLACE_STANDALONE_DOT_REGEX = '/(?<=^|\s)\.(?=\s|$)/';
 
-    /**
-     * @see https://regex101.com/r/zaCn7k/1
-     */
     private const string REMOVE_DECIMAL_IF_ZERO_REGEX = '/(?<=\d)\.0+(\D|$)/';
 
     private const array ELEMENTS_TO_ATTRIBUTES = [
@@ -132,10 +117,6 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
      */
     private function minifyCoordinates(string $value): string
     {
-        if ('' === $value) {
-            return $value;
-        }
-
         $value = preg_replace(
             [
                 self::REMOVE_LEADING_ZERO_REGEX,

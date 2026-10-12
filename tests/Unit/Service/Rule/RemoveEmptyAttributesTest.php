@@ -57,6 +57,16 @@ final class RemoveEmptyAttributesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Removes an empty namespaced attribute without touching a same-named plain attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a title="keep" xlink:title=""/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a title="keep"/></svg>',
+        ];
+
+        yield 'Keeps a non-empty namespaced attribute when a same-named plain attribute is empty' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a title=" " xlink:title="keep"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:title="keep"/></svg>',
+        ];
+
         yield 'Removes empty attribute' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">

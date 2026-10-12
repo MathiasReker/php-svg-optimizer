@@ -83,6 +83,11 @@ final class RemoveUnusedMasksTest extends TestCase
                 XML,
         ];
 
+        yield 'Keeps a mask referenced before a style element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="m1"><circle r="50"/></mask></defs><rect mask="url(#m1)"/><style>.a{fill:red}</style></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="m1"><circle r="50"/></mask></defs><rect mask="url(#m1)"/><style>.a{fill:red}</style></svg>',
+        ];
+
         yield 'Removes empty defs after deleting unused mask' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
@@ -311,6 +316,41 @@ final class RemoveUnusedMasksTest extends TestCase
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"/>
                 XML,
+        ];
+
+        yield 'Keeps mask referenced from a style attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="m"><rect/></mask></defs><rect style="mask:url(#m)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="m"><rect/></mask></defs><rect style="mask:url(#m)"/></svg>',
+        ];
+
+        yield 'Keeps mask referenced from a style element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.x{mask:url(#m)}</style><defs><mask id="m"><rect/></mask></defs><rect class="x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.x{mask:url(#m)}</style><defs><mask id="m"><rect/></mask></defs><rect class="x"/></svg>',
+        ];
+
+        yield 'Keeps mask referenced from a CDATA style element with quoted url' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style><![CDATA[.x{mask:url( "#m" )}]]></style><defs><mask id="m"><rect/></mask></defs><rect class="x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.x{mask:url( "#m" )}</style><defs><mask id="m"><rect/></mask></defs><rect class="x"/></svg>',
+        ];
+
+        yield 'Keeps mask referenced by xlink:href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><mask id="m"><rect/></mask><mask id="n" xlink:href="#m"/></defs><rect mask="url(#n)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><mask id="m"><rect/></mask><mask id="n" xlink:href="#m"/></defs><rect mask="url(#n)"/></svg>',
+        ];
+
+        yield 'Keeps mask referenced by href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="m"><rect/></mask></defs><use href="#m"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="m"><rect/></mask></defs><use href="#m"/></svg>',
+        ];
+
+        yield 'Keeps mask referenced with a quoted url in an attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="m"><rect/></mask></defs><rect mask="url(\'#m\')"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="m"><rect/></mask></defs><rect mask="url(\'#m\')"/></svg>',
+        ];
+
+        yield 'Removes mask whose id only appears as a prefix of a style reference' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.x{mask:url(#m1)}</style><defs><mask id="m"><rect/></mask></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.x{mask:url(#m1)}</style></svg>',
         ];
 
         yield 'Removes defs with only comments' => [

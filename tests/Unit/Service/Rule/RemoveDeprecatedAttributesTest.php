@@ -61,6 +61,11 @@ final class RemoveDeprecatedAttributesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Converts xlink:show new to target only on links' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:show="new" href="#a"/><a xlink:show="new" href="#b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><use href="#a"/><a href="#b" target="_blank"/></svg>',
+        ];
+
         yield 'Removes baseProfile attribute' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" baseProfile="tiny">
@@ -116,14 +121,59 @@ final class RemoveDeprecatedAttributesTest extends TestCase
                 XML,
         ];
 
-        yield 'Replaces xlink:title with title' => [
+        yield 'Replaces xlink:title with a title element' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                     <image xlink:title="Image Title" href="image.png"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><image href="image.png" title="Image Title"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><image href="image.png"><title>Image Title</title></image></svg>
+                XML,
+        ];
+
+        yield 'Puts the title element before existing children' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:title="Go &amp; see" href="#x"><text>x</text></a></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><a href="#x"><title>Go &amp; see</title><text>x</text></a></svg>
+                XML,
+        ];
+
+        yield 'Keeps an existing title element instead of xlink:title' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:title="Old"><title>New</title></a></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><a><title>New</title></a></svg>
+                XML,
+        ];
+
+        yield 'Drops an empty xlink:title' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:title=" "/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><a/></svg>
+                XML,
+        ];
+
+        yield 'Converts xlink:show new to target blank' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:show="new" href="#a"/><a xlink:show="replace" href="#b"/><a xlink:show="new" target="frame" href="#c"/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><a href="#a" target="_blank"/><a href="#b"/><a target="frame" href="#c"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps the cursor presentation attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect cursor="pointer" width="1" height="1"/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect cursor="pointer" width="1" height="1"/></svg>
                 XML,
         ];
 
@@ -237,6 +287,36 @@ final class RemoveDeprecatedAttributesTest extends TestCase
         yield 'Replaces xml:lang with lang' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xml:lang="en"><text>Hello</text></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" lang="en"><text>Hello</text></svg>',
+        ];
+
+        yield 'Keeps href over xlink:href, which it takes precedence over' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#old" href="#new"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><use href="#new"/></svg>',
+        ];
+
+        yield 'Keeps xml:lang over lang, as it takes precedence' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" lang="de" xml:lang="en"><text>Hello</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" lang="en"><text>Hello</text></svg>',
+        ];
+
+        yield 'Replaces an empty xlink:href with an empty href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:href=""><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href=""><text>x</text></a></svg>',
+        ];
+
+        yield 'Converts xlink:show new with surrounding whitespace to target blank' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:show=" new " href="#a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="#a" target="_blank"/></svg>',
+        ];
+
+        yield 'Converts xlink:title after an element that keeps its title element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:title="Old"><title>New</title></a><a xlink:title="Tip"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><a><title>New</title></a><a><title>Tip</title><text>x</text></a></svg>',
+        ];
+
+        yield 'Converts xlink:title even where the output grows' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect xmlns:xlink="http://www.w3.org/1999/xlink" xlink:title="t"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect xmlns:xlink="http://www.w3.org/1999/xlink"><title>t</title></rect></svg>',
         ];
     }
 

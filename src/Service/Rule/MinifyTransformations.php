@@ -13,63 +13,46 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
 
 /**
+ * Shortens transform lists, such as `translate(10, 0) scale(2, 2) rotate(0)` to `translate(10)scale(2)`. Identity
+ * transforms are dropped, default arguments are omitted, and numbers are written in their shortest notation.
+ * Values are never rounded and transforms are never combined; a value that is not a valid transform list is kept.
+ *
  * @no-named-arguments
  */
 final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
 {
-    /**
-     * @see https://regex101.com/r/JUBzng/1
-     */
-    private const string PERCENTAGE_REGEX = '/(\d+(?:\.\d+)?)%/';
+    use NumberFormatterTrait;
+    use NumberListTrait;
+
+    private const array TRANSFORM_ATTRIBUTES = [
+        SvgAttribute::Transform,
+        SvgAttribute::GradientTransform,
+        SvgAttribute::PatternTransform,
+    ];
 
     /**
-     * @see https://regex101.com/r/bHuCPE/1
+     * The number of arguments each transform function accepts.
      */
-    private const string TRANSLATE_REGEX = '/\btranslate\(\s*0(?:e[+-]?\d+)?\s*(,\s*0(?:e[+-]?\d+)?\s*)?\)/i';
+    private const array ARGUMENT_COUNTS = [
+        'matrix' => [6],
+        'translate' => [1, 2],
+        'scale' => [1, 2],
+        'rotate' => [1, 3],
+        'skewX' => [1],
+        'skewY' => [1],
+    ];
 
-    /**
-     * @see https://regex101.com/r/6R39n2/1
-     */
-    private const string SCALE_REGEX = '/\bscale\(\s*1(?:e[+-]?\d+)?\s*(,\s*1(?:e[+-]?\d+)?\s*)?\)/i';
+    private const string TRANSFORM_ITEM = '[a-zA-Z]++\s*+\([^()]*+\)';
 
-    /**
-     * @see https://regex101.com/r/2vmgRO/1
-     */
-    private const string ROTATE_REGEX = '/\brotate\(\s*0\s*\)/';
+    private const string TRANSFORM_LIST_REGEX = '/^\s*+' . self::TRANSFORM_ITEM . '(?:\s*+,?+\s*+' . self::TRANSFORM_ITEM . ')*+\s*+$/';
 
-    /**
-     * @see https://regex101.com/r/83aNVu/1
-     */
-    private const string SKEW_X_REGEX = '/\bskewX\(\s*0\s*\)/';
+    private const string TRANSFORM_ITEM_REGEX = '/([a-zA-Z]+)\s*\(([^()]*)\)/';
 
-    /**
-     * @see https://regex101.com/r/tiPsgQ/1
-     */
-    private const string SKEW_Y_REGEX = '/\bskewY\(\s*0\s*\)/';
-
-    /**
-     * @see https://regex101.com/r/OuyK7V/1
-     */
-    private const string MULTIPLE_SPACES_REGEX = '/\s+/';
-
-    /**
-     * @see https://regex101.com/r/E8wfPk/1
-     */
-    private const string REDUNDANT_COMMAS_REGEX = '/\s*,\s*/';
-
-    /**
-     * @see https://regex101.com/r/LQt8ho/1
-     */
-    private const string EMPTY_TRANSFORM_REGEX = '/^[;, ]*$/';
-
-    /**
-     * @see https://regex101.com/r/o39rvr/1
-     */
-    private const string MATRIX_IDENTITY_REGEX = '/\bmatrix\(\s*1(?:e[+-]?\d+)?\s*[\s,]\s*0(?:e[+-]?\d+)?\s*[\s,]\s*0(?:e[+-]?\d+)?\s*[\s,]\s*1(?:e[+-]?\d+)?\s*[\s,]\s*0(?:e[+-]?\d+)?\s*[\s,]\s*0(?:e[+-]?\d+)?\s*\)/i';
-
-    private const string XPATH_TRANSFORM_ATTRIBUTES = '//*[@transform]';
+    private const string ONE = '1';
 
     #[\Override]
     public static function isRisky(): bool
@@ -89,82 +72,155 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $domXPath = new \DOMXPath($domDocument);
-
-        /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domXPath->query(self::XPATH_TRANSFORM_ATTRIBUTES);
-
-        foreach ($domNodeList as $domElement) {
-            $transform = $domElement->getAttribute(SvgAttribute::Transform->value);
-
-            $transform = $this->convertPercentagesToNumbers($transform);
-            $transform = $this->removeIdentityTransforms($transform);
-            $transform = $this->normalizeSpacesAndCommas($transform);
-
-            $transform = trim($transform);
-
-            if ($this->isEmptyTransform($transform)) {
-                $domElement->removeAttribute(SvgAttribute::Transform->value);
-            } else {
-                $domElement->setAttribute(SvgAttribute::Transform->value, $transform);
+        foreach ($domDocument->getElementsByTagName('*') as $domElement) {
+            foreach (self::TRANSFORM_ATTRIBUTES as $svgAttribute) {
+                if ($domElement->hasAttribute($svgAttribute->value)) {
+                    $this->minifyAttribute($domElement, $svgAttribute->value);
+                }
             }
         }
     }
 
     /**
-     * @param string $transform the transform attribute value
-     *
-     * @return string the modified transform string
+     * @param \DOMElement $domElement the element holding the transform
+     * @param string      $name       the attribute name
      */
-    private function convertPercentagesToNumbers(string $transform): string
+    private function minifyAttribute(\DOMElement $domElement, string $name): void
     {
-        return preg_replace_callback(
-            self::PERCENTAGE_REGEX,
-            static fn (array $matches): string => (string) ((float) $matches[1] / 100),
-            $transform
-        ) ?? $transform;
+        $value = $domElement->getAttribute($name);
+        $items = $this->parseTransformList($value);
+
+        if ([] === $items) {
+            return;
+        }
+
+        $minified = implode('', array_map(fn (array $item): string => $this->minifyItem($item[0], $item[1]), $items));
+
+        if ('' === $minified) {
+            $domElement->removeAttribute($name);
+        } elseif (mb_strlen($minified) < mb_strlen($value)) {
+            $domElement->setAttribute($name, $minified);
+        }
     }
 
     /**
-     * @param string $transform the transform attribute value
+     * @param string $value the attribute value
      *
-     * @return string the modified transform string
+     * @return list<array{string, list<string>}> the transforms as [function, arguments], or an empty list if the value
+     *                                           is not a valid transform list
      */
-    private function removeIdentityTransforms(string $transform): string
+    private function parseTransformList(string $value): array
     {
-        return preg_replace(
-            [
-                self::TRANSLATE_REGEX,
-                self::SCALE_REGEX,
-                self::ROTATE_REGEX,
-                self::SKEW_X_REGEX,
-                self::SKEW_Y_REGEX,
-                self::MATRIX_IDENTITY_REGEX,
-            ],
-            '',
-            $transform
-        ) ?? $transform;
+        if (1 !== preg_match(self::TRANSFORM_LIST_REGEX, $value)) {
+            return [];
+        }
+
+        preg_match_all(self::TRANSFORM_ITEM_REGEX, $value, $matches, \PREG_SET_ORDER);
+
+        $items = [];
+
+        foreach ($matches as [, $function, $argumentList]) {
+            $arguments = array_map($this->minifyNumber(...), $this->parseNumberList($argumentList));
+
+            if (!\in_array(\count($arguments), self::ARGUMENT_COUNTS[$function] ?? [], true)) {
+                return [];
+            }
+
+            $items[] = [$function, $arguments];
+        }
+
+        return $items;
     }
 
     /**
-     * @param string $transform the transform attribute value
+     * @param string       $function  the transform function
+     * @param list<string> $arguments the minified arguments
      *
-     * @return string the normalized transform string
+     * @return string the shortest equivalent transform, or an empty string for an identity transform
      */
-    private function normalizeSpacesAndCommas(string $transform): string
+    private function minifyItem(string $function, array $arguments): string
     {
-        $transform = preg_replace(self::MULTIPLE_SPACES_REGEX, ' ', $transform) ?? $transform;
-
-        return preg_replace(self::REDUNDANT_COMMAS_REGEX, ',', $transform) ?? $transform;
+        return match ($function) {
+            'matrix' => $this->minifyMatrix($arguments),
+            'translate' => $this->minifyTranslate($arguments),
+            'scale' => $this->minifyScale($arguments),
+            'rotate' => $this->minifyRotate($arguments),
+            default => $this->isZeroNumber($arguments[0]) ? '' : $this->writeItem($function, $arguments),
+        };
     }
 
     /**
-     * @param string $transform the transform attribute value
+     * A matrix without rotation or skew is written as the equivalent translate or scale.
      *
-     * @return bool true if the transform is empty
+     * @param list<string> $arguments the six minified arguments
      */
-    private function isEmptyTransform(string $transform): bool
+    private function minifyMatrix(array $arguments): string
     {
-        return 1 === preg_match(self::EMPTY_TRANSFORM_REGEX, $transform);
+        [$a, $b, $c, $d, $e, $f] = $arguments;
+
+        if (!$this->isZeroNumber($b) || !$this->isZeroNumber($c)) {
+            return $this->writeItem('matrix', $arguments);
+        }
+
+        if (self::ONE === $a && self::ONE === $d) {
+            return $this->minifyTranslate([$e, $f]);
+        }
+
+        if ($this->isZeroNumber($e) && $this->isZeroNumber($f)) {
+            return $this->minifyScale([$a, $d]);
+        }
+
+        return $this->writeItem('matrix', $arguments);
+    }
+
+    /**
+     * @param list<string> $arguments the minified arguments
+     */
+    private function minifyTranslate(array $arguments): string
+    {
+        if (2 === \count($arguments) && $this->isZeroNumber($arguments[1])) {
+            $arguments = [$arguments[0]];
+        }
+
+        return [self::ZERO] === $arguments ? '' : $this->writeItem('translate', $arguments);
+    }
+
+    /**
+     * @param list<string> $arguments the minified arguments
+     */
+    private function minifyScale(array $arguments): string
+    {
+        if (2 === \count($arguments) && $arguments[0] === $arguments[1]) {
+            $arguments = [$arguments[0]];
+        }
+
+        return [self::ONE] === $arguments ? '' : $this->writeItem('scale', $arguments);
+    }
+
+    /**
+     * A rotation by zero degrees is an identity around any center.
+     *
+     * @param list<string> $arguments the minified arguments
+     */
+    private function minifyRotate(array $arguments): string
+    {
+        if ($this->isZeroNumber($arguments[0])) {
+            return '';
+        }
+
+        if (3 === \count($arguments) && $this->isZeroNumber($arguments[1]) && $this->isZeroNumber($arguments[2])) {
+            $arguments = [$arguments[0]];
+        }
+
+        return $this->writeItem('rotate', $arguments);
+    }
+
+    /**
+     * @param string       $function  the transform function
+     * @param list<string> $arguments the minified arguments
+     */
+    private function writeItem(string $function, array $arguments): string
+    {
+        return $function . '(' . $this->joinNumberList($arguments, true) . ')';
     }
 }

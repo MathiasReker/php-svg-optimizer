@@ -126,6 +126,20 @@ final class ScopeSvgStylesTest extends TestCase
             },
         ];
 
+        yield 'Keeps classes and content when there is no style tag or id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect class="a" fill="url(#g)" width="10"/></svg>',
+            static function (string $output): void {
+                self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><rect class="a" fill="url(#g)" width="10"/></svg>', $output);
+            },
+        ];
+
+        yield 'Keeps classes when the style tag has no class selectors' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}</style><rect class="a" width="10"/></svg>',
+            static function (string $output): void {
+                self::assertStringContainsString('<rect class="a" width="10"/>', $output);
+            },
+        ];
+
         yield 'Handles empty style tag' => [
             '<svg><style></style><rect/></svg>',
             static function (string $output): void {
@@ -424,6 +438,177 @@ final class ScopeSvgStylesTest extends TestCase
                 self::assertMatchesRegularExpression('/id="real-[a-f0-9\-]+"/', $output);
             },
         ];
+
+        yield 'Scopes a style block that follows an empty one' => [
+            '<svg><style></style><style>.a{fill:red}</style><rect class="a"/></svg>',
+            static function (string $output): void {
+                self::assertMatchesRegularExpression('/<style>\.a-[0-9a-f]{10}\{fill:red}<\/style><rect class="a-[0-9a-f]{10}"\/>/', $output);
+            },
+        ];
+
+        yield 'Removes a tag selector rule preceded by whitespace' => [
+            '<svg><style>.a{fill:blue} rect{fill:red}</style><rect class="a"/></svg>',
+            static function (string $output): void {
+                self::assertMatchesRegularExpression('/<style>\.a-[0-9a-f]{10}\{fill:blue}<\/style>/', $output);
+            },
+        ];
+
+        yield 'Trims each selector of a selector list' => [
+            '<svg><style>.a , .b{fill:red}</style><rect class="a b"/></svg>',
+            static function (string $output): void {
+                self::assertMatchesRegularExpression('/<style>\.a-([0-9a-f]{10}), \.b-\1\{fill:red}<\/style>/', $output);
+            },
+        ];
+
+        yield 'Keeps class attributes untouched when no class is scoped' => [
+            '<svg><style>#r{fill:red}</style><rect id="r" class=" a  b "/></svg>',
+            static function (string $output): void {
+                self::assertStringContainsString('class=" a  b "', $output);
+            },
+        ];
+    }
+
+    /**
+     * The scope hash is the first ten hexadecimal digits of the MD5 hash of the svg element's markup.
+     */
+    #[Test]
+    public function scopeHashIsTheStartOfTheMd5OfTheSvgMarkup(): void
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><rect id="a"/></svg>');
+
+        $documentElement = $domDocument->documentElement;
+        self::assertInstanceOf(\DOMElement::class, $documentElement);
+
+        $hash = mb_substr(md5((string) $domDocument->saveXML($documentElement)), 0, 10);
+
+        $scopeSvgStyles = new ScopeSvgStyles();
+        $scopeSvgStyles->optimize($domDocument);
+
+        $rect = $domDocument->getElementsByTagName('rect')->item(0);
+        self::assertInstanceOf(\DOMElement::class, $rect);
+        self::assertSame('a-' . $hash, $rect->getAttribute('id'));
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     */
+    #[DataProvider('provideScopingTwiceGivesTheSameResultCases')]
+    #[Test]
+    public function scopingTwiceGivesTheSameResult(string $content): void
+    {
+        $once = $this->scope($content);
+
+        self::assertNotSame($content, $once);
+        self::assertSame($once, $this->scope($once));
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideScopingTwiceGivesTheSameResultCases(): iterable
+    {
+        yield 'Classes and ids in style rules' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}#b{fill:blue}.c #b{stroke:red}</style><rect class="a c" id="b"/></svg>',
+        ];
+
+        yield 'Ids referenced by url()' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient id="g"/><rect fill="url(#g)"/></svg>',
+        ];
+
+        yield 'Several svg elements' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><svg><style>.a{fill:red}</style><rect class="a" id="r"/></svg><svg><rect id="r2"/></svg></svg>',
+        ];
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     */
+    #[Test]
+    public function keepsNamesThatAreAlreadyScoped(): void
+    {
+        $content = '<svg xmlns="http://www.w3.org/2000/svg"><style>.a-0123456789{fill:red}.b{fill:blue}</style><rect class="a-0123456789 b" id="c-abcdef0123-1" fill="url(#c-abcdef0123-1)"/><rect id="d"/></svg>';
+
+        $actual = $this->scope($content);
+
+        self::assertStringContainsString('.a-0123456789{fill:red}', $actual);
+        self::assertStringContainsString('id="c-abcdef0123-1"', $actual);
+        self::assertStringContainsString('url(#c-abcdef0123-1)', $actual);
+        self::assertMatchesRegularExpression('/\.b-[0-9a-f]{10}\{fill:blue}/', $actual);
+        self::assertMatchesRegularExpression('/class="a-0123456789 b-[0-9a-f]{10}"/', $actual);
+        self::assertMatchesRegularExpression('/id="d-[0-9a-f]{10}"/', $actual);
+    }
+
+    /**
+     * @param list<string> $expectedPatterns
+     *
+     * @throws SvgValidationException
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     */
+    #[DataProvider('provideUpdatesReferencesToRenamedIdsCases')]
+    #[Test]
+    public function updatesReferencesToRenamedIds(string $content, array $expectedPatterns): void
+    {
+        $actual = $this->scope($content);
+
+        foreach ($expectedPatterns as $expectedPattern) {
+            self::assertMatchesRegularExpression($expectedPattern, $actual);
+        }
+    }
+
+    /**
+     * @return iterable<string, array{string, list<string>}>
+     */
+    public static function provideUpdatesReferencesToRenamedIdsCases(): iterable
+    {
+        yield 'href and xlink:href fragments' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path id="p"/><use href="#p"/><use xlink:href="#p"/><use href="#other"/><a href="https://x.test/#p"/></svg>',
+            [
+                '/<path id="(p-[0-9a-f]{10})"\/><use href="#\1"\/><use xlink:href="#\1"\/>/',
+                '/<use href="#other"\/>/',
+                '/<a href="https:\/\/x\.test\/#p"\/>/',
+            ],
+        ];
+
+        yield 'Animation timing references' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="b"/><animate begin="b.click; 2s; b.end+1s" end="b.repeat(1)" attributeName="x"/></svg>',
+            ['/<rect id="(b-[0-9a-f]{10})"\/><animate begin="\1\.click; 2s; \1\.end\+1s" end="\1\.repeat\(1\)"/'],
+        ];
+
+        yield 'ARIA id lists, but not ARIA text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" aria-labelledby="t d other" aria-label="t d"><title id="t">a</title><desc id="d">b</desc></svg>',
+            [
+                '/aria-labelledby="t-([0-9a-f]{10}) d-\1 other"/',
+                '/aria-label="t d"/',
+            ],
+        ];
+
+        yield 'url() references in style elements' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>path.lg{fill:url(#g)}#a{stroke:url(\'#g\')}#b{fill:url("#g")}#c{fill:url(#other)}</style><linearGradient id="g"/></svg>',
+            [
+                '/fill:url\(#(g-[0-9a-f]{10})\)}#a-[0-9a-f]{10}{stroke:url\(\'#\1\'\)}#b-[0-9a-f]{10}{fill:url\("#\1"\)}#c-[0-9a-f]{10}{fill:url\(#other\)}<\/style><linearGradient id="\1"\/>/',
+            ],
+        ];
+
+        yield 'Quoted url() references in attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient id="g"/><rect fill="url(\'#g\')" stroke="url(&quot;#g&quot;)" filter="url(#g.x)"/></svg>',
+            ['/<linearGradient id="(g-[0-9a-f]{10})"\/><rect fill="url\(\'#\1\'\)" stroke="url\(&quot;#\1&quot;\)" filter="url\(#g\.x\)"\/>/'],
+        ];
+
+        yield 'Style elements with characters that need escaping' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:url(#g)}text::after{content:"&amp;&lt;"}</style><linearGradient id="g"/><rect class="a"/></svg>',
+            ['/<style>\.a-([0-9a-f]{10})\{fill:url\(#g-\1\)}text::after\{content:"&amp;&lt;"}<\/style>/'],
+        ];
+
+        yield 'An id containing a dot' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="a.b"/><use href="#a.b" fill="url(#a.b)"/></svg>',
+            ['/<rect id="(a\.b-[0-9a-f]{10})"\/><use href="#\1" fill="url\(#\1\)"\/>/'],
+        ];
     }
 
     #[Test]
@@ -438,5 +623,18 @@ final class ScopeSvgStylesTest extends TestCase
         $scopeSvgStyles->optimize($domDocument);
 
         self::assertSame($before, $domDocument->saveXML());
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     */
+    private function scope(string $content): string
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($content));
+        $svgOptimizer->addRule(new ScopeSvgStyles());
+
+        return $svgOptimizer->allowRisky()->optimize()->getContent();
     }
 }

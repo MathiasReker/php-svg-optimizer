@@ -12,33 +12,52 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
+ * Removes editor metadata written by Inkscape, Sodipodi, Adobe Illustrator, Sketch, Serif (Affinity) and Microsoft Visio.
+ *
+ * Elements and attributes are matched by namespace URI (also when the URI is declared through a DTD entity), so the
+ * prefix used in the file does not matter. Illustrator's private data placeholders (a foreignObject that requires an
+ * editor extension) are removed as well, since no browser supports those extensions and they are never rendered.
+ *
  * @no-named-arguments
  */
 final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterface
 {
-    private const int EXPLODE_LIMIT = 2;
-
-    private const int OPTIMIZATION_LOOP_COUNT = 2;
-
-    private const array XMLNS_ATTRIBUTES = [
-        'xmlns:sodipodi',
-        'xmlns:inkscape',
-    ];
-
-    private const array ATTRIBUTES_TO_REMOVE = [
-        'sodipodi:*',
-        'inkscape:*',
-    ];
-
-    private const array NAMESPACE_URIS = [
-        'sodipodi' => SvgNamespace::Sodipodi->value,
-        'inkscape' => SvgNamespace::Inkscape->value,
+    private const array EDITOR_NAMESPACE_URIS = [
+        SvgNamespace::Inkscape->value,
+        SvgNamespace::Sodipodi->value,
+        'http://ns.adobe.com/AdobeIllustrator/10.0/',
+        'http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/',
+        'http://ns.adobe.com/Extensibility/1.0/',
+        'http://ns.adobe.com/Flows/1.0/',
+        'http://ns.adobe.com/GenericCustomNamespace/1.0/',
+        'http://ns.adobe.com/Graphs/1.0/',
+        'http://ns.adobe.com/ImageReplacement/1.0/',
+        'http://ns.adobe.com/SaveForWeb/1.0/',
+        'http://ns.adobe.com/Variables/1.0/',
+        'http://ns.adobe.com/XPath/1.0/',
+        'http://www.bohemiancoding.com/sketch/ns',
+        'http://www.serif.com/',
+        'http://schemas.microsoft.com/visio/2003/SVGExtensions/',
     ];
 
     private const string XPATH_ALL_ELEMENTS = '//*';
+
+    private const string XPATH_ALL_NAMESPACE_NODES = '//namespace::*';
+
+    private const string XPATH_ELEMENT_NAMESPACE_NODES = 'namespace::*';
+
+    private const string XPATH_DESCENDANT_ELEMENTS = './/*';
+
+    private const string XPATH_EXTENSION_ELEMENTS = '//*[local-name()="%s"][@%s]';
+
+    private const string XMLNS_PREFIX = 'xmlns:';
+
+    private const string EXTENSION_SEPARATOR = ' ';
 
     #[\Override]
     public static function isRisky(): bool
@@ -59,137 +78,177 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
+        $namespaceUris = $this->collectEditorNamespaceUris($domXPath);
 
-        foreach (self::NAMESPACE_URIS as $prefix => $uri) {
-            $domXPath->registerNamespace($prefix, $uri);
+        $this->removeEditorExtensionElements($domXPath);
+
+        /** @var \DOMNodeList<\DOMElement> $domNodeList */
+        $domNodeList = $domXPath->query(self::XPATH_ALL_ELEMENTS);
+
+        foreach (iterator_to_array($domNodeList, false) as $domElement) {
+            if ($this->isRemovableEditorElement($domXPath, $domElement, $namespaceUris)) {
+                $domElement->parentNode?->removeChild($domElement);
+
+                continue;
+            }
+
+            $this->removeEditorAttributes($domElement, $namespaceUris);
         }
 
-        for ($i = 0; $i < self::OPTIMIZATION_LOOP_COUNT; ++$i) {
-            $this->removeNamespaceDeclarations($domDocument);
-            $this->removeTags($domXPath, self::ATTRIBUTES_TO_REMOVE);
-            $this->removeNamespacedAttributes($domXPath);
-        }
+        $this->removeNamespaceDeclarations($domXPath);
     }
 
     /**
-     * @param \DOMDocument $domDocument the DOM document to clean
+     * Namespace URIs declared through a DTD entity (e.g. xmlns:i="&ns_ai;") are stored unexpanded on the nodes,
+     * so the raw values of declarations resolving to an editor namespace are collected as well.
+     *
+     * @param \DOMXPath $domXPath the XPath object for querying the document
+     *
+     * @return list<string> the namespace URIs of the nodes to remove
      */
-    private function removeNamespaceDeclarations(\DOMDocument $domDocument): void
+    private function collectEditorNamespaceUris(\DOMXPath $domXPath): array
     {
-        /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domDocument->getElementsByTagName('*');
+        $namespaceUris = self::EDITOR_NAMESPACE_URIS;
 
-        foreach ($domNodeList as $domElement) {
-            foreach (self::XMLNS_ATTRIBUTES as $xmlnsAttribute) {
-                if ($domElement->hasAttribute($xmlnsAttribute)) {
-                    $domElement->removeAttribute($xmlnsAttribute);
-                }
+        /** @var \DOMNodeList<\DOMNameSpaceNode> $domNodeList */
+        $domNodeList = $domXPath->query(self::XPATH_ALL_NAMESPACE_NODES);
+
+        foreach ($domNodeList as $domNameSpaceNode) {
+            if (null !== $domNameSpaceNode->namespaceURI
+                && $this->isEditorNamespace((string) $domNameSpaceNode->nodeValue)
+            ) {
+                $namespaceUris[] = $domNameSpaceNode->namespaceURI;
             }
         }
+
+        return array_values(array_unique($namespaceUris));
     }
 
     /**
-     * @param \DOMXPath    $domXPath     the XPath object for querying the document
-     * @param list<string> $tagsToRemove A list of tag patterns to remove (e.g., "sodipodi:*").
+     * @param \DOMXPath $domXPath the XPath object for querying the document
      */
-    private function removeTags(\DOMXPath $domXPath, array $tagsToRemove): void
+    private function removeEditorExtensionElements(\DOMXPath $domXPath): void
     {
-        foreach ($tagsToRemove as $tagToRemove) {
-            [$prefix] = explode(':', $tagToRemove, self::EXPLODE_LIMIT);
+        $query = \sprintf(
+            self::XPATH_EXTENSION_ELEMENTS,
+            SvgTag::ForeignObject->value,
+            SvgAttribute::RequiredExtensions->value,
+        );
 
-            $query = \sprintf('//%s:*', $prefix);
+        /** @var \DOMNodeList<\DOMElement> $domNodeList */
+        $domNodeList = $domXPath->query($query);
 
-            /** @var \DOMNodeList<\DOMElement> $domNodeList */
-            $domNodeList = $domXPath->query($query);
-
-            foreach (iterator_to_array($domNodeList, true) as $domElement) {
-                if (!$domElement->parentNode instanceof \DOMNode) {
-                    continue;
-                }
-
+        foreach (iterator_to_array($domNodeList, false) as $domElement) {
+            if (\in_array($domElement->namespaceURI, [null, SvgNamespace::Svg->value], true)
+                && $this->requiresEditorExtension($domElement)
+                && $domElement->parentNode instanceof \DOMElement
+            ) {
                 $domElement->parentNode->removeChild($domElement);
             }
         }
     }
 
     /**
-     * @param \DOMXPath $domXPath the XPath object for querying the document
+     * @param \DOMElement $domElement the element to inspect
+     *
+     * @return bool true if one of the required extensions is an editor namespace
      */
-    private function removeNamespacedAttributes(\DOMXPath $domXPath): void
+    private function requiresEditorExtension(\DOMElement $domElement): bool
     {
-        $namespaceUris = $this->getConfiguredNamespaceUris();
+        $extensions = explode(self::EXTENSION_SEPARATOR, $domElement->getAttribute(SvgAttribute::RequiredExtensions->value));
 
-        if ([] === $namespaceUris) {
-            return;
+        foreach ($extensions as $extension) {
+            if ($this->isEditorNamespace($extension)) {
+                return true;
+            }
         }
 
-        /** @var \DOMNodeList<\DOMElement> $nodes */
-        $nodes = $domXPath->query(self::XPATH_ALL_ELEMENTS);
-
-        foreach (iterator_to_array($nodes, true) as $domElement) {
-            $this->removeNodeAttributes($domElement, $namespaceUris);
-        }
+        return false;
     }
 
     /**
-     * @return list<string> the namespace URIs configured for removal
+     * Elements containing anything other than editor elements are kept, since their content may be referenced.
+     *
+     * @param \DOMXPath    $domXPath      the XPath object for querying the document
+     * @param \DOMElement  $domElement    the element to inspect
+     * @param list<string> $namespaceUris the namespace URIs of the nodes to remove
+     *
+     * @return bool true if the element can be removed
      */
-    private function getConfiguredNamespaceUris(): array
+    private function isRemovableEditorElement(\DOMXPath $domXPath, \DOMElement $domElement, array $namespaceUris): bool
     {
-        $namespaceUris = [];
-
-        foreach (self::ATTRIBUTES_TO_REMOVE as $pattern) {
-            if (!str_contains($pattern, ':')) {
-                continue;
-            }
-
-            $prefix = mb_strstr($pattern, ':', true);
-
-            if (false === $prefix) {
-                continue;
-            }
-
-            if (!\array_key_exists($prefix, self::NAMESPACE_URIS)) {
-                continue;
-            }
-
-            $namespaceUris[] = self::NAMESPACE_URIS[$prefix];
+        if (!\in_array($domElement->namespaceURI, $namespaceUris, true)
+            || !$domElement->parentNode instanceof \DOMElement
+        ) {
+            return false;
         }
 
-        return $namespaceUris;
+        /** @var \DOMNodeList<\DOMElement> $descendants */
+        $descendants = $domXPath->query(self::XPATH_DESCENDANT_ELEMENTS, $domElement);
+
+        foreach ($descendants as $descendant) {
+            if (!\in_array($descendant->namespaceURI, $namespaceUris, true)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
      * @param \DOMElement  $domElement    the element to clean
      * @param list<string> $namespaceUris the namespace URIs of the attributes to remove
      */
-    private function removeNodeAttributes(\DOMElement $domElement, array $namespaceUris): void
+    private function removeEditorAttributes(\DOMElement $domElement, array $namespaceUris): void
     {
-        foreach ($this->getAttributesToRemove($domElement, $namespaceUris) as [$namespaceUri, $localName]) {
-            $domElement->removeAttributeNS($namespaceUri, $localName);
+        $attributesToRemove = [];
+
+        /** @var \DOMAttr $domAttr */
+        foreach ($domElement->attributes as $domAttr) {
+            if (\in_array($domAttr->namespaceURI, $namespaceUris, true)) {
+                $attributesToRemove[] = $domAttr;
+            }
+        }
+
+        foreach ($attributesToRemove as $attributeToRemove) {
+            $domElement->removeAttributeNode($attributeToRemove);
         }
     }
 
     /**
-     * @param \DOMElement  $domElement    the element to inspect
-     * @param list<string> $namespaceUris the namespace URIs to match
+     * Declarations still in use (e.g. by a kept editor element) are left untouched by the DOM.
      *
-     * @return list<array{string, string}> a list of [namespaceUri, localName] pairs to be removed
+     * @param \DOMXPath $domXPath the XPath object for querying the document
      */
-    private function getAttributesToRemove(\DOMElement $domElement, array $namespaceUris): array
+    private function removeNamespaceDeclarations(\DOMXPath $domXPath): void
     {
-        $attributesToRemove = [];
+        /** @var \DOMNodeList<\DOMElement> $domNodeList */
+        $domNodeList = $domXPath->query(self::XPATH_ALL_ELEMENTS);
 
-        /** @var \DOMAttr $attribute */
-        foreach ($domElement->attributes as $attribute) {
-            if (null !== $attribute->namespaceURI
-                && \in_array($attribute->namespaceURI, $namespaceUris, true)
-                && null !== $attribute->localName
-            ) {
-                $attributesToRemove[] = [$attribute->namespaceURI, $attribute->localName];
+        foreach ($domNodeList as $domElement) {
+            /** @var \DOMNodeList<\DOMNameSpaceNode> $namespaceNodes */
+            $namespaceNodes = $domXPath->query(self::XPATH_ELEMENT_NAMESPACE_NODES, $domElement);
+
+            foreach (iterator_to_array($namespaceNodes, false) as $domNameSpaceNode) {
+                $declaration = self::XMLNS_PREFIX . $domNameSpaceNode->prefix;
+
+                if ('' !== $domNameSpaceNode->prefix
+                    && $this->isEditorNamespace((string) $domNameSpaceNode->nodeValue)
+                    && $domElement->hasAttribute($declaration)
+                ) {
+                    $domElement->removeAttribute($declaration);
+                }
             }
         }
+    }
 
-        return $attributesToRemove;
+    /**
+     * @param string $namespaceUri the namespace URI to check
+     *
+     * @return bool true if the namespace URI belongs to an editor
+     */
+    private function isEditorNamespace(string $namespaceUri): bool
+    {
+        return \in_array($namespaceUri, self::EDITOR_NAMESPACE_URIS, true);
     }
 }

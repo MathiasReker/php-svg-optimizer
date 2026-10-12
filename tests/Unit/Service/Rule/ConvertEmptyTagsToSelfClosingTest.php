@@ -61,6 +61,21 @@ final class ConvertEmptyTagsToSelfClosingTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps a self-closing child named like its parent' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a/><svg/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><a/><svg/></svg>',
+        ];
+
+        yield 'Keeps a self-closing g before the closing tag of its parent g' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g/></g></svg>',
+        ];
+
+        yield 'Converts an empty element whose parent has the same name' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g/></g></svg>',
+        ];
+
         yield 'Convert Empty Rect Tag' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
