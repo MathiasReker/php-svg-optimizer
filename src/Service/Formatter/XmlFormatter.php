@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Formatter;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class XmlFormatter

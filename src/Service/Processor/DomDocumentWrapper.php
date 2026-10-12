@@ -18,6 +18,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
 use MathiasReker\PhpSvgOptimizer\Support\SvgDefaults;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class DomDocumentWrapper

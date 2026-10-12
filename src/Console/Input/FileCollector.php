@@ -15,6 +15,8 @@ use MathiasReker\PhpSvgOptimizer\Console\Filesystem\Finder;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final class FileCollector

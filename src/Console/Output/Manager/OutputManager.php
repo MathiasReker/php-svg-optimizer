@@ -16,6 +16,8 @@ use MathiasReker\PhpSvgOptimizer\Console\Output\Formatter\ByteFormatter;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class OutputManager

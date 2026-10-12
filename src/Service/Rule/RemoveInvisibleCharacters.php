@@ -16,6 +16,8 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor implements SvgOptimizerRuleInterface

@@ -21,6 +21,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
  * Removes shapes that the SVG specification says are not rendered: a circle with a zero radius, an ellipse with a zero
  * radius, a rect with a zero width or height, and a path, polyline or polygon without any data.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveZeroSizeShapes implements SvgOptimizerRuleInterface

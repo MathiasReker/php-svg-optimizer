@@ -21,6 +21,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final class SvgOptimizer

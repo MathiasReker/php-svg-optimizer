@@ -21,6 +21,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
  * may set white-space through CSS (inline styles, style elements, presentation attributes or external
  * style sheets) on the element or its ancestors.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveXmlSpaceDefault implements SvgOptimizerRuleInterface

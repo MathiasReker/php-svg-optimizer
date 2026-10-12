@@ -21,6 +21,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
  * transforms are dropped, default arguments are omitted, and numbers are written in their shortest notation.
  * Values are never rounded and transforms are never combined; a value that is not a valid transform list is kept.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class MinifyTransformations implements SvgOptimizerRuleInterface

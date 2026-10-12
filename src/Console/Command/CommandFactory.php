@@ -17,6 +17,8 @@ use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class CommandFactory

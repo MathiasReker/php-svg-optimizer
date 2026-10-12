@@ -16,6 +16,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 /**
  * Keeps references intact when ids are renamed.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 trait IdRenameTrait

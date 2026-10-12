@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Console\Output;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final class MetaDataAggregator

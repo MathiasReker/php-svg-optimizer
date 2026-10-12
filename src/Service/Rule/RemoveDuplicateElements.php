@@ -20,6 +20,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  * kept: painting a shape twice changes paint order, translucency and
  * anti-aliased edges.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterface

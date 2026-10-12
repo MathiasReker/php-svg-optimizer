@@ -17,6 +17,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgElementAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInterface

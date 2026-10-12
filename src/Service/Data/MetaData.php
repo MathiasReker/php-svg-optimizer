@@ -14,6 +14,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Data;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class MetaData

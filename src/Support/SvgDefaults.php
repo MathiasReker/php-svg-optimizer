@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Support;
 
+/**
+ * @internal
+ */
 final class SvgDefaults
 {
     public const string XML_VERSION = '1.0';

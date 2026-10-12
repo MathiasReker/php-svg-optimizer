@@ -16,6 +16,9 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdRenameTrait;
 
+/**
+ * @internal
+ */
 final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
 {
     use IdRenameTrait;

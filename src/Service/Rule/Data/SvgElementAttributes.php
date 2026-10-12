@@ -18,6 +18,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data;
  * CSS Masking 1 and SVG Animations. The data is deliberately permissive: attributes that browsers
  * honour in real-world files are kept even when a newer specification dropped them.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final class SvgElementAttributes

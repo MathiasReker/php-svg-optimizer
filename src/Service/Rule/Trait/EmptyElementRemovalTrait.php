@@ -14,6 +14,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 trait EmptyElementRemovalTrait

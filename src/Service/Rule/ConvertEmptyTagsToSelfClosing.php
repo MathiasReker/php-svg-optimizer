@@ -15,6 +15,9 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 
+/**
+ * @internal
+ */
 final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
     /**

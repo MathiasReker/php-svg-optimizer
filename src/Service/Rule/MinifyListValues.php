@@ -21,6 +21,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
  * where the coordinates of `points` stay distinct. Values are never rounded, and a value holding anything other than
  * plain numbers, such as units, percentages or keywords, is kept.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class MinifyListValues implements SvgOptimizerRuleInterface

@@ -16,6 +16,8 @@ use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class ArgumentParser

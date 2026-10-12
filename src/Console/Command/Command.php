@@ -19,6 +19,8 @@ use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class Command implements CommandInterface

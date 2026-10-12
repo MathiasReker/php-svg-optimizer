@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Contract\Console\Command;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 interface CommandInterface

@@ -15,6 +15,8 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 abstract readonly class AbstractXmlProcessor

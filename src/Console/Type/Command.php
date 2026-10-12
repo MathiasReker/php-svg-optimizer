@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Console\Type;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 enum Command: string

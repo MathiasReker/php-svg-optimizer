@@ -16,6 +16,8 @@ use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final class FileProvider extends AbstractProvider

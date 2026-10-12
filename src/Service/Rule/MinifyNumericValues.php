@@ -19,6 +19,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
  * notation changes: leading and trailing zeros and a `+` sign are dropped, and `px` is dropped from lengths, as a
  * pixel equals one user unit. Values are never rounded.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class MinifyNumericValues implements SvgOptimizerRuleInterface

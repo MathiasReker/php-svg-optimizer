@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 trait RenameElementTrait

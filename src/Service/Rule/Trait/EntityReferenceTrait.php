@@ -16,6 +16,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
  * entities, and only the document element is written, so a reference left in the output would point to a declaration
  * that is no longer there.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 trait EntityReferenceTrait

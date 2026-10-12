@@ -17,6 +17,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor implements SvgOptimizerRuleInterface

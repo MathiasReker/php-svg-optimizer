@@ -17,6 +17,8 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 abstract class AbstractProvider implements SvgProviderInterface

@@ -20,6 +20,8 @@ use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
 use MathiasReker\PhpSvgOptimizer\Type\Application;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class CommandDispatcher

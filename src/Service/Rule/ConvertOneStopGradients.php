@@ -25,6 +25,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
  * stops of the gradient it links to. Gradients referenced in any other way, stops with an opacity, a style or a color
  * that does not mean the same as a paint, and documents with a `<style>` or `<script>` are left untouched.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterface

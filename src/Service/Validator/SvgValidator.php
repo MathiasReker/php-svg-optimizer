@@ -16,6 +16,10 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
+ * @internal
+ *
+ * @final since 8.8.0, it will be final in 9.0
+ *
  * @no-named-arguments
  */
 readonly class SvgValidator

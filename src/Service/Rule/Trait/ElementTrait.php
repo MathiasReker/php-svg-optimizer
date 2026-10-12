@@ -19,6 +19,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  * Element lookups and checks shared by rules that rewrite or remove elements, so they only act where the result
  * renders identically.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 trait ElementTrait

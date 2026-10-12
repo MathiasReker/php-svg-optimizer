@@ -14,6 +14,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Provider;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final class StringProvider extends AbstractProvider

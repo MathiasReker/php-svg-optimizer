@@ -14,6 +14,10 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Output\Stream;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 
 /**
+ * @internal
+ *
+ * @final since 8.8.0, it will be final in 9.0
+ *
  * @no-named-arguments
  */
 class MemoryStream extends AbstractStream implements StreamInterface

@@ -18,6 +18,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  * Collects the ids an SVG document references internally. The collection over-counts on purpose (a hex color such as
  * `#fff` also counts as a reference to the id `fff`), so callers only ever keep too much, never too little.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 trait IdReferenceTrait

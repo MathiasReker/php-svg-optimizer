@@ -16,6 +16,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EmptyElementRemovalTrait;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface

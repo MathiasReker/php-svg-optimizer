@@ -14,6 +14,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 /**
  * Shortens number literals by rewriting the string only, so the represented value never changes.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 trait NumberFormatterTrait

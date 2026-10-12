@@ -16,6 +16,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
  *
  * Requires NumberFormatterTrait.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 trait NumberListTrait

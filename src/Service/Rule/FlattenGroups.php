@@ -18,6 +18,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class FlattenGroups implements SvgOptimizerRuleInterface

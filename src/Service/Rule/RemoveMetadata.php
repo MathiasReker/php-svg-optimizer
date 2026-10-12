@@ -16,6 +16,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RemoveElementsByTagNameTrait;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveMetadata implements SvgOptimizerRuleInterface

@@ -21,6 +21,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
  * as `#ff0000` to `red` and `white` to `#fff`. On a tie, a named color is kept and any other color is written as hex.
  * Keywords without a fixed value, such as `currentColor`, `transparent` or `none`, are kept.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface

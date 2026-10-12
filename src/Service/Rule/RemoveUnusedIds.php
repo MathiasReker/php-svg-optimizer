@@ -24,6 +24,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
  * `<symbol>` elements (sprite icons) and of `<view>` elements are kept, as they are typically targeted from outside the
  * document. Risky, because a page's style sheets, scripts or fragment links may still target the removed ids.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveUnusedIds implements SvgOptimizerRuleInterface

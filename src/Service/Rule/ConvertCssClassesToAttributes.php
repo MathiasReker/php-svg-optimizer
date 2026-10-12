@@ -23,6 +23,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ClassAttributeTrait;
  * and properties that other CSS may set, since presentation attributes lose to every style sheet rule. A class is only
  * removed from its elements when no remaining CSS refers to it.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleInterface

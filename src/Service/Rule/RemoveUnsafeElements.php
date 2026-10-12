@@ -20,6 +20,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface

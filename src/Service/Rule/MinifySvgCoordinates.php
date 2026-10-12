@@ -16,6 +16,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface

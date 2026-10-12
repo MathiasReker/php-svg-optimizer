@@ -21,6 +21,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class SvgFileProcessor

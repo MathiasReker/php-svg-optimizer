@@ -16,6 +16,9 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
 
+/**
+ * @internal
+ */
 final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRuleInterface
 {
     use AsciiCaseTrait;

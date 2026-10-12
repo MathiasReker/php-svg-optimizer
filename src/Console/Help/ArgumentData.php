@@ -18,6 +18,8 @@ use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandHelp;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\ExampleCommand;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final class ArgumentData

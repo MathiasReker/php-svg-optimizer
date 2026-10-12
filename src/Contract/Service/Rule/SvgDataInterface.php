@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Contract\Service\Rule;
 
+/**
+ * @internal
+ */
 interface SvgDataInterface
 {
     /**

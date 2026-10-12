@@ -23,6 +23,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  * prefix used in the file does not matter. Illustrator's private data placeholders (a foreignObject that requires an
  * editor extension) are removed as well, since no browser supports those extensions and they are never rendered.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterface

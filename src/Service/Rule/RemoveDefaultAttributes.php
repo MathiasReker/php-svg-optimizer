@@ -19,6 +19,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  * Removes inherited presentation attributes whose value equals the initial
  * value, but only when the element would inherit that same value without it.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterface

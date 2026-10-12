@@ -15,6 +15,8 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRuleInterface

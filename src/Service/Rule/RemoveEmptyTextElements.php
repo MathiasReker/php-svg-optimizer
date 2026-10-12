@@ -16,6 +16,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterface

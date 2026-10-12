@@ -20,6 +20,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  * and gradients, patterns, clip paths, masks, markers, symbols and filters anywhere in the document. A `<defs>` left
  * empty is removed as well.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveUselessDefs implements SvgOptimizerRuleInterface

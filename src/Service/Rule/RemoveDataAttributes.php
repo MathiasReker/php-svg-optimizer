@@ -14,6 +14,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveDataAttributes implements SvgOptimizerRuleInterface

@@ -57,6 +57,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 
 /**
+ * @api
+ *
  * @no-named-arguments
  */
 enum Rule: string

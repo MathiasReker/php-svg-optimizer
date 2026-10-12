@@ -17,6 +17,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface

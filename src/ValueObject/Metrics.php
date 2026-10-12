@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\ValueObject;
 
 /**
+ * @api
+ *
  * @no-named-arguments
  */
 final readonly class Metrics

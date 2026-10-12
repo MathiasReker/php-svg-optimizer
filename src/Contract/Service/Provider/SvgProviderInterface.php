@@ -14,6 +14,8 @@ namespace MathiasReker\PhpSvgOptimizer\Contract\Service\Provider;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 interface SvgProviderInterface

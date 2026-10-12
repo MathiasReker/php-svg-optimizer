@@ -18,6 +18,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface

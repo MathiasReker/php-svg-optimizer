@@ -15,6 +15,8 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class RemoveDoctype extends AbstractXmlProcessor implements SvgOptimizerRuleInterface

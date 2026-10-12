@@ -16,6 +16,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Support\SvgDefaults;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 trait DangerousAttributeValueTrait

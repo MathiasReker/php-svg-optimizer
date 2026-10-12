@@ -23,6 +23,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RenameElementTrait;
  * Converts `<rect>`, `<line>`, `<polyline>` and `<polygon>` to `<path>`. The path data reuses the original numbers
  * (a rect is drawn with relative moves), so no coordinate is recalculated.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface

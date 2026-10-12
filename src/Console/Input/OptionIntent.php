@@ -14,6 +14,8 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
 
 /**
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class OptionIntent

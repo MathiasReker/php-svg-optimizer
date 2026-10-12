@@ -19,6 +19,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  * as a space. Documents are parsed preserving whitespace, so that it survives in text content; elsewhere it is removed
  * where the parser would remove it when not preserving whitespace.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 trait BlankTextNodeTrait

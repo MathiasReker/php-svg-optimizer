@@ -21,6 +21,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RenameElementTrait;
 /**
  * Converts an `<ellipse>` whose radii are equal to a `<circle>`.
  *
+ * @internal
+ *
  * @no-named-arguments
  */
 final readonly class ConvertEllipseToCircle implements SvgOptimizerRuleInterface
