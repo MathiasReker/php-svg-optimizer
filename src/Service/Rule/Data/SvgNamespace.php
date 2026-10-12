@@ -22,6 +22,7 @@ enum SvgNamespace: string implements SvgDataInterface
     case Xlink = 'http://www.w3.org/1999/xlink';
     case Sodipodi = 'http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd';
     case Inkscape = 'http://www.inkscape.org/namespaces/inkscape';
+    case Xml = 'http://www.w3.org/XML/1998/namespace';
 
     /**
      * @return list<string>
@@ -41,6 +42,7 @@ enum SvgNamespace: string implements SvgDataInterface
             self::Xlink->value => 'xlink',
             self::Sodipodi->value => 'sodipodi',
             self::Inkscape->value => 'inkscape',
+            self::Xml->value => 'xml',
         };
     }
 }

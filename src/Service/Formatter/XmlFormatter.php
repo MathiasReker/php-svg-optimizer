@@ -16,9 +16,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Formatter;
  */
 final readonly class XmlFormatter
 {
-    /**
-     * @see https://regex101.com/r/lyKDnR/1
-     */
     private const string WHITESPACE_BETWEEN_TAGS_REGEX = '/>\s+</';
 
     /**

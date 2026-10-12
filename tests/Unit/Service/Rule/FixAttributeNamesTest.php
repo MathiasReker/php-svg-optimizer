@@ -70,6 +70,16 @@ final class FixAttributeNamesTest extends TestCase
             '<svg><circle fill="blue" stroke-width="1"/></svg>',
         ];
 
+        yield 'Keeps referrerpolicy lowercase as the specifications spell it' => [
+            '<svg><a referrerpolicy="no-referrer" referrerPolicy="origin"/></svg>',
+            '<svg><a referrerpolicy="origin"/></svg>',
+        ];
+
+        yield 'Normalizes attributes added for SVG fonts and masking' => [
+            '<svg><mask MASK-TYPE="alpha"/><glyph Vert-Adv-Y="1" orientation="h"/></svg>',
+            '<svg><mask mask-type="alpha"/><glyph orientation="h" vert-adv-y="1"/></svg>',
+        ];
+
         yield 'Ignores attributes not in SvgAttribute enum' => [
             '<svg><rect anotherAttr="1"/></svg>',
             '<svg><rect anotherAttr="1"/></svg>',

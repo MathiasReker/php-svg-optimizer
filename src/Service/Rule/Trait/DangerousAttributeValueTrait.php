@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Support\SvgDefaults;
 
 /**
@@ -31,9 +32,11 @@ trait DangerousAttributeValueTrait
                 continue;
             }
 
+            $allowsDataUri = $this->isTagIn($domElement, SvgTag::dataUri());
+
             /** @var \DOMAttr $attribute */
             foreach (iterator_to_array($domElement->attributes, false) as $attribute) {
-                if ($this->isDangerousAttribute($attribute)) {
+                if ($this->isDangerousAttribute($attribute, $allowsDataUri)) {
                     $domElement->removeAttributeNode($attribute);
                 }
             }
@@ -41,11 +44,28 @@ trait DangerousAttributeValueTrait
     }
 
     /**
-     * @param \DOMAttr $domAttr the attribute to check
+     * @param list<string> $urls the raw URLs to check
+     *
+     * @return bool true if any URL uses a dangerous protocol
+     */
+    private function containsDangerousUrl(array $urls): bool
+    {
+        foreach ($urls as $url) {
+            if ($this->matchesPattern($this->normalizeValue($url), self::DANGEROUS_PROTOCOLS_REGEX)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param \DOMAttr $domAttr       the attribute to check
+     * @param bool     $allowsDataUri whether the owning element may reference a data: image
      *
      * @return bool true if the attribute is dangerous
      */
-    private function isDangerousAttribute(\DOMAttr $domAttr): bool
+    private function isDangerousAttribute(\DOMAttr $domAttr, bool $allowsDataUri): bool
     {
         $name = mb_strtolower($domAttr->name);
 
@@ -54,6 +74,13 @@ trait DangerousAttributeValueTrait
         }
 
         $value = $this->normalizeValue($domAttr->value);
+
+        if (!$allowsDataUri
+            && \in_array($name, SvgAttribute::dangerousExact(), true)
+            && $this->matchesPattern($value, self::DATA_URI_REGEX)
+        ) {
+            return true;
+        }
 
         return $this->isDangerousAttributeValue($name, $value);
     }
@@ -65,6 +92,10 @@ trait DangerousAttributeValueTrait
      */
     private function isDangerousAttributeName(string $name): bool
     {
+        if (\in_array($name, self::CLOBBERING_ATTRIBUTES, true)) {
+            return true;
+        }
+
         foreach (self::DANGEROUS_ATTR_PREFIXES as $prefix) {
             if (str_starts_with($name, $prefix)) {
                 return true;
@@ -92,7 +123,11 @@ trait DangerousAttributeValueTrait
             static function (array $match): string {
                 $code = (int) hexdec($match[1]);
 
-                return ($code > 0 && $code <= 0x10_FF_FF) ? mb_chr($code, SvgDefaults::XML_ENCODING) : '';
+                // A surrogate or a code point above U+10FFFF has no character; U+0000 is removed with the control
+                // characters.
+                return $code > 0x10_FF_FF || ($code >= 0xD8_00 && $code <= 0xDF_FF)
+                    ? ''
+                    : mb_chr($code, SvgDefaults::XML_ENCODING);
             },
             $value
         ) ?? $value;
@@ -145,27 +180,29 @@ trait DangerousAttributeValueTrait
      */
     private function isDangerousAttributeValue(string $name, string $value): bool
     {
-        if (\in_array($name, SvgAttribute::dangerousExact(), true) && $this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX)) {
-            return true;
-        }
+        return $this->isDangerousUrlAttribute($name, $value)
+            || (SvgAttribute::Values->value === $name && $this->isSmilValuesDangerous($value))
+            || (\in_array($name, SvgAttribute::dangerous(), true) && $this->isUrlAttributeValueDangerous($value))
+            || match ($name) {
+                SvgAttribute::Style->value => $this->isStyleAttributeDangerous($value),
+                SvgAttribute::Srcset->value => $this->isSrcsetDangerous($value),
+                default => false,
+            };
+    }
 
-        if (SvgAttribute::Values->value === $name && $this->isSmilValuesDangerous($value)) {
-            return true;
-        }
+    /**
+     * @param string $name  the attribute name
+     * @param string $value the normalized attribute value
+     *
+     * @return bool true if the attribute holds a single URL and the URL uses a dangerous protocol
+     */
+    private function isDangerousUrlAttribute(string $name, string $value): bool
+    {
+        $isUrlAttribute = \in_array($name, SvgAttribute::dangerousExact(), true)
+            || \in_array($name, self::URI_ATTRIBUTES, true)
+            || SvgAttribute::Src->value === $name;
 
-        if (\in_array($name, SvgAttribute::dangerous(), true) && $this->isUrlAttributeValueDangerous($value)) {
-            return true;
-        }
-
-        if (SvgAttribute::Style->value === $name) {
-            return $this->isStyleAttributeDangerous($value);
-        }
-
-        if ($name === SvgAttribute::Srcset->value) {
-            return $this->isSrcsetDangerous($value);
-        }
-
-        return SvgAttribute::Src->value === $name && $this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX);
+        return $isUrlAttribute && $this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX);
     }
 
     /**
@@ -195,13 +232,13 @@ trait DangerousAttributeValueTrait
      */
     private function isUrlAttributeValueDangerous(string $value): bool
     {
-        if (1 === preg_match(self::URL_FUNCTION_REGEX, $value, $matches)) {
-            $urlInside = trim($matches[2]);
-
-            return 1 === preg_match(self::DANGEROUS_PROTOCOLS_REGEX, $urlInside);
+        if ($this->matchesPattern(trim($value), self::DANGEROUS_PROTOCOLS_REGEX)) {
+            return true;
         }
 
-        return 1 === preg_match(self::DANGEROUS_PROTOCOLS_REGEX, trim($value));
+        preg_match_all(self::URL_FUNCTION_REGEX, $value, $matches);
+
+        return $this->containsDangerousUrl($matches[2]);
     }
 
     /**
@@ -215,17 +252,16 @@ trait DangerousAttributeValueTrait
             return true;
         }
 
-        if (1 === preg_match_all(self::URL_FUNCTION_REGEX, $value, $matches)) {
-            foreach ($matches[2] as $url) {
-                $normalized = $this->normalizeValue($url);
+        preg_match_all(self::URL_FUNCTION_REGEX, $value, $urls);
 
-                if ($this->matchesPattern($normalized, self::DANGEROUS_PROTOCOLS_REGEX)) {
-                    return true;
-                }
-            }
+        if ($this->containsDangerousUrl($urls[2])) {
+            return true;
         }
 
-        return false;
+        preg_match_all(self::CSS_IMAGE_SET_REGEX, $value, $imageSets);
+        preg_match_all(self::CSS_QUOTED_STRING_REGEX, implode(' ', $imageSets[1]), $imageSetUrls);
+
+        return $this->containsDangerousUrl($imageSetUrls[2]);
     }
 
     /**

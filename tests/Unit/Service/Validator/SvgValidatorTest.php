@@ -94,6 +94,27 @@ final class SvgValidatorTest extends TestCase
         self::assertFalse($this->svgValidator->isValid($svgComment));
     }
 
+    #[Test]
+    public function isValidWithInternalDtdSubsetContainingDoctypeLikeEntity(): void
+    {
+        $svg = '<!DOCTYPE svg [<!ENTITY z "><!--">]><!-- --><svg xmlns="http://www.w3.org/2000/svg"/>';
+        self::assertTrue($this->svgValidator->isValid($svg));
+    }
+
+    #[Test]
+    public function isValidWithNonSvgRootHiddenBehindDoctype(): void
+    {
+        $html = '<!DOCTYPE html [<!ENTITY z "<svg>">]><html xmlns="http://www.w3.org/1999/xhtml"/>';
+        self::assertFalse($this->svgValidator->isValid($html));
+    }
+
+    #[Test]
+    public function isValidWithPrefixedSvgRoot(): void
+    {
+        $svg = '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"/>';
+        self::assertTrue($this->svgValidator->isValid($svg));
+    }
+
     #[\Override]
     protected function setUp(): void
     {

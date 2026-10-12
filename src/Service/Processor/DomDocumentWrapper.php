@@ -13,6 +13,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\BlankTextNodeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
 use MathiasReker\PhpSvgOptimizer\Support\SvgDefaults;
 
 /**
@@ -20,10 +22,16 @@ use MathiasReker\PhpSvgOptimizer\Support\SvgDefaults;
  */
 final readonly class DomDocumentWrapper
 {
-    private const int LOAD_FLAGS =
-        \LIBXML_NONET |
-        \LIBXML_NOCDATA |
-        \LIBXML_NOEMPTYTAG;
+    use BlankTextNodeTrait;
+    use EntityReferenceTrait;
+
+    /**
+     * Only parser options belong here: a save option such as LIBXML_NOEMPTYTAG shares its value with the option that
+     * loads the external DTD. CDATA sections are merged into the text after parsing.
+     */
+    private const int LOAD_FLAGS = \LIBXML_NONET;
+
+    private const string STYLESHEET_INSTRUCTION = 'xml-stylesheet';
 
     /**
      * @param \DOMDocument $domDocument The \DOMDocument instance to be saved
@@ -34,19 +42,40 @@ final readonly class DomDocumentWrapper
      */
     public function saveToString(\DOMDocument $domDocument): string
     {
-        if ($domDocument->documentElement instanceof \DOMElement) {
-            $saveXML = $domDocument->saveXML($domDocument->documentElement);
-        } else {
-            $saveXML = $domDocument->saveXML();
+        [$blankTextNodes, $whitespace] = $this->collapseBlankTextNodes($domDocument);
+        $saveXML = $domDocument->saveXML($domDocument->documentElement);
+
+        // The document is left as it was, as rules may serialize it to parse it again.
+        foreach ($blankTextNodes as $index => $domText) {
+            $domText->data = $whitespace[$index];
         }
 
         if (false === $saveXML) {
             throw new XmlProcessingException('Failed to save XML content.');
         }
 
-        $clean = XmlFormatter::removeLineFeedsAndTabs($saveXML);
+        return XmlFormatter::removeLineFeedsAndTabs($this->saveStylesheetInstructions($domDocument) . $saveXML);
+    }
 
-        return XmlFormatter::removeWhitespaceBetweenTags($clean);
+    /**
+     * Only the document element is written, which would drop the `<?xml-stylesheet?>` instructions before it and
+     * with them the styles they link.
+     *
+     * @param \DOMDocument $domDocument the document to read
+     *
+     * @return string the stylesheet instructions that precede the document element
+     */
+    private function saveStylesheetInstructions(\DOMDocument $domDocument): string
+    {
+        $instructions = '';
+
+        foreach ($domDocument->childNodes as $child) {
+            if ($child instanceof \DOMProcessingInstruction && self::STYLESHEET_INSTRUCTION === mb_strtolower($child->target)) {
+                $instructions .= (string) $domDocument->saveXML($child);
+            }
+        }
+
+        return $instructions;
     }
 
     /**
@@ -63,45 +92,6 @@ final readonly class DomDocumentWrapper
         }
 
         return $this->loadDomDocument(static fn (\DOMDocument $domDocument): bool => $domDocument->load($filePath, self::LOAD_FLAGS));
-    }
-
-    /**
-     * @param callable $loader A callback that loads the \DOMDocument (file or string)
-     *
-     * @return \DOMDocument Returns the loaded \DOMDocument
-     *
-     * @throws XmlProcessingException If the \DOMDocument fails to load
-     */
-    private function loadDomDocument(callable $loader): \DOMDocument
-    {
-        $domDocument = $this->createDomDocument();
-        libxml_use_internal_errors(true);
-
-        if (!$loader($domDocument)) {
-            libxml_clear_errors();
-            libxml_use_internal_errors(false);
-
-            throw new XmlProcessingException('Failed to load DOMDocument.');
-        }
-
-        libxml_use_internal_errors(false);
-
-        return $domDocument;
-    }
-
-    private function createDomDocument(): \DOMDocument
-    {
-        $domDocument = new \DOMDocument(SvgDefaults::XML_VERSION, SvgDefaults::XML_ENCODING);
-        $domDocument->formatOutput = false;
-        $domDocument->preserveWhiteSpace = false;
-
-        $domDocument->resolveExternals = false;
-        $domDocument->substituteEntities = false;
-        $domDocument->validateOnParse = false;
-        $domDocument->strictErrorChecking = true;
-        $domDocument->recover = false;
-
-        return $domDocument;
     }
 
     /**
@@ -123,5 +113,82 @@ final readonly class DomDocumentWrapper
                 self::LOAD_FLAGS
             )
         );
+    }
+
+    /**
+     * @param callable $loader A callback that loads the \DOMDocument (file or string)
+     *
+     * @return \DOMDocument Returns the loaded \DOMDocument
+     *
+     * @throws XmlProcessingException If the \DOMDocument fails to load
+     */
+    private function loadDomDocument(callable $loader): \DOMDocument
+    {
+        $domDocument = $this->parse($loader);
+        $this->expandEntityReferences($domDocument);
+        $domDocument = $this->resolveNamespaceEntityReferences($domDocument);
+        $this->removeBlankTextNodes($domDocument);
+
+        return $domDocument;
+    }
+
+    /**
+     * Namespace declarations keep entity references unexpanded, and the DOCTYPE declaring the entities is not written
+     * to the output, so they are resolved by parsing the document element again.
+     *
+     * @param \DOMDocument $domDocument the loaded document
+     *
+     * @return \DOMDocument the document, or a document parsed again without entity references
+     *
+     * @throws XmlProcessingException If the resolved markup fails to load
+     */
+    private function resolveNamespaceEntityReferences(\DOMDocument $domDocument): \DOMDocument
+    {
+        $entities = $this->internalEntities($domDocument);
+
+        if ([] === $entities) {
+            return $domDocument;
+        }
+
+        $markup = (string) $domDocument->saveXML($domDocument->documentElement);
+        $resolved = $this->resolveNamespaceEntities($markup, $entities);
+
+        return '' === $resolved || $resolved === $markup
+            ? $domDocument
+            : $this->parse(static fn (\DOMDocument $domDocument): bool => $domDocument->loadXML($resolved, self::LOAD_FLAGS));
+    }
+
+    /**
+     * @param callable $loader A callback that loads the \DOMDocument (file or string)
+     *
+     * @throws XmlProcessingException If the \DOMDocument fails to load
+     */
+    private function parse(callable $loader): \DOMDocument
+    {
+        $domDocument = $this->createDomDocument();
+        $previous = libxml_use_internal_errors(true);
+        $loaded = $loader($domDocument);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+
+        if (!$loaded) {
+            throw new XmlProcessingException('Failed to load DOMDocument.');
+        }
+
+        return $domDocument;
+    }
+
+    private function createDomDocument(): \DOMDocument
+    {
+        $domDocument = new \DOMDocument(SvgDefaults::XML_VERSION, SvgDefaults::XML_ENCODING);
+        $domDocument->formatOutput = false;
+        $domDocument->preserveWhiteSpace = true;
+
+        $domDocument->resolveExternals = false;
+        $domDocument->substituteEntities = false;
+        $domDocument->validateOnParse = false;
+        $domDocument->recover = false;
+
+        return $domDocument;
     }
 }

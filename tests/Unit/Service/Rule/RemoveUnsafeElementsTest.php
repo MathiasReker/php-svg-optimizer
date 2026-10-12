@@ -65,6 +65,36 @@ final class RemoveUnsafeElementsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Removes external image-set() URLs after a url() inside image-set' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="background:image-set(url(a.png) 1x, &quot;https://evil.com/t.png&quot; 2x)"/><style>.a{background:image-set(url(a.png) 1x,"https://evil.com/t.png" 2x)}</style></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes a javascript: URL split by an escaped surrogate' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="java\d800script:alert(1)"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+        ];
+
+        yield 'Removes a javascript: URL in url() quoted with an escaped entity' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="url(&amp;quot;javascript:alert(1)&amp;quot;)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes an external URL in an unclosed image-set()' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="background:image-set(&quot;https://evil.com/t.png&quot; 2x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Keeps relative URLs in image-set()' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="background:image-set(url(a.png) 1x, &quot;b.png&quot; 2x)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="background:image-set(url(a.png) 1x, &quot;b.png&quot; 2x)"/></svg>',
+        ];
+
+        yield 'Removes dangerous markup that comes from an entity' => [
+            '<!DOCTYPE svg [<!ENTITY js "<script>alert(1)</script><a href=\'javascript:alert(1)\'><text>x</text></a>">]><svg xmlns="http://www.w3.org/2000/svg">&js;</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+        ];
+
         yield 'Removes script and iframe elements' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
@@ -514,6 +544,52 @@ final class RemoveUnsafeElementsTest extends TestCase
                 XML,
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" baseProfile="full"><animate attributeName="x" dur="1s"/></svg>
+                XML,
+        ];
+
+        yield 'Removes SMIL to/from/by javascript: hidden behind trailing url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <a><set attributeName="fill" to="javascript:alert(document.domain)//url()"/><text y="20">click</text></a>
+                    <a><animate attributeName="fill" from="javascript:alert(1)//url()" to="javascript:alert(1)//url()" dur="1s"/></a>
+                    <a><animate attributeName="fill" by="javascript:alert(1)" dur="1s"/></a>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><a><set attributeName="fill"/><text y="20">click</text></a><a><animate attributeName="fill" dur="1s"/></a><a><animate attributeName="fill" dur="1s"/></a></svg>
+                XML,
+        ];
+
+        yield 'Removes fill when a later url() is dangerous' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect fill="url(#a) url(http://evil.com/x.svg#g)" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Removes style attribute when a later url() is dangerous' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect style="fill:url(#a);background:url(https://evil.com/x)" width="10" height="10"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
+                XML,
+        ];
+
+        yield 'Keeps SMIL to with safe value' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <rect><set attributeName="fill" to="url(#b)"/></rect>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect><set attributeName="fill" to="url(#b)"/></rect></svg>
                 XML,
         ];
 
@@ -997,7 +1073,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><set attributeName="href"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"/>
                 XML,
         ];
 
@@ -1431,25 +1507,36 @@ final class RemoveUnsafeElementsTest extends TestCase
                 XML,
         ];
 
-        yield 'Unwraps animate with dangerous href' => [
+        yield 'Removes animate with dangerous href' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
                     <animate attributeName="href" values="javascript:alert(1);"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><animate attributeName="href"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"/>
                 XML,
         ];
 
-        yield 'Unwraps animate with dangerous href with data' => [
+        yield 'Removes animate with dangerous href with data' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
                     <animate attributeName="href" values="data:alert(1);"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><animate attributeName="href"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"/>
+                XML,
+        ];
+
+        yield 'Removes dangerous values on animation not targeting href' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <animate attributeName="fill" values="javascript:alert(1);"/>
+                </svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><animate attributeName="fill"/></svg>
                 XML,
         ];
 
@@ -1588,7 +1675,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                 XML,
         ];
 
-        yield 'Keeps non-stylesheet processing instruction nested inside the root element' => [
+        yield 'Removes non-stylesheet processing instruction nested inside the root element' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
                     <?some-other-instruction data="harmless"?>
@@ -1596,7 +1683,178 @@ final class RemoveUnsafeElementsTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><?some-other-instruction data="harmless"?><rect/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes processing instruction that breaks out of foreign content when inlined in HTML' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><?foo x="><img src=x onerror=alert(1)>"?><rect/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes comment that closes early when inlined in HTML' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><!--><img src=x onerror=alert(1)>--><!---><b>--><rect/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes comment containing markup' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><!-- </style><img src=x onerror=alert(1)> --><rect/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Keeps plain comment' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><!-- a > b --><rect/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><!-- a > b --><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes elements from foreign namespaces' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:m="http://www.w3.org/1998/Math/MathML"><h:form action="javascript:alert(1)"><h:input type="submit" formaction="javascript:alert(1)"/></h:form><m:math/><rect/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:m="http://www.w3.org/1998/Math/MathML"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Keeps elements bound to the SVG namespace via a prefix' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:s="http://www.w3.org/2000/svg"><s:rect/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:s="http://www.w3.org/2000/svg"><s:rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes animation elements targeting href regardless of value or casing' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><set attributeName="xlink:href" to="x"/><animateMotion attributeName="HREF"/><animateTransform attributeName="href"/><animate attributeName="fill"/></a></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><animate attributeName="fill"/></a></svg>
+                XML,
+        ];
+
+        yield 'Removes URL-bearing attributes with dangerous protocols' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><g action="javascript:alert(1)" formaction="javascript:alert(1)" poster="http://evil.com/x.png" cite="//evil.com" background="https://evil.com/x.png" ping="https://evil.com"/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><g/></svg>
+                XML,
+        ];
+
+        yield 'Removes additional script-capable protocols' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><a href="livescript:alert(1)">a</a><a href="ms-its:x.chm::/x.htm">b</a><a href="jar:x!/y">c</a></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg">abc</svg>
+                XML,
+        ];
+
+        yield 'Removes data: href outside image elements' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><use href="data:image/svg+xml;base64,PHN2Zy8+"/><filter><feImage href="data:image/png;base64,iVBORw0KGgo"/></filter></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><use/><filter><feImage href="data:image/png;base64,iVBORw0KGgo"/></filter></svg>
+                XML,
+        ];
+
+        yield 'Removes external image-set() URLs in CSS' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><style>rect { background: -webkit-image-set("https://evil.com/x.png" 1x); }</style><rect style="background-image:image-set('//evil.com/x.png' 1x)"/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Expands custom entity references so HTML named character references cannot rebuild a javascript: URL' => [
+            <<<'XML'
+                <!DOCTYPE svg [<!ENTITY Tab "#"><!ENTITY colon "/">]><svg xmlns="http://www.w3.org/2000/svg"><a href="&Tab;javascript:alert(1)"><text>x</text></a><a href="javascript&colon;alert(1)"><text>y</text></a></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><a href="#javascript:alert(1)"><text>x</text></a><a href="javascript/alert(1)"><text>y</text></a></svg>
+                XML,
+        ];
+
+        yield 'Expands custom entity references in text and style content' => [
+            <<<'XML'
+                <!DOCTYPE svg [<!ENTITY u "x">]><svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:&u;}</style><text>&u;</text></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:x}</style><text>x</text></svg>
+                XML,
+        ];
+
+        yield 'Removes entity that expands to a javascript: URL' => [
+            <<<'XML'
+                <!DOCTYPE svg [<!ENTITY js "javascript:alert(1)">]><svg xmlns="http://www.w3.org/2000/svg"><a href="&js;"><text>x</text></a></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>
+                XML,
+        ];
+
+        yield 'Removes HTML tags that break out of SVG foreign content' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><p/><meta http-equiv="refresh" content="0;url=https://evil.com"/><img src="x"/><div><span/></div><ø:script>alert(1)</ø:script><rect/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes font only when it carries an HTML breakout attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><font color="red"/><font face="x"/><font size="1"/><font horiz-adv-x="1"/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><font horiz-adv-x="1"/></svg>
+                XML,
+        ];
+
+        yield 'Removes style element hiding an external url() behind a CSS escape' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:\75rl(https://evil.com/x)}</style><style>@\69mport "https://evil.com/x.css";</style><rect/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes unclosed external url()' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:url(https://evil.com/x</style><rect style="fill:url(https://evil.com/x" fill="url('//evil.com/x"/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
+                XML,
+        ];
+
+        yield 'Removes name attribute' => [
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect id="a" name="getElementById"/></svg>
+                XML,
+            <<<'XML'
+                <svg xmlns="http://www.w3.org/2000/svg"><rect id="a"/></svg>
                 XML,
         ];
 
@@ -1758,6 +2016,34 @@ final class RemoveUnsafeElementsTest extends TestCase
      * @throws \ReflectionException
      */
     #[Test]
+    public function normalizeValueRemovesSurrogateAndNullHexEscapes(): void
+    {
+        $removeUnsafeElements = new RemoveUnsafeElements();
+        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'normalizeValue');
+
+        $result = $reflectionMethod->invoke($removeUnsafeElements, 'w\d800x\dfffy\000000z');
+
+        self::assertSame('wxyz', $result);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    #[Test]
+    public function normalizeValueDecodesHexEscapesAroundTheSurrogates(): void
+    {
+        $removeUnsafeElements = new RemoveUnsafeElements();
+        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'normalizeValue');
+
+        $result = $reflectionMethod->invoke($removeUnsafeElements, 'w\d7ffx\e000y');
+
+        self::assertSame('w' . mb_chr(0xD7_FF, 'UTF-8') . 'x' . mb_chr(0xE0_00, 'UTF-8') . 'y', $result);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    #[Test]
     public function normalizeValueDecodesHexEscapesAsMultiByteUtf8(): void
     {
         $removeUnsafeElements = new RemoveUnsafeElements();
@@ -1785,5 +2071,38 @@ final class RemoveUnsafeElementsTest extends TestCase
         $reflectionMethod->invoke($removeUnsafeElements, $domElement);
 
         self::assertNull($domElement->parentNode);
+    }
+
+    #[Test]
+    public function expandingEntityMarkupLeavesNoLibxmlErrors(): void
+    {
+        $previous = libxml_use_internal_errors(true);
+
+        try {
+            $domDocument = new \DOMDocument();
+            $domDocument->substituteEntities = false;
+            $domDocument->loadXML('<!DOCTYPE svg [<!ENTITY m "<z:a/>">]><svg xmlns="http://www.w3.org/2000/svg"><g>&m;</g></svg>');
+            libxml_clear_errors();
+
+            (new RemoveUnsafeElements())->optimize($domDocument);
+
+            self::assertSame([], libxml_get_errors());
+            self::assertTrue(libxml_use_internal_errors(true));
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+        }
+    }
+
+    #[Test]
+    public function expandsEntitiesThatReferenceOtherEntities(): void
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->substituteEntities = false;
+        $domDocument->loadXML('<!DOCTYPE svg [<!ENTITY a "&b;"><!ENTITY b "x">]><svg xmlns="http://www.w3.org/2000/svg"><text>&a;</text></svg>');
+
+        (new RemoveUnsafeElements())->optimize($domDocument);
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>', $domDocument->saveXML($domDocument->documentElement));
     }
 }

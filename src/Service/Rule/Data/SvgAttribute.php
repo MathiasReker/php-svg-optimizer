@@ -113,7 +113,7 @@ enum SvgAttribute: string implements SvgDataInterface
     case PrimitiveUnits = 'primitiveUnits';
     case R = 'r';
     case Radius = 'radius';
-    case ReferrerPolicy = 'referrerPolicy';
+    case ReferrerPolicy = 'referrerpolicy';
     case RefX = 'refX';
     case RefY = 'refY';
     case RepeatCount = 'repeatCount';
@@ -524,6 +524,17 @@ enum SvgAttribute: string implements SvgDataInterface
     case UnitsPerEm = 'units-per-em';
     case Widths = 'widths';
     case XHeight = 'x-height';
+    case FilterRes = 'filterRes';
+    case Font = 'font';
+    case Format = 'format';
+    case GlyphRef = 'glyphRef';
+    case HorizOriginY = 'horiz-origin-y';
+    case MaskType = 'mask-type';
+    case OnWheel = 'onwheel';
+    case Orientation = 'orientation';
+    case VertAdvY = 'vert-adv-y';
+    case VertOriginX = 'vert-origin-x';
+    case VertOriginY = 'vert-origin-y';
 
     /**
      * @return list<string>
@@ -590,6 +601,122 @@ enum SvgAttribute: string implements SvgDataInterface
     /**
      * @return list<string>
      */
+    public static function eventHandlers(): array
+    {
+        /** @var list<string>|null $cache */
+        static $cache = null;
+
+        return $cache ??= self::valuesFromCases(self::eventHandlerCases());
+    }
+
+    /**
+     * @return list<SvgAttribute>
+     */
+    public static function eventHandlerCases(): array
+    {
+        return array_values(array_filter(
+            self::cases(),
+            static fn (self $attribute): bool => str_starts_with($attribute->value, 'on'),
+        ));
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function htmlOnly(): array
+    {
+        /** @var list<string>|null $cache */
+        static $cache = null;
+
+        return $cache ??= self::valuesFromCases(self::htmlOnlyCases());
+    }
+
+    /**
+     * HTML attributes that have no meaning on any SVG element.
+     *
+     * @return list<SvgAttribute>
+     */
+    public static function htmlOnlyCases(): array
+    {
+        return [
+            self::Accept,
+            self::Action,
+            self::Align,
+            self::Alt,
+            self::Autocomplete,
+            self::Background,
+            self::Bgcolor,
+            self::Border,
+            self::Cellpadding,
+            self::Cellspacing,
+            self::Checked,
+            self::Cite,
+            self::Clear,
+            self::Cols,
+            self::Colspan,
+            self::Coords,
+            self::Datetime,
+            self::Default,
+            self::Dir,
+            self::Disabled,
+            self::Encoding,
+            self::Enctype,
+            self::Face,
+            self::For,
+            self::Headers,
+            self::Hidden,
+            self::High,
+            self::Integrity,
+            self::Ismap,
+            self::Label,
+            self::List,
+            self::Loop,
+            self::Low,
+            self::Max,
+            self::Maxlength,
+            self::Method,
+            self::Min,
+            self::Multiple,
+            self::Name,
+            self::Noshade,
+            self::Novalidate,
+            self::Nowrap,
+            self::Open,
+            self::Optimum,
+            self::Placeholder,
+            self::Poster,
+            self::Preload,
+            self::Pubdate,
+            self::Radiogroup,
+            self::Readonly,
+            self::Required,
+            self::Rev,
+            self::Reversed,
+            self::Rows,
+            self::Rowspan,
+            self::Scope,
+            self::Selected,
+            self::Shape,
+            self::Size,
+            self::Sizes,
+            self::Span,
+            self::Spellcheck,
+            self::Src,
+            self::Srclang,
+            self::Srcset,
+            self::Start,
+            self::Step,
+            self::Summary,
+            self::Usemap,
+            self::Valign,
+            self::Value,
+            self::XmlBase,
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
     public static function dangerous(): array
     {
         /** @var list<string>|null $cache */
@@ -617,6 +744,7 @@ enum SvgAttribute: string implements SvgDataInterface
             self::End,
             self::From,
             self::To,
+            self::By,
             self::Values,
             self::Style,
             self::Cursor,

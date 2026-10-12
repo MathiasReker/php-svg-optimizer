@@ -147,4 +147,44 @@ enum SvgTag: string implements SvgDataInterface
     {
         return [self::A, self::Use, self::Tref, self::Image, self::LinearGradient, self::RadialGradient, self::Pattern];
     }
+
+    /**
+     * @return list<string>
+     */
+    public static function animation(): array
+    {
+        /** @var list<string>|null $cache */
+        static $cache = null;
+
+        return $cache ??= self::valuesFromCases(self::animationCases());
+    }
+
+    /**
+     * @return list<SvgTag>
+     */
+    public static function animationCases(): array
+    {
+        return [self::Animate, self::Set, self::AnimateColor, self::AnimateMotion, self::AnimateTransform];
+    }
+
+    /**
+     * Elements whose href may embed a data: image.
+     *
+     * @return list<string>
+     */
+    public static function dataUri(): array
+    {
+        /** @var list<string>|null $cache */
+        static $cache = null;
+
+        return $cache ??= self::valuesFromCases(self::dataUriCases());
+    }
+
+    /**
+     * @return list<SvgTag>
+     */
+    public static function dataUriCases(): array
+    {
+        return [self::Image, self::FEImage];
+    }
 }

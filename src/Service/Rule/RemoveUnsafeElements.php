@@ -13,8 +13,11 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DangerousAttributeValueTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
 
 /**
  * @no-named-arguments
@@ -22,64 +25,95 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DangerousAttributeValueTrait
 final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 {
     use DangerousAttributeValueTrait;
+    use EntityReferenceTrait;
+    use TagMatcherTrait;
 
     private const array DANGEROUS_ATTR_PREFIXES = [
         'on',
     ];
 
-    private const string XML_STYLESHEET_PI = 'xml-stylesheet';
+    /**
+     * Attributes that carry a URL but are not covered by the SVG attribute lists.
+     */
+    private const array URI_ATTRIBUTES = [
+        'action',
+        'background',
+        'base',
+        'cite',
+        'codebase',
+        'data',
+        'dynsrc',
+        'formaction',
+        'lowsrc',
+        'ping',
+        'poster',
+    ];
 
     /**
-     * @see https://regex101.com/r/Kd3TRU/1
+     * Attributes removed unconditionally, as they let markup clobber DOM properties.
      */
-    private const string DANGEROUS_PROTOCOLS_REGEX = '~^\s*(?:(?:javascript|file|vbscript|http|https|mailto|ftp|tel|sms|callto|cis|xmpp|blob):|data:(?!image/(?:png|gif|jpeg|jpg|webp|avif|svg\+xml);base64,)|//)~ix';
+    private const array CLOBBERING_ATTRIBUTES = [
+        'name',
+    ];
 
     /**
-     * @see https://regex101.com/r/hN9M9b/1
+     * HTML tags that end SVG foreign content when the SVG is inlined in HTML.
      */
+    private const array HTML_BREAKOUT_TAGS = [
+        'b', 'big', 'blockquote', 'body', 'br', 'center', 'code', 'dd', 'div', 'dl', 'dt', 'em', 'embed',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'hr', 'i', 'img', 'li', 'listing', 'menu', 'meta', 'nobr',
+        'ol', 'p', 'pre', 'ruby', 's', 'small', 'span', 'strike', 'strong', 'sub', 'sup', 'table', 'tt', 'u',
+        'ul', 'var',
+    ];
+
+    /**
+     * Attributes that make a `<font>` start tag end SVG foreign content when inlined in HTML.
+     */
+    private const array FONT_BREAKOUT_ATTRIBUTES = ['color', 'face', 'size'];
+
+    private const string FONT_TAG = 'font';
+
+    private const string DANGEROUS_PROTOCOLS_REGEX = '~^\s*(?:(?:javascript|livescript|mocha|vbscript|vbs|file|http|https|mailto|ftp|tel|sms|callto|cis|xmpp|blob|jar|mhtml|ms-its|res|view-source|wyciwyg):|data:(?!image/(?:png|gif|jpeg|jpg|webp|avif|svg\+xml);base64,)|//)~ix';
+
+    private const string DATA_URI_REGEX = '/^\s*data:/i';
+
+    /**
+     * Comment content that can close the comment early or open markup when the SVG is inlined in HTML.
+     */
+    private const string UNSAFE_COMMENT_REGEX = '~^-?>|<[/\w!?]~';
+
+    /**
+     * Captures the arguments up to the closing parenthesis, skipping nested calls such as `url()` or `type()`, and up
+     * to the end of the value when the call is never closed.
+     */
+    private const string CSS_IMAGE_SET_REGEX = '/image-set\s*\(((?:[^()]++|\([^()]*+\)?)*+)/i';
+
+    private const string CSS_QUOTED_STRING_REGEX = '/([\'"])(.*?)\1/s';
+
     private const string STYLE_NODE_DANGEROUS_TAG_REGEX = '/<\s*(script|iframe|object|textarea|embed|link|svg)/i';
 
     /**
-     * @see https://regex101.com/r/WQHx9p/1
+     * Captures the start of the URL only, as browsers accept a `url(` that is never closed.
      */
-    private const string URL_FUNCTION_REGEX = '/url\(\s*([\'"]?)(.*?)\1\s*\)/i';
+    private const string URL_FUNCTION_REGEX = '/url\(\s*([\'"]?)([^\'")]*)/i';
 
-    /**
-     * @see https://regex101.com/r/Wpra41/1
-     */
     private const string CSS_HEX_ESCAPE_REGEX = '/\\\([0-9a-f]{2,6})/i';
 
-    /**
-     * @see https://regex101.com/r/hNSaol/1
-     */
     private const string CONTROL_CHARS_REGEX = '/[\x00-\x1F\x7F]+/u';
 
-    /**
-     * @see https://regex101.com/r/6DKmg3/1
-     */
     private const string WHITESPACE_REGEX = '/\s+/u';
 
-    /**
-     * @see https://regex101.com/r/ZieTB0/1
-     */
     private const string C_STYLE_COMMENT_REGEX = '/\/\*.*?\*\//s';
 
-    /**
-     * @see https://regex101.com/r/fBom15/1
-     */
     private const string DANGEROUS_STYLE_REGEX = '/@import|expression/i';
 
-    /**
-     * @see https://regex101.com/r/C5Lghy/1
-     */
     private const string SRCSET_SPLIT_REGEX = '/\s+/';
 
-    /**
-     * @see https://regex101.com/r/tCMDDi/1
-     */
     private const string SMIL_VALUES_SAFE_DATA_URI_REGEX = '~data:image/(?:png|gif|jpeg|jpg|webp|avif|svg\+xml);base64,.*?(?=;|$)~i';
 
     private const string PROCESSING_INSTRUCTION_QUERY = '//processing-instruction()';
+
+    private const string COMMENT_QUERY = '//comment()';
 
     #[\Override]
     public static function isRisky(): bool
@@ -99,67 +133,88 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->removeProcessingInstructions($domDocument);
-        $this->removeDangerousElements($domDocument);
+        $this->expandEntityReferences($domDocument);
+        $this->removeNodesByQuery($domDocument, self::PROCESSING_INSTRUCTION_QUERY, static fn (): bool => true);
+        $this->removeNodesByQuery(
+            $domDocument,
+            self::COMMENT_QUERY,
+            fn (\DOMNode $domNode): bool => $this->matchesPattern((string) $domNode->nodeValue, self::UNSAFE_COMMENT_REGEX)
+        );
+        $this->removeElements($domDocument, fn (\DOMElement $domElement): bool => $this->isForeignElement($domElement));
+        $this->removeElements($domDocument, fn (\DOMElement $domElement): bool => $this->isTagIn($domElement, SvgTag::dangerous()));
+        $this->removeElements($domDocument, fn (\DOMElement $domElement): bool => $this->isHrefAnimation($domElement));
+        $this->removeElements($domDocument, fn (\DOMElement $domElement): bool => $this->isHtmlBreakout($domElement));
+        $this->removeConditionallyDangerousTags($domDocument);
         $this->removeDangerousAttributes($domDocument);
         $this->removeStyleWithImport($domDocument);
     }
 
     /**
-     * @param \DOMDocument $domDocument the DOM document to clean
+     * Processing instructions are always removed, as an HTML parser ends one at the first `>` and parses the rest as
+     * markup. Comments are removed when they could close early or open markup once the SVG is inlined in HTML.
+     *
+     * @param \DOMDocument             $domDocument the DOM document to clean
+     * @param string                   $query       the XPath query selecting candidate nodes
+     * @param callable(\DOMNode): bool $predicate   returns true for nodes to remove
      */
-    private function removeProcessingInstructions(\DOMDocument $domDocument): void
+    private function removeNodesByQuery(\DOMDocument $domDocument, string $query, callable $predicate): void
     {
-        $domXPath = new \DOMXPath($domDocument);
-        $pis = $domXPath->query(self::PROCESSING_INSTRUCTION_QUERY);
+        $domNodeList = (new \DOMXPath($domDocument))->query($query);
 
-        if (false === $pis) {
+        if (false === $domNodeList) {
             return;
         }
 
-        foreach ($pis as $pi) {
-            if ($pi instanceof \DOMProcessingInstruction
-                && str_contains(mb_strtolower($pi->nodeName), self::XML_STYLESHEET_PI)
-                && $pi->parentNode instanceof \DOMNode
-            ) {
-                $pi->parentNode->removeChild($pi);
+        foreach (iterator_to_array($domNodeList, false) as $domNode) {
+            if ($domNode instanceof \DOMNode && $predicate($domNode)) {
+                $domNode->parentNode?->removeChild($domNode);
             }
         }
     }
 
     /**
-     * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
+     * @param \DOMDocument                $domDocument the DOM document to clean
+     * @param callable(\DOMElement): bool $predicate   returns true for elements to remove
      */
-    private function removeDangerousElements(\DOMDocument $domDocument): void
+    private function removeElements(\DOMDocument $domDocument, callable $predicate): void
     {
-        $this->removeAlwaysDangerousTags($domDocument);
-        $this->removeConditionallyDangerousTags($domDocument);
+        foreach (iterator_to_array($domDocument->getElementsByTagName('*'), false) as $domElement) {
+            if ($domElement !== $domDocument->documentElement && $predicate($domElement)) {
+                $domElement->parentNode?->removeChild($domElement);
+            }
+        }
     }
 
     /**
-     * @param \DOMDocument $domDocument the DOM document to clean
+     * @param \DOMElement $domElement the element to check
      */
-    private function removeAlwaysDangerousTags(\DOMDocument $domDocument): void
+    private function isHtmlBreakout(\DOMElement $domElement): bool
     {
-        $dangerousTags = SvgTag::dangerous();
-        $domNodeList = $domDocument->getElementsByTagName('*');
-        $nodesToRemove = [];
+        $fontBreakout = $this->isTagIn($domElement, [self::FONT_TAG])
+            && [] !== array_filter(self::FONT_BREAKOUT_ATTRIBUTES, $domElement->hasAttribute(...));
 
-        foreach ($domNodeList as $node) {
-            $localName = $node->localName ?? $node->tagName;
+        return $fontBreakout || $this->isTagIn($domElement, self::HTML_BREAKOUT_TAGS);
+    }
 
-            foreach ($dangerousTags as $dangerousTag) {
-                if (0 === strcasecmp($localName, $dangerousTag)) {
-                    $nodesToRemove[] = $node;
+    /**
+     * Elements bound to a namespace other than SVG, such as XHTML or MathML.
+     *
+     * @param \DOMElement $domElement the element to check
+     */
+    private function isForeignElement(\DOMElement $domElement): bool
+    {
+        return !\in_array($domElement->namespaceURI, [null, '', SvgNamespace::Svg->value], true);
+    }
 
-                    break;
-                }
-            }
-        }
-
-        foreach ($nodesToRemove as $nodeToRemove) {
-            $nodeToRemove->parentNode?->removeChild($nodeToRemove);
-        }
+    /**
+     * Animation and link elements that rewrite a link target, as their values are applied after sanitizing.
+     *
+     * @param \DOMElement $domElement the element to check
+     */
+    private function isHrefAnimation(\DOMElement $domElement): bool
+    {
+        return $this->isTagIn($domElement, [...SvgTag::animation(), ...SvgTag::conditionalDangerous()])
+            && str_contains(mb_strtolower($domElement->getAttribute(SvgAttribute::AttributeName->value)), SvgAttribute::Href->value);
     }
 
     /**
@@ -172,13 +227,6 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 
             for ($i = $nodes->length - 1; $i >= 0; --$i) {
                 if (!$nodes->item($i) instanceof \DOMElement) {
-                    continue;
-                }
-
-                $element = $nodes->item($i);
-                $attributeName = mb_strtolower($element->getAttribute(SvgAttribute::AttributeName->value));
-                if (\in_array($attributeName, [SvgAttribute::Href->value, SvgAttribute::XlinkHref->value], true)) {
-                    $element->parentNode?->removeChild($element);
                     continue;
                 }
 
@@ -259,6 +307,6 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             return true;
         }
 
-        return $this->isStyleAttributeDangerous($text);
+        return $this->isStyleAttributeDangerous($this->normalizeValue($text));
     }
 }
