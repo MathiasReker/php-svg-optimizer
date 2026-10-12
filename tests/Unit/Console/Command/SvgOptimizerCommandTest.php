@@ -374,6 +374,31 @@ final class SvgOptimizerCommandTest extends TestCase
      * @throws \ValueError
      */
     #[Test]
+    public function runPrintsTheSummaryOnlyWhenFilesWereOptimized(): void
+    {
+        $svgFile = $this->tempDir . '/summary.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"><!-- c --></svg>');
+
+        $memoryStream = new MemoryStream();
+        (new Command([$svgFile], new CommandOption(false, '{"removeComments":true}', false, false), new OutputManager($memoryStream, false)))->run();
+
+        self::assertStringContainsString(\PHP_EOL . 'Summary:' . \PHP_EOL . '  Files optimized:      1' . \PHP_EOL, $memoryStream->getContent());
+        self::assertStringContainsString('  Original total size:  56 B' . \PHP_EOL, $memoryStream->getContent());
+        self::assertStringContainsString('  Optimized total size: 41 B' . \PHP_EOL, $memoryStream->getContent());
+        self::assertStringContainsString('  Space saved:          15 B (26.79%)' . \PHP_EOL, $memoryStream->getContent());
+
+        $emptyStream = new MemoryStream();
+        (new Command([$this->tempDir . '/missing.svg'], new CommandOption(false, '', false, false), new OutputManager($emptyStream, false)))->run();
+
+        self::assertStringNotContainsString('Summary:', $emptyStream->getContent());
+    }
+
+    /**
+     * @throws \LogicException
+     * @throws \RuntimeException
+     * @throws \ValueError
+     */
+    #[Test]
     public function runWithOnlyKnownConfigKeysDoesNotWarn(): void
     {
         $svgFile = $this->tempDir . '/known.svg';

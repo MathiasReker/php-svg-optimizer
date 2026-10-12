@@ -26,6 +26,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgOptimizer::class)]
 final class XmlLoaderTraitTest extends TestCase
 {
+    use XmlLoaderTrait;
+
     #[DataProvider('provideRestoresThePreviousErrorModeCases')]
     #[Test]
     public function restoresThePreviousErrorMode(bool $useInternalErrors): void
@@ -33,7 +35,7 @@ final class XmlLoaderTraitTest extends TestCase
         $previous = libxml_use_internal_errors($useInternalErrors);
 
         try {
-            $this->load(new \DOMDocument(), '<svg><use xlink:href="#a"/></svg>');
+            $this->loadXmlSilently(new \DOMDocument(), '<svg><use xlink:href="#a"/></svg>');
 
             self::assertSame($useInternalErrors, libxml_use_internal_errors());
         } finally {
@@ -60,7 +62,7 @@ final class XmlLoaderTraitTest extends TestCase
         try {
             $domDocument = new \DOMDocument();
 
-            self::assertTrue($this->load($domDocument, '<svg><use xlink:href="#a"/></svg>'));
+            self::assertTrue($this->loadXmlSilently($domDocument, '<svg><use xlink:href="#a"/></svg>'));
             self::assertSame('svg', $domDocument->documentElement?->nodeName);
             self::assertSame([], libxml_get_errors());
         } finally {
@@ -71,7 +73,16 @@ final class XmlLoaderTraitTest extends TestCase
     #[Test]
     public function returnsFalseForMalformedXml(): void
     {
-        self::assertFalse($this->load(new \DOMDocument(), '<svg>'));
+        self::assertFalse($this->loadXmlSilently(new \DOMDocument(), '<svg>'));
+    }
+
+    #[Test]
+    public function loadsWithoutOptionsByDefault(): void
+    {
+        $domDocument = new \DOMDocument();
+
+        self::assertTrue($this->loadXmlSilently($domDocument, '<svg><![CDATA[a]]></svg>'));
+        self::assertInstanceOf(\DOMCdataSection::class, $domDocument->documentElement?->firstChild);
     }
 
     #[Test]
@@ -79,28 +90,8 @@ final class XmlLoaderTraitTest extends TestCase
     {
         $domDocument = new \DOMDocument();
 
-        self::assertTrue($this->load($domDocument, '<svg><![CDATA[a]]></svg>', \LIBXML_NOCDATA));
+        self::assertTrue($this->loadXmlSilently($domDocument, '<svg><![CDATA[a]]></svg>', \LIBXML_NOCDATA));
         self::assertNotInstanceOf(\DOMCdataSection::class, $domDocument->documentElement?->firstChild);
         self::assertSame('a', $domDocument->documentElement?->textContent);
-    }
-
-    /**
-     * @param non-empty-string $xml
-     */
-    private function load(\DOMDocument $domDocument, string $xml, int $options = 0): bool
-    {
-        $loader = new class {
-            use XmlLoaderTrait;
-
-            /**
-             * @param non-empty-string $xml
-             */
-            public function load(\DOMDocument $domDocument, string $xml, int $options): bool
-            {
-                return $this->loadXmlSilently($domDocument, $xml, $options);
-            }
-        };
-
-        return $loader->load($domDocument, $xml, $options);
     }
 }
