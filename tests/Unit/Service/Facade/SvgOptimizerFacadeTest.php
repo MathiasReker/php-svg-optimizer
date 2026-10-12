@@ -73,6 +73,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -438,6 +439,47 @@ final class SvgOptimizerFacadeTest extends TestCase
         $content = $svgOptimizerFacade->getContent();
         self::assertStringNotContainsString('width="100"', $content);
         self::assertStringNotContainsString('height="100"', $content);
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[DataProvider('provideOptimizeDoesNotEmitPhpWarningsCases')]
+    #[Test]
+    public function optimizeDoesNotEmitPhpWarnings(string $svg, bool $allowRisky): void
+    {
+        $warnings = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$warnings): bool {
+            $warnings[] = $errstr;
+
+            return true;
+        });
+
+        try {
+            SvgOptimizerFacade::fromString($svg)->allowRisky($allowRisky)->withAllRules()->optimize();
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([], $warnings);
+    }
+
+    /**
+     * Frameworks commonly turn PHP warnings into exceptions, so libxml diagnostics must never reach the error handler.
+     *
+     * @return iterable<string, array{string, bool}>
+     */
+    public static function provideOptimizeDoesNotEmitPhpWarningsCases(): iterable
+    {
+        yield 'undeclared prefix' => ['<svg><use xlink:href="#x" clip-path="a"/></svg>', false];
+
+        yield 'undeclared prefix, risky' => ['<svg><use xlink:href="#x" clip-path="a"/></svg>', true];
+
+        yield 'undeclared prefix on removed element' => ['<svg xmlns="http://www.w3.org/2000/svg"><text><tref xlink:href=""/></text></svg>', false];
+
+        yield 'reserved processing instruction target' => ["<svg xmlns=\"http://www.w3.org/2000/svg\">\n<?xml-foo bar?>\n<rect width=\"1\" height=\"1\"/></svg>", false];
     }
 
     #[\Override]

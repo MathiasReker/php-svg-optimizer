@@ -17,6 +17,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 
@@ -27,6 +28,8 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
  */
 final class SvgOptimizer
 {
+    use XmlLoaderTrait;
+
     /** @var list<SvgOptimizerRuleInterface> Array of optimization strategies */
     private array $rules = [];
 
@@ -181,7 +184,7 @@ final class SvgOptimizer
         $newContent = $this->svgProvider->serialize($domDocument);
         if (mb_strlen($newContent, '8bit') > mb_strlen($originalContent, '8bit')) {
             if ('' !== $originalContent) {
-                $domDocument->loadXML($originalContent);
+                $this->loadXmlSilently($domDocument, $originalContent);
             }
 
             return $originalContent;

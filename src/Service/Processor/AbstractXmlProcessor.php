@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 
 /**
@@ -21,6 +22,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
  */
 abstract readonly class AbstractXmlProcessor
 {
+    use XmlLoaderTrait;
+
     /**
      * @param \DOMDocument $domDocument the \DOMDocument containing the SVG content to be processed
      * @param callable     $callback    a callable function that will be applied to optimize the SVG content
@@ -56,7 +59,7 @@ abstract readonly class AbstractXmlProcessor
         }
 
         try {
-            if ('' === $content || !$domDocument->loadXML($content)) {
+            if ('' === $content || !$this->loadXmlSilently($domDocument, $content)) {
                 throw new XmlProcessingException('Failed to load optimized XML content.');
             }
         } catch (\Throwable $throwable) {

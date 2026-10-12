@@ -19,6 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -363,6 +364,51 @@ final class SvgOptimizerTest extends TestCase
         $svgOptimizer->optimize();
 
         self::assertSame($originalContent, $svgOptimizer->getContent());
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function revertingARuleDoesNotEmitPhpWarnings(): void
+    {
+        $growingRule = new class implements SvgOptimizerRuleInterface {
+            public function optimize(\DOMDocument $domDocument): void
+            {
+                $domDocument->documentElement?->setAttribute('data-padding', 'makes-the-serialized-content-longer');
+            }
+
+            public static function shouldCheckSize(): bool
+            {
+                return true;
+            }
+
+            public static function isRisky(): bool
+            {
+                return false;
+            }
+        };
+
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg><use xlink:href="#a"/></svg>'));
+        $svgOptimizer->addRule($growingRule);
+
+        $warnings = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$warnings): bool {
+            $warnings[] = $errstr;
+
+            return true;
+        });
+
+        try {
+            $svgOptimizer->optimize();
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([], $warnings);
+        self::assertStringNotContainsString('data-padding', $svgOptimizer->getContent());
     }
 
     /**

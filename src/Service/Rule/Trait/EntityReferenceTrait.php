@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 
+use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
+
 /**
  * Resolves references to entities declared in the internal DTD subset. Documents are loaded without substituting
  * entities, and only the document element is written, so a reference left in the output would point to a declaration
@@ -22,6 +24,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
  */
 trait EntityReferenceTrait
 {
+    use XmlLoaderTrait;
+
     /**
      * Internal general entities; parameter entities and external entities (SYSTEM or PUBLIC) do not match.
      */
@@ -122,13 +126,11 @@ trait EntityReferenceTrait
         }
 
         $domDocument = new \DOMDocument();
-        $previous = libxml_use_internal_errors(true);
-        $domDocument->loadXML(
+        $this->loadXmlSilently(
+            $domDocument,
             '<fragment' . $this->namespaceDeclarations($document, $domElement) . '>' . $markup . '</fragment>',
             \LIBXML_NONET,
         );
-        libxml_clear_errors();
-        libxml_use_internal_errors($previous);
 
         // A document that fails to load keeps no document element.
         if (!$domDocument->documentElement instanceof \DOMElement) {
