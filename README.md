@@ -28,7 +28,7 @@ The resulting SVGs remain visually identical to the original but are smaller, cl
 
 | Version | PHP  | Documentation                                                |
 |---------|------|--------------------------------------------------------------|
-| ^8.7    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| ^8.8    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
 
 ### Requirements
 
@@ -1145,7 +1145,9 @@ request. You can also open an issue. If you find this project helpful, don’t f
 #### Library Structure and Contribution Guide
 
 The library implements the Strategy Pattern, where strategies are encapsulated as "rules" located in the
-`/src/Service/Rule` directory.
+`/src/Service/Rule` directory. Logic shared by several rules lives in traits in `/src/Service/Rule/Trait`. The
+command-line tool lives in `/src/Console`. Classes tagged `@api` are the public API; classes tagged `@internal` may
+change in any release.
 
 ##### Adding a New Rule
 
@@ -1161,13 +1163,15 @@ various scenarios to verify the correct behavior and edge cases for your rule.
 
 ### 3. **Integrate the Rule**
 
-- **Add your rule to the rule enum** in `/src/Type/Rule.php`.
-- **Register the rule** in the SVG optimizer builder located at `/src/Service/Facade/SvgOptimizerFacade.php`.
+- **Add your rule to the rule enum** in `/src/Type/Rule.php`, and add it to `Rule::EXECUTION_ORDER` after the rules it
+  depends on.
+- **Register the rule** in the SVG optimizer builder located at `/src/Service/Facade/SvgOptimizerFacade.php`. Append
+  the new parameter to `withRules()`, so existing calls with positional arguments keep working.
 
 ### 4. **Update Documentation**
 
 Document the functionality and purpose of your rule in the `README.md` to ensure users understand its behavior and
-usage.
+usage, and add it to the `CHANGELOG.md`.
 
 #### Docker
 

@@ -12,15 +12,13 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Type;
 
 /**
- * @internal
- *
  * @no-named-arguments
  */
 enum Application: string
 {
     case Name = 'PHP SVG Optimizer';
 
-    case Version = '8.7.1';
+    case Version = '8.8.0';
 
     case Author = 'Mathias Reker';
 }
