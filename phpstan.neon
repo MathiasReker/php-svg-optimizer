@@ -17,6 +17,12 @@ parameters:
       missingCheckedExceptionInThrows: true
       tooWideThrowType: true
     implicitThrows: false
+    # DOMException only signals programming errors (invalid names, hierarchy violations), like a LogicException.
+    uncheckedExceptionClasses:
+      - DOMException
+  ignoreErrors:
+    # Rules share logic through traits by design.
+    - identifier: symplify.forbiddenTrait
   type_coverage:
     return: 100
     param: 100
@@ -40,7 +46,4 @@ parameters:
         - MathiasReker\PhpSvgOptimizer\Console\Command\AbstractCommandFactory
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
-    - vendor/symplify/phpstan-rules/config/code-complexity-rules.neon
-    - vendor/symplify/phpstan-rules/config/naming-rules.neon
-    - vendor/symplify/phpstan-rules/config/static-rules.neon
     - vendor/odan/phpstan-rules/rules.neon

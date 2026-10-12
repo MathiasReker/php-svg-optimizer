@@ -139,11 +139,11 @@ final class MemoryStreamTest extends TestCase
         $reflectionProperty = $reflectionClass->getProperty('stream');
 
         $resource = $reflectionProperty->getValue($memoryStream);
-        \assert(\is_resource($resource));
+        self::assertIsResource($resource);
 
         unset($memoryStream);
 
-        self::assertFalse(\is_resource($resource), 'Stream should be closed after destruct');
+        self::assertSame('Unknown', get_resource_type($resource), 'Stream should be closed after destruct');
     }
 
     /**
@@ -182,7 +182,7 @@ final class MemoryStreamTest extends TestCase
         $reflectionProperty = $reflectionClass->getProperty('stream');
 
         $resource = $reflectionProperty->getValue($memoryStream);
-        \assert(\is_resource($resource));
+        self::assertIsResource($resource);
 
         fclose($resource);
 

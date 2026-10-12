@@ -28,7 +28,7 @@ final class ApplicationTest extends TestCase
     public function enumValuesAreNonEmpty(): void
     {
         foreach (Application::cases() as $case) {
-            self::assertNotEmpty($case->value);
+            self::assertNotSame('', trim($case->value));
         }
     }
 }

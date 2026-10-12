@@ -83,11 +83,11 @@ final class StdoutStreamTest extends TestCase
         $reflectionProperty = $reflectionClass->getProperty('stream');
 
         $resource = $reflectionProperty->getValue($stdoutStream);
-        \assert(\is_resource($resource));
+        self::assertIsResource($resource);
 
         unset($stdoutStream);
 
-        self::assertFalse(\is_resource($resource), 'Stream should be closed after destruction');
+        self::assertSame('Unknown', get_resource_type($resource), 'Stream should be closed after destruction');
     }
 
     /**
@@ -103,12 +103,12 @@ final class StdoutStreamTest extends TestCase
         $reflectionProperty = $reflectionClass->getProperty('stream');
 
         $resource = $reflectionProperty->getValue($stdoutStream);
-        \assert(\is_resource($resource));
+        self::assertIsResource($resource);
 
         fclose($resource);
 
         unset($stdoutStream);
 
-        $this->expectNotToPerformAssertions();
+        self::assertSame('Unknown', get_resource_type($resource));
     }
 }

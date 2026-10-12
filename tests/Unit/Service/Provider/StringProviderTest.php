@@ -59,7 +59,7 @@ final class StringProviderTest extends TestCase
     {
         $stringProvider = new StringProvider(self::TEST_INPUT_STRING);
 
-        self::assertEmpty($stringProvider->getOutputContent());
+        self::assertSame('', $stringProvider->getOutputContent());
     }
 
     /**
