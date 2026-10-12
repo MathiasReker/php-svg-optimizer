@@ -127,8 +127,8 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     {
         $classReplacements = [];
 
-        foreach ($domElement->getElementsByTagName(SvgTag::Style->value) as $domNodeList) {
-            $css = trim($domNodeList->textContent);
+        foreach (iterator_to_array($domElement->getElementsByTagName(SvgTag::Style->value), false) as $styleElement) {
+            $css = trim($styleElement->textContent);
             if ('' === $css) {
                 continue;
             }
@@ -137,7 +137,14 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
 
             $classReplacements = [...$classReplacements, ...$newClassReplacements];
 
-            $domNodeList->textContent = $processedCss;
+            // A style sheet whose rules were all removed would only keep other rules from optimizing the document.
+            if ('' === $processedCss) {
+                $styleElement->parentNode?->removeChild($styleElement);
+
+                continue;
+            }
+
+            $styleElement->textContent = $processedCss;
         }
 
         return $classReplacements;

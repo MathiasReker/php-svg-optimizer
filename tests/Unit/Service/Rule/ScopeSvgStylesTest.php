@@ -108,14 +108,28 @@ final class ScopeSvgStylesTest extends TestCase
         yield 'Removes unsafe tag selector' => [
             '<svg><style>path{fill:red}</style><path/></svg>',
             static function (string $output): void {
-                self::assertStringNotContainsString('path{fill:red}', $output);
+                self::assertSame('<svg><path/></svg>', $output);
             },
         ];
 
         yield 'Removes universal selector' => [
             '<svg><style>*{fill:red}</style><rect/></svg>',
             static function (string $output): void {
-                self::assertStringNotContainsString('*{fill:red}', $output);
+                self::assertSame('<svg><rect/></svg>', $output);
+            },
+        ];
+
+        yield 'Removes a style sheet left with whitespace only' => [
+            "<svg><style>rect{fill:red}\n*{stroke:red}</style><rect/></svg>",
+            static function (string $output): void {
+                self::assertSame('<svg><rect/></svg>', $output);
+            },
+        ];
+
+        yield 'Removes every style sheet that only had unsafe selectors' => [
+            '<svg><style>rect{fill:red}</style><style>*{stroke:red}</style><style>.a{fill:blue}</style><rect class="a"/></svg>',
+            static function (string $output): void {
+                self::assertMatchesRegularExpression('/^<svg><style>\.a-[0-9a-f]{10}\{fill:blue}<\/style><rect class="a-[0-9a-f]{10}"\/><\/svg>$/', $output);
             },
         ];
 

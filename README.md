@@ -940,6 +940,8 @@ $svgOptimizer->removeUnusedMasks();
 Scopes all IDs and class names within SVG elements to avoid style collisions.
 Each embedded SVG gets unique identifiers, and CSS rules are rewritten accordingly.
 This ensures multiple SVGs can coexist in the same document without interfering with each other.
+Rules with a bare element selector (such as `rect`) or the universal selector (`*`) cannot be scoped and would style
+the whole page, so they are removed; a style sheet left without rules is removed too.
 Names that are already scoped are left unchanged, so optimizing a scoped SVG again does not change it.
 
 ```php
