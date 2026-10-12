@@ -161,36 +161,35 @@ final class SvgOptimizer
      */
     private function applyRules(\DOMDocument $domDocument): void
     {
-        $originalContent = $this->svgProvider->serialize($domDocument);
-
         foreach ($this->rules as $rule) {
             if ($rule::isRisky() && !$this->allowRisky) {
                 continue;
             }
 
-            $rule->optimize($domDocument);
+            if (!$rule::shouldCheckSize()) {
+                $rule->optimize($domDocument);
 
-            if ($rule::shouldCheckSize()) {
-                $originalContent = $this->checkAndRevert($domDocument, $originalContent);
+                continue;
             }
+
+            $contentBeforeRule = $this->svgProvider->serialize($domDocument);
+            $rule->optimize($domDocument);
+            $this->revertIfLarger($domDocument, $contentBeforeRule);
         }
     }
 
     /**
+     * Reverts the document to the content before a size-checked rule ran, if the rule made the document larger.
+     *
      * @throws XmlProcessingException
      */
-    private function checkAndRevert(\DOMDocument $domDocument, string $originalContent): string
+    private function revertIfLarger(\DOMDocument $domDocument, string $contentBeforeRule): void
     {
         $newContent = $this->svgProvider->serialize($domDocument);
-        if (mb_strlen($newContent, '8bit') > mb_strlen($originalContent, '8bit')) {
-            if ('' !== $originalContent) {
-                $this->loadXmlSilently($domDocument, $originalContent);
-            }
 
-            return $originalContent;
+        if ('' !== $contentBeforeRule && mb_strlen($newContent, '8bit') > mb_strlen($contentBeforeRule, '8bit')) {
+            $this->loadXmlSilently($domDocument, $contentBeforeRule);
         }
-
-        return $newContent;
     }
 
     /**

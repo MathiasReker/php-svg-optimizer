@@ -372,6 +372,125 @@ final class SvgOptimizerTest extends TestCase
      * @throws XmlProcessingException
      */
     #[Test]
+    public function sizeCheckOnlyRevertsTheCheckedRule(): void
+    {
+        $growingRule = new class implements SvgOptimizerRuleInterface {
+            public function optimize(\DOMDocument $domDocument): void
+            {
+                $domDocument->documentElement?->setAttribute('fill', 'red');
+            }
+
+            public static function shouldCheckSize(): bool
+            {
+                return false;
+            }
+
+            public static function isRisky(): bool
+            {
+                return false;
+            }
+        };
+
+        $checkedRule = new class implements SvgOptimizerRuleInterface {
+            public function optimize(\DOMDocument $domDocument): void
+            {
+                $domDocument->documentElement?->appendChild($domDocument->createElement('g'));
+            }
+
+            public static function shouldCheckSize(): bool
+            {
+                return true;
+            }
+
+            public static function isRisky(): bool
+            {
+                return false;
+            }
+        };
+
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg"/>'));
+        $svgOptimizer->addRule($growingRule);
+        $svgOptimizer->addRule($checkedRule);
+        $svgOptimizer->addRule($growingRule);
+        $svgOptimizer->addRule($checkedRule);
+
+        $svgOptimizer->optimize();
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg" fill="red"/>', $svgOptimizer->getContent());
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function sizeCheckKeepsACheckedRuleThatDoesNotGrowTheDocument(): void
+    {
+        $shrinkingRule = new class implements SvgOptimizerRuleInterface {
+            public function optimize(\DOMDocument $domDocument): void
+            {
+                $domDocument->documentElement?->removeAttribute('width');
+            }
+
+            public static function shouldCheckSize(): bool
+            {
+                return true;
+            }
+
+            public static function isRisky(): bool
+            {
+                return false;
+            }
+        };
+
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg" width="1"/>'));
+        $svgOptimizer->addRule($shrinkingRule);
+
+        $svgOptimizer->optimize();
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"/>', $svgOptimizer->getContent());
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function sizeCheckKeepsACheckedRuleThatKeepsTheSize(): void
+    {
+        $sameSizeRule = new class implements SvgOptimizerRuleInterface {
+            public function optimize(\DOMDocument $domDocument): void
+            {
+                $domDocument->documentElement?->setAttribute('width', '2');
+            }
+
+            public static function shouldCheckSize(): bool
+            {
+                return true;
+            }
+
+            public static function isRisky(): bool
+            {
+                return false;
+            }
+        };
+
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg" width="1"/>'));
+        $svgOptimizer->addRule($sameSizeRule);
+
+        $svgOptimizer->optimize();
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg" width="2"/>', $svgOptimizer->getContent());
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[Test]
     public function revertingARuleDoesNotEmitPhpWarnings(): void
     {
         $growingRule = new class implements SvgOptimizerRuleInterface {
