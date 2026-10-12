@@ -55,6 +55,14 @@ final readonly class OutputManager
         $this->stream->writeln($this->colorize('Error: ' . $message, self::COLOR_RED));
     }
 
+    /**
+     * @param string $message The message to print
+     */
+    public function printWarning(string $message): void
+    {
+        $this->stream->writeln($this->colorize('Warning: ' . $message, self::COLOR_YELLOW));
+    }
+
     public function printHelp(): void
     {
         $argumentData = new ArgumentData();

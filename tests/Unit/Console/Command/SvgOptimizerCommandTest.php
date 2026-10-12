@@ -323,6 +323,79 @@ final class SvgOptimizerCommandTest extends TestCase
             \sprintf('Error: Invalid JSON in configuration file "%s":', $configPath),
             $memoryStream->getContent()
         );
+        self::assertSame(1, mb_substr_count($memoryStream->getContent(), 'Error: '));
+        self::assertStringNotContainsString('Warning: ', $memoryStream->getContent());
+    }
+
+    /**
+     * @throws \LogicException
+     * @throws \RuntimeException
+     * @throws \ValueError
+     */
+    #[Test]
+    public function runWithUnknownConfigKeysWarnsOnceAndStillOptimizes(): void
+    {
+        $firstFile = $this->tempDir . '/first.svg';
+        $secondFile = $this->tempDir . '/second.svg';
+        file_put_contents($firstFile, '<svg xmlns="http://www.w3.org/2000/svg"><!-- comment --></svg>');
+        file_put_contents($secondFile, '<svg xmlns="http://www.w3.org/2000/svg"><!-- comment --></svg>');
+
+        $memoryStream = new MemoryStream();
+
+        $command = new Command(
+            [$firstFile, $secondFile],
+            new CommandOption(
+                false,
+                '{"removeComments":true,"removeComents":true,"0":false}',
+                false,
+                false,
+            ),
+            new OutputManager($memoryStream, false)
+        );
+
+        $command->run();
+
+        $output = $memoryStream->getContent();
+
+        self::assertStringStartsWith(
+            'Warning: Unknown rule "removeComents" in the configuration is ignored.' . \PHP_EOL
+            . 'Warning: Unknown rule "0" in the configuration is ignored.' . \PHP_EOL,
+            $output
+        );
+        self::assertSame(2, mb_substr_count($output, 'Warning: '));
+        self::assertStringNotContainsString('Error: ', $output);
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"/>', file_get_contents($firstFile));
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"/>', file_get_contents($secondFile));
+    }
+
+    /**
+     * @throws \LogicException
+     * @throws \RuntimeException
+     * @throws \ValueError
+     */
+    #[Test]
+    public function runWithOnlyKnownConfigKeysDoesNotWarn(): void
+    {
+        $svgFile = $this->tempDir . '/known.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $memoryStream = new MemoryStream();
+
+        $command = new Command(
+            [$svgFile],
+            new CommandOption(
+                false,
+                '{"removeComments":true,"removeMetadata":false}',
+                false,
+                false,
+            ),
+            new OutputManager($memoryStream, false)
+        );
+
+        $command->run();
+
+        self::assertStringNotContainsString('Warning: ', $memoryStream->getContent());
+        self::assertStringNotContainsString('Error: ', $memoryStream->getContent());
     }
 
     /**

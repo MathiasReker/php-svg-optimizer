@@ -196,6 +196,34 @@ final class OutputManagerTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
+    public function printWarning(): void
+    {
+        $this->outputManager->printWarning('Something looks odd');
+
+        self::assertSame('Warning: Something looks odd' . \PHP_EOL, $this->memoryStream->getContent());
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printWarningWithColorEnabledWrapsMessageInYellow(): void
+    {
+        $memoryStream = new MemoryStream();
+        $outputManager = new OutputManager($memoryStream, true);
+
+        $outputManager->printWarning('Something looks odd');
+
+        self::assertSame(
+            "\033[33mWarning: Something looks odd\033[0m" . \PHP_EOL,
+            $memoryStream->getContent()
+        );
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
     public function printErrorWithColorEnabledWrapsMessageInRed(): void
     {
         $memoryStream = new MemoryStream();

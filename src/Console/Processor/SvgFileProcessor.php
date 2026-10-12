@@ -117,13 +117,34 @@ final readonly class SvgFileProcessor
     private function ruleFlags(): array
     {
         $config = $this->getConfig();
-        $flags = [];
 
-        foreach ((new \ReflectionMethod(SvgOptimizerFacade::class, 'withRules'))->getParameters() as $reflectionParameter) {
-            $flags[] = $config[$reflectionParameter->getName()] ?? false;
-        }
+        return array_map(
+            static fn (string $ruleName): bool => $config[$ruleName] ?? false,
+            $this->ruleNames(),
+        );
+    }
 
-        return $flags;
+    /**
+     * @return list<string> The configuration keys that do not name an optimization rule
+     *
+     * @throws \JsonException            If the configuration file contains invalid JSON
+     * @throws \ValueError
+     * @throws \InvalidArgumentException If the configuration cannot be read
+     */
+    public function getUnknownConfigKeys(): array
+    {
+        return array_values(array_diff(array_map(strval(...), array_keys($this->getConfig())), $this->ruleNames()));
+    }
+
+    /**
+     * @return list<string> The rule names accepted in the configuration, in the parameter order of `withRules()`
+     */
+    private function ruleNames(): array
+    {
+        return array_map(
+            static fn (\ReflectionParameter $reflectionParameter): string => $reflectionParameter->getName(),
+            (new \ReflectionMethod(SvgOptimizerFacade::class, 'withRules'))->getParameters(),
+        );
     }
 
     /**
