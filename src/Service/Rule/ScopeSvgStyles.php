@@ -160,21 +160,24 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
         $result = preg_replace_callback(
             self::CSS_RULE_REGEX,
             function (array $match) use ($hash, &$newClassReplacements): string {
-                $selector = trim($match['selector']);
                 $body = $match['body'];
 
-                if ($this->isUnsafeSelector($selector)) {
+                // Element and universal selectors cannot be scoped, also when they are part of a selector list.
+                $selectors = array_filter(
+                    array_map(trim(...), explode(',', $match['selector'])),
+                    fn (string $single): bool => !$this->isUnsafeSelector($single),
+                );
+
+                if ([] === $selectors) {
                     return '';
                 }
 
-                $selectors = array_map(trim(...), explode(',', $selector));
-
                 $scopedSelectors = [];
-                foreach ($selectors as $single) {
-                    [$single, $scopedClasses] = $this->scopeClasses($single, $hash);
+                foreach ($selectors as $selector) {
+                    [$selector, $scopedClasses] = $this->scopeClasses($selector, $hash);
                     $newClassReplacements = [...$newClassReplacements, ...$scopedClasses];
 
-                    $scopedSelectors[] = $this->scopeSelectorIds($single, $hash);
+                    $scopedSelectors[] = $this->scopeSelectorIds($selector, $hash);
                 }
 
                 return \sprintf('%s{%s}', implode(', ', $scopedSelectors), $body);

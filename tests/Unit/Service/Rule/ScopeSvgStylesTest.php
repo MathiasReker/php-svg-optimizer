@@ -161,6 +161,20 @@ final class ScopeSvgStylesTest extends TestCase
             },
         ];
 
+        yield 'Removes unsafe selectors from a selector list' => [
+            '<svg><style>g, .a, *{fill:red}</style><rect class="a"/></svg>',
+            static function (string $output): void {
+                self::assertMatchesRegularExpression('/^<svg><style>\.a-[0-9a-f]{10}\{fill:red}<\/style><rect class="a-[0-9a-f]{10}"\/><\/svg>$/', $output);
+            },
+        ];
+
+        yield 'Removes a rule whose selector list has only unsafe selectors' => [
+            '<svg><style>g, rect{fill:red}.a{fill:blue}</style><rect class="a"/></svg>',
+            static function (string $output): void {
+                self::assertMatchesRegularExpression('/^<svg><style>\.a-[0-9a-f]{10}\{fill:blue}<\/style><rect class="a-[0-9a-f]{10}"\/><\/svg>$/', $output);
+            },
+        ];
+
         yield 'Removes unsafe selector but keeps valid one' => [
             '<svg><style>path{fill:red}.a{fill:blue}</style><rect class="a"/><path/></svg>',
             static function (string $output): void {
