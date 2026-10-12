@@ -56,13 +56,13 @@ trait IdReferenceTrait
     {
         $referencedIds = [];
 
-        foreach ($domDocument->getElementsByTagName('*') as $domElement) {
-            foreach ($domElement->attributes as $attribute) {
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            foreach ($domNodeList->attributes as $attribute) {
                 $referencedIds += $this->attributeReferences($attribute);
             }
 
-            if (SvgTag::Style->value === $domElement->localName) {
-                $referencedIds += $this->fragmentReferences($domElement->textContent);
+            if (SvgTag::Style->value === $domNodeList->localName) {
+                $referencedIds += $this->fragmentReferences($domNodeList->textContent);
             }
         }
 
@@ -85,12 +85,12 @@ trait IdReferenceTrait
         $elementsById = [];
         $live = [];
 
-        foreach ($domDocument->getElementsByTagName('*') as $domElement) {
-            $elementsById[$domElement->getAttribute('id')] ??= $domElement;
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            $elementsById[$domNodeList->getAttribute('id')] ??= $domNodeList;
 
-            if (SvgTag::Style->value === $domElement->localName
-                || !$this->isInsideDefinition($domElement, $definitions, $alwaysLive)) {
-                $live += $this->elementReferences($domElement);
+            if (SvgTag::Style->value === $domNodeList->localName
+                || !$this->isInsideDefinition($domNodeList, $definitions, $alwaysLive)) {
+                $live += $this->elementReferences($domNodeList);
             }
         }
 

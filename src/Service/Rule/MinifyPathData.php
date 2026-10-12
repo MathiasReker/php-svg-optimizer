@@ -48,9 +48,9 @@ final readonly class MinifyPathData implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        foreach ($domDocument->getElementsByTagName('*') as $domElement) {
-            if (SvgTag::Path->value === $domElement->localName && $domElement->hasAttribute(SvgAttribute::D->value)) {
-                $this->minifyPathData($domElement);
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            if (SvgTag::Path->value === $domNodeList->localName && $domNodeList->hasAttribute(SvgAttribute::D->value)) {
+                $this->minifyPathData($domNodeList);
             }
         }
     }

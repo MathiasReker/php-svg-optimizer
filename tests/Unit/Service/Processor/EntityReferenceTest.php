@@ -270,6 +270,7 @@ final class EntityReferenceTest extends TestCase
 
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('' === $actual ? '<x/>' : $actual);
+
         $rect = $domDocument->getElementsByTagName('rect')->item(0);
 
         self::assertInstanceOf(\DOMElement::class, $rect);

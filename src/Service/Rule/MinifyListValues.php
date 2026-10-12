@@ -112,9 +112,9 @@ final readonly class MinifyListValues implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        foreach ($domDocument->getElementsByTagName('*') as $domElement) {
-            foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
-                $this->minifyAttribute($domElement, $domAttr);
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            foreach (iterator_to_array($domNodeList->attributes, false) as $domAttr) {
+                $this->minifyAttribute($domNodeList, $domAttr);
             }
         }
     }

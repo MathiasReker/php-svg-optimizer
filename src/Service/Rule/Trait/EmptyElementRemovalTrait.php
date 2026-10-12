@@ -29,12 +29,12 @@ trait EmptyElementRemovalTrait
     {
         $elements = array_reverse(iterator_to_array($domDocument->getElementsByTagName('*'), false));
 
-        foreach ($elements as $domElement) {
-            $parent = $domElement->parentNode;
+        foreach ($elements as $element) {
+            $parent = $element->parentNode;
 
             // A switch renders its first child whose conditions pass, so removing one would let another render.
-            if ($parent instanceof \DOMElement && SvgTag::Switch->value !== $parent->localName && $isRemovable($domElement)) {
-                $parent->removeChild($domElement);
+            if ($parent instanceof \DOMElement && SvgTag::Switch->value !== $parent->localName && $isRemovable($element)) {
+                $parent->removeChild($element);
             }
         }
     }

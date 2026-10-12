@@ -117,15 +117,15 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
      * Presentation attributes lose to every style sheet rule, so a property that CSS other than the simple class
      * rules may set is not converted.
      *
-     * @param \DOMNodeList<\DOMElement> $styleElements the style elements of the document
+     * @param \DOMNodeList<\DOMElement> $domNodeList the style elements of the document
      *
      * @return string the CSS that stays CSS: unconvertible style elements and rules with other selectors
      */
-    private function collectOtherCss(\DOMNodeList $styleElements): string
+    private function collectOtherCss(\DOMNodeList $domNodeList): string
     {
         $otherCss = '';
 
-        foreach ($styleElements as $styleElement) {
+        foreach ($domNodeList as $styleElement) {
             $otherCss .= $this->isConvertibleStyleElement($styleElement)
                 ? $this->otherRules($styleElement->textContent)
                 : $styleElement->textContent;
@@ -287,25 +287,25 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     /**
-     * @param \DOMNodeList<\DOMElement>        $styleElements    the style elements of the document
+     * @param \DOMNodeList<\DOMElement>        $domNodeList      the style elements of the document
      * @param array<string, list<\DOMElement>> $classMap         the class-to-element map
      * @param list<string>                     $convertedClasses the classes whose rules were converted
      */
-    private function removeConvertedClasses(\DOMNodeList $styleElements, array $classMap, array $convertedClasses): void
+    private function removeConvertedClasses(\DOMNodeList $domNodeList, array $classMap, array $convertedClasses): void
     {
         $remainingCss = implode(' ', array_map(
             static fn (\DOMElement $domElement): string => $domElement->textContent,
-            iterator_to_array($styleElements, false)
+            iterator_to_array($domNodeList, false)
         ));
 
-        foreach ($convertedClasses as $class) {
+        foreach ($convertedClasses as $convertedClass) {
             // Class names of simple selectors consist of letters, digits, `_` and `-` only, so they need no escaping.
-            if (1 === preg_match('/\.' . $class . '(?![\w-])/', $remainingCss)) {
+            if (1 === preg_match('/\.' . $convertedClass . '(?![\w-])/', $remainingCss)) {
                 continue;
             }
 
-            foreach ($classMap[$class] ?? [] as $element) {
-                $this->removeClass($element, $class);
+            foreach ($classMap[$convertedClass] ?? [] as $element) {
+                $this->removeClass($element, $convertedClass);
             }
         }
     }

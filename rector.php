@@ -12,7 +12,6 @@ declare(strict_types=1);
 use Rector\Config\RectorConfig;
 use Rector\PHPUnit\AnnotationsToAttributes\Rector\Class_\AnnotationWithValueToAttributeRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
-use Rector\PHPUnit\PHPUnit100\Rector\Class_\RemoveNamedArgsInDataProviderRector;
 use Rector\TypeDeclaration\Rector\ClassMethod\AddParamArrayDocblockBasedOnCallableNativeFuncCallRector;
 use Rector\TypeDeclaration\Rector\ClassMethod\AddReturnDocblockForScalarArrayFromAssignsRector;
 use Rector\TypeDeclarationDocblocks\Rector\Class_\AddVarArrayDocblockFromDimFetchAssignRector;
@@ -33,7 +32,7 @@ use Rector\Visibility\Rector\ClassMethod\ChangeMethodVisibilityRector;
 return RectorConfig::configure()
     ->withPhpSets(php83: true)
     ->withIndent()
-    ->withImportNames()
+    ->withImportNames(importShortClasses: false, removeUnusedImports: true)
     ->withPreparedSets(
         deadCode: true,
         codeQuality: true,
@@ -75,6 +74,5 @@ return RectorConfig::configure()
             AddReturnDocblockForScalarArrayFromAssignsRector::class,
             AddParamArrayDocblockBasedOnCallableNativeFuncCallRector::class,
             AnnotationWithValueToAttributeRector::class,
-            RemoveNamedArgsInDataProviderRector::class,
         ]
     );

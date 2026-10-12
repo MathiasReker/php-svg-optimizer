@@ -88,7 +88,7 @@ final readonly class RemoveZeroSizeShapes implements SvgOptimizerRuleInterface
         return !$this->hasId($domElement)
             && !$this->hasElementChildren($domElement)
             && !$domElement->hasAttribute(SvgAttribute::Style->value)
-            && !($parent instanceof \DOMElement && SvgTag::Switch->value === $parent->localName);
+            && (!$parent instanceof \DOMElement || SvgTag::Switch->value !== $parent->localName);
     }
 
     /**

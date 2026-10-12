@@ -119,8 +119,8 @@ final readonly class SvgFileProcessor
         $config = $this->getConfig();
         $flags = [];
 
-        foreach ((new \ReflectionMethod(SvgOptimizerFacade::class, 'withRules'))->getParameters() as $parameter) {
-            $flags[] = $config[$parameter->getName()] ?? false;
+        foreach ((new \ReflectionMethod(SvgOptimizerFacade::class, 'withRules'))->getParameters() as $reflectionParameter) {
+            $flags[] = $config[$reflectionParameter->getName()] ?? false;
         }
 
         return $flags;

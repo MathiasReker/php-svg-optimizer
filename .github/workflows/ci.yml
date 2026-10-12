@@ -70,6 +70,9 @@ jobs:
       - name: Analyze Code with PHPStan
         run: composer analyze:phpstan
 
+      - name: Analyze Code with Rector
+        run: composer analyze:rector
+
       - name: Perform Composer Security Audit
         run: composer analyze:audit
 

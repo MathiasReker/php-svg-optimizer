@@ -122,23 +122,23 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
         /** @var \DOMNodeList<\DOMElement> $elements */
         $elements = $domXPath->query('//*[@' . SvgAttribute::XlinkTitle->value . ']');
 
-        foreach (iterator_to_array($elements, false) as $element) {
-            $title = $element->getAttribute(SvgAttribute::XlinkTitle->value);
-            $element->removeAttribute(SvgAttribute::XlinkTitle->value);
+        foreach (iterator_to_array($elements, false) as $domElement) {
+            $title = $domElement->getAttribute(SvgAttribute::XlinkTitle->value);
+            $domElement->removeAttribute(SvgAttribute::XlinkTitle->value);
 
-            if ('' === trim($title) || $this->hasTitleChild($element)) {
+            if ('' === trim($title) || $this->hasTitleChild($domElement)) {
                 continue;
             }
 
             try {
-                $titleElement = $element->ownerDocument?->createElementNS($element->namespaceURI, SvgTag::Title->value);
+                $titleElement = $domElement->ownerDocument?->createElementNS($domElement->namespaceURI, SvgTag::Title->value);
             } catch (\DOMException) {
                 continue;
             }
 
             if ($titleElement instanceof \DOMElement) {
                 $titleElement->textContent = $title;
-                $element->insertBefore($titleElement, $element->firstChild);
+                $domElement->insertBefore($titleElement, $domElement->firstChild);
             }
         }
     }

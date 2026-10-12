@@ -36,8 +36,8 @@ trait RenameElementTrait
         try {
             $replacement = $document->createElementNS($domElement->namespaceURI, $localName);
 
-            foreach (iterator_to_array($domElement->attributes, false) as $attribute) {
-                $replacement->setAttributeNS($attribute->namespaceURI, $attribute->nodeName, $attribute->value);
+            foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
+                $replacement->setAttributeNS($domAttr->namespaceURI, $domAttr->nodeName, $domAttr->value);
             }
         } catch (\DOMException) {
             return;

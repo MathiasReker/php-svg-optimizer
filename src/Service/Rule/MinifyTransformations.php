@@ -72,10 +72,10 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        foreach ($domDocument->getElementsByTagName('*') as $domElement) {
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
             foreach (self::TRANSFORM_ATTRIBUTES as $svgAttribute) {
-                if ($domElement->hasAttribute($svgAttribute->value)) {
-                    $this->minifyAttribute($domElement, $svgAttribute->value);
+                if ($domNodeList->hasAttribute($svgAttribute->value)) {
+                    $this->minifyAttribute($domNodeList, $svgAttribute->value);
                 }
             }
         }

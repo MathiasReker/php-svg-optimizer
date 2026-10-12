@@ -75,67 +75,67 @@ trait EntityReferenceTrait
     }
 
     /**
-     * @param \DOMNode              $parent    the node containing the reference
-     * @param \DOMEntityReference   $reference the reference to replace
-     * @param array<string, string> $entities  the replacement text of each internal entity, by name
+     * @param \DOMNode              $domNode            the node containing the reference
+     * @param \DOMEntityReference   $domEntityReference the reference to replace
+     * @param array<string, string> $entities           the replacement text of each internal entity, by name
      */
-    private function replaceEntityReference(\DOMNode $parent, \DOMEntityReference $reference, array $entities): void
+    private function replaceEntityReference(\DOMNode $domNode, \DOMEntityReference $domEntityReference, array $entities): void
     {
-        $markup = \array_key_exists($reference->nodeName, $entities)
-            ? $this->resolveEntityText($this->decodeCharacterReferences($entities[$reference->nodeName]), $entities, 0)
+        $markup = \array_key_exists($domEntityReference->nodeName, $entities)
+            ? $this->resolveEntityText($this->decodeCharacterReferences($entities[$domEntityReference->nodeName]), $entities, 0)
             : '';
-        $nodes = $parent instanceof \DOMElement && str_contains($markup, '<')
-            ? $this->parseEntityMarkup($parent, $markup)
+        $nodes = $domNode instanceof \DOMElement && str_contains($markup, '<')
+            ? $this->parseEntityMarkup($domNode, $markup)
             : [];
 
         if ([] === $nodes) {
-            $parent->replaceChild(new \DOMText($reference->textContent), $reference);
+            $domNode->replaceChild(new \DOMText($domEntityReference->textContent), $domEntityReference);
 
             return;
         }
 
         foreach ($nodes as $node) {
-            $parent->insertBefore($node, $reference);
+            $domNode->insertBefore($node, $domEntityReference);
         }
 
-        $parent->removeChild($reference);
+        $domNode->removeChild($domEntityReference);
     }
 
     /**
      * The parser reads the markup of an entity without the namespaces declared around the reference, so it is parsed
      * again with those namespaces declared.
      *
-     * @param \DOMElement $context the element the reference appears in
-     * @param string      $markup  the replacement text of the entity
+     * @param \DOMElement $domElement the element the reference appears in
+     * @param string      $markup     the replacement text of the entity
      *
      * @return list<\DOMNode> the parsed nodes, imported into the context document, or an empty list if the markup is
      *                        not well-formed
      */
-    private function parseEntityMarkup(\DOMElement $context, string $markup): array
+    private function parseEntityMarkup(\DOMElement $domElement, string $markup): array
     {
-        $document = $context->ownerDocument;
+        $document = $domElement->ownerDocument;
 
         if (!$document instanceof \DOMDocument) {
             return [];
         }
 
-        $fragment = new \DOMDocument();
+        $domDocument = new \DOMDocument();
         $previous = libxml_use_internal_errors(true);
-        $fragment->loadXML(
-            '<fragment' . $this->namespaceDeclarations($document, $context) . '>' . $markup . '</fragment>',
+        $domDocument->loadXML(
+            '<fragment' . $this->namespaceDeclarations($document, $domElement) . '>' . $markup . '</fragment>',
             \LIBXML_NONET,
         );
         libxml_clear_errors();
         libxml_use_internal_errors($previous);
 
         // A document that fails to load keeps no document element.
-        if (!$fragment->documentElement instanceof \DOMElement) {
+        if (!$domDocument->documentElement instanceof \DOMElement) {
             return [];
         }
 
         $nodes = [];
 
-        foreach ($fragment->documentElement->childNodes as $node) {
+        foreach ($domDocument->documentElement->childNodes as $node) {
             $nodes[] = $document->importNode($node, true);
         }
 

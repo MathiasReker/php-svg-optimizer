@@ -44,9 +44,9 @@ trait ElementTrait
     {
         $elements = [];
 
-        foreach ($domDocument->getElementsByTagName('*') as $domElement) {
-            if ($localName === $domElement->localName) {
-                $elements[] = $domElement;
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            if ($localName === $domNodeList->localName) {
+                $elements[] = $domNodeList;
             }
         }
 
@@ -93,8 +93,8 @@ trait ElementTrait
             return true;
         }
 
-        foreach ($domElement->getElementsByTagName('*') as $descendant) {
-            if ($this->hasId($descendant)) {
+        foreach ($domElement->getElementsByTagName('*') as $domNodeList) {
+            if ($this->hasId($domNodeList)) {
                 return true;
             }
         }
@@ -114,14 +114,14 @@ trait ElementTrait
     {
         $ids = [];
 
-        foreach ($domDocument->getElementsByTagName('*') as $domElement) {
-            if (!\in_array(mb_strtolower((string) $domElement->localName), SvgTag::animation(), true)) {
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            if (!\in_array(mb_strtolower((string) $domNodeList->localName), SvgTag::animation(), true)) {
                 continue;
             }
 
             foreach ([
-                $domElement->getAttribute(SvgAttribute::Href->value),
-                $domElement->getAttributeNS(SvgNamespace::Xlink->value, SvgAttribute::Href->value),
+                $domNodeList->getAttribute(SvgAttribute::Href->value),
+                $domNodeList->getAttributeNS(SvgNamespace::Xlink->value, SvgAttribute::Href->value),
             ] as $href) {
                 $href = trim($href);
 
@@ -144,15 +144,15 @@ trait ElementTrait
         $targetIds = $this->animationTargetIds($domDocument);
         $elements = [];
 
-        foreach ($domDocument->getElementsByTagName('*') as $domElement) {
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
             $ids = [
-                $domElement->getAttribute(SvgAttribute::Id->value) => true,
-                $domElement->getAttributeNS(SvgNamespace::Xml->value, SvgAttribute::Id->value) => true,
+                $domNodeList->getAttribute(SvgAttribute::Id->value) => true,
+                $domNodeList->getAttributeNS(SvgNamespace::Xml->value, SvgAttribute::Id->value) => true,
             ];
             unset($ids['']);
 
             if ([] !== array_intersect_key($ids, $targetIds)) {
-                $elements[] = $domElement;
+                $elements[] = $domNodeList;
             }
         }
 

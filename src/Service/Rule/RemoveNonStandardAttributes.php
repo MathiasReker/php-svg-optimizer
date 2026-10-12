@@ -108,10 +108,10 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
      */
     private function removeNonStandardAttributesFromElement(\DOMElement $domElement, array $allowed): void
     {
-        /** @var \DOMAttr $attr */
-        foreach (iterator_to_array($domElement->attributes, false) as $attr) {
-            if (!$this->isAttributeAllowed($attr, $allowed)) {
-                $domElement->removeAttributeNode($attr);
+        /* @var \DOMAttr $attr */
+        foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
+            if (!$this->isAttributeAllowed($domAttr, $allowed)) {
+                $domElement->removeAttributeNode($domAttr);
             }
         }
     }

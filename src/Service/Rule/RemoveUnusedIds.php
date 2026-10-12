@@ -69,18 +69,18 @@ final readonly class RemoveUnusedIds implements SvgOptimizerRuleInterface
 
         $referencedIds = $this->collectLiveReferencedIds($domDocument, self::DEFINITION_TAGS, self::EXTERNALLY_TARGETED_TAGS);
 
-        foreach ($domDocument->getElementsByTagName('*') as $domElement) {
-            if ($domElement === $domDocument->documentElement
-                || \in_array($domElement->localName, self::EXTERNALLY_TARGETED_TAGS, true)) {
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            if ($domNodeList === $domDocument->documentElement
+                || \in_array($domNodeList->localName, self::EXTERNALLY_TARGETED_TAGS, true)) {
                 continue;
             }
 
-            if (!\array_key_exists($domElement->getAttribute(SvgAttribute::Id->value), $referencedIds)) {
-                $domElement->removeAttribute(SvgAttribute::Id->value);
+            if (!\array_key_exists($domNodeList->getAttribute(SvgAttribute::Id->value), $referencedIds)) {
+                $domNodeList->removeAttribute(SvgAttribute::Id->value);
             }
 
-            if (!\array_key_exists($domElement->getAttributeNS(SvgNamespace::Xml->value, SvgAttribute::Id->value), $referencedIds)) {
-                $domElement->removeAttributeNS(SvgNamespace::Xml->value, SvgAttribute::Id->value);
+            if (!\array_key_exists($domNodeList->getAttributeNS(SvgNamespace::Xml->value, SvgAttribute::Id->value), $referencedIds)) {
+                $domNodeList->removeAttributeNS(SvgNamespace::Xml->value, SvgAttribute::Id->value);
             }
         }
     }
@@ -92,12 +92,12 @@ final readonly class RemoveUnusedIds implements SvgOptimizerRuleInterface
      */
     private function isScripted(\DOMDocument $domDocument): bool
     {
-        foreach ($domDocument->getElementsByTagName('*') as $domElement) {
-            if (SvgTag::Script->value === $domElement->localName) {
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            if (SvgTag::Script->value === $domNodeList->localName) {
                 return true;
             }
 
-            foreach ($domElement->attributes as $attribute) {
+            foreach ($domNodeList->attributes as $attribute) {
                 if (str_starts_with(mb_strtolower((string) $attribute->localName), self::EVENT_ATTRIBUTE_PREFIX)) {
                     return true;
                 }

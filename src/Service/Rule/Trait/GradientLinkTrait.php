@@ -30,15 +30,15 @@ trait GradientLinkTrait
     private const array GRADIENT_TAGS = ['linearGradient', 'radialGradient'];
 
     /**
-     * @param \DOMElement                $gradient  the gradient to start from
-     * @param array<string, \DOMElement> $gradients the gradients by id
+     * @param \DOMElement                $domElement the gradient to start from
+     * @param array<string, \DOMElement> $gradients  the gradients by id
      *
      * @return list<\DOMElement> the gradient followed by the gradients it links to, following at most MAX_LINK_DEPTH
      *                           links, so a cycle cannot loop forever
      */
-    private function gradientChain(\DOMElement $gradient, array $gradients): array
+    private function gradientChain(\DOMElement $domElement, array $gradients): array
     {
-        $chain = [$gradient];
+        $chain = [$domElement];
 
         for ($depth = 0; $depth < self::MAX_LINK_DEPTH; ++$depth) {
             $linkedId = $this->linkedGradientId($chain[$depth]);
@@ -54,14 +54,14 @@ trait GradientLinkTrait
     }
 
     /**
-     * @param \DOMElement $gradient the gradient to read
+     * @param \DOMElement $domElement the gradient to read
      *
      * @return string the id of the gradient the element links to, or '' if it links to none or ambiguously
      */
-    private function linkedGradientId(\DOMElement $gradient): string
+    private function linkedGradientId(\DOMElement $domElement): string
     {
-        $href = $gradient->getAttribute(SvgAttribute::Href->value);
-        $xlinkHref = $gradient->getAttributeNS(SvgNamespace::Xlink->value, SvgAttribute::Href->value);
+        $href = $domElement->getAttribute(SvgAttribute::Href->value);
+        $xlinkHref = $domElement->getAttributeNS(SvgNamespace::Xlink->value, SvgAttribute::Href->value);
         $link = '' === $href ? $xlinkHref : $href;
 
         if (('' !== $href && '' !== $xlinkHref && $href !== $xlinkHref) || !str_starts_with($link, '#')) {
@@ -97,13 +97,13 @@ trait GradientLinkTrait
         $idCounts = [];
         $gradients = [];
 
-        foreach ($domDocument->getElementsByTagName('*') as $domElement) {
-            foreach ([$domElement->getAttribute(SvgAttribute::Id->value), $this->xmlId($domElement)] as $id) {
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            foreach ([$domNodeList->getAttribute(SvgAttribute::Id->value), $this->xmlId($domNodeList)] as $id) {
                 $idCounts[$id] = ($idCounts[$id] ?? 0) + 1;
             }
 
-            if (\in_array($domElement->localName, self::GRADIENT_TAGS, true) && '' === $this->xmlId($domElement)) {
-                $gradients[$domElement->getAttribute(SvgAttribute::Id->value)] = $domElement;
+            if (\in_array($domNodeList->localName, self::GRADIENT_TAGS, true) && '' === $this->xmlId($domNodeList)) {
+                $gradients[$domNodeList->getAttribute(SvgAttribute::Id->value)] = $domNodeList;
             }
         }
 

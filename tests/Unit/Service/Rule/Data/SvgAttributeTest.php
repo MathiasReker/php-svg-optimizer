@@ -115,7 +115,7 @@ final class SvgAttributeTest extends TestCase
     {
         self::assertSame(SvgAttribute::eventHandlers(), SvgAttribute::eventHandlers());
         self::assertSame(
-            array_map(static fn (SvgAttribute $attribute): string => $attribute->value, SvgAttribute::eventHandlerCases()),
+            array_map(static fn (SvgAttribute $svgAttribute): string => $svgAttribute->value, SvgAttribute::eventHandlerCases()),
             SvgAttribute::eventHandlers(),
         );
     }
@@ -134,7 +134,7 @@ final class SvgAttributeTest extends TestCase
         }
 
         self::assertSame(
-            array_map(static fn (SvgAttribute $attribute): string => $attribute->value, SvgAttribute::htmlOnlyCases()),
+            array_map(static fn (SvgAttribute $svgAttribute): string => $svgAttribute->value, SvgAttribute::htmlOnlyCases()),
             $htmlOnly,
         );
         self::assertSame($htmlOnly, array_values(array_unique($htmlOnly)));

@@ -130,8 +130,8 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
         $paintReferences = [];
         $otherReferences = [];
 
-        foreach ($domDocument->getElementsByTagName('*') as $domElement) {
-            foreach ($domElement->attributes as $attribute) {
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            foreach ($domNodeList->attributes as $attribute) {
                 $id = $this->paintReferenceId($attribute);
 
                 if ('' === $id) {
@@ -196,26 +196,26 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * @param \DOMElement $stop the only stop of a gradient
+     * @param \DOMElement $domElement the only stop of a gradient
      *
      * @return string the stop color, or '' if it cannot be used as a paint unchanged
      */
-    private function stopColor(\DOMElement $stop): string
+    private function stopColor(\DOMElement $domElement): string
     {
-        $opacity = $stop->getAttribute(SvgAttribute::StopOpacity->value);
+        $opacity = $domElement->getAttribute(SvgAttribute::StopOpacity->value);
 
-        if ($this->hasElementChildren($stop)
-            || $this->hasId($stop)
-            || $stop->hasAttribute(SvgAttribute::Style->value)
-            || ($stop->hasAttribute(SvgAttribute::StopOpacity->value) && !$this->isOpaque($opacity))) {
+        if ($this->hasElementChildren($domElement)
+            || $this->hasId($domElement)
+            || $domElement->hasAttribute(SvgAttribute::Style->value)
+            || ($domElement->hasAttribute(SvgAttribute::StopOpacity->value) && !$this->isOpaque($opacity))) {
             return '';
         }
 
-        if (!$stop->hasAttribute(SvgAttribute::StopColor->value)) {
+        if (!$domElement->hasAttribute(SvgAttribute::StopColor->value)) {
             return self::DEFAULT_STOP_COLOR;
         }
 
-        $color = trim($stop->getAttribute(SvgAttribute::StopColor->value));
+        $color = trim($domElement->getAttribute(SvgAttribute::StopColor->value));
 
         // Color keywords are ASCII case-insensitive, so a non-ASCII letter that lowercases to ASCII does not match.
         return 1 === preg_match(self::HEX_COLOR_REGEX, $color)
@@ -256,16 +256,16 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * @param \DOMElement    $gradient   the gradient to remove
+     * @param \DOMElement    $domElement the gradient to remove
      * @param list<\DOMAttr> $attributes the paint attributes referencing it
      * @param string         $color      the color to paint instead
      */
-    private function replacePaint(\DOMElement $gradient, array $attributes, string $color): void
+    private function replacePaint(\DOMElement $domElement, array $attributes, string $color): void
     {
         foreach ($attributes as $attribute) {
             $attribute->value = $color;
         }
 
-        $gradient->parentNode?->removeChild($gradient);
+        $domElement->parentNode?->removeChild($domElement);
     }
 }

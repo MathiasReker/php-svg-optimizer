@@ -70,9 +70,9 @@ trait BlankTextNodeTrait
         $blankTextNodes = $this->blankTextNodes($domDocument);
         $whitespace = [];
 
-        foreach ($blankTextNodes as $domText) {
-            $whitespace[] = $domText->data;
-            $domText->data = $this->rendersAsSpace($domDocument, $domText) ? $this->collapseTextWhitespace($domText) : '';
+        foreach ($blankTextNodes as $blankTextNode) {
+            $whitespace[] = $blankTextNode->data;
+            $blankTextNode->data = $this->rendersAsSpace($domDocument, $blankTextNode) ? $this->collapseTextWhitespace($blankTextNode) : '';
         }
 
         return [$blankTextNodes, $whitespace];
@@ -129,7 +129,7 @@ trait BlankTextNodeTrait
         }
 
         return !$domText->parentNode?->firstChild instanceof \DOMText
-            && !('' === $space && $this->followsTextStartingWithWhitespace($domText));
+            && ('' !== $space || !$this->followsTextStartingWithWhitespace($domText));
     }
 
     /**
@@ -170,14 +170,14 @@ trait BlankTextNodeTrait
     /**
      * @param \DOMDocument $domDocument the document containing the node
      * @param \DOMText     $domText     a text node holding only whitespace
-     * @param \DOMElement  $text        the `<text>` element containing the node
+     * @param \DOMElement  $domElement  the `<text>` element containing the node
      */
-    private function isBetweenText(\DOMDocument $domDocument, \DOMText $domText, \DOMElement $text): bool
+    private function isBetweenText(\DOMDocument $domDocument, \DOMText $domText, \DOMElement $domElement): bool
     {
         $characters = '';
         $preceding = '';
 
-        foreach ($this->textNodes($domDocument, $text, self::TEXT_QUERY) as $node) {
+        foreach ($this->textNodes($domDocument, $domElement, self::TEXT_QUERY) as $node) {
             if ($node === $domText) {
                 $preceding = $characters;
             }
