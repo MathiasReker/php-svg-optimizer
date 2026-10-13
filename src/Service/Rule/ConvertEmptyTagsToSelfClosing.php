@@ -22,7 +22,7 @@ final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleIn
 {
     use XmlContentTrait;
 
-    private const string EMPTY_TAG_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)(?<!\/)>\s*<\/\1>/';
+    private const string EMPTY_TAG_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)(?<!\/)><\/\1>/';
 
     private const string SELF_CLOSING_SPACE_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)\s+\/>/';
 

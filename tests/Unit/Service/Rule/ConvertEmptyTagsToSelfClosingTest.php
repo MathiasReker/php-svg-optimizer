@@ -57,6 +57,16 @@ final class ConvertEmptyTagsToSelfClosingTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps a whitespace-only tspan, whose space renders between the surrounding text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>a<tspan> </tspan>b</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>a<tspan> </tspan>b</text></svg>',
+        ];
+
+        yield 'Keeps preserved whitespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text xml:space="preserve">  </text><g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text xml:space="preserve">  </text><g/></svg>',
+        ];
+
         yield 'Keeps a self-closing child named like its parent' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><a/><svg/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><a/><svg/></svg>',
