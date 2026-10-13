@@ -55,6 +55,26 @@ final class RemoveEmptyGroupsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps empty groups when a sibling combinator may match' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g+rect{fill:red}</style><g></g><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g+rect{fill:red}</style><g/><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'Keeps empty groups when a structural pseudo-class may match' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:NTH-child(3){fill:red}</style><g/><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:NTH-child(3){fill:red}</style><g/><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'Keeps empty groups when an external style sheet applies' => [
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg"><g/><rect width="5" height="5"/></svg>',
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg"><g/><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'Removes empty groups when the style sheet does not depend on siblings' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g rect{fill:red}</style><g/><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g rect{fill:red}</style><rect width="5" height="5"/></svg>',
+        ];
+
         yield 'Keeps empty group that is a child of switch' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><switch><g/><text>fallback</text></switch><g/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><switch><g/><text>fallback</text></switch></svg>',

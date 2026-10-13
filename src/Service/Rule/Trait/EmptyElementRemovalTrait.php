@@ -20,12 +20,18 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  */
 trait EmptyElementRemovalTrait
 {
+    use ElementTrait;
+
     /**
      * @param \DOMDocument                $domDocument the document to clean
      * @param callable(\DOMElement): bool $isRemovable returns true for elements to remove
      */
     private function removeElementsBottomUp(\DOMDocument $domDocument, callable $isRemovable): void
     {
+        if ($this->hasSiblingSensitiveStyle($domDocument)) {
+            return;
+        }
+
         $elements = array_reverse(iterator_to_array($domDocument->getElementsByTagName('*'), false));
 
         foreach ($elements as $element) {

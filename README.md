@@ -688,7 +688,9 @@ $svgOptimizer->removeDoctype();
 ### `removeDuplicateElements`
 
 Detects and removes identical duplicate elements that do not contribute additional visual output. This reduces
-redundancy in the SVG structure and helps minimize file size without altering appearance.
+redundancy in the SVG structure and helps minimize file size without altering appearance. Nothing is removed when a
+style sheet uses sibling combinators or structural pseudo-classes (such as `g + rect` or `:nth-child()`), whose matches
+depend on the surrounding elements.
 
 ```php
 $svgOptimizer->removeDuplicateElements();
@@ -713,7 +715,8 @@ $svgOptimizer->removeEmptyAttributes();
 
 Removes container elements such as `<defs>`, `<g>`, `<symbol>`, `<mask>`, `<clipPath>`, `<pattern>`, `<marker>` and
 `<switch>` when they have no content and no `id`. Containers that become empty are removed as well. Groups with a
-`filter` are kept, as a filter can paint on its own.
+`filter` are kept, as a filter can paint on its own. Nothing is removed when a style sheet uses sibling combinators or
+structural pseudo-classes (such as `g + rect` or `:nth-child()`), whose matches depend on the surrounding elements.
 
 ```php
 $svgOptimizer->removeEmptyContainers();
@@ -725,7 +728,9 @@ $svgOptimizer->removeEmptyContainers();
 
 Deletes `<g>` elements that have no attributes and do not contain any child elements, text or comments. This simplifies
 the DOM tree and removes unnecessary structural nodes. `removeEmptyContainers` applies the same clean-up to more
-container types and also removes empty groups that carry attributes other than `id` and `filter`.
+container types and also removes empty groups that carry attributes other than `id` and `filter`. Nothing is removed
+when a style sheet uses sibling combinators or structural pseudo-classes (such as `g + rect` or `:nth-child()`), whose
+matches depend on the surrounding elements.
 
 ```php
 $svgOptimizer->removeEmptyGroups();

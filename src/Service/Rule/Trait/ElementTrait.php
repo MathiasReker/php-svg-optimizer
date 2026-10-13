@@ -22,12 +22,36 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  */
 trait ElementTrait
 {
+    private const string SIBLING_SENSITIVE_CSS_REGEX = '/[+~]|:(?:nth-|first-|last-|only-|empty|has\b)|@import/i';
+
+    private const string XML_STYLESHEET = 'xml-stylesheet';
+
     /**
      * @param \DOMDocument $domDocument the document to check
      */
     private function hasStyleElement(\DOMDocument $domDocument): bool
     {
         return [] !== $this->elementsNamed($domDocument, SvgTag::Style->value);
+    }
+
+    /**
+     * @param \DOMDocument $domDocument the document to check
+     */
+    private function hasSiblingSensitiveStyle(\DOMDocument $domDocument): bool
+    {
+        foreach ($domDocument->childNodes as $childNode) {
+            if ($childNode instanceof \DOMProcessingInstruction && self::XML_STYLESHEET === $childNode->target) {
+                return true;
+            }
+        }
+
+        foreach ($this->elementsNamed($domDocument, SvgTag::Style->value) as $style) {
+            if (1 === preg_match(self::SIBLING_SENSITIVE_CSS_REGEX, $style->textContent)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

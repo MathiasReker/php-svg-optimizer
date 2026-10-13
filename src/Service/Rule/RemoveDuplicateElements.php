@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
  * @internal
@@ -21,6 +22,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  */
 final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterface
 {
+    use ElementTrait;
+
     private const array NON_RENDERING_TAGS = [
         SvgTag::Desc->value,
         SvgTag::Metadata->value,
@@ -48,6 +51,10 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
+        if ($this->hasSiblingSensitiveStyle($domDocument)) {
+            return;
+        }
+
         $elements = iterator_to_array($domDocument->getElementsByTagName('*'), false);
 
         foreach ($elements as $element) {

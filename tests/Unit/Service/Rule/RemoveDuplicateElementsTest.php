@@ -55,6 +55,16 @@ final class RemoveDuplicateElementsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps duplicates when a structural pseudo-class may match' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:nth-child(4){fill:red}</style><title>a</title><title>a</title><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:nth-child(4){fill:red}</style><title>a</title><title>a</title><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'Removes duplicates when the style sheet does not depend on siblings' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}</style><title>a</title><title>a</title><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}</style><title>a</title><rect width="5" height="5"/></svg>',
+        ];
+
         yield 'Keeps exact duplicate rendered elements' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">

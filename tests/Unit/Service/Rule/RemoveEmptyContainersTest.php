@@ -55,6 +55,21 @@ final class RemoveEmptyContainersTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps empty containers when a sibling combinator may match' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>defs~rect{fill:red}</style><defs/><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>defs~rect{fill:red}</style><defs/><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'Keeps empty containers when a relational pseudo-class may match' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>svg:has(g) rect{fill:red}</style><g/><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>svg:has(g) rect{fill:red}</style><g/><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'Removes empty containers when the style sheet does not depend on siblings' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}</style><defs/><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}</style><rect width="5" height="5"/></svg>',
+        ];
+
         yield 'Keeps empty group with a filter in its style' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g style="filter:url(#f)"/><g style="FILTER: url(#f)"/><g style="fill:red"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><g style="filter:url(#f)"/><g style="FILTER: url(#f)"/></svg>',
