@@ -18,6 +18,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ClassAttributeTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 
 /**
  * @internal
@@ -29,6 +30,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     use AsciiCaseTrait;
     use ClassAttributeTrait;
     use CssDeclarationTrait;
+    use SvgElementTrait;
 
     private const string CSS_RULE_REGEX = '/([^{}]+)\{([^}]+)}/';
 
@@ -222,7 +224,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
      */
     private function convertClassRule(string $class, string $declarations, array $classMap, string $otherCss): string
     {
-        [$convertible, $nonConvertible] = $this->splitDeclarations($declarations, $otherCss);
+        [$convertible, $nonConvertible] = $this->splitDeclarations($declarations, $otherCss, $classMap[$class] ?? []);
         $this->applyStylesToElements($class, $classMap, $convertible);
 
         return [] === $nonConvertible ? '' : $this->rebuildCssRule($class, $nonConvertible);
@@ -242,12 +244,13 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     /**
-     * @param string $declarations The CSS declaration block (e.g., "fill:red; font-size:12px").
-     * @param string $otherCss     the CSS that stays CSS
+     * @param string            $declarations The CSS declaration block (e.g., "fill:red; font-size:12px").
+     * @param string            $otherCss     the CSS that stays CSS
+     * @param list<\DOMElement> $elements     the elements with the class
      *
      * @return array{array<string, string>, array<string, string>} a tuple containing convertible and non-convertible declarations
      */
-    private function splitDeclarations(string $declarations, string $otherCss): array
+    private function splitDeclarations(string $declarations, string $otherCss, array $elements): array
     {
         $convertibleLookup = $this->getConvertibleProperties();
         $convertible = [];
@@ -263,7 +266,8 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
 
             if (\array_key_exists($propLower, $convertibleLookup)
                 && !str_contains($value, self::IMPORTANT_MARKER)
-                && !$this->declaresProperty($otherCss, $propLower)) {
+                && !$this->isAffectedByOtherCss($otherCss, $propLower)
+                && !$this->hasNonSvgElement($elements)) {
                 $convertible[$propLower] = $value;
             } else {
                 $nonConvertible[$propLower] = $value;
@@ -271,17 +275,6 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         }
 
         return [$convertible, $nonConvertible];
-    }
-
-    /**
-     * @param string $css      the CSS to search
-     * @param string $property a lowercase property name
-     *
-     * @return bool true if the CSS may declare the property
-     */
-    private function declaresProperty(string $css, string $property): bool
-    {
-        return 1 === preg_match('/[{;\s]' . preg_quote($property, '/') . '\s*:/i', $css);
     }
 
     /**

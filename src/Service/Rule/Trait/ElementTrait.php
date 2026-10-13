@@ -22,6 +22,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  */
 trait ElementTrait
 {
+    use SvgElementTrait;
+
     private const string SIBLING_SENSITIVE_CSS_REGEX = '/[+~]|:(?:nth-|first-|last-|only-|empty|has\b)|@import/i';
 
     private const string XML_STYLESHEET = 'xml-stylesheet';
@@ -89,17 +91,6 @@ trait ElementTrait
     private function isEmptyElement(\DOMElement $domElement): bool
     {
         return !$this->hasElementChildren($domElement) && '' === trim($domElement->textContent);
-    }
-
-    /**
-     * @param \DOMElement $domElement the element to check
-     *
-     * @return bool true if the element is in the SVG namespace, or in no namespace as in a document without a namespace
-     *              declaration
-     */
-    private function isSvgElement(\DOMElement $domElement): bool
-    {
-        return \in_array($domElement->namespaceURI, [null, SvgNamespace::Svg->value], true);
     }
 
     /**

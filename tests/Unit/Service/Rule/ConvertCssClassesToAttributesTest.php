@@ -422,6 +422,51 @@ final class ConvertCssClassesToAttributesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{font-family:"}";fill:red}</style><text class="a"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{font-family:"}";fill:red}</style><text class="a"/></svg>',
         ];
+
+        yield 'Keeps a longhand when other CSS sets its shorthand' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>path{marker:url(#m)}.a{marker-start:none}</style><path class="a" d="M0 0L10 10"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>path{marker:url(#m)}.a{marker-start:none}</style><path class="a" d="M0 0L10 10"/></svg>',
+        ];
+
+        yield 'Keeps a shorthand when other CSS sets a longhand of it' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>svg{overflow-x:hidden}.a{overflow:visible}</style><svg class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>svg{overflow-x:hidden}.a{overflow:visible}</style><svg class="a"/></svg>',
+        ];
+
+        yield 'Keeps a property when other CSS resets all properties' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{all:initial}.a{fill:red}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{all:initial}.a{fill:red}</style><rect class="a"/></svg>',
+        ];
+
+        yield 'Keeps a shorthand when other CSS sets one of its longhands' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{-webkit-mask-image:none}.a{mask:url(#m)}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{-webkit-mask-image:none}.a{mask:url(#m)}</style><rect class="a"/></svg>',
+        ];
+
+        yield 'Converts a property when other CSS sets a property with the same prefix' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill-opacity:.5}.a{fill:red}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill-opacity:.5}</style><rect fill="red"/></svg>',
+        ];
+
+        yield 'Keeps classes on elements outside the SVG namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{display:none}</style><foreignObject><div xmlns="http://www.w3.org/1999/xhtml" class="a">hi</div></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{display:none}</style><foreignObject><div xmlns="http://www.w3.org/1999/xhtml" class="a">hi</div></foreignObject></svg>',
+        ];
+
+        yield 'Keeps a property when other CSS selects the attribute it becomes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}[fill]{stroke:blue}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}[fill]{stroke:blue}</style><rect class="a"/></svg>',
+        ];
+
+        yield 'Keeps a property when other CSS selects the attribute it becomes by value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}rect[ fill="red"]{stroke:blue}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}rect[ fill="red"]{stroke:blue}</style><rect class="a"/></svg>',
+        ];
+
+        yield 'Converts a property when other CSS selects a longer attribute name' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}[fill-rule]{stroke:blue}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[fill-rule]{stroke:blue}</style><rect fill="red"/></svg>',
+        ];
     }
 
     #[Test]
