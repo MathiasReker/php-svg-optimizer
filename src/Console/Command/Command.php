@@ -17,6 +17,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Processor\SvgFileProcessor;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
 use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
+use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 
 /**
  * @internal
@@ -87,7 +88,7 @@ final readonly class Command implements CommandInterface
     {
         try {
             $this->svgFileProcessor->processPath($path);
-        } catch (\RuntimeException $exception) {
+        } catch (\RuntimeException|SvgValidationException $exception) {
             $this->outputManager->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
         } catch (\JsonException $jsonException) {
             $this->outputManager->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOption->getConfigPath(), $jsonException->getMessage()));

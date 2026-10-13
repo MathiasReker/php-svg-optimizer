@@ -492,6 +492,27 @@ final class SvgOptimizerCommandTest extends TestCase
         }
     }
 
+    /**
+     * @throws \LogicException
+     * @throws \RuntimeException
+     * @throws \ValueError
+     */
+    #[Test]
+    public function runWithInvalidSvgFileNamesTheFileInTheError(): void
+    {
+        $svgFile = $this->tempDir . '/invalid.svg';
+        file_put_contents($svgFile, 'not an svg');
+
+        $memoryStream = new MemoryStream();
+
+        (new Command([$svgFile], new CommandOption(false, '', false, false), new OutputManager($memoryStream, false)))->run();
+
+        self::assertStringContainsString(
+            \sprintf('Error: Failed processing "%s": The file does not appear to be a valid SVG file.', $svgFile),
+            $memoryStream->getContent()
+        );
+    }
+
     #[\Override]
     protected function setUp(): void
     {
