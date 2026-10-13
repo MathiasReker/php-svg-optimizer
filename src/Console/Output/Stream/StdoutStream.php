@@ -16,11 +16,9 @@ use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 /**
  * @internal
  *
- * @final since 8.8.0, it will be final in 9.0
- *
  * @no-named-arguments
  */
-class StdoutStream extends AbstractStream implements StreamInterface
+final class StdoutStream extends AbstractStream implements StreamInterface
 {
     /**
      * @throws \RuntimeException If unable to open the stdout stream

@@ -27,22 +27,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `convertColorsToHex` writes the shortest form of a color, which may be a color name.
 - `minifyTransformations` rewrites transforms exactly, without rounding.
 - The public API (the facade, the `Metrics` value object, the `Rule` enum and the exceptions) is tagged `@api`;
-  every other class is tagged `@internal`.
-
-### Deprecated
-
-- The command-line classes moved to the `Console` namespace. The old names keep working through class aliases, which
-  will be removed in 9.0:
-  - `Model\MetaDataAggregator` is now `Console\Output\MetaDataAggregator`.
-  - `Service\Data\ArgumentData` is now `Console\Help\ArgumentData`.
-  - `Service\Filesystem\Finder` is now `Console\Filesystem\Finder`.
-  - `Service\Formatter\ByteFormatter` is now `Console\Output\Formatter\ByteFormatter`.
-  - `Service\Processor\SvgFileProcessor` is now `Console\Processor\SvgFileProcessor`.
-  - `Type\Command` and `Type\Option` are now `Console\Type\Command` and `Console\Type\Option`.
-  - `ValueObject\CliOption`, `ValueObject\CommandHelp`, `ValueObject\CommandOption` and `ValueObject\ExampleCommand`
-    are now in `Console\ValueObject`.
-- `Console\Output\Stream\MemoryStream`, `Console\Output\Stream\StdoutStream` and `Service\Validator\SvgValidator` will
-  be final in 9.0.
+  every other class is tagged `@internal` and may change in any release. Internal classes were reorganized: the
+  command-line classes moved to the `Console` namespace, and internal classes are final.
 
 ### Fixed
 

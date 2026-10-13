@@ -66,10 +66,7 @@
     "autoload": {
         "psr-4": {
             "MathiasReker\\PhpSvgOptimizer\\": "src/"
-        },
-        "classmap": [
-            "deprecated/"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {
