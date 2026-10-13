@@ -588,9 +588,10 @@ $svgOptimizer->minifyPathData();
 
 ### `minifySvgCoordinates`
 
-Reduces numeric precision in coordinate values and other numeric attributes where excessive precision is unnecessary.
-Trailing zeros and redundant decimal places are removed without introducing visible rendering differences, leading to
-smaller file sizes and cleaner markup.
+Shortens the number literals in coordinates, path data, `points`, `viewBox` and `enable-background` without changing
+their values. Leading and trailing zeros, redundant decimal points, explicit plus signs and zero exponents are removed,
+and a separator is kept wherever two numbers would otherwise merge. Values that cannot be tokenized safely are left
+untouched.
 
 ```php
 $svgOptimizer->minifySvgCoordinates();

@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 
 /**
  * @internal
@@ -22,15 +23,25 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
  */
 final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
 {
-    private const string REMOVE_LEADING_ZERO_REGEX = '/(?<=^|\D)0(\.\d+)/';
+    use NumberFormatterTrait;
 
-    private const string REMOVE_TRAILING_ZEROS_REGEX = '/(\.\d*?)0+(\D|$)/';
+    private const string TOKEN_NUMBER = 'number';
 
-    private const string REMOVE_TRAILING_DECIMAL_POINT_REGEX = '/(?<=\d)\.(?=\D|$)/';
+    private const string TOKEN_FLAG = 'flag';
 
-    private const string REPLACE_STANDALONE_DOT_REGEX = '/(?<=^|\s)\.(?=\s|$)/';
+    private const string TOKEN_TEXT = 'text';
 
-    private const string REMOVE_DECIMAL_IF_ZERO_REGEX = '/(?<=\d)\.0+(\D|$)/';
+    private const string NUMBER_TOKEN_REGEX = '/\G(?>' . self::NUMBER_PATTERN . ')/';
+
+    private const string ARC_FLAG_REGEX = '/\G[01]/';
+
+    private const string PATH_TEXT_REGEX = '/\G(?:[\x20\x09\x0A\x0C\x0D]++|,|[MmLlHhVvCcSsQqTtAaZz])/';
+
+    private const string PATH_COMMAND_LETTER_REGEX = '/^[MmLlHhVvCcSsQqTtAaZz]$/';
+
+    private const int ARC_ARGUMENT_COUNT = 7;
+
+    private const array ARC_FLAG_POSITIONS = [3, 4];
 
     private const array ELEMENTS_TO_ATTRIBUTES = [
         '//svg:path' => [SvgAttribute::D->value],
@@ -107,36 +118,166 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     {
         foreach ($attributes as $attribute) {
             if ($domElement->hasAttribute($attribute)) {
-                $domElement->setAttribute($attribute, $this->minifyCoordinates($domElement->getAttribute($attribute)));
+                $domElement->setAttribute($attribute, $this->minifyCoordinates(
+                    $domElement->getAttribute($attribute),
+                    SvgAttribute::D->value === $attribute,
+                ));
             }
         }
     }
 
     /**
-     * @param string $value the string containing coordinates to minify
+     * @param string $value      the string containing coordinates to minify
+     * @param bool   $isPathData whether the value is path data
      *
      * @return string the minified coordinate string
      */
-    private function minifyCoordinates(string $value): string
+    private function minifyCoordinates(string $value, bool $isPathData): string
     {
-        $value = preg_replace(
-            [
-                self::REMOVE_LEADING_ZERO_REGEX,
-                self::REMOVE_TRAILING_ZEROS_REGEX,
-                self::REMOVE_DECIMAL_IF_ZERO_REGEX,
-                self::REMOVE_TRAILING_DECIMAL_POINT_REGEX,
-                self::REPLACE_STANDALONE_DOT_REGEX,
-            ],
-            [
-                '$1',
-                '$1$2',
-                '$1',
-                '',
-                '0',
-            ],
-            $value
-        );
+        $tokens = $this->tokenize($value, $isPathData);
 
-        return $value ?? '';
+        if ([] === $tokens) {
+            return $value;
+        }
+
+        $minifiedTokens = $this->minifyTokens($tokens);
+        $minified = implode('', array_column($minifiedTokens, 1));
+
+        if ($this->mergeTextTokens($this->tokenize($minified, $isPathData)) !== $this->mergeTextTokens($minifiedTokens)) {
+            return $value;
+        }
+
+        return $minified;
+    }
+
+    /**
+     * @param string $value      the attribute value
+     * @param bool   $isPathData whether the value is path data, where arc flags are single characters
+     *
+     * @return list<array{string, string}> the tokens as [type, text], or an empty list if the value cannot be tokenized
+     */
+    private function tokenize(string $value, bool $isPathData): array
+    {
+        $tokens = [];
+        $offset = 0;
+        $command = '';
+        $argument = 0;
+
+        while ($offset < mb_strlen($value)) {
+            $token = $this->nextToken($value, $offset, $isPathData, $this->expectsArcFlag($command, $argument));
+
+            if ([] === $token) {
+                return [];
+            }
+
+            $tokens[] = $token;
+            $offset += mb_strlen($token[1]);
+
+            if (self::TOKEN_TEXT !== $token[0]) {
+                ++$argument;
+            } elseif (1 === preg_match(self::PATH_COMMAND_LETTER_REGEX, $token[1])) {
+                $command = mb_strtolower($token[1]);
+                $argument = 0;
+            }
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * @param string $value       the attribute value
+     * @param int    $offset      the byte offset to read from
+     * @param bool   $isPathData  whether the value is path data
+     * @param bool   $expectsFlag whether an arc flag is expected at the offset
+     *
+     * @return array{string, string}|array{} the token as [type, text], or an empty array if no token is valid here
+     */
+    private function nextToken(string $value, int $offset, bool $isPathData, bool $expectsFlag): array
+    {
+        if ($expectsFlag && 1 === preg_match(self::ARC_FLAG_REGEX, $value, $match, 0, $offset)) {
+            return [self::TOKEN_FLAG, $match[0]];
+        }
+
+        if (1 === preg_match(self::NUMBER_TOKEN_REGEX, $value, $match, 0, $offset)) {
+            return [self::TOKEN_NUMBER, $match[0]];
+        }
+
+        if (!$isPathData) {
+            return [self::TOKEN_TEXT, $value[$offset]];
+        }
+
+        if (1 === preg_match(self::PATH_TEXT_REGEX, $value, $match, 0, $offset)) {
+            return [self::TOKEN_TEXT, $match[0]];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param string $command  the lowercase path command in effect
+     * @param int    $argument the number of arguments read since the command letter
+     */
+    private function expectsArcFlag(string $command, int $argument): bool
+    {
+        return 'a' === $command && \in_array($argument % self::ARC_ARGUMENT_COUNT, self::ARC_FLAG_POSITIONS, true);
+    }
+
+    /**
+     * @param list<array{string, string}> $tokens the tokens to minify
+     *
+     * @return list<array{string, string}> the minified tokens, with a space wherever two numbers would merge
+     */
+    private function minifyTokens(array $tokens): array
+    {
+        $minified = [];
+        $previous = [self::TOKEN_TEXT, ''];
+
+        foreach ($tokens as [$type, $text]) {
+            if (self::TOKEN_NUMBER === $type) {
+                $text = $this->minifyNumber($text);
+            }
+
+            if (self::TOKEN_NUMBER === $previous[0] && self::TOKEN_TEXT !== $type && $this->mergesWithNext($previous[1], $text)) {
+                $minified[] = [self::TOKEN_TEXT, ' '];
+            }
+
+            $previous = [$type, $text];
+            $minified[] = $previous;
+        }
+
+        return $minified;
+    }
+
+    /**
+     * @param string $number the number written first
+     * @param string $next   the text written directly after it
+     */
+    private function mergesWithNext(string $number, string $next): bool
+    {
+        return 1 !== preg_match(self::NUMBER_TOKEN_REGEX, $number . $next, $match) || $match[0] !== $number;
+    }
+
+    /**
+     * @param list<array{string, string}> $tokens the tokens
+     *
+     * @return list<array{string, string}> the tokens with adjacent text tokens joined
+     */
+    private function mergeTextTokens(array $tokens): array
+    {
+        $merged = [];
+
+        foreach ($tokens as $token) {
+            $last = array_key_last($merged);
+
+            if (null !== $last && self::TOKEN_TEXT === $token[0] && self::TOKEN_TEXT === $merged[$last][0]) {
+                $merged[$last][1] .= $token[1];
+
+                continue;
+            }
+
+            $merged[] = $token;
+        }
+
+        return $merged;
     }
 }

@@ -292,6 +292,96 @@ final class MinifySvgCoordinatesTest extends TestCase
             '<svg><rect x="10px" y="20pt" width="30%" height="40em"/></svg>',
         ];
 
+        yield 'Consecutive decimals in path data stay separate numbers' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1.0.5L10 10"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1 .5L10 10"/></svg>',
+        ];
+
+        yield 'Zero with a decimal point before a comma becomes zero' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0.0,1L10 10"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0,1L10 10"/></svg>',
+        ];
+
+        yield 'Negative zero with a decimal point becomes zero' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M-0.0 1L10 10"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 1L10 10"/></svg>',
+        ];
+
+        yield 'Zero exponent followed by a decimal keeps the numbers apart' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M5e0.5L10 10"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M5 .5L10 10"/></svg>',
+        ];
+
+        yield 'Three consecutive decimals in path data' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1.5.5.50L.0.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1.5.5.5L0 0"/></svg>',
+        ];
+
+        yield 'Explicit plus sign between numbers keeps a separator' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1+2L+3.0-4.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1 2L3-4"/></svg>',
+        ];
+
+        yield 'Exponents are shortened without merging numbers' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1.50E+02.5L1e-01 2.0e00"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1.5e2.5L1e-1 2"/></svg>',
+        ];
+
+        yield 'Leading dot numbers are kept' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M.50.50L-.50-.50"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M.5.5L-.5-.5"/></svg>',
+        ];
+
+        yield 'Trailing decimal point is removed' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1. 2.L3.,4."/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1 2L3,4"/></svg>',
+        ];
+
+        yield 'Compact arc flags are not merged into numbers' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0a1 1 0 0110 10a1 1 0 1 0.50 1A2 2 0 1 1.0 0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0a1 1 0 0110 10a1 1 0 1 0.5 1A2 2 0 1 10 0"/></svg>',
+        ];
+
+        yield 'Arc flags are tracked across repeated arc arguments' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0a1.0 1.0 0.0 0 1 2.0 2.0 1.0 1.0 0.0 1 0.50 3.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0a1 1 0 0 1 2 2 1 1 0 1 0.5 3"/></svg>',
+        ];
+
+        yield 'Invalid path data is left unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1.0 2.0 X 3.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1.0 2.0 X 3.0"/></svg>',
+        ];
+
+        yield 'Minifying that would join a stray dot leaves the value unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="1.0."/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="1.0."/></svg>',
+        ];
+
+        yield 'Points with zero decimals and commas' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="0.0,0.0,10,0,10,10"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="0,0,10,0,10,10"/></svg>',
+        ];
+
+        yield 'Points with consecutive decimals stay separate numbers' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="1.0.5 2.50.25"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="1 .5 2.5.25"/></svg>',
+        ];
+
+        yield 'viewBox with zero decimals and commas' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0.0,0.0,10,10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0,0,10,10"/>',
+        ];
+
+        yield 'viewBox with negative zero and exponents' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.0 -0 1.0E1 10e-0"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1e1 10"/>',
+        ];
+
+        yield 'Lengths with units keep the unit' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="10.50px" y="0.50em" width="50.0%" height="1.0e1px"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="10.5px" y=".5em" width="50%" height="1e1px"/></svg>',
+        ];
+
         yield 'Empty d attribute on namespaced path is left unchanged' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d=""/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><path d=""/></svg>',
