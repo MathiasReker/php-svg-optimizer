@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
-use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
@@ -33,9 +32,9 @@ use PHPUnit\Framework\TestCase;
 final class TextWhitespaceTest extends TestCase
 {
     /**
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[DataProvider('provideKeepsWhitespaceInTextCases')]
     #[Test]

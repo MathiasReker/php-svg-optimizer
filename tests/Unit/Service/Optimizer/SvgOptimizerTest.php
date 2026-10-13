@@ -101,9 +101,9 @@ final class SvgOptimizerTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[Test]
     public function optimizeReturnsSelfAndContentIsSet(): void
@@ -217,27 +217,54 @@ final class SvgOptimizerTest extends TestCase
         self::assertGreaterThan(0, $metrics->getOptimizationTime());
     }
 
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
     #[Test]
     public function saveToFileReturnsSelf(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
+        $svgOptimizer->optimize();
 
         $result = $svgOptimizer->saveToFile('/tmp/output.svg');
 
         self::assertSame($svgOptimizer, $result);
     }
 
+    /**
+     * @throws \LogicException
+     */
     #[Test]
-    public function getContentReturnsEmptyStringBeforeOptimize(): void
+    public function saveToFileThrowsBeforeOptimize(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
-        self::assertSame('', $svgOptimizer->getContent());
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Content cannot be saved before optimization.');
+
+        $svgOptimizer->saveToFile('/tmp/output.svg');
     }
 
     /**
-     * @throws SvgValidationException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function getContentThrowsBeforeOptimize(): void
+    {
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Content is not available before optimization.');
+
+        $svgOptimizer->getContent();
+    }
+
+    /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[Test]
     public function optimizeWithNoRules(): void
@@ -249,10 +276,16 @@ final class SvgOptimizerTest extends TestCase
         self::assertSame('<svg>optimized</svg>', $svgOptimizer->getContent());
     }
 
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
     #[Test]
     public function saveToFileChainingWithDifferentPaths(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
+        $svgOptimizer->optimize();
 
         $result1 = $svgOptimizer->saveToFile('/tmp/file1.svg');
         $result2 = $svgOptimizer->saveToFile('/tmp/file2.svg');
@@ -325,9 +358,9 @@ final class SvgOptimizerTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[Test]
     public function configureRulesRunsRulesByPriorityWhateverTheOrderTheyAreEnabledIn(): void
@@ -342,9 +375,9 @@ final class SvgOptimizerTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[Test]
     public function configureRulesRunsRulesWithoutPriorityLast(): void
@@ -374,9 +407,9 @@ final class SvgOptimizerTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[Test]
     public function optimizeRevertsWhenRuleGrowsContentAndShouldCheckSizeIsTrue(): void
@@ -463,9 +496,9 @@ final class SvgOptimizerTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function sizeCheckOnlyRevertsTheCheckedRule(): void
@@ -516,9 +549,9 @@ final class SvgOptimizerTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function sizeCheckKeepsACheckedRuleThatDoesNotGrowTheDocument(): void
@@ -549,9 +582,9 @@ final class SvgOptimizerTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function sizeCheckKeepsACheckedRuleThatKeepsTheSize(): void
@@ -582,9 +615,9 @@ final class SvgOptimizerTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function revertingARuleDoesNotEmitPhpWarnings(): void

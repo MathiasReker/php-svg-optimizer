@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
-use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
@@ -35,9 +34,9 @@ use PHPUnit\Framework\TestCase;
 final class ScopeSvgStylesTest extends TestCase
 {
     /**
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[DataProvider('provideOptimizeCases')]
     #[Test]
@@ -529,9 +528,9 @@ final class ScopeSvgStylesTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[DataProvider('provideScopingTwiceGivesTheSameResultCases')]
     #[Test]
@@ -562,9 +561,9 @@ final class ScopeSvgStylesTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[Test]
     public function keepsNamesThatAreAlreadyScoped(): void
@@ -584,9 +583,9 @@ final class ScopeSvgStylesTest extends TestCase
     /**
      * @param list<string> $expectedPatterns
      *
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[DataProvider('provideUpdatesReferencesToRenamedIdsCases')]
     #[Test]
@@ -664,9 +663,9 @@ final class ScopeSvgStylesTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     private function scope(string $content): string
     {

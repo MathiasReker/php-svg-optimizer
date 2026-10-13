@@ -36,9 +36,9 @@ use PHPUnit\Framework\TestCase;
 final class RemoveEmptyTextElementsTest extends TestCase
 {
     /**
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[DataProvider('provideOptimizeCases')]
     #[Test]

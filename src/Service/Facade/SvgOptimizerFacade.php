@@ -240,6 +240,8 @@ final readonly class SvgOptimizerFacade
      * @param string $outputPath The file path where the optimized SVG content will be saved
      *
      * @return $this The SvgOptimizerFacade instance
+     *
+     * @throws \LogicException If the content is saved before optimize() is called
      */
     public function saveToFile(string $outputPath): self
     {
@@ -260,6 +262,8 @@ final readonly class SvgOptimizerFacade
 
     /**
      * @return string The optimized SVG content
+     *
+     * @throws \LogicException If the content is requested before optimize() is called
      */
     public function getContent(): string
     {

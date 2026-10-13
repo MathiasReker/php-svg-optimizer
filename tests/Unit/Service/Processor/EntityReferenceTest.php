@@ -13,7 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
-use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
@@ -38,9 +37,9 @@ final class EntityReferenceTest extends TestCase
     /**
      * @param non-empty-string $expected
      *
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[DataProvider('provideResolvesEntityReferencesCases')]
     #[Test]
@@ -166,9 +165,9 @@ final class EntityReferenceTest extends TestCase
     /**
      * @param list<SvgOptimizerRuleInterface> $rules
      *
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[DataProvider('provideResolvesEntityReferencesInNamespacesWhenRulesRemoveTheDoctypeCases')]
     #[Test]
@@ -254,9 +253,9 @@ final class EntityReferenceTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
      */
     #[Test]
     public function expandsEntityMarkupInTheSvgNamespace(): void

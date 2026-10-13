@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Facade;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
-use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -31,9 +30,9 @@ final class SampleFilesTest extends TestCase
     private const string XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[DataProvider('provideSampleFileCases')]
     #[Test]
@@ -80,9 +79,9 @@ final class SampleFilesTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[DataProvider('provideSampleFileCases')]
     #[Test]
@@ -118,9 +117,9 @@ final class SampleFilesTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     private function optimize(string $file, bool $allowRisky): \DOMDocument
     {

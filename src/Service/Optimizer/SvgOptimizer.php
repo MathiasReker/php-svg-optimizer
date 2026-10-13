@@ -216,10 +216,16 @@ final class SvgOptimizer
     }
 
     /**
-     * @return string The optimized SVG content, or an empty string if not yet optimized
+     * @return string The optimized SVG content
+     *
+     * @throws \LogicException If the content is requested before optimization
      */
     public function getContent(): string
     {
+        if (!$this->isOptimized) {
+            throw new \LogicException('Content is not available before optimization.');
+        }
+
         return $this->domDocumentContent;
     }
 
@@ -269,9 +275,15 @@ final class SvgOptimizer
 
     /**
      * @param string $outputPath The path to save the optimized SVG content to
+     *
+     * @throws \LogicException If the content is saved before optimization
      */
     public function saveToFile(string $outputPath): self
     {
+        if (!$this->isOptimized) {
+            throw new \LogicException('Content cannot be saved before optimization.');
+        }
+
         $this->svgProvider->saveToFile($outputPath);
 
         return $this;

@@ -139,9 +139,9 @@ final class SvgOptimizerFacadeTest extends TestCase
     private string $tempFilePath;
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function optimizeReturnsService(): void
@@ -154,9 +154,9 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function saveToFileWritesOptimizedSvg(): void
@@ -189,9 +189,9 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function withRulesConfiguresRules(): void
@@ -219,9 +219,9 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function allowRiskyEnablesRiskyRules(): void
@@ -284,9 +284,9 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function withRulesDefaultDoesNotApplyAnyRules(): void
@@ -300,9 +300,9 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function multipleRulesApplied(): void
@@ -346,9 +346,9 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function methodChaining(): void
@@ -384,9 +384,9 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function withAllRulesEnablesAllNonRiskyRules(): void
@@ -400,9 +400,9 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function withAllRulesIncludesRiskyRulesWhetherAllowRiskyIsCalledBeforeOrAfter(): void
@@ -417,10 +417,37 @@ final class SvgOptimizerFacadeTest extends TestCase
         self::assertStringNotContainsString('data-x', $allowRiskyLast);
     }
 
+    #[Test]
+    public function saveToFileBeforeOptimizeThrowsAndWritesNothing(): void
+    {
+        $outputPath = sys_get_temp_dir() . '/not-optimized-' . uniqid() . '.svg';
+
+        try {
+            SvgOptimizerFacade::fromString('<svg xmlns="http://www.w3.org/2000/svg"></svg>')->saveToFile($outputPath);
+            self::fail('saveToFile() before optimize() must throw.');
+        } catch (\LogicException $logicException) {
+            self::assertSame('Content cannot be saved before optimization.', $logicException->getMessage());
+        }
+
+        self::assertFileDoesNotExist($outputPath);
+    }
+
     /**
-     * @throws SvgValidationException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function getContentBeforeOptimizeThrows(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Content is not available before optimization.');
+
+        SvgOptimizerFacade::fromString('<svg xmlns="http://www.w3.org/2000/svg"></svg>')->getContent();
+    }
+
+    /**
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function withAllRulesWithoutAllowRiskyLeavesRiskyRulesOut(): void
@@ -469,9 +496,9 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function withRulesCanEnableSpecificRiskyRules(): void
@@ -527,9 +554,9 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[DataProvider('provideOptimizingTwiceGivesTheSameResultCases')]
     #[Test]
@@ -584,9 +611,9 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
-     * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
+     * @throws \LogicException
      */
     #[Test]
     public function enablingRulesAgainDoesNotChangeTheResult(): void
