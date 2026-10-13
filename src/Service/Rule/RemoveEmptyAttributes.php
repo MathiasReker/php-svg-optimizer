@@ -13,6 +13,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
@@ -22,6 +24,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  */
 final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
 {
+    use CssDeclarationTrait;
     use ElementTrait;
 
     private const array CONDITIONAL_ATTRIBUTES = [
@@ -48,13 +51,21 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
+        $css = implode(' ', array_map(
+            static fn (\DOMElement $domElement): string => $domElement->textContent,
+            $this->elementsNamed($domDocument, SvgTag::Style->value),
+        ));
+
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
             if (!$this->isSvgElement($domNodeList)) {
                 continue;
             }
 
             foreach (iterator_to_array($domNodeList->attributes, false) as $domAttr) {
-                if ('' === trim($domAttr->value) && !\in_array($domAttr->nodeName, self::CONDITIONAL_ATTRIBUTES, true)) {
+                if ('' === trim($domAttr->value)
+                    && !\in_array($domAttr->nodeName, self::CONDITIONAL_ATTRIBUTES, true)
+                    && !$this->hasAttributeSelector($css, $domAttr->name)
+                ) {
                     $domNodeList->removeAttributeNode($domAttr);
                 }
             }

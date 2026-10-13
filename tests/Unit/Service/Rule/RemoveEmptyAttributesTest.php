@@ -107,6 +107,21 @@ final class RemoveEmptyAttributesTest extends TestCase
                 XML,
         ];
 
+        yield 'Keeps an empty attribute that a style sheet selects' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[fill]{stroke:blue}</style><rect fill="" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[fill]{stroke:blue}</style><rect fill="" width="5" height="5"/></svg>',
+        ];
+
+        yield 'Keeps an empty namespaced attribute that a style sheet selects' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><style>[xlink|href=""]{stroke:blue}</style><a xlink:href=""><rect width="5" height="5"/></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><style>[xlink|href=""]{stroke:blue}</style><a xlink:href=""><rect width="5" height="5"/></a></svg>',
+        ];
+
+        yield 'Removes an empty attribute when a style sheet selects another attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[fill-rule]{stroke:blue}</style><rect fill="" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[fill-rule]{stroke:blue}</style><rect width="5" height="5"/></svg>',
+        ];
+
         yield 'Handles multiple empty attributes' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
