@@ -29,7 +29,7 @@ final readonly class RemoveUselessDefs implements SvgOptimizerRuleInterface
     ];
 
     private const array DEFS_EFFECTIVE_TAGS = [
-        'color-profile', 'font', 'font-face', 'script', 'style',
+        'color-profile', 'discard', 'font', 'font-face', 'script', 'style',
     ];
 
     #[\Override]
@@ -73,7 +73,7 @@ final readonly class RemoveUselessDefs implements SvgOptimizerRuleInterface
         $isDefsChild = $parent instanceof \DOMElement && SvgTag::Defs->value === $parent->localName;
 
         $isCandidate = \in_array($localName, self::REFERENCE_ONLY_TAGS, true)
-            || ($isDefsChild && !\in_array($localName, self::DEFS_EFFECTIVE_TAGS, true));
+            || ($isDefsChild && !$this->isEffectiveTag($localName));
 
         return $isCandidate && !$this->hasIdInSubtree($domElement) && !$this->hasEffectiveDescendant($domElement);
     }
@@ -84,11 +84,23 @@ final readonly class RemoveUselessDefs implements SvgOptimizerRuleInterface
     private function hasEffectiveDescendant(\DOMElement $domElement): bool
     {
         foreach ($domElement->getElementsByTagName('*') as $domNodeList) {
-            if (\in_array($domNodeList->localName, self::DEFS_EFFECTIVE_TAGS, true)) {
+            if ($this->isEffectiveTag((string) $domNodeList->localName)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * @param string $localName the local name of an element
+     *
+     * @return bool true if the element has an effect inside `<defs>`, such as a style sheet or an animation that may
+     *              target an element elsewhere
+     */
+    private function isEffectiveTag(string $localName): bool
+    {
+        return \in_array($localName, self::DEFS_EFFECTIVE_TAGS, true)
+            || \in_array(mb_strtolower($localName), SvgTag::animation(), true);
     }
 }

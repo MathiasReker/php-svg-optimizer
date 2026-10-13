@@ -119,6 +119,26 @@ final class RemoveUselessDefsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><symbol><g id="a"/></symbol></svg>',
         ];
 
+        yield 'Keeps an animation in defs that targets another element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r" width="5" height="5"/><defs><set href="#r" attributeName="fill" to="red"/></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r" width="5" height="5"/><defs><set href="#r" attributeName="fill" to="red"/></defs></svg>',
+        ];
+
+        yield 'Keeps an animateTransform in defs that targets another element through xlink:href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="r" width="5" height="5"/><defs><animateTransform xlink:href="#r" attributeName="transform" type="rotate" values="0;90" dur="1s"/></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="r" width="5" height="5"/><defs><animateTransform xlink:href="#r" attributeName="transform" type="rotate" values="0;90" dur="1s"/></defs></svg>',
+        ];
+
+        yield 'Keeps a discard in defs that targets another element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r" width="5" height="5"/><defs><discard href="#r" begin="1s"/></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r" width="5" height="5"/><defs><discard href="#r" begin="1s"/></defs></svg>',
+        ];
+
+        yield 'Keeps a group in defs that contains an animation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r" width="5" height="5"/><defs><g><animate href="#r" attributeName="x" to="5" dur="1s"/></g></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r" width="5" height="5"/><defs><g><animate href="#r" attributeName="x" to="5" dur="1s"/></g></defs></svg>',
+        ];
+
         yield 'Keeps definitions when a style sheet depends on child positions' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:first-child{fill:red}</style><g><defs><path d="M0 0"/></defs><rect/></g></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:first-child{fill:red}</style><g><defs><path d="M0 0"/></defs><rect/></g></svg>',
