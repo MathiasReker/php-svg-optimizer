@@ -57,6 +57,51 @@ final class FlattenGroupsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps a transformed group whose child is referenced by a use element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 0)"><rect id="r" width="5" height="5"/></g><use href="#r" y="20"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 0)"><rect id="r" width="5" height="5"/></g><use href="#r" y="20"/></svg>',
+        ];
+
+        yield 'Keeps a filled group whose descendant is referenced by a use element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g fill="red"><g><rect xml:id="r" width="5" height="5"/></g></g><use xlink:href="#r" y="20"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g fill="red"><rect xml:id="r" width="5" height="5"/></g><use xlink:href="#r" y="20"/></svg>',
+        ];
+
+        yield 'Keeps a transformed group whose path is referenced by a textPath' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><path id="p" d="M0 10h50"/></g><text><textPath href="#p">a</textPath></text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><path id="p" d="M0 10h50"/></g><text><textPath href="#p">a</textPath></text></svg>',
+        ];
+
+        yield 'Keeps a group whose child is referenced by a SMIL timing value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><rect id="r" width="5" height="5"/></g><use href="#q"/><set attributeName="x" to="1" begin="r.click"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><rect id="r" width="5" height="5"/></g><use href="#q"/><set attributeName="x" to="1" begin="r.click"/></svg>',
+        ];
+
+        yield 'Flattens a group without attributes whose child is referenced' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><rect id="r" width="5" height="5"/></g><use href="#r" y="20"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r" width="5" height="5"/><use href="#r" y="20"/></svg>',
+        ];
+
+        yield 'Keeps a group whose descendant animates an inherited property' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><rect width="5" height="5"><set attributeName="fill" to="inherit"/></rect></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><rect width="5" height="5"><set attributeName="fill" to="inherit"/></rect></g></svg>',
+        ];
+
+        yield 'Keeps a group whose grandchild animates to an inherited value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><text>a<tspan>b<animate attributeName="fill" values="blue;Inherit" dur="1s"/></tspan></text></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><text>a<tspan>b<animate attributeName="fill" values="blue;Inherit" dur="1s"/></tspan></text></g></svg>',
+        ];
+
+        yield 'Keeps a group with a title' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><title>Box</title><rect width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><title>Box</title><rect width="5" height="5"/></g></svg>',
+        ];
+
+        yield 'Keeps a group with a desc' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><desc>Box</desc><rect width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><desc>Box</desc><rect width="5" height="5"/></g></svg>',
+        ];
+
         yield 'Does not apply the group transform to a clipPath child' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(10)"><clipPath id="c"><rect width="5" height="5"/></clipPath><rect clip-path="url(#c)" width="5" height="5"/></g></g></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><clipPath id="c"><rect width="5" height="5"/></clipPath><rect clip-path="url(#c)" width="5" height="5" transform="translate(10)"/></svg>',

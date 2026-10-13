@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
@@ -54,6 +55,43 @@ trait IdReferenceTrait
         }
 
         return $referencedIds;
+    }
+
+    /**
+     * @param \DOMElement         $domElement    the element to check
+     * @param array<string, true> $referencedIds the referenced ids
+     *
+     * @return bool true if the `id` or `xml:id` of the element is referenced
+     */
+    private function isReferencedElement(\DOMElement $domElement, array $referencedIds): bool
+    {
+        $ids = [
+            $domElement->getAttribute(SvgAttribute::Id->value) => true,
+            $domElement->getAttributeNS(SvgNamespace::Xml->value, SvgAttribute::Id->value) => true,
+        ];
+        unset($ids['']);
+
+        return [] !== array_intersect_key($ids, $referencedIds);
+    }
+
+    /**
+     * @param \DOMElement         $domElement    the root of the subtree to check
+     * @param array<string, true> $referencedIds the referenced ids
+     * @param list<string>        $ignoredTags   the elements whose content inherits from their own ancestors
+     *
+     * @return bool true if the element or a descendant other than the ignored elements is referenced by id
+     */
+    private function hasReferencedElement(\DOMElement $domElement, array $referencedIds, array $ignoredTags): bool
+    {
+        foreach ([$domElement, ...$domElement->getElementsByTagName('*')] as $element) {
+            if (!\in_array($element->localName, $ignoredTags, true)
+                && $this->isReferencedElement($element, $referencedIds)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

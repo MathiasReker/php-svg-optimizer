@@ -16,6 +16,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ParentValueTrait;
 
 /**
  * @internal
@@ -25,6 +27,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 final readonly class FlattenGroups implements SvgOptimizerRuleInterface
 {
     use ElementTrait;
+    use IdReferenceTrait;
+    use ParentValueTrait;
 
     private const string XPATH_GROUP_ELEMENTS = '//svg:g';
 
@@ -77,14 +81,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         SvgAttribute::WritingMode->value,
     ];
 
-    private const array PARENT_RELATIVE_ATTRIBUTES = [
-        SvgAttribute::FontSize->value,
-        SvgAttribute::FontStretch->value,
-        SvgAttribute::FontWeight->value,
-    ];
-
-    private const string FONT_RELATIVE_UNIT_REGEX = '/[\d.](?:em|ex|ch)\b/i';
-
     private const array NON_RENDERED_TAGS = [
         SvgTag::ClipPath->value,
         SvgTag::Defs->value,
@@ -95,6 +91,21 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         SvgTag::Pattern->value,
         SvgTag::RadialGradient->value,
         SvgTag::Symbol->value,
+    ];
+
+    private const array ANCESTOR_INHERITING_TAGS = [
+        SvgTag::ClipPath->value,
+        SvgTag::Filter->value,
+        SvgTag::LinearGradient->value,
+        SvgTag::Marker->value,
+        SvgTag::Mask->value,
+        SvgTag::Pattern->value,
+        SvgTag::RadialGradient->value,
+    ];
+
+    private const array DESCRIPTIVE_TAGS = [
+        SvgTag::Desc->value,
+        SvgTag::Title->value,
     ];
 
     #[\Override]
@@ -125,11 +136,14 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         /** @var \DOMNodeList<\DOMElement> $domElementList */
         $domElementList = $domXPath->query(self::XPATH_GROUP_ELEMENTS);
         $transformBlockingElements = $this->transformBlockingElements($domDocument, $domXPath);
+        $referencedIds = $this->collectReferencedIds($domDocument);
 
         foreach ($domElementList as $domElement) {
             $parentNode = $domElement->parentNode;
 
-            if (!$parentNode instanceof \DOMElement || !$this->canFlatten($domElement, $parentNode, $transformBlockingElements)) {
+            if (!$parentNode instanceof \DOMElement
+                || !$this->canFlatten($domElement, $parentNode, $transformBlockingElements, $referencedIds)
+            ) {
                 continue;
             }
 
@@ -139,12 +153,17 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * @param \DOMElement       $domElement                the group element
-     * @param \DOMElement       $parentNode                the parent of the group element
-     * @param list<\DOMElement> $transformBlockingElements the elements that a group transform cannot move onto
+     * @param \DOMElement         $domElement                the group element
+     * @param \DOMElement         $parentNode                the parent of the group element
+     * @param list<\DOMElement>   $transformBlockingElements the elements that a group transform cannot move onto
+     * @param array<string, true> $referencedIds             the ids referenced in the document
      */
-    private function canFlatten(\DOMElement $domElement, \DOMElement $parentNode, array $transformBlockingElements): bool
-    {
+    private function canFlatten(
+        \DOMElement $domElement,
+        \DOMElement $parentNode,
+        array $transformBlockingElements,
+        array $referencedIds,
+    ): bool {
         if (SvgTag::Switch->value === $parentNode->localName) {
             return false;
         }
@@ -162,7 +181,8 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
             }
         }
 
-        return true;
+        return !$domElement->hasAttributes()
+            || !$this->hasReferencedElement($domElement, $referencedIds, self::ANCESTOR_INHERITING_TAGS);
     }
 
     /**
@@ -181,11 +201,9 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
      */
     private function dependsOnGroup(\DOMElement $domElement, \DOMElement $child, array $transformBlockingElements): bool
     {
-        if (\in_array(mb_strtolower($child->localName ?? ''), SvgTag::animation(), true)) {
-            return true;
-        }
-
-        if (str_contains(mb_strtolower($child->getAttribute(SvgAttribute::Style->value)), self::INHERIT_KEYWORD)) {
+        if (\in_array(mb_strtolower($child->localName ?? ''), [...SvgTag::animation(), ...self::DESCRIPTIVE_TAGS], true)
+            || $this->usesInheritValue($child)
+        ) {
             return true;
         }
 
@@ -193,7 +211,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
             return true;
         }
 
-        return $this->dependsOnGroupFont($domElement, $child);
+        return $this->dependsOnParentFont($domElement, $child);
     }
 
     /**
@@ -208,34 +226,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         $domNodeList = $domXPath->query(self::XPATH_TRANSFORM_BLOCKING_ELEMENTS);
 
         return [...iterator_to_array($domNodeList, false), ...$this->animationTargets($domDocument)];
-    }
-
-    /**
-     * @param \DOMElement $domElement the group element
-     * @param \DOMElement $child      the child element
-     */
-    private function dependsOnGroupFont(\DOMElement $domElement, \DOMElement $child): bool
-    {
-        foreach (self::PARENT_RELATIVE_ATTRIBUTES as $attributeName) {
-            if ($domElement->hasAttribute($attributeName) && $child->hasAttribute($attributeName)) {
-                return true;
-            }
-        }
-
-        if (!$child->hasAttribute(SvgAttribute::FontSize->value)
-            && !str_contains(mb_strtolower($child->getAttribute(SvgAttribute::Style->value)), SvgAttribute::FontSize->value)
-        ) {
-            return false;
-        }
-
-        /** @var \DOMAttr $attribute */
-        foreach ($domElement->attributes as $attribute) {
-            if (1 === preg_match(self::FONT_RELATIVE_UNIT_REGEX, $attribute->value)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
