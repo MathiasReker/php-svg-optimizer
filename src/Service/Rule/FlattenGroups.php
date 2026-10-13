@@ -211,7 +211,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
             return true;
         }
 
-        return $this->dependsOnParentFont($domElement, $child);
+        return $this->dependsOnParentTransform($domElement, $child) || $this->dependsOnParentFont($domElement, $child);
     }
 
     /**

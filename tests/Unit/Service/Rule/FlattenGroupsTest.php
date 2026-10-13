@@ -622,6 +622,76 @@ final class FlattenGroupsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path transform="scale(2)" d="M0 0h1"/></svg>',
         ];
 
+        yield 'Keeps transformed group when the child style sets a transform' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10 0)"><rect width="5" height="5" style="transform:rotate(45deg)"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10 0)"><rect width="5" height="5" style="transform:rotate(45deg)"/></g></svg>',
+        ];
+
+        yield 'Keeps transformed group when the child style sets a prefixed transform' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10 0)"><rect width="5" height="5" style="fill:red; -webkit-transform : rotate(45deg)"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10 0)"><rect width="5" height="5" style="fill:red; -webkit-transform : rotate(45deg)"/></g></svg>',
+        ];
+
+        yield 'Keeps transformed group when the child style sets an individual transform property' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10 0)"><rect width="5" height="5" style="rotate:45deg"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10 0)"><rect width="5" height="5" style="rotate:45deg"/></g></svg>',
+        ];
+
+        yield 'Keeps transformed group when the child has a transform-origin' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><rect width="5" height="5" transform="rotate(45)" transform-origin="50 50"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><rect width="5" height="5" transform="rotate(45)" transform-origin="50 50"/></g></svg>',
+        ];
+
+        yield 'Keeps transformed group when the child has a transform-box' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><rect width="5" height="5" transform-box="fill-box"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><rect width="5" height="5" transform-box="fill-box"/></g></svg>',
+        ];
+
+        yield 'Keeps transformed group when the child style sets a transform-origin' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><rect width="5" height="5" style="transform-origin:50px 50px"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><rect width="5" height="5" style="transform-origin:50px 50px"/></g></svg>',
+        ];
+
+        yield 'Flattens group without a transform when the child has a transform-origin' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><rect width="5" height="5" transform-origin="50 50"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="5" height="5" transform-origin="50 50" fill="red"/></svg>',
+        ];
+
+        yield 'Flattens transformed group when the child style sets an unrelated property' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><rect width="5" height="5" style="stroke-transform:x"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="5" height="5" style="stroke-transform:x" transform="scale(2)"/></svg>',
+        ];
+
+        yield 'Keeps group with a relative font-weight when the child style sets its font-weight' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g font-weight="bolder"><text style="font-weight:bolder">a</text></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g font-weight="bolder"><text style="font-weight:bolder">a</text></g></svg>',
+        ];
+
+        yield 'Keeps group with a percentage font-size when the child style sets its font-size' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g font-size="200%"><text style="font-size:50%">a</text></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g font-size="200%"><text style="font-size:50%">a</text></g></svg>',
+        ];
+
+        yield 'Keeps group with a larger font-size when the child style sets a smaller font-size' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g font-size="larger"><text style="font-size:smaller">a</text></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g font-size="larger"><text style="font-size:smaller">a</text></g></svg>',
+        ];
+
+        yield 'Keeps group with a font-stretch when the child style sets the font shorthand' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g font-stretch="wider"><text style="font:condensed 10px serif">a</text></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g font-stretch="wider"><text style="font:condensed 10px serif">a</text></g></svg>',
+        ];
+
+        yield 'Keeps group with a font-relative value when the child style sets the font shorthand' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g stroke-width="1em"><text style="font:40px serif">a</text></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g stroke-width="1em"><text style="font:40px serif">a</text></g></svg>',
+        ];
+
+        yield 'Flattens group with a font-relative value when the child style sets another font property' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g stroke-width="1em"><text style="font-family:serif">a</text></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:serif" stroke-width="1em">a</text></svg>',
+        ];
+
         yield 'Keeps group with a namespaced attribute' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a"><g a:fill="red"><g><rect width="10" height="10"/></g></g></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a"><g a:fill="red"><rect width="10" height="10"/></g></svg>',
