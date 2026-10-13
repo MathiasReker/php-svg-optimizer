@@ -67,6 +67,21 @@ final class MinifySvgCoordinatesTest extends TestCase
                 XML,
         ];
 
+        yield 'Keeps a value with a non-ASCII character unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1.0é" height="5.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1.0&#xE9;" height="5"/></svg>',
+        ];
+
+        yield 'Keeps path data with a non-ASCII character unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1.0 2.0é L3 4"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1.0 2.0&#xE9; L3 4"/></svg>',
+        ];
+
+        yield 'Keeps points with a non-ASCII character unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="1.0,2.0 é 3.0,4.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="1.0,2.0 &#xE9; 3.0,4.0"/></svg>',
+        ];
+
         yield 'Optimize Rect Coordinates' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">

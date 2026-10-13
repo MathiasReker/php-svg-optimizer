@@ -39,6 +39,8 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
 
     private const string PATH_COMMAND_LETTER_REGEX = '/^[MmLlHhVvCcSsQqTtAaZz]$/';
 
+    private const string NON_ASCII_REGEX = '/[^\x00-\x7F]/';
+
     private const int ARC_ARGUMENT_COUNT = 7;
 
     private const array ARC_FLAG_POSITIONS = [3, 4];
@@ -130,6 +132,10 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
      */
     private function minifyCoordinates(string $value, bool $isPathData): string
     {
+        if (1 === preg_match(self::NON_ASCII_REGEX, $value)) {
+            return $value;
+        }
+
         $tokens = $this->tokenize($value, $isPathData);
 
         if ([] === $tokens) {
