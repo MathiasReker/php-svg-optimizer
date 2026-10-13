@@ -31,7 +31,8 @@ trait TextWhitespaceTrait
 
     private const string SPACE_PRESERVE = 'preserve';
 
-    private const string RENDERED_TEXT_QUERY = '//*[local-name() = "text"]//text()';
+    private const string RENDERED_TEXT_QUERY
+        = '//*[local-name() = "text" and (namespace-uri() = "http://www.w3.org/2000/svg" or namespace-uri() = "")]//text()';
 
     private const string COLLAPSIBLE_WHITESPACE_REGEX = '/[\n\r]*[\t ][\t\n\r ]*/';
 
@@ -168,7 +169,7 @@ trait TextWhitespaceTrait
     private function rendersAsSpace(\DOMDocument $domDocument, \DOMText $domText): bool
     {
         for ($node = $domText->parentNode; $node instanceof \DOMElement; $node = $node->parentNode) {
-            if (SvgTag::Text->value === $node->localName) {
+            if (SvgTag::Text->value === $node->localName && \in_array($node->namespaceURI, [null, SvgNamespace::Svg->value], true)) {
                 return $this->preservesSpace($domText) || $this->isBetweenText($domDocument, $domText, $node);
             }
         }

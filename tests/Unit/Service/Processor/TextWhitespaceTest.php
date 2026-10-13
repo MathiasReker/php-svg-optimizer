@@ -135,6 +135,11 @@ final class TextWhitespaceTest extends TestCase
             "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>.a\n.b{fill:red}</style><g class=\"a\"><rect class=\"b\"/></g></svg>",
         ];
 
+        yield 'Keeps whitespace in a text element of another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><x:text>a   b</x:text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><x:text>a   b</x:text></svg>',
+        ];
+
         yield 'Keeps whitespace in elements that are not rendered as text' => [
             "<svg xmlns=\"http://www.w3.org/2000/svg\"><title>a\n  b</title><desc>c\t d</desc></svg>",
             "<svg xmlns=\"http://www.w3.org/2000/svg\"><title>a\n  b</title><desc>c\t d</desc></svg>",
