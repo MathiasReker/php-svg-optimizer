@@ -49,7 +49,7 @@ final readonly class SvgFileProcessor
     {
         if (is_dir($path)) {
             $this->processDirectory($path);
-        } elseif (is_file($path) && SvgTag::Svg->value === pathinfo($path, \PATHINFO_EXTENSION)) {
+        } elseif (is_file($path) && SvgTag::Svg->value === mb_strtolower(pathinfo($path, \PATHINFO_EXTENSION))) {
             $this->optimizeSvg($path);
         } else {
             $this->outputManager->printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));

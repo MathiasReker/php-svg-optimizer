@@ -269,6 +269,32 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \ValueError
      */
     #[Test]
+    public function processFileWithUppercaseExtension(): void
+    {
+        $uppercaseFile = $this->tempDir . '/upper.SVG';
+        file_put_contents($uppercaseFile, '<svg><!-- comment --><rect width="10" height="10"></rect></svg>');
+
+        $svgFileProcessor = new SvgFileProcessor(
+            new CommandOption(false, '{"removeComments":true}', false, false),
+            $this->outputManager,
+            $this->metaDataAggregator
+        );
+
+        $svgFileProcessor->processPath($uppercaseFile);
+
+        self::assertSame(1, $this->metaDataAggregator->getOptimizedFileCount());
+        self::assertStringNotContainsString('Error: ', $this->memoryStream->getContent());
+        self::assertStringNotContainsString('<!--', (string) file_get_contents($uppercaseFile));
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \LogicException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \RuntimeException
+     * @throws \ValueError
+     */
+    #[Test]
     public function processWithRiskyRulesAllowed(): void
     {
         $commandOption = new CommandOption(
