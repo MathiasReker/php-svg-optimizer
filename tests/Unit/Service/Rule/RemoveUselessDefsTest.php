@@ -55,6 +55,16 @@ final class RemoveUselessDefsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps a definition containing a style sheet' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><g><style>rect{fill:red}</style></g><g><path d="M0 0"/></g></defs><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><g><style>rect{fill:red}</style></g></defs><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'Keeps a reference-only element containing a style sheet' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><symbol><style>rect{fill:red}</style></symbol><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><symbol><style>rect{fill:red}</style></symbol><rect width="5" height="5"/></svg>',
+        ];
+
         yield 'Removes definitions without an id' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><defs><linearGradient><stop offset="0"/></linearGradient><path d="M0 0"/></defs><rect/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',

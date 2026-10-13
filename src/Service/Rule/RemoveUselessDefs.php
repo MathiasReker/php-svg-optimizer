@@ -71,6 +71,20 @@ final readonly class RemoveUselessDefs implements SvgOptimizerRuleInterface
         $isCandidate = \in_array($localName, self::REFERENCE_ONLY_TAGS, true)
             || ($isDefsChild && !\in_array($localName, self::DEFS_EFFECTIVE_TAGS, true));
 
-        return $isCandidate && !$this->hasIdInSubtree($domElement);
+        return $isCandidate && !$this->hasIdInSubtree($domElement) && !$this->hasEffectiveDescendant($domElement);
+    }
+
+    /**
+     * @param \DOMElement $domElement the element to check
+     */
+    private function hasEffectiveDescendant(\DOMElement $domElement): bool
+    {
+        foreach ($domElement->getElementsByTagName('*') as $domNodeList) {
+            if (\in_array($domNodeList->localName, self::DEFS_EFFECTIVE_TAGS, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

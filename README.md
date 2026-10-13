@@ -872,8 +872,9 @@ $svgOptimizer->removeUnusedNamespaces();
 ### `removeUselessDefs`
 
 Removes definitions that can never be used because neither they nor any descendant has an `id`: children of
-`<defs>` (except `<style>`, `<script>` and fonts), and gradients, patterns, clip paths, masks, markers, symbols and
-filters anywhere in the document. A `<defs>` left empty is removed as well.
+`<defs>`, and gradients, patterns, clip paths, masks, markers, symbols and filters anywhere in the document. Definitions
+that are or contain a `<style>`, a `<script>` or a font are kept, as these take effect anywhere. A `<defs>` left empty
+is removed as well.
 
 ```php
 $svgOptimizer->removeUselessDefs();
