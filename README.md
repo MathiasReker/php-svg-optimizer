@@ -454,7 +454,7 @@ when the other form is shorter (for example `#ff0000` becomes `red` and `white` 
 `transparent`, `none` and `url()` references are left as they are.
 
 ```php
-$svgOptimizer->convertColorsToHex();
+$svgOptimizer->withRules(convertColorsToHex: true);
 ```
 
 ---
@@ -464,7 +464,7 @@ $svgOptimizer->convertColorsToHex();
 Replaces CSS class-based styling with equivalent inline SVG attributes on each affected element.
 
 ```php
-$svgOptimizer->convertCssClassesToAttributes();
+$svgOptimizer->withRules(convertCssClassesToAttributes: true);
 ```
 
 ---
@@ -476,7 +476,7 @@ copied as written, so no value is recalculated. Ellipses with child elements, a 
 with a `<style>` element are kept.
 
 ```php
-$svgOptimizer->convertEllipseToCircle();
+$svgOptimizer->withRules(convertEllipseToCircle: true);
 ```
 
 ---
@@ -487,7 +487,7 @@ Converts elements without child nodes into self-closing tags. This simplifies th
 unnecessary characters, resulting in cleaner and more compact SVG output without affecting rendering.
 
 ```php
-$svgOptimizer->convertEmptyTagsToSelfClosing();
+$svgOptimizer->withRules(convertEmptyTagsToSelfClosing: true);
 ```
 
 ---
@@ -499,7 +499,7 @@ presentation attributes. This improves compatibility with SVG renderers and tool
 styling, and makes attribute-level optimizations more effective downstream.
 
 ```php
-$svgOptimizer->convertInlineStylesToAttributes();
+$svgOptimizer->withRules(convertInlineStylesToAttributes: true);
 ```
 
 ---
@@ -513,7 +513,7 @@ bounding box units is only replaced on rects, circles and ellipses, as it is not
 line.
 
 ```php
-$svgOptimizer->convertOneStopGradients();
+$svgOptimizer->withRules(convertOneStopGradients: true);
 ```
 
 ---
@@ -527,7 +527,7 @@ coordinates, shapes with child elements or a `style` attribute, and documents wi
 are kept as they are.
 
 ```php
-$svgOptimizer->convertShapesToPath();
+$svgOptimizer->withRules(convertShapesToPath: true);
 ```
 
 ---
@@ -540,7 +540,7 @@ improves standards compliance, avoids duplicate or conflicting attributes, and e
 different SVG sources and editors.
 
 ```php
-$svgOptimizer->fixAttributeNames();
+$svgOptimizer->withRules(fixAttributeNames: true);
 ```
 
 ---
@@ -551,7 +551,7 @@ Removes unnecessary nested `<g>` (group) elements by moving their child elements
 reduces DOM depth, simplifies the SVG structure, and can marginally reduce file size while preserving visual output.
 
 ```php
-$svgOptimizer->flattenGroups();
+$svgOptimizer->withRules(flattenGroups: true);
 ```
 
 ---
@@ -563,7 +563,7 @@ numeric animations. Numbers are shortened without rounding and lists use the few
 Values with units, percentages or keywords are left untouched.
 
 ```php
-$svgOptimizer->minifyListValues();
+$svgOptimizer->withRules(minifyListValues: true);
 ```
 
 ---
@@ -577,7 +577,7 @@ on `<fePointLight>`), and integer attributes such as `numOctaves` are only short
 Only the notation changes; values are never rounded.
 
 ```php
-$svgOptimizer->minifyNumericValues();
+$svgOptimizer->withRules(minifyNumericValues: true);
 ```
 
 ---
@@ -589,7 +589,7 @@ dropped, number literals are shortened, and relative linetos along one axis beco
 recalculated or rounded, and path data that is not valid is left untouched.
 
 ```php
-$svgOptimizer->minifyPathData();
+$svgOptimizer->withRules(minifyPathData: true);
 ```
 
 ---
@@ -602,7 +602,7 @@ and a separator is kept wherever two numbers would otherwise merge. Values that 
 untouched.
 
 ```php
-$svgOptimizer->minifySvgCoordinates();
+$svgOptimizer->withRules(minifySvgCoordinates: true);
 ```
 
 ---
@@ -617,7 +617,7 @@ only translates or scales is written as `translate()` or `scale()`. An identity 
 would inherit the transform of the referenced element. Values that do not parse as a transform list are left untouched.
 
 ```php
-$svgOptimizer->minifyTransformations();
+$svgOptimizer->withRules(minifyTransformations: true);
 ```
 
 ---
@@ -629,7 +629,7 @@ size and avoids redundant accessibility metadata when SVGs are not intended to b
 technologies.
 
 ```php
-$svgOptimizer->removeAriaAndRole();
+$svgOptimizer->withRules(removeAriaAndRole: true);
 ```
 
 ---
@@ -640,7 +640,7 @@ Deletes all non-essential XML comments from the SVG document, excluding legally 
 eliminates developer notes and editor artifacts that do not affect rendering, reducing file size.
 
 ```php
-$svgOptimizer->removeComments();
+$svgOptimizer->withRules(removeComments: true);
 ```
 
 ---
@@ -652,7 +652,7 @@ scripting hooks; removing them can significantly reduce file size but may break 
 relies on them.
 
 ```php
-$svgOptimizer->removeDataAttributes();
+$svgOptimizer->withRules(removeDataAttributes: true)->allowRisky();
 ```
 
 ---
@@ -663,7 +663,7 @@ Eliminates attributes whose values match SVG specification defaults and therefor
 redundant information, this rule reduces clutter and minimizes output size while preserving visual correctness.
 
 ```php
-$svgOptimizer->removeDefaultAttributes();
+$svgOptimizer->withRules(removeDefaultAttributes: true);
 ```
 
 ---
@@ -674,7 +674,7 @@ Removes attributes that are deprecated or obsolete according to modern SVG speci
 output, improves forward compatibility, and reduces reliance on legacy behavior.
 
 ```php
-$svgOptimizer->removeDeprecatedAttributes();
+$svgOptimizer->withRules(removeDeprecatedAttributes: true);
 ```
 
 ---
@@ -685,7 +685,7 @@ Removes the `<!DOCTYPE>` declaration from the SVG document. This is typically un
 embedded in HTML and slightly reduces file size.
 
 ```php
-$svgOptimizer->removeDoctype();
+$svgOptimizer->withRules(removeDoctype: true);
 ```
 
 ---
@@ -698,7 +698,7 @@ style sheet uses sibling combinators or structural pseudo-classes (such as `g + 
 depend on the surrounding elements.
 
 ```php
-$svgOptimizer->removeDuplicateElements();
+$svgOptimizer->withRules(removeDuplicateElements: true);
 ```
 
 ---
@@ -711,7 +711,7 @@ safely be removed to produce cleaner output. Empty conditional processing attrib
 SVG namespace, such as `<foreignObject>` content, are kept.
 
 ```php
-$svgOptimizer->removeEmptyAttributes();
+$svgOptimizer->withRules(removeEmptyAttributes: true);
 ```
 
 ---
@@ -724,7 +724,7 @@ Removes container elements such as `<defs>`, `<g>`, `<symbol>`, `<mask>`, `<clip
 structural pseudo-classes (such as `g + rect` or `:nth-child()`), whose matches depend on the surrounding elements.
 
 ```php
-$svgOptimizer->removeEmptyContainers();
+$svgOptimizer->withRules(removeEmptyContainers: true);
 ```
 
 ---
@@ -738,7 +738,7 @@ when a style sheet uses sibling combinators or structural pseudo-classes (such a
 matches depend on the surrounding elements.
 
 ```php
-$svgOptimizer->removeEmptyGroups();
+$svgOptimizer->withRules(removeEmptyGroups: true);
 ```
 
 ---
@@ -750,7 +750,7 @@ elements have no visual impact and can safely be eliminated to reduce file size.
 since their whitespace may render as a space between the surrounding text.
 
 ```php
-$svgOptimizer->removeEmptyTextElements();
+$svgOptimizer->withRules(removeEmptyTextElements: true);
 ```
 
 ---
@@ -762,7 +762,7 @@ affect certain filters or compositing behaviors. Removing it may improve perform
 rendering in advanced use cases.
 
 ```php
-$svgOptimizer->removeEnableBackgroundAttribute();
+$svgOptimizer->withRules(removeEnableBackgroundAttribute: true)->allowRisky();
 ```
 
 ---
@@ -774,7 +774,7 @@ rendering. This covers Inkscape, Sodipodi, Adobe Illustrator, Sketch, Serif and 
 URI, including Illustrator's private data in a `<foreignObject>` that requires an Illustrator extension.
 
 ```php
-$svgOptimizer->removeInkscapeFootprints();
+$svgOptimizer->withRules(removeInkscapeFootprints: true);
 ```
 
 ---
@@ -785,7 +785,7 @@ Removes invisible or non-printable Unicode characters, such as zero-width spaces
 files. This prevents subtle rendering or parsing issues and ensures clean textual content.
 
 ```php
-$svgOptimizer->removeInvisibleCharacters();
+$svgOptimizer->withRules(removeInvisibleCharacters: true);
 ```
 
 ---
@@ -796,7 +796,7 @@ Deletes `<metadata>` elements, which often contain authoring information, editor
 required for rendering. This reduces file size and removes non-essential content.
 
 ```php
-$svgOptimizer->removeMetadata();
+$svgOptimizer->withRules(removeMetadata: true);
 ```
 
 ---
@@ -814,7 +814,7 @@ other namespace are removed. `data-*` attributes are kept when their name is val
 and the content of a `<foreignObject>`, such as XHTML, are left untouched.
 
 ```php
-$svgOptimizer->removeNonStandardAttributes();
+$svgOptimizer->withRules(removeNonStandardAttributes: true);
 ```
 
 ---
@@ -826,7 +826,7 @@ This is useful for cleaning up SVGs that may contain unknown elements. Elements 
 does not render, and the content of a `<foreignObject>`, such as XHTML, are left untouched.
 
 ```php
-$svgOptimizer->removeNonStandardTags();
+$svgOptimizer->withRules(removeNonStandardTags: true);
 ```
 
 ---
@@ -837,7 +837,7 @@ Removes the `type` attribute of `<style>` when it is `text/css` and of `<script>
 as these are the defaults. Other values, such as `module`, are kept.
 
 ```php
-$svgOptimizer->removeStyleTypeAttributes();
+$svgOptimizer->withRules(removeStyleTypeAttributes: true);
 ```
 
 ---
@@ -849,7 +849,7 @@ are optional in many contexts. Removing them reduces file size but should only b
 not required.
 
 ```php
-$svgOptimizer->removeTitleAndDesc();
+$svgOptimizer->withRules(removeTitleAndDesc: true);
 ```
 
 ---
@@ -860,7 +860,7 @@ Collapses or removes redundant whitespace such as extra spaces, tabs, and line b
 output while preserving semantic structure and rendering.
 
 ```php
-$svgOptimizer->removeUnnecessaryWhitespace();
+$svgOptimizer->withRules(removeUnnecessaryWhitespace: true);
 ```
 
 ---
@@ -871,7 +871,7 @@ Removes XML namespace declarations that are never referenced within the document
 reduces verbosity, and improves readability.
 
 ```php
-$svgOptimizer->removeUnusedNamespaces();
+$svgOptimizer->withRules(removeUnusedNamespaces: true);
 ```
 
 ---
@@ -884,7 +884,7 @@ that are or contain a `<style>`, a `<script>` or a font are kept, as these take 
 is removed as well.
 
 ```php
-$svgOptimizer->removeUselessDefs();
+$svgOptimizer->withRules(removeUselessDefs: true);
 ```
 
 ---
@@ -895,7 +895,7 @@ Removes the `width` and `height` attributes from the root `<svg>` element, relyi
 This enables responsive resizing but may break layouts that depend on fixed dimensions.
 
 ```php
-$svgOptimizer->removeWidthHeightAttributes();
+$svgOptimizer->withRules(removeWidthHeightAttributes: true)->allowRisky();
 ```
 
 ---
@@ -906,7 +906,7 @@ Removes `xml:space="default"` where it has no effect, that is, when no ancestor 
 CSS `white-space` could be affected by it.
 
 ```php
-$svgOptimizer->removeXmlSpaceDefault();
+$svgOptimizer->withRules(removeXmlSpaceDefault: true);
 ```
 
 ---
@@ -918,7 +918,7 @@ zero width or height, and paths, polylines and polygons without any data. Shapes
 `style` attribute, and documents with a `<style>` element, are kept.
 
 ```php
-$svgOptimizer->removeZeroSizeShapes();
+$svgOptimizer->withRules(removeZeroSizeShapes: true);
 ```
 
 ---
@@ -932,7 +932,7 @@ applications. It also removes processing instructions, comments that could break
 elements from non-SVG namespaces (such as XHTML or MathML), and animations that rewrite `href`.
 
 ```php
-$svgOptimizer->removeUnsafeElements();
+$svgOptimizer->withRules(removeUnsafeElements: true);
 ```
 
 ---
@@ -946,7 +946,7 @@ handler attribute, or an attribute selector that may match several ids (such as 
 CSS, JavaScript or links outside the SVG may target the removed ids.
 
 ```php
-$svgOptimizer->removeUnusedIds();
+$svgOptimizer->withRules(removeUnusedIds: true)->allowRisky();
 ```
 
 ---
@@ -957,7 +957,7 @@ Removes `<mask>` elements that are defined but never referenced by any element i
 and eliminates unused definitions without affecting rendering.
 
 ```php
-$svgOptimizer->removeUnusedMasks();
+$svgOptimizer->withRules(removeUnusedMasks: true);
 ```
 
 ---
@@ -974,7 +974,7 @@ Documents whose style sheets nest rules in at-rule blocks (such as `@media` or `
 untouched, as those rules cannot be rewritten.
 
 ```php
-$svgOptimizer->scopeSvgStyles();
+$svgOptimizer->withRules(scopeSvgStyles: true)->allowRisky();
 ```
 
 ---
@@ -985,7 +985,7 @@ Sorts element attributes alphabetically. This improves consistency, makes diffs 
 systems, and results in more deterministic SVG output across optimization runs.
 
 ```php
-$svgOptimizer->sortAttributes();
+$svgOptimizer->withRules(sortAttributes: true);
 ```
 
 ---
