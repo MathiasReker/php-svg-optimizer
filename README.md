@@ -567,7 +567,9 @@ $svgOptimizer->minifyListValues();
 
 Shortens the notation of single-number attribute values such as `opacity`, `stroke-width`, `x` or `font-size`:
 leading and trailing zeros and a `+` sign are dropped, and `px` is removed from lengths, as one pixel equals one user
-unit. Only the notation changes; values are never rounded.
+unit. `px` is kept where the attribute is a plain number on that element (such as `dx`/`dy` on `<feOffset>` or `x`/`y`
+on `<fePointLight>`), and integer attributes such as `numOctaves` are only shortened when written as plain integers.
+Only the notation changes; values are never rounded.
 
 ```php
 $svgOptimizer->minifyNumericValues();

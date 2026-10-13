@@ -31,14 +31,25 @@ final readonly class MinifyNumericValues implements SvgOptimizerRuleInterface
 
     private const array NUMBER_ATTRIBUTES = [
         'amplitude', 'azimuth', 'diffuseConstant', 'elevation', 'exponent', 'fill-opacity', 'flood-opacity',
-        'intercept', 'k', 'k1', 'k2', 'k3', 'k4', 'limitingConeAngle', 'numOctaves', 'offset', 'opacity',
+        'intercept', 'k', 'k1', 'k2', 'k3', 'k4', 'limitingConeAngle', 'offset', 'opacity',
         'pathLength', 'pointsAtX', 'pointsAtY', 'pointsAtZ', 'scale', 'seed', 'slope', 'specularConstant',
         'specularExponent', 'stop-opacity', 'stroke-miterlimit', 'stroke-opacity', 'surfaceScale', 'z',
+    ];
+
+    private const array INTEGER_ATTRIBUTES = ['numOctaves'];
+
+    private const array NUMBER_ATTRIBUTES_BY_ELEMENT = [
+        'dx' => ['feDropShadow', 'feOffset'],
+        'dy' => ['feDropShadow', 'feOffset'],
+        'x' => ['fePointLight', 'feSpotLight'],
+        'y' => ['fePointLight', 'feSpotLight'],
     ];
 
     private const string LENGTH_REGEX = '/^\s*(' . self::NUMBER_PATTERN . ')(?:px)?\s*$/';
 
     private const string NUMBER_REGEX = '/^\s*(' . self::NUMBER_PATTERN . ')\s*$/';
+
+    private const string INTEGER_REGEX = '/^\s*(-?\d+)\s*$/';
 
     #[\Override]
     public static function isRisky(): bool
@@ -60,28 +71,42 @@ final readonly class MinifyNumericValues implements SvgOptimizerRuleInterface
     {
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
             foreach (iterator_to_array($domNodeList->attributes, false) as $domAttr) {
-                $this->minifyAttribute($domAttr);
+                $this->minifyAttribute($domNodeList->localName ?? '', $domAttr);
             }
         }
     }
 
     /**
+     * @param string   $element the local name of the element holding the attribute
      * @param \DOMAttr $domAttr the attribute to minify
      */
-    private function minifyAttribute(\DOMAttr $domAttr): void
+    private function minifyAttribute(string $element, \DOMAttr $domAttr): void
     {
         if (null !== $domAttr->namespaceURI) {
             return;
         }
 
-        $regex = match (true) {
-            \in_array($domAttr->name, self::LENGTH_ATTRIBUTES, true) => self::LENGTH_REGEX,
-            \in_array($domAttr->name, self::NUMBER_ATTRIBUTES, true) => self::NUMBER_REGEX,
-            default => null,
-        };
+        $regex = $this->valueRegex($element, $domAttr->name);
 
-        if (null !== $regex && 1 === preg_match($regex, $domAttr->value, $matches)) {
+        if ('' !== $regex && 1 === preg_match($regex, $domAttr->value, $matches)) {
             $domAttr->value = $this->minifyNumber($matches[1]);
         }
+    }
+
+    /**
+     * @param string $element   the local name of the element holding the attribute
+     * @param string $attribute the attribute name
+     *
+     * @return string the regex matching a value that can be shortened, or an empty string if the attribute is not handled
+     */
+    private function valueRegex(string $element, string $attribute): string
+    {
+        return match (true) {
+            \in_array($element, self::NUMBER_ATTRIBUTES_BY_ELEMENT[$attribute] ?? [], true) => self::NUMBER_REGEX,
+            \in_array($attribute, self::LENGTH_ATTRIBUTES, true) => self::LENGTH_REGEX,
+            \in_array($attribute, self::NUMBER_ATTRIBUTES, true) => self::NUMBER_REGEX,
+            \in_array($attribute, self::INTEGER_ATTRIBUTES, true) => self::INTEGER_REGEX,
+            default => '',
+        };
     }
 }
