@@ -25,6 +25,10 @@ final readonly class ByteFormatter
      */
     public static function formatBytes(int $bytes): string
     {
+        if ($bytes < 0) {
+            return '-' . self::formatBytes(-$bytes);
+        }
+
         if ($bytes < 1_024) {
             return \sprintf('%d B', $bytes);
         }

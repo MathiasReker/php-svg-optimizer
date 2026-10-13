@@ -71,4 +71,12 @@ final class ByteFormatterTest extends TestCase
 
         self::assertSame('1024.00 TB', ByteFormatter::formatBytes($bytes));
     }
+
+    #[Test]
+    public function formatBytesKeepsTheSignOfNegativeValues(): void
+    {
+        self::assertSame('-500 B', ByteFormatter::formatBytes(-500));
+        self::assertSame('-4.88 KB', ByteFormatter::formatBytes(-5_000));
+        self::assertSame('-1.91 MB', ByteFormatter::formatBytes(-2_000_000));
+    }
 }
