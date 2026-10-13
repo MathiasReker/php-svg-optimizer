@@ -15,7 +15,6 @@ use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
@@ -34,7 +33,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
-#[CoversClass(XmlFormatter::class)]
 #[CoversClass(AbstractXmlProcessor::class)]
 final class RemoveUnnecessaryWhitespaceTest extends TestCase
 {
@@ -184,7 +182,7 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="10" y="10">   Preserve   This   </text><circle cx="50" cy="50" r="20" fill="red"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="10" y="10"> Preserve This </text><circle cx="50" cy="50" r="20" fill="red"/></svg>
                 XML,
         ];
 
@@ -261,7 +259,7 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="10" y="10">   Some   Text   Here   </text><circle cx="50" cy="50" r="20" fill="red"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="10" y="10"> Some Text Here </text><circle cx="50" cy="50" r="20" fill="red"/></svg>
                 XML,
         ];
 
@@ -314,9 +312,11 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                     ]]></script>
                 </svg>
                 XML,
-            <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><script>        console.log("This is a script");    </script></svg>
-                XML,
+            <<<'EOD'
+                <svg xmlns="http://www.w3.org/2000/svg"><script>
+                        console.log("This is a script");
+                    </script></svg>
+                EOD,
         ];
 
         yield 'Handles Mixed Content and Whitespace in SVG' => [
@@ -330,7 +330,7 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><text x="10" y="10">  Keep This Text   </text><g><circle cx="50" cy="50" r="25" fill="red"/><rect x="30" y="30" width="40" height="40" fill="green"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><text x="10" y="10"> Keep This Text </text><g><circle cx="50" cy="50" r="25" fill="red"/><rect x="30" y="30" width="40" height="40" fill="green"/></g></svg>
                 XML,
         ];
 
@@ -406,7 +406,7 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><text x="10" y="10">   Some   Text   </text></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><text x="10" y="10"> Some Text </text></svg>
                 XML,
         ];
 

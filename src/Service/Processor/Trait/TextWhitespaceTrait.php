@@ -23,7 +23,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  *
  * @no-named-arguments
  */
-trait BlankTextNodeTrait
+trait TextWhitespaceTrait
 {
     private const string BLANK_TEXT_QUERY = "//text()[normalize-space() = ''][string-length() > 0]";
 
@@ -34,6 +34,17 @@ trait BlankTextNodeTrait
     private const string SPACE_ATTRIBUTE = 'space';
 
     private const string SPACE_PRESERVE = 'preserve';
+
+    private const string RENDERED_TEXT_QUERY = '//*[local-name() = "text"]//text()';
+
+    /**
+     * A run of whitespace holding a space or a tab: browsers render any run as one space, and SVG 1.1 renderers drop
+     * line breaks and render the remaining spaces and tabs as one space. A run of line breaks only renders as a space
+     * in browsers and as nothing in SVG 1.1 renderers, so it is kept.
+     */
+    private const string COLLAPSIBLE_WHITESPACE_REGEX = '/[\n\r]*[\t ][\t\n\r ]*/';
+
+    private const string WHITE_SPACE_PROPERTY = 'white-space';
 
     /**
      * Collapses whitespace in text content and removes it elsewhere. CDATA sections are kept apart while parsing, so
@@ -58,6 +69,27 @@ trait BlankTextNodeTrait
         }
 
         $domDocument->documentElement?->normalize();
+    }
+
+    /**
+     * Collapses whitespace in the characters of `<text>` elements, such as the indentation of pretty-printed text. Text
+     * where `xml:space` is `preserve`, and documents that may set the `white-space` property, are left untouched.
+     *
+     * @param \DOMDocument $domDocument the parsed document
+     */
+    private function collapseTextContentWhitespace(\DOMDocument $domDocument): void
+    {
+        $markup = (string) $domDocument->saveXML($domDocument->documentElement);
+
+        if (str_contains(mb_strtolower($markup), self::WHITE_SPACE_PROPERTY)) {
+            return;
+        }
+
+        foreach ($this->textNodes($domDocument, $domDocument, self::RENDERED_TEXT_QUERY) as $domText) {
+            if (!$this->preservesSpace($domText)) {
+                $domText->data = (string) preg_replace(self::COLLAPSIBLE_WHITESPACE_REGEX, ' ', $domText->data);
+            }
+        }
     }
 
     /**

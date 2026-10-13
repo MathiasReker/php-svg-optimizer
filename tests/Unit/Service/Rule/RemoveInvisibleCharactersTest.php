@@ -15,7 +15,6 @@ use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
@@ -34,7 +33,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
-#[CoversClass(XmlFormatter::class)]
 #[CoversClass(AbstractXmlProcessor::class)]
 final class RemoveInvisibleCharactersTest extends TestCase
 {

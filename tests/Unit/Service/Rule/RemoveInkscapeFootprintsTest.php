@@ -15,7 +15,6 @@ use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
@@ -34,7 +33,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
-#[CoversClass(XmlFormatter::class)]
 #[CoversClass(AbstractXmlProcessor::class)]
 final class RemoveInkscapeFootprintsTest extends TestCase
 {
@@ -222,9 +220,11 @@ final class RemoveInkscapeFootprintsTest extends TestCase
                     <rect inkscape:label="rect" width="100" height="100"/>
                 </svg>
                 XML,
-            <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><script>        console.log("Hello Inkscape");    </script><rect width="100" height="100"/></svg>
-                XML,
+            <<<'EOD'
+                <svg xmlns="http://www.w3.org/2000/svg"><script>
+                        console.log("Hello Inkscape");
+                    </script><rect width="100" height="100"/></svg>
+                EOD,
         ];
 
         yield 'Handles elements with multiple attributes including inkscape and sodipodi' => [

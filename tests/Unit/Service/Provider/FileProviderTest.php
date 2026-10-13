@@ -15,7 +15,6 @@ use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
@@ -30,7 +29,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MetaData::class)]
 #[CoversClass(Metrics::class)]
 #[CoversClass(DomDocumentWrapper::class)]
-#[CoversClass(XmlFormatter::class)]
 final class FileProviderTest extends TestCase
 {
     private const string TEST_INPUT_FILE = 'input.svg';

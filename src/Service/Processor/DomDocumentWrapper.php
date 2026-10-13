@@ -12,8 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\BlankTextNodeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\TextWhitespaceTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
 use MathiasReker\PhpSvgOptimizer\Support\SvgDefaults;
 
@@ -24,8 +23,8 @@ use MathiasReker\PhpSvgOptimizer\Support\SvgDefaults;
  */
 final readonly class DomDocumentWrapper
 {
-    use BlankTextNodeTrait;
     use EntityReferenceTrait;
+    use TextWhitespaceTrait;
 
     /**
      * Only parser options belong here: a save option such as LIBXML_NOEMPTYTAG shares its value with the option that
@@ -56,7 +55,7 @@ final readonly class DomDocumentWrapper
             throw new XmlProcessingException('Failed to save XML content.');
         }
 
-        return XmlFormatter::removeLineFeedsAndTabs($this->saveStylesheetInstructions($domDocument) . $saveXML);
+        return $this->saveStylesheetInstructions($domDocument) . $saveXML;
     }
 
     /**
@@ -130,6 +129,7 @@ final readonly class DomDocumentWrapper
         $this->expandEntityReferences($domDocument);
         $domDocument = $this->resolveNamespaceEntityReferences($domDocument);
         $this->removeBlankTextNodes($domDocument);
+        $this->collapseTextContentWhitespace($domDocument);
 
         return $domDocument;
     }

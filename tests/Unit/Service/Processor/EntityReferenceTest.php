@@ -16,7 +16,6 @@ use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDoctype;
@@ -36,7 +35,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
-#[CoversClass(XmlFormatter::class)]
 final class EntityReferenceTest extends TestCase
 {
     /**

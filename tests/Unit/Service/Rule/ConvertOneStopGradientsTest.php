@@ -15,7 +15,6 @@ use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertOneStopGradients;
@@ -33,7 +32,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
-#[CoversClass(XmlFormatter::class)]
 final class ConvertOneStopGradientsTest extends TestCase
 {
     private const string SVG = '<svg xmlns="http://www.w3.org/2000/svg">';

@@ -23,7 +23,6 @@ use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
@@ -94,7 +93,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(FileProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
-#[CoversClass(XmlFormatter::class)]
 #[CoversClass(SvgOptimizerFacade::class)]
 #[CoversClass(Rule::class)]
 #[CoversClass(MetaData::class)]

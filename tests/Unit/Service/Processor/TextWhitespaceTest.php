@@ -15,7 +15,6 @@ use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
@@ -33,7 +32,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
-#[CoversClass(XmlFormatter::class)]
 final class TextWhitespaceTest extends TestCase
 {
     /**
@@ -98,6 +96,51 @@ final class TextWhitespaceTest extends TestCase
         yield 'Removes whitespace outside text' => [
             "<svg xmlns=\"http://www.w3.org/2000/svg\">\n  <g>\n    <rect width=\"1\"/>\n  </g>\n  <title> </title>\n  <tspan>A</tspan> <tspan>B</tspan>\n</svg>",
             '<svg xmlns="http://www.w3.org/2000/svg"><g><rect width="1"/></g><title></title><tspan>A</tspan><tspan>B</tspan></svg>',
+        ];
+
+        yield 'Collapses the indentation of pretty-printed text' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>\n    Hello\n    World\n  </text></svg>",
+            '<svg xmlns="http://www.w3.org/2000/svg"><text> Hello World </text></svg>',
+        ];
+
+        yield 'Collapses a tab to a space' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>a\t\tb</text></svg>",
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>a b</text></svg>',
+        ];
+
+        yield 'Keeps a line break without spaces, which renders differently in SVG 1.1' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>a\nb</text></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>a\nb</text></svg>",
+        ];
+
+        yield 'Keeps a carriage return written as a reference' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>a&#13;b</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>a&#13;b</text></svg>',
+        ];
+
+        yield 'Collapses whitespace in a merged CDATA section' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>a <![CDATA[x\n  y]]></text></svg>",
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>a x y</text></svg>',
+        ];
+
+        yield 'Keeps whitespace in text where xml:space is preserve' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><text xml:space=\"preserve\">a\n  b</text></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><text xml:space=\"preserve\">a\n  b</text></svg>",
+        ];
+
+        yield 'Keeps whitespace in text when the white-space property may be set' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>text{White-Space:pre}</style><text>a\n  b</text></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>text{White-Space:pre}</style><text>a\n  b</text></svg>",
+        ];
+
+        yield 'Keeps line breaks in style sheets, where they separate selectors' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>.a\n.b{fill:red}</style><g class=\"a\"><rect class=\"b\"/></g></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>.a\n.b{fill:red}</style><g class=\"a\"><rect class=\"b\"/></g></svg>",
+        ];
+
+        yield 'Keeps whitespace in elements that are not rendered as text' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><title>a\n  b</title><desc>c\t d</desc></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><title>a\n  b</title><desc>c\t d</desc></svg>",
         ];
     }
 }

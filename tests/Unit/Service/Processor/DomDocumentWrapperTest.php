@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Service\Formatter\XmlFormatter;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -23,7 +22,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(DomDocumentWrapper::class)]
-#[CoversClass(XmlFormatter::class)]
 final class DomDocumentWrapperTest extends TestCase
 {
     private DomDocumentWrapper $domDocumentWrapper;
@@ -46,16 +44,14 @@ final class DomDocumentWrapperTest extends TestCase
      * @throws XmlProcessingException
      */
     #[Test]
-    public function saveToStringWithLineFeedsAndTabs(): void
+    public function saveToStringRemovesIndentationButKeepsWhitespaceInContent(): void
     {
         $domDocument = new \DOMDocument();
         $domDocument->loadXML("<root>\n\t<child>\n\t\tTest\n\t</child>\n</root>");
 
         $result = $this->domDocumentWrapper->saveToString($domDocument);
 
-        self::assertStringNotContainsString("\n", $result);
-        self::assertStringNotContainsString("\t", $result);
-        self::assertStringContainsString('<root><child>Test</child></root>', $result);
+        self::assertSame("<root><child>\n\t\tTest\n\t</child></root>", $result);
     }
 
     /**
@@ -131,15 +127,14 @@ final class DomDocumentWrapperTest extends TestCase
      * @throws XmlProcessingException
      */
     #[Test]
-    public function saveToStringRemovesCarriageReturns(): void
+    public function saveToStringWritesLineBreaksAsTheParserNormalizedThem(): void
     {
         $domDocument = new \DOMDocument();
         $domDocument->loadXML("<root>\r\n\t<child>\r\n\t\tTest\r\n\t</child>\r\n</root>");
 
         $result = $this->domDocumentWrapper->saveToString($domDocument);
 
-        self::assertStringNotContainsString("\r", $result);
-        self::assertStringContainsString('<root><child>Test</child></root>', $result);
+        self::assertSame("<root><child>\n\t\tTest\n\t</child></root>", $result);
     }
 
     /**
@@ -163,7 +158,7 @@ final class DomDocumentWrapperTest extends TestCase
     {
         $domDocument = new \DOMDocument();
         $result = $this->domDocumentWrapper->saveToString($domDocument);
-        self::assertSame('<?xml version="1.0"?>', $result);
+        self::assertSame("<?xml version=\"1.0\"?>\n", $result);
     }
 
     /**
