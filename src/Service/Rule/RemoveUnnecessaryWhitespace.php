@@ -12,9 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
-use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\XmlContentTrait;
 
 /**
  * @internal
@@ -23,10 +21,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\XmlContentTrait;
  */
 final readonly class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
 {
-    use XmlContentTrait;
-
-    private const string ATTRIBUTE_REGEX = '/(\S+)\s*=\s*"([^"]*)"/';
-
     private const string WHITESPACE_REGEX = '/\s+/';
 
     private const string CSS_STRING_REGEX = '/("(?:[^"\\\]|\\\.)*"|\'(?:[^\'\\\]|\\\.)*\')/';
@@ -36,7 +30,7 @@ final readonly class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInte
     /**
      * @param string $style the style attribute value
      */
-    private static function minifyStyle(string $style): string
+    private function minifyStyle(string $style): string
     {
         $parts = preg_split(self::CSS_STRING_REGEX, $style, -1, \PREG_SPLIT_DELIM_CAPTURE);
 
@@ -68,30 +62,20 @@ final readonly class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInte
 
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
-     *
-     * @throws XmlProcessingException if the XML content cannot be processed
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->processXmlContent(
-            $domDocument,
-            static fn (string $content): string => preg_replace_callback(
-                self::ATTRIBUTE_REGEX,
-                static function (array $matches): string {
-                    $name = $matches[1];
-                    $value = $matches[2];
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            foreach (iterator_to_array($domNodeList->attributes, false) as $attribute) {
+                $value = SvgAttribute::Style->value === $attribute->nodeName
+                    ? $this->minifyStyle($attribute->value)
+                    : preg_replace(self::WHITESPACE_REGEX, ' ', trim($attribute->value)) ?? $attribute->value;
 
-                    if (SvgAttribute::Style->value === $name) {
-                        $value = self::minifyStyle($value);
-                    } else {
-                        $value = preg_replace(self::WHITESPACE_REGEX, ' ', trim($value));
-                    }
-
-                    return \sprintf('%s="%s"', $name, $value);
-                },
-                $content
-            ) ?? $content
-        );
+                if ($value !== $attribute->value) {
+                    $domNodeList->setAttributeNS($attribute->namespaceURI, $attribute->nodeName, $value);
+                }
+            }
+        }
     }
 }

@@ -55,6 +55,21 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps text that looks like an attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text xml:space="preserve">x="a      b"</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text xml:space="preserve">x="a      b"</text></svg>',
+        ];
+
+        yield 'Keeps comments that look like an attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><!-- x="a   b" --></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><!-- x="a   b" --></svg>',
+        ];
+
+        yield 'Keeps escaped characters escaped' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:title="  a &amp;  &lt;b&gt;   &quot;c&quot; " title=" x&#10; y"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:title="a &amp; &lt;b&gt; &quot;c&quot;" title="x y"/></svg>',
+        ];
+
         yield 'Keeps spaces between values in a style declaration' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect style="stroke-dasharray: 1  2 ; enable-background: new 0 0 400 220" width="1" height="1"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><rect style="stroke-dasharray:1 2;enable-background:new 0 0 400 220" width="1" height="1"/></svg>',
