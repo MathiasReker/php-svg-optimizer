@@ -679,8 +679,6 @@ final class SvgElementAttributes
         'vkern' => ['groups' => ['core', 'legacy', 'rdfa'], 'attributes' => ['u1', 'g1', 'u2', 'g2', 'k']],
     ];
 
-    private function __construct() {}
-
     /**
      * @param string $element the element name as written in markup
      *

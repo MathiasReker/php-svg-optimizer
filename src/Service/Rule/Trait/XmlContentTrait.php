@@ -36,11 +36,7 @@ trait XmlContentTrait
      */
     private function processXmlContent(\DOMDocument $domDocument, \Closure $callback): string
     {
-        $original = $domDocument->saveXML();
-
-        if (false === $original) {
-            throw new XmlProcessingException('Failed to save SVG XML content.');
-        }
+        $original = (string) $domDocument->saveXML();
 
         try {
             $content = $callback($original);
@@ -54,12 +50,8 @@ trait XmlContentTrait
             return $content;
         }
 
-        if ('' === $content || !(new SvgValidator())->isValid($content)) {
+        if ('' === $content || !(new SvgValidator())->isValid($content) || !$this->loadXmlSilently($domDocument, $content)) {
             throw new XmlProcessingException('Optimized SVG content is not valid.');
-        }
-
-        if (!$this->loadXmlSilently($domDocument, $content)) {
-            throw new XmlProcessingException('Failed to load optimized XML content.');
         }
 
         return $content;

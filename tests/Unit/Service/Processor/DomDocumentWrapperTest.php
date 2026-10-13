@@ -26,9 +26,6 @@ final class DomDocumentWrapperTest extends TestCase
 {
     private DomDocumentWrapper $domDocumentWrapper;
 
-    /**
-     * @throws XmlProcessingException
-     */
     #[Test]
     public function saveToStringValid(): void
     {
@@ -40,9 +37,6 @@ final class DomDocumentWrapperTest extends TestCase
         self::assertStringContainsString('<root><child>Test</child></root>', $result);
     }
 
-    /**
-     * @throws XmlProcessingException
-     */
     #[Test]
     public function saveToStringRemovesIndentationButKeepsWhitespaceInContent(): void
     {
@@ -123,9 +117,6 @@ final class DomDocumentWrapperTest extends TestCase
         self::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
     }
 
-    /**
-     * @throws XmlProcessingException
-     */
     #[Test]
     public function saveToStringWritesLineBreaksAsTheParserNormalizedThem(): void
     {
@@ -150,9 +141,6 @@ final class DomDocumentWrapperTest extends TestCase
         $this->domDocumentWrapper->loadFromString($invalidXml);
     }
 
-    /**
-     * @throws XmlProcessingException
-     */
     #[Test]
     public function saveToStringWritesElementsWithIgnorableWhitespaceOnlyAsEmptyElements(): void
     {
@@ -165,9 +153,6 @@ final class DomDocumentWrapperTest extends TestCase
         );
     }
 
-    /**
-     * @throws XmlProcessingException
-     */
     #[Test]
     public function saveToStringLeavesTheDocumentAsItWas(): void
     {
@@ -181,9 +166,6 @@ final class DomDocumentWrapperTest extends TestCase
         self::assertSame($before, $domDocument->saveXML());
     }
 
-    /**
-     * @throws XmlProcessingException
-     */
     #[Test]
     public function saveToStringHandlesEmptyDomDocument(): void
     {
@@ -325,9 +307,6 @@ final class DomDocumentWrapperTest extends TestCase
         self::assertSame("\n  a{b}c\n", $style->textContent);
     }
 
-    /**
-     * @throws XmlProcessingException
-     */
     #[Test]
     public function saveToStringKeepsWhitespaceInCdataSections(): void
     {

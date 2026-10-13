@@ -63,4 +63,15 @@ final class SvgTagTest extends TestCase
         self::assertContains('path', $values);
         self::assertContains('g', $values);
     }
+
+    #[Test]
+    public function caseListsMatchTheirValueLists(): void
+    {
+        $values = static fn (array $cases): array => array_map(static fn (SvgTag $svgTag): string => $svgTag->value, $cases);
+
+        self::assertSame(SvgTag::dangerous(), $values(SvgTag::dangerousCases()));
+        self::assertSame(SvgTag::conditionalDangerous(), $values(SvgTag::conditionalDangerousCases()));
+        self::assertSame(SvgTag::animation(), $values(SvgTag::animationCases()));
+        self::assertSame(SvgTag::dataUri(), $values(SvgTag::dataUriCases()));
+    }
 }

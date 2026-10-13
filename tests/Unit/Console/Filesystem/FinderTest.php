@@ -241,4 +241,15 @@ final class FinderTest extends TestCase
 
         rmdir($dir);
     }
+
+    #[Test]
+    public function skipsDirectoriesWithTheExtensionWhenOnlyFilesAreSearched(): void
+    {
+        mkdir($this->tempDir . '/folder.svg');
+        file_put_contents($this->tempDir . '/icon.svg', '<svg/>');
+
+        $result = (new Finder())->in($this->tempDir)->files()->withExtension('svg')->find();
+
+        self::assertSame([realpath($this->tempDir . '/icon.svg')], $result);
+    }
 }

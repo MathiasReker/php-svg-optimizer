@@ -39,4 +39,10 @@ final class SilentStreamTest extends TestCase
         $silentStream = new SilentStream();
         $silentStream->writeln('y');
     }
+
+    #[Test]
+    public function doesNotSupportColor(): void
+    {
+        self::assertFalse((new SilentStream())->supportsColor());
+    }
 }

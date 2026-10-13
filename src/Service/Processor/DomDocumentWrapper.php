@@ -34,14 +34,12 @@ final readonly class DomDocumentWrapper
      * @param \DOMDocument $domDocument The \DOMDocument instance to be saved
      *
      * @return string Returns the XML content as a string
-     *
-     * @throws XmlProcessingException If the XML content cannot be saved
      */
     public function saveToString(\DOMDocument $domDocument): string
     {
         [$blankTextNodes, $whitespace] = $this->collapseBlankTextNodes($domDocument);
         $detached = $this->detachEmptyTextNodes($blankTextNodes);
-        $saveXML = $domDocument->saveXML($domDocument->documentElement);
+        $saveXML = (string) $domDocument->saveXML($domDocument->documentElement);
 
         foreach (array_reverse($detached) as [$domText, $parent, $nextSibling]) {
             $parent->insertBefore($domText, $nextSibling);
@@ -49,10 +47,6 @@ final readonly class DomDocumentWrapper
 
         foreach ($blankTextNodes as $index => $domText) {
             $domText->data = $whitespace[$index];
-        }
-
-        if (false === $saveXML) {
-            throw new XmlProcessingException('Failed to save XML content.');
         }
 
         return $this->saveStylesheetInstructions($domDocument) . $saveXML;

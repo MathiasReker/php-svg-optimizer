@@ -13,7 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Provider;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
-use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 
 /**
@@ -36,9 +35,6 @@ abstract class AbstractProvider implements SvgProviderInterface
         $this->domDocumentWrapper = new DomDocumentWrapper();
     }
 
-    /**
-     * @throws XmlProcessingException
-     */
     #[\Override]
     final public function optimize(\DOMDocument $domDocument): self
     {

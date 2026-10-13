@@ -84,11 +84,7 @@ final class Finder
         );
 
         foreach ($iterator as $fileInfo) {
-            if (!$fileInfo instanceof \SplFileInfo) {
-                continue;
-            }
-
-            if ($this->matchesFilter($fileInfo)) {
+            if ($fileInfo instanceof \SplFileInfo && $this->matchesFilter($fileInfo)) {
                 $results[] = str_replace(['/', '\\'], \DIRECTORY_SEPARATOR, $fileInfo->getPathname());
             }
         }
@@ -103,10 +99,7 @@ final class Finder
      */
     private function matchesFilter(\SplFileInfo $fileInfo): bool
     {
-        if ($this->onlyFiles && !$fileInfo->isFile()) {
-            return false;
-        }
-
-        return '' === $this->extension || mb_strtolower($fileInfo->getExtension()) === $this->extension;
+        return (!$this->onlyFiles || $fileInfo->isFile())
+            && ('' === $this->extension || mb_strtolower($fileInfo->getExtension()) === $this->extension);
     }
 }

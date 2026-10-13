@@ -16,6 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
+use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\UnreadableFileStreamWrapper;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -111,7 +112,6 @@ final class FileProviderTest extends TestCase
     }
 
     /**
-     * @throws XmlProcessingException
      * @throws FileNotFoundException
      * @throws IOException
      */
@@ -187,7 +187,6 @@ final class FileProviderTest extends TestCase
     }
 
     /**
-     * @throws XmlProcessingException
      * @throws FileNotFoundException
      * @throws IOException
      */
@@ -228,7 +227,6 @@ final class FileProviderTest extends TestCase
     /**
      * @throws FileNotFoundException
      * @throws IOException
-     * @throws XmlProcessingException
      */
     #[Test]
     public function saveToFileCreatesEveryMissingParentDirectory(): void
@@ -263,7 +261,6 @@ final class FileProviderTest extends TestCase
     /**
      * @throws FileNotFoundException
      * @throws IOException
-     * @throws XmlProcessingException
      */
     #[Test]
     public function saveToFileThrowsIOException(): void
@@ -353,5 +350,18 @@ final class FileProviderTest extends TestCase
         }
 
         parent::tearDown();
+    }
+
+    /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    #[Test]
+    public function throwsWhenTheInputFileCannotBeRead(): void
+    {
+        $this->expectException(IOException::class);
+        $this->expectExceptionMessage('Failed to read input file content: unreadable://file.svg');
+
+        UnreadableFileStreamWrapper::run(static fn (string $path): FileProvider => new FileProvider($path));
     }
 }

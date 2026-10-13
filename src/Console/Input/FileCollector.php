@@ -41,11 +41,8 @@ final class FileCollector
      */
     private function resolveSvgFiles(string $path): array
     {
-        if (!file_exists($path)) {
-            return [];
-        }
+        $realPath = file_exists($path) ? realpath($path) : false;
 
-        $realPath = realpath($path);
         if (false === $realPath) {
             return [];
         }
