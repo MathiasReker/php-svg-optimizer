@@ -82,7 +82,8 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
     /**
      * @param \DOMElement $domElement the element to check
      *
-     * @return bool true if the element is empty, false otherwise
+     * @return bool true if the element has no child elements and no text, not even whitespace, which renders as a space
+     *              between the surrounding text
      */
     private function isEmptyElement(\DOMElement $domElement): bool
     {
@@ -91,7 +92,7 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
                 return false;
             }
 
-            if ($child instanceof \DOMText && '' !== trim($child->wholeText)) {
+            if ($child instanceof \DOMText && '' !== $child->data) {
                 return false;
             }
         }

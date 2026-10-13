@@ -56,6 +56,16 @@ final class RemoveEmptyTextElementsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps a whitespace-only tspan, whose space renders between the surrounding text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>a<tspan> </tspan>b</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>a<tspan> </tspan>b</text></svg>',
+        ];
+
+        yield 'Keeps preserved whitespace-only text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text xml:space="preserve" text-decoration="underline">  </text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text xml:space="preserve" text-decoration="underline">  </text></svg>',
+        ];
+
         yield 'Removes empty <text> element' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">

@@ -733,8 +733,9 @@ $svgOptimizer->removeEmptyGroups();
 
 ### `removeEmptyTextElements`
 
-Removes `<text>` elements that contain no textual content. These elements have no visual impact and can safely be
-eliminated to reduce file size.
+Removes `<text>` and `<tspan>` elements that contain no text at all, and `<tref>` elements without a reference. These
+elements have no visual impact and can safely be eliminated to reduce file size. Whitespace-only elements are kept,
+since their whitespace may render as a space between the surrounding text.
 
 ```php
 $svgOptimizer->removeEmptyTextElements();
