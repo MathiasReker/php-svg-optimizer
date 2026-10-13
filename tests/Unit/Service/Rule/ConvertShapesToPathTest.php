@@ -150,6 +150,26 @@ final class ConvertShapesToPathTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="0 0 a b"/><polygon points=""/></svg>',
         ];
 
+        yield 'Keeps polygon with an empty item between commas' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="0,0,,10,0 10,10"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="0,0,,10,0 10,10"/></svg>',
+        ];
+
+        yield 'Keeps polyline with a leading or trailing comma' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points=",0 0 10 10"/><polygon points="0 0 10 10 20 0,"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points=",0 0 10 10"/><polygon points="0 0 10 10 20 0,"/></svg>',
+        ];
+
+        yield 'Keeps polyline with a comma surrounded by spaces twice' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="0 0 , , 10 10"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="0 0 , , 10 10"/></svg>',
+        ];
+
+        yield 'Converts polygon with commas surrounded by whitespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><polygon points=" 0 , 0 10 ,0,10 10 "/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0 10 0 10 10z"/></svg>',
+        ];
+
         yield 'Keeps line with units' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><line x1="1" y1="2" x2="30%" y2="40" stroke="#000"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><line x1="1" y1="2" x2="30%" y2="40" stroke="#000"/></svg>',

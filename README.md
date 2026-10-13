@@ -517,8 +517,9 @@ $svgOptimizer->convertOneStopGradients();
 
 Converts `<rect>`, `<line>`, `<polyline>` and `<polygon>` elements into `<path>` elements when that makes the file
 smaller. The path data reuses the original numbers (a rect is drawn with relative moves), so no coordinate is
-recalculated or rounded. Rounded rects, values with units, shapes with child elements or a `style` attribute, and
-documents with a `<style>` or `<marker>` element are kept as they are.
+recalculated or rounded. Rounded rects, values with units, `points` lists that are invalid or have an odd number of
+coordinates, shapes with child elements or a `style` attribute, and documents with a `<style>` or `<marker>` element
+are kept as they are.
 
 ```php
 $svgOptimizer->convertShapesToPath();

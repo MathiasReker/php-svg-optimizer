@@ -16,6 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PathDataSerializerTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RenameElementTrait;
 
@@ -28,6 +29,7 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
 {
     use ElementTrait;
     use NumberFormatterTrait;
+    use NumberListTrait;
     use PathDataSerializerTrait;
     use RenameElementTrait;
 
@@ -37,8 +39,6 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
         'polyline' => ['points'],
         'polygon' => ['points'],
     ];
-
-    private const string POINTS_SEPARATOR_REGEX = '/[\s,]+/';
 
     #[\Override]
     public static function isRisky(): bool
@@ -148,12 +148,9 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
      */
     private function pointsSegments(\DOMElement $domElement, bool $close): array
     {
-        $points = trim($domElement->getAttribute(SvgAttribute::Points->value));
-        $coordinates = '' === $points ? [] : preg_split(self::POINTS_SEPARATOR_REGEX, $points);
+        $coordinates = $this->parseNumberList($domElement->getAttribute(SvgAttribute::Points->value));
 
-        if (false === $coordinates || [] === $coordinates || 0 !== \count($coordinates) % 2
-            || [] !== array_filter($coordinates, fn (string $value): bool => !$this->isPlainNumber($value))
-        ) {
+        if ([] === $coordinates || 0 !== \count($coordinates) % 2) {
             return [];
         }
 
