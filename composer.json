@@ -121,6 +121,7 @@
         "lint:phpcbf": "@php -d memory_limit=512M vendor/bin/phpcbf",
         "lint:rector": "@php vendor/bin/rector process",
         "test": "@php vendor/bin/phpunit tests",
+        "test:benchmark": "@php dev/scripts/benchmark.php",
         "test:coverage": "@php vendor/bin/phpunit tests --coverage-text",
         "test:mutation": "@php vendor/bin/infection --threads=max"
     }
