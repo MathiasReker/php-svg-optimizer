@@ -240,7 +240,7 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \ValueError
      */
     #[Test]
-    public function processInvalidPathPrintsError(): void
+    public function processInvalidPathThrows(): void
     {
         $commandOption = new CommandOption(
             true,
@@ -255,10 +255,10 @@ final class SvgFileProcessorTest extends TestCase
             $this->metaDataAggregator
         );
 
-        $svgFileProcessor->processPath($this->tempDir . '/nonexistent.svg');
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(\sprintf('"%s" is not a valid SVG file or directory.', $this->tempDir . '/nonexistent.svg'));
 
-        $output = $this->memoryStream->getContent();
-        self::assertStringContainsString('is not a valid SVG file or directory', $output);
+        $svgFileProcessor->processPath($this->tempDir . '/nonexistent.svg');
     }
 
     /**

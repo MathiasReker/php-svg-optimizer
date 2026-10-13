@@ -52,7 +52,7 @@ final readonly class SvgFileProcessor
         } elseif (is_file($path) && SvgTag::Svg->value === mb_strtolower(pathinfo($path, \PATHINFO_EXTENSION))) {
             $this->optimizeSvg($path);
         } else {
-            $this->outputManager->printError(\sprintf('"%s" is not a valid SVG file or directory.', $path));
+            throw new \InvalidArgumentException(\sprintf('"%s" is not a valid SVG file or directory.', $path));
         }
     }
 

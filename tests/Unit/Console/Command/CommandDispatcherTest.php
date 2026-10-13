@@ -132,6 +132,7 @@ final class CommandDispatcherTest extends TestCase
 
         $result = $this->runCli(['--quiet', 'process', $this->tempDir]);
 
+        self::assertSame(1, $result['exitCode']);
         self::assertSame('', $result['stdout']);
         self::assertStringContainsString(
             \sprintf('Error: Failed processing "%s": The file does not appear to be a valid SVG file.', (string) realpath($invalidFile)),
@@ -155,6 +156,36 @@ final class CommandDispatcherTest extends TestCase
         self::assertStringContainsString((string) realpath($svgFile), $result['stdout']);
         self::assertStringContainsString('Summary:', $result['stdout']);
         self::assertStringContainsString('Files optimized:      1', $result['stdout']);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function runWithInvalidSvgFileExitsOne(): void
+    {
+        $svgFile = $this->tempDir . '/invalid.svg';
+        file_put_contents($svgFile, 'not an svg');
+
+        $result = $this->runCli(['process', $svgFile]);
+
+        self::assertSame(1, $result['exitCode']);
+        self::assertStringContainsString('Error: Failed processing', $result['stderr']);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function runWithRiskyRuleNotAllowedExitsOne(): void
+    {
+        $svgFile = $this->tempDir . '/valid.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $result = $this->runCli(['--config={"removeDataAttributes":true}', 'process', $svgFile]);
+
+        self::assertSame(1, $result['exitCode']);
+        self::assertStringContainsString('Error: Risky rules are disabled.', $result['stderr']);
     }
 
     /**

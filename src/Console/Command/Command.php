@@ -26,6 +26,10 @@ use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
  */
 final readonly class Command implements CommandInterface
 {
+    public const int SUCCESS = 0;
+
+    public const int FAILURE = 1;
+
     private MetaDataAggregator $metaDataAggregator;
 
     private SvgFileProcessor $svgFileProcessor;
@@ -57,16 +61,22 @@ final readonly class Command implements CommandInterface
     }
 
     /**
+     * @return int The exit code: SUCCESS if every path was processed, FAILURE otherwise
+     *
      * @throws \LogicException
      * @throws \ValueError
      */
-    public function run(): void
+    public function run(): int
     {
+        $exitCode = self::SUCCESS;
+
         try {
             $this->printUnknownConfigKeys();
 
             foreach ($this->paths as $path) {
-                $this->processPath($path);
+                if (!$this->processPath($path)) {
+                    $exitCode = self::FAILURE;
+                }
             }
 
             if ($this->metaDataAggregator->hasOptimizedFiles()) {
@@ -74,20 +84,28 @@ final readonly class Command implements CommandInterface
             }
         } catch (RiskyRulesNotAllowedException) {
             $this->outputManager->printError('Risky rules are disabled. Use --allow-risky to enable it.');
+
+            return self::FAILURE;
         }
+
+        return $exitCode;
     }
 
     /**
      * @param string $path The path to process, either a file or directory
      *
+     * @return bool True if the path was processed, false if an error was printed
+     *
      * @throws \LogicException
      * @throws \ValueError
      * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
-    private function processPath(string $path): void
+    private function processPath(string $path): bool
     {
         try {
             $this->svgFileProcessor->processPath($path);
+
+            return true;
         } catch (\RuntimeException|SvgValidationException $exception) {
             $this->outputManager->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
         } catch (\JsonException $jsonException) {
@@ -95,6 +113,8 @@ final readonly class Command implements CommandInterface
         } catch (\InvalidArgumentException $invalidArgumentException) {
             $this->outputManager->printError($invalidArgumentException->getMessage());
         }
+
+        return false;
     }
 
     /**

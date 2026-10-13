@@ -18,5 +18,8 @@ namespace MathiasReker\PhpSvgOptimizer\Contract\Console\Command;
  */
 interface CommandInterface
 {
-    public function run(): void;
+    /**
+     * @return int The exit code of the command
+     */
+    public function run(): int;
 }

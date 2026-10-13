@@ -72,6 +72,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -511,6 +512,63 @@ final class SvgOptimizerCommandTest extends TestCase
             \sprintf('Error: Failed processing "%s": The file does not appear to be a valid SVG file.', $svgFile),
             $memoryStream->getContent()
         );
+    }
+
+    /**
+     * @throws \LogicException
+     * @throws \RuntimeException
+     * @throws \ValueError
+     */
+    #[Test]
+    public function runReturnsSuccessWhenEveryPathIsProcessed(): void
+    {
+        $svgFile = $this->tempDir . '/valid.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $memoryStream = new MemoryStream();
+
+        self::assertSame(
+            Command::SUCCESS,
+            (new Command([$svgFile], new CommandOption(true, '', false, false), new OutputManager($memoryStream, false, $memoryStream)))->run()
+        );
+    }
+
+    /**
+     * @param list<string> $paths  The paths passed to the command, relative to the temporary directory
+     * @param string       $config The configuration passed to the command
+     *
+     * @throws \LogicException
+     * @throws \RuntimeException
+     * @throws \ValueError
+     */
+    #[DataProvider('provideRunReturnsFailureWhenAnyPathFailsCases')]
+    #[Test]
+    public function runReturnsFailureWhenAnyPathFails(array $paths, string $config): void
+    {
+        file_put_contents($this->tempDir . '/valid.svg', '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+        file_put_contents($this->tempDir . '/invalid.svg', 'not an svg');
+
+        $memoryStream = new MemoryStream();
+        $command = new Command(
+            array_map(fn (string $path): string => $this->tempDir . '/' . $path, $paths),
+            new CommandOption(true, $config, false, false),
+            new OutputManager($memoryStream, false, $memoryStream)
+        );
+
+        self::assertSame(Command::FAILURE, $command->run());
+        self::assertStringContainsString('Error: ', $memoryStream->getContent());
+    }
+
+    /**
+     * @return iterable<string, array{list<string>, string}>
+     */
+    public static function provideRunReturnsFailureWhenAnyPathFailsCases(): iterable
+    {
+        yield 'missing file after a valid file' => [['valid.svg', 'missing.svg'], ''];
+        yield 'invalid SVG before a valid file' => [['invalid.svg', 'valid.svg'], ''];
+        yield 'invalid JSON configuration' => [['valid.svg'], '{invalid'];
+        yield 'non-array configuration' => [['valid.svg'], '1'];
+        yield 'risky rule not allowed' => [['valid.svg'], '{"removeDataAttributes":true}'];
     }
 
     #[\Override]

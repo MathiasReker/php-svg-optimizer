@@ -77,6 +77,9 @@ Commands:
 Process                   Provide a list of directories or files to process.
 ```
 
+Errors are written to stderr, also with `--quiet`. The command exits with code `1` if the arguments or the
+configuration are invalid, or if any file could not be optimized, and with code `0` otherwise.
+
 #### Examples:
 
 ```bash
