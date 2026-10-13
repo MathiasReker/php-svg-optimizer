@@ -517,7 +517,7 @@ final class ScopeSvgStylesTest extends TestCase
         $documentElement = $domDocument->documentElement;
         self::assertInstanceOf(\DOMElement::class, $documentElement);
 
-        $hash = mb_substr(md5((string) $domDocument->saveXML($documentElement)), 0, 10);
+        $hash = mb_substr(sha1((string) $domDocument->saveXML($documentElement)), 0, 10);
 
         $scopeSvgStyles = new ScopeSvgStyles();
         $scopeSvgStyles->optimize($domDocument);

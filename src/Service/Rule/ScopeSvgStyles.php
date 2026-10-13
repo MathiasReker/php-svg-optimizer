@@ -73,7 +73,7 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
         $multiple = $svgs->length > 1;
 
         foreach ($svgs as $index => $node) {
-            $baseHash = mb_substr(md5((string) $domDocument->saveXML($node)), 0, 10);
+            $baseHash = mb_substr(sha1((string) $domDocument->saveXML($node)), 0, 10);
             $hash = $multiple ? $baseHash . '-' . $index : $baseHash;
 
             $this->scopeSingleSvg($domXPath, $node, $hash);
