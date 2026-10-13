@@ -297,7 +297,7 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         ));
 
         foreach ($convertedClasses as $convertedClass) {
-            if (1 === preg_match('/\.' . $convertedClass . '(?![\w-])/', $remainingCss)) {
+            if ($this->cssMatchesClass($remainingCss, $convertedClass)) {
                 continue;
             }
 

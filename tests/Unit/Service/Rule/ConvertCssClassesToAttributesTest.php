@@ -57,6 +57,16 @@ final class ConvertCssClassesToAttributesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps classes matched by a class attribute selector' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}[class="a"]{stroke:blue}</style><rect class="a" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[class="a"]{stroke:blue}</style><rect class="a" width="5" height="5" fill="red"/></svg>',
+        ];
+
+        yield 'Keeps classes matched by a namespaced class attribute selector' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}rect[ *|CLASS^="a"]{stroke:blue}</style><rect class="a" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect[ *|CLASS^="a"]{stroke:blue}</style><rect class="a" width="5" height="5" fill="red"/></svg>',
+        ];
+
         yield 'Converts class-based CSS to attributes' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">

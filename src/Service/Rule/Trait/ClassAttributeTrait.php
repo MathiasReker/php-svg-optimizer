@@ -22,6 +22,8 @@ trait ClassAttributeTrait
 {
     private const string CLASS_SEPARATOR_REGEX = '/\s+/';
 
+    private const string CLASS_ATTRIBUTE_SELECTOR_REGEX = '/\[\s*(?:[\w*-]*\|)?class\b/i';
+
     /**
      * @param \DOMElement $domElement the element to read the classes of
      *
@@ -37,6 +39,19 @@ trait ClassAttributeTrait
         );
 
         return false === $classes ? [] : $classes;
+    }
+
+    /**
+     * @param string $css   the style sheet to search
+     * @param string $class a class name consisting of letters, digits, `_` and `-` only
+     *
+     * @return bool true if the style sheet may match the class, through a class selector or an attribute selector on
+     *              `class`, such as `[class="a"]`, which matches the whole class list
+     */
+    private function cssMatchesClass(string $css, string $class): bool
+    {
+        return 1 === preg_match(self::CLASS_ATTRIBUTE_SELECTOR_REGEX, $css)
+            || 1 === preg_match('/\.' . $class . '(?![\w-])/', $css);
     }
 
     /**
