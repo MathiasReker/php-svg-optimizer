@@ -39,7 +39,7 @@ trait EntityReferenceTrait
     {
         $domDocument = $domNode instanceof \DOMDocument ? $domNode : $domNode->ownerDocument;
 
-        if ($domDocument instanceof \DOMDocument) {
+        if ($domDocument instanceof \DOMDocument && $domDocument->doctype instanceof \DOMDocumentType) {
             $this->expandEntityReferencesIn($domNode, $this->internalEntities($domDocument));
         }
     }

@@ -22,27 +22,41 @@ use MathiasReker\PhpSvgOptimizer\Support\SvgDefaults;
  */
 trait DangerousAttributeValueTrait
 {
+    private const string NON_ASCII_REGEX = '/[^\x00-\x7F]/';
+
     /**
      * @param \DOMDocument $domDocument the DOM document to clean
      */
     private function removeDangerousAttributes(\DOMDocument $domDocument): void
     {
-        $domNodeList = $domDocument->getElementsByTagName('*');
+        $verdicts = [];
 
-        foreach ($domNodeList as $domElement) {
-            if (!$domElement->hasAttributes()) {
-                continue;
-            }
-
-            $allowsDataUri = $this->isTagIn($domElement, SvgTag::dataUri());
-
-            /** @var \DOMAttr $attribute */
-            foreach (iterator_to_array($domElement->attributes, false) as $attribute) {
-                if ($this->isDangerousAttribute($attribute, $allowsDataUri)) {
-                    $domElement->removeAttributeNode($attribute);
-                }
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            if ($domNodeList->hasAttributes()) {
+                $verdicts = $this->removeDangerousAttributesOf($domNodeList, $verdicts);
             }
         }
+    }
+
+    /**
+     * @param \DOMElement         $domElement the element to clean
+     * @param array<string, bool> $verdicts   the verdicts for attributes checked before, by data URI permission, name and value
+     *
+     * @return array<string, bool> the verdicts including those for the attributes of the element
+     */
+    private function removeDangerousAttributesOf(\DOMElement $domElement, array $verdicts): array
+    {
+        $allowsDataUri = $this->isTagIn($domElement, SvgTag::dataUri());
+
+        foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
+            $key = ($allowsDataUri ? '1' : '0') . mb_strtolower($domAttr->name) . "\0" . $domAttr->value;
+
+            if ($verdicts[$key] ??= $this->isDangerousAttribute($domAttr, $allowsDataUri)) {
+                $domElement->removeAttributeNode($domAttr);
+            }
+        }
+
+        return $verdicts;
     }
 
     /**
@@ -148,6 +162,10 @@ trait DangerousAttributeValueTrait
      */
     private function transliterateHomoglyphs(string $value): string
     {
+        if (1 !== preg_match(self::NON_ASCII_REGEX, $value)) {
+            return $value;
+        }
+
         $map = [
             'Ａ' => 'A', 'Ｂ' => 'B', 'Ｃ' => 'C', 'Ｄ' => 'D', 'Ｅ' => 'E', 'Ｆ' => 'F', 'Ｇ' => 'G', 'Ｈ' => 'H', 'Ｉ' => 'I', 'Ｊ' => 'J',
             'Ｋ' => 'K', 'Ｌ' => 'L', 'Ｍ' => 'M', 'Ｎ' => 'N', 'Ｏ' => 'O', 'Ｐ' => 'P', 'Ｑ' => 'Q', 'Ｒ' => 'R', 'Ｓ' => 'S', 'Ｔ' => 'T',
