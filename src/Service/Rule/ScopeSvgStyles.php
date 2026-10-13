@@ -35,6 +35,8 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
 
     private const string WHITESPACE_REGEX = '/\s+/';
 
+    private const string UNSCOPABLE_CSS_REGEX = '/\{[^}]*\{|@import/i';
+
     private const string SVG_QUERY = '//*[local-name()="svg"]';
 
     private const string ID_QUERY = './/*[@id]';
@@ -60,6 +62,10 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
+        if ($this->hasUnscopableStyleSheet($domDocument)) {
+            return;
+        }
+
         $domXPath = new \DOMXPath($domDocument);
 
         /** @var \DOMNodeList<\DOMElement> $svgs */
@@ -77,6 +83,20 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
 
             $this->scopeSingleSvg($domXPath, $node, $hash);
         }
+    }
+
+    /**
+     * @param \DOMDocument $domDocument the document to check
+     */
+    private function hasUnscopableStyleSheet(\DOMDocument $domDocument): bool
+    {
+        foreach ($domDocument->getElementsByTagName(SvgTag::Style->value) as $domNodeList) {
+            if (1 === preg_match(self::UNSCOPABLE_CSS_REGEX, $domNodeList->textContent)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function scopeSingleSvg(\DOMXPath $domXPath, \DOMElement $domElement, string $hash): void

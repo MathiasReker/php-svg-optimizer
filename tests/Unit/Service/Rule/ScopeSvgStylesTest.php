@@ -56,6 +56,21 @@ final class ScopeSvgStylesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        $unscopable = [
+            'rules nested in a media block' => '<svg><style>.a{stroke:blue}@media screen{.a{fill:red}}</style><rect class="a" id="r"/></svg>',
+            'rules nested in a supports block of another style sheet' => '<svg><style>.a{stroke:blue}</style><svg><style>@supports (fill:red){#r{fill:red}}</style><rect class="a" id="r"/></svg></svg>',
+            'an imported style sheet' => '<svg><style>@import url(a.css);.a{stroke:blue}</style><rect class="a"/></svg>',
+        ];
+
+        foreach ($unscopable as $name => $svg) {
+            yield 'Leaves a document with ' . $name . ' untouched' => [
+                $svg,
+                static function (string $output) use ($svg): void {
+                    self::assertSame($svg, $output);
+                },
+            ];
+        }
+
         yield 'Scopes simple class selector' => [
             '<svg><style>.cls-0{fill:#fff}</style><rect class="cls-0"/></svg>',
             static function (string $output): void {
