@@ -118,6 +118,16 @@ final class RemoveUselessDefsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><symbol><g id="a"/></symbol></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><symbol><g id="a"/></symbol></svg>',
         ];
+
+        yield 'Keeps definitions when a style sheet depends on child positions' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:first-child{fill:red}</style><g><defs><path d="M0 0"/></defs><rect/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:first-child{fill:red}</style><g><defs><path d="M0 0"/></defs><rect/></g></svg>',
+        ];
+
+        yield 'Keeps definitions when a style sheet uses a sibling combinator' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>linearGradient + rect{fill:red}</style><linearGradient/><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>linearGradient + rect{fill:red}</style><linearGradient/><rect/></svg>',
+        ];
     }
 
     #[Test]

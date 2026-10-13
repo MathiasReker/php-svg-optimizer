@@ -50,6 +50,10 @@ final readonly class RemoveUselessDefs implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
+        if ($this->hasSiblingSensitiveStyle($domDocument)) {
+            return;
+        }
+
         foreach (iterator_to_array($domDocument->getElementsByTagName('*'), false) as $domElement) {
             if ($this->isUselessDefinition($domElement)) {
                 $domElement->parentNode?->removeChild($domElement);
