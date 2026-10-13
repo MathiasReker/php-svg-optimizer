@@ -21,6 +21,7 @@ use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandHelp;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\ExampleCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -38,10 +39,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Finder::class)]
 final class ArgumentParserTest extends TestCase
 {
-    private const int EXPECTED_POSITIONAL_ARGUMENT_INDEX = 2;
-
-    private const int EXPECTED_POSITIONAL_ARGUMENT_START_INDEX = 3;
-
     private const array EXAMPLE_ARGS = [
         'vendor/bin/svg-optimizer',
         '--config=config.json',
@@ -105,23 +102,108 @@ final class ArgumentParserTest extends TestCase
     }
 
     /**
+     * @param list<string> $args The arguments after the script name
+     *
      * @throws \InvalidArgumentException
      */
+    #[DataProvider('provideGetOptionAcceptsEveryConfigValueFormCases')]
     #[Test]
-    public function getNextPositionalArgumentIndexReturnsCorrectIndex(): void
+    public function getOptionAcceptsEveryConfigValueForm(array $args): void
     {
-        $index = $this->argumentParser->getArgumentIndex();
-        self::assertSame(self::EXPECTED_POSITIONAL_ARGUMENT_INDEX, $index);
+        $argumentParser = new ArgumentParser(['vendor/bin/svg-optimizer', ...$args]);
+
+        $argumentParser->validateOptions();
+
+        self::assertSame('config.json', $argumentParser->getOption(Option::Config));
+        self::assertTrue($argumentParser->hasOption(Option::DryRun));
+    }
+
+    /**
+     * @return iterable<string, array{list<string>}>
+     */
+    public static function provideGetOptionAcceptsEveryConfigValueFormCases(): iterable
+    {
+        yield 'long option with equals sign' => [['--config=config.json', '--dry-run', 'process', 'file.svg']];
+        yield 'short option with equals sign' => [['-c=config.json', '--dry-run', 'process', 'file.svg']];
+        yield 'long option with separate value' => [['--config', 'config.json', '--dry-run', 'process', 'file.svg']];
+        yield 'short option with separate value' => [['-c', 'config.json', '--dry-run', 'process', 'file.svg']];
+        yield 'options after the paths' => [['process', 'file.svg', '-d', '--config', 'config.json']];
+        yield 'options between the command and the paths' => [['process', '-c', 'config.json', '-d', 'file.svg']];
     }
 
     /**
      * @throws \InvalidArgumentException
      */
     #[Test]
-    public function getNextPositionalArgumentStartIndex(): void
+    public function getPathsIgnoresOptionsAndConfigValuesAnywhereBeforeTheEndOfOptionsMarker(): void
     {
-        $index = $this->argumentParser->getArgumentStartIndex();
-        self::assertSame(self::EXPECTED_POSITIONAL_ARGUMENT_START_INDEX, $index);
+        $tempDir = sys_get_temp_dir() . '/options_anywhere_' . uniqid();
+        mkdir($tempDir);
+        $svgFile = $tempDir . '/file.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $argumentParser = new ArgumentParser([
+            'vendor/bin/svg-optimizer',
+            '-c',
+            '{"removeComments":true}',
+            'process',
+            $svgFile,
+            '--dry-run',
+            '--config',
+            'config.json',
+        ]);
+
+        try {
+            self::assertSame([(string) realpath($svgFile)], $argumentParser->getPaths());
+            self::assertTrue($argumentParser->hasOption(Option::DryRun));
+        } finally {
+            unlink($svgFile);
+            rmdir($tempDir);
+        }
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getOptionThrowsIfTheSeparateConfigValueIsTheEndOfOptionsMarker(): void
+    {
+        $argumentParser = new ArgumentParser(['vendor/bin/svg-optimizer', 'process', '--config', '--', 'file.svg']);
+
+        self::assertFalse($argumentParser->hasOption(Option::DryRun));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Option "--config" requires a value.');
+
+        $argumentParser->getOption(Option::Config);
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getPathsThrowsForAnUnknownCommand(): void
+    {
+        $argumentParser = new ArgumentParser(['vendor/bin/svg-optimizer', 'optimize', __FILE__]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown command "optimize". Please follow the following format: vendor/bin/svg-optimizer [options] process <path1> <path2> ...');
+
+        $argumentParser->getPaths();
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getPathsThrowsIfTheCommandIsAPath(): void
+    {
+        $argumentParser = new ArgumentParser(['vendor/bin/svg-optimizer', __FILE__]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(\sprintf('Unknown command "%s".', __FILE__));
+
+        $argumentParser->getPaths();
     }
 
     #[Test]
@@ -267,16 +349,16 @@ final class ArgumentParserTest extends TestCase
      * @throws \InvalidArgumentException
      */
     #[Test]
-    public function getArgumentIndexThrowsExceptionWhenNoPositionalArg(): void
+    public function getPathsThrowsWhenNoCommandIsGiven(): void
     {
         $args = ['vendor/bin/svg-optimizer', '--config=config.json', '--dry-run'];
 
         $argumentParser = new ArgumentParser($args);
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Please follow the following format:');
+        $this->expectExceptionMessage('No command given. Please follow the following format:');
 
-        $argumentParser->getArgumentIndex();
+        $argumentParser->getPaths();
     }
 
     #[Test]
@@ -446,7 +528,7 @@ final class ArgumentParserTest extends TestCase
     {
         $args = [
             'vendor/bin/svg-optimizer',
-            'onlypositional',
+            'process',
         ];
 
         $argumentParser = new ArgumentParser($args);

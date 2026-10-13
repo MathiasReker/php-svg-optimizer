@@ -162,6 +162,57 @@ final class CommandDispatcherTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
+    public function runWithUnknownCommandPrintsErrorAndExitsOne(): void
+    {
+        $svgFile = $this->tempDir . '/valid.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $result = $this->runCli(['optimize', $svgFile]);
+
+        self::assertSame(1, $result['exitCode']);
+        self::assertStringContainsString('Error: Unknown command "optimize".', $result['stderr']);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function runWithMissingCommandPrintsErrorAndExitsOne(): void
+    {
+        $result = $this->runCli(['--dry-run']);
+
+        self::assertSame(1, $result['exitCode']);
+        self::assertStringContainsString('Error: No command given.', $result['stderr']);
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function runAcceptsOptionsAfterThePathsAndASeparateConfigValue(): void
+    {
+        $svgFile = $this->tempDir . '/options-after-paths.svg';
+        $originalContent = '<svg xmlns="http://www.w3.org/2000/svg"><!-- comment --></svg>';
+        file_put_contents($svgFile, $originalContent);
+
+        $result = $this->runCli(['process', $svgFile, '--dry-run', '-c', '{"removeComments":true}']);
+
+        self::assertSame(0, $result['exitCode']);
+        self::assertSame('', $result['stderr']);
+        self::assertStringContainsString((string) realpath($svgFile), $result['stdout']);
+        self::assertSame($originalContent, file_get_contents($svgFile));
+
+        $result = $this->runCli(['--config', '{"removeComments":true}', 'process', $svgFile]);
+
+        self::assertSame(0, $result['exitCode']);
+        self::assertSame('', $result['stderr']);
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"/>', file_get_contents($svgFile));
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
     public function runWithInvalidSvgFileExitsOne(): void
     {
         $svgFile = $this->tempDir . '/invalid.svg';

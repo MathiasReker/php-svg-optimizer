@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Console\Help\ArgumentData;
+use MathiasReker\PhpSvgOptimizer\Console\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
-use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
 
 /**
  * @internal
@@ -22,17 +22,21 @@ use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
  */
 final readonly class ArgumentParser
 {
-    private const int OPTION_KEY_INDEX = 0;
-
-    private const int OPTION_VALUE_INDEX = 1;
-
     private const int MINIMUM_ARG_COUNT = 2;
 
     private const int OPTION_LIMIT = 2;
 
     private const string END_OF_OPTIONS_MARKER = '--';
 
+    private const string OPTION_VALUE_SEPARATOR = '=';
+
     private ArgumentData $argumentData;
+
+    /** @var list<array{name: string, value: string, hasValue: bool}> */
+    private array $options;
+
+    /** @var list<string> */
+    private array $positionalArguments;
 
     /**
      * @param array<int, string> $args Command-line arguments passed to the script
@@ -41,6 +45,86 @@ final readonly class ArgumentParser
         private array $args,
     ) {
         $this->argumentData = new ArgumentData();
+
+        $options = [];
+        $positionalArguments = [];
+        $remainingArgs = \array_slice($this->args, 1);
+
+        while ([] !== $remainingArgs) {
+            $arg = array_shift($remainingArgs);
+
+            if (self::END_OF_OPTIONS_MARKER === $arg) {
+                $positionalArguments = [...$positionalArguments, ...$remainingArgs];
+
+                break;
+            }
+
+            if (!$this->isOption($arg)) {
+                $positionalArguments[] = $arg;
+
+                continue;
+            }
+
+            $option = $this->parseOption($arg, $remainingArgs[0] ?? self::END_OF_OPTIONS_MARKER);
+
+            if ($option['consumesNextArgument']) {
+                array_shift($remainingArgs);
+            }
+
+            $options[] = [
+                'name' => $option['name'],
+                'value' => $option['value'],
+                'hasValue' => $option['hasValue'],
+            ];
+        }
+
+        $this->options = $options;
+        $this->positionalArguments = $positionalArguments;
+    }
+
+    /**
+     * @param string $arg     The option argument, such as "--config=value" or "--config"
+     * @param string $nextArg The argument following the option, or the end-of-options marker if there is none
+     *
+     * @return array{name: string, value: string, hasValue: bool, consumesNextArgument: bool}
+     */
+    private function parseOption(string $arg, string $nextArg): array
+    {
+        $parts = explode(self::OPTION_VALUE_SEPARATOR, $arg, self::OPTION_LIMIT);
+
+        if (self::OPTION_LIMIT === \count($parts)) {
+            return ['name' => $parts[0], 'value' => $parts[1], 'hasValue' => true, 'consumesNextArgument' => false];
+        }
+
+        $takesNextArgument = $this->requiresValue($arg) && self::END_OF_OPTIONS_MARKER !== $nextArg;
+
+        return [
+            'name' => $arg,
+            'value' => $takesNextArgument ? $nextArg : '',
+            'hasValue' => $takesNextArgument,
+            'consumesNextArgument' => $takesNextArgument,
+        ];
+    }
+
+    /**
+     * @param string $name The name of the option, such as "--config" or "-c"
+     *
+     * @return bool True if the option requires a value, false otherwise
+     */
+    private function requiresValue(string $name): bool
+    {
+        return $this->matches($name, Option::Config);
+    }
+
+    /**
+     * @param string $name   The name of the option, such as "--config" or "-c"
+     * @param Option $option The option to compare with
+     *
+     * @return bool True if the name is the full or shorthand name of the option, false otherwise
+     */
+    private function matches(string $name, Option $option): bool
+    {
+        return \in_array($name, [$option->getFull(), $option->getShorthand()], true);
     }
 
     /**
@@ -48,46 +132,13 @@ final readonly class ArgumentParser
      */
     public function hasOption(Option $option): bool
     {
-        try {
-            $arguments = array_map(
-                fn (string $arg): CliOption => $this->argumentData->getOptionByName($this->getOptionKey($arg)),
-                array_filter(
-                    \array_slice($this->argsBeforeEndOfOptionsMarker(), 1),
-                    $this->isOption(...)
-                )
-            );
-
-            return \in_array($this->argumentData->getOption($option->value), $arguments, true);
-        } catch (\InvalidArgumentException) {
-            return false;
-        }
-    }
-
-    /**
-     * @return array<int, string> The arguments up to (excluding) the first literal "--", or all
-     *                            arguments if there is none. A "--" marks the end of option parsing,
-     *                            so that a path/filename starting with "-" isn't mistaken for an
-     *                            unknown option.
-     */
-    private function argsBeforeEndOfOptionsMarker(): array
-    {
-        foreach ($this->args as $index => $arg) {
-            if (self::END_OF_OPTIONS_MARKER === $arg) {
-                return \array_slice($this->args, 0, $index);
+        foreach ($this->options as $parsedOption) {
+            if ($this->matches($parsedOption['name'], $option)) {
+                return true;
             }
         }
 
-        return $this->args;
-    }
-
-    /**
-     * @param string $option The option to get the key of
-     *
-     * @return string The key of the option
-     */
-    private function getOptionKey(string $option): string
-    {
-        return explode('=', $option)[self::OPTION_KEY_INDEX];
+        return false;
     }
 
     /**
@@ -95,16 +146,20 @@ final readonly class ArgumentParser
      *
      * @return string The value of the option
      *
-     * @throws \InvalidArgumentException If the option is not found in the arguments
+     * @throws \InvalidArgumentException If the option is not found in the arguments or has no value
      */
     public function getOption(Option $option): string
     {
-        foreach ($this->argsBeforeEndOfOptionsMarker() as $arg) {
-            if ($this->isOption($arg)
-                && $this->argumentData->getOptionByName($this->getOptionKey($arg)) === $this->argumentData->getOption($option->value)
-            ) {
-                return $this->getOptionValue($arg);
+        foreach ($this->options as $parsedOption) {
+            if (!$this->matches($parsedOption['name'], $option)) {
+                continue;
             }
+
+            if (!$parsedOption['hasValue']) {
+                throw new \InvalidArgumentException(\sprintf('Option "%s" requires a value.', $parsedOption['name']));
+            }
+
+            return $parsedOption['value'];
         }
 
         throw new \InvalidArgumentException(\sprintf('Option "%s" not found in the command-line arguments.', $option->value));
@@ -119,43 +174,31 @@ final readonly class ArgumentParser
     }
 
     /**
-     * @param string $option The option to get the value of
-     *
-     * @return string The value of the option
-     *
-     * @throws \InvalidArgumentException If the option is missing a value
-     */
-    private function getOptionValue(string $option): string
-    {
-        $parts = explode('=', $option, self::OPTION_LIMIT);
-        if (\count($parts) < self::OPTION_LIMIT) {
-            throw new \InvalidArgumentException(\sprintf('Option "%s" requires a value.', $parts[self::OPTION_KEY_INDEX]));
-        }
-
-        return $parts[self::OPTION_VALUE_INDEX];
-    }
-
-    /**
      * @throws \InvalidArgumentException If any unsupported or unknown option is provided
      */
     public function validateOptions(): void
     {
-        $validOptionKeys = [];
-
-        foreach (Option::cases() as $option) {
-            $validOptionKeys[] = $option->getFull();
-            $validOptionKeys[] = $option->getShorthand();
-        }
-
-        foreach ($this->argsBeforeEndOfOptionsMarker() as $arg) {
-            if ($this->isOption($arg)) {
-                $optionName = $this->getOptionKey($arg);
-
-                if (!\in_array($optionName, $validOptionKeys, true)) {
-                    throw new \InvalidArgumentException(\sprintf('Unknown option: "%s". Run with --help to see valid options.', $optionName));
-                }
+        foreach ($this->options as $option) {
+            if (!$this->isKnownOption($option['name'])) {
+                throw new \InvalidArgumentException(\sprintf('Unknown option: "%s". Run with --help to see valid options.', $option['name']));
             }
         }
+    }
+
+    /**
+     * @param string $name The name of the option, such as "--config" or "-c"
+     *
+     * @return bool True if the name is the full or shorthand name of a supported option, false otherwise
+     */
+    private function isKnownOption(string $name): bool
+    {
+        foreach (Option::cases() as $option) {
+            if ($this->matches($name, $option)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -169,15 +212,13 @@ final readonly class ArgumentParser
     /**
      * @return list<string>
      *
-     * @throws \InvalidArgumentException If no positional arguments are found
+     * @throws \InvalidArgumentException If the command is missing or unknown, or no valid paths are found
      */
     public function getPaths(): array
     {
-        $paths = \array_slice($this->args, $this->getArgumentStartIndex());
+        $this->validateCommand();
 
-        if ([] !== $paths && self::END_OF_OPTIONS_MARKER === $paths[0]) {
-            $paths = \array_slice($paths, 1);
-        }
+        $paths = \array_slice($this->positionalArguments, 1);
 
         if ([] === $paths) {
             throw new \InvalidArgumentException('No positional arguments found. Please provide at least one SVG file or directory.');
@@ -199,28 +240,16 @@ final readonly class ArgumentParser
     }
 
     /**
-     * @return int The index of the first positional argument
-     *
-     * @throws \InvalidArgumentException If no positional argument is found
+     * @throws \InvalidArgumentException If the command is missing or unknown
      */
-    public function getArgumentStartIndex(): int
+    private function validateCommand(): void
     {
-        return $this->getArgumentIndex() + 1;
-    }
-
-    /**
-     * @return int The index of the first positional argument
-     *
-     * @throws \InvalidArgumentException If no positional argument is found
-     */
-    public function getArgumentIndex(): int
-    {
-        foreach ($this->args as $index => $arg) {
-            if (!str_starts_with($arg, '-') && self::OPTION_KEY_INDEX !== $index) {
-                return $index;
-            }
+        if ([] === $this->positionalArguments) {
+            throw new \InvalidArgumentException(\sprintf('No command given. Please follow the following format: %s', $this->argumentData->getFormat()));
         }
 
-        throw new \InvalidArgumentException(\sprintf('Please follow the following format: %s', $this->argumentData->getFormat()));
+        if (!Command::tryFrom($this->positionalArguments[0]) instanceof Command) {
+            throw new \InvalidArgumentException(\sprintf('Unknown command "%s". Please follow the following format: %s', $this->positionalArguments[0], $this->argumentData->getFormat()));
+        }
     }
 }
