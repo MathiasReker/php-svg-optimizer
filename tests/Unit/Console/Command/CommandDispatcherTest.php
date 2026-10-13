@@ -16,6 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Command\CommandFactory;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Console\Input\OptionIntent;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\SilentStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
 use MathiasReker\PhpSvgOptimizer\Console\Type\Application;
@@ -44,6 +45,26 @@ final class CommandDispatcherTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
+    public function theBinaryExitsWithTheExitCodeAndSeparatesErrors(): void
+    {
+        $svgFile = $this->tempDir . '/bad.svg';
+        file_put_contents($svgFile, 'not svg');
+
+        $failure = $this->runBinary(['--dry-run', 'process', $svgFile]);
+        $success = $this->runBinary(['--version']);
+
+        self::assertSame(1, $failure['exitCode']);
+        self::assertSame('', $failure['stdout']);
+        self::assertStringContainsString('Error:', $failure['stderr']);
+        self::assertSame(0, $success['exitCode']);
+        self::assertStringContainsString(Application::Version->value, $success['stdout']);
+    }
+
+    /**
+     * @throws \RuntimeException
+     * @throws \LogicException
+     */
+    #[Test]
     public function runWithNoArgumentsPrintsHelpAndExitsZero(): void
     {
         $result = $this->runCli([]);
@@ -55,6 +76,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithHelpOptionPrintsHelpAndExitsZero(): void
@@ -69,6 +91,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithVersionOptionPrintsVersionAndExitsZero(): void
@@ -90,6 +113,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithUnknownOptionPrintsErrorAndExitsOne(): void
@@ -106,6 +130,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithQuietAndUnknownOptionStillPrintsErrorAndExitsOne(): void
@@ -121,6 +146,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithQuietStillPrintsProcessingErrorsToStderr(): void
@@ -142,6 +168,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithValidSvgFileOptimizesAndExitsZero(): void
@@ -160,6 +187,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithUnknownCommandPrintsErrorAndExitsOne(): void
@@ -175,6 +203,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithMissingCommandPrintsErrorAndExitsOne(): void
@@ -187,6 +216,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runAcceptsOptionsAfterThePathsAndASeparateConfigValue(): void
@@ -211,6 +241,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithInvalidSvgFileExitsOne(): void
@@ -226,6 +257,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithRiskyRuleNotAllowedExitsOne(): void
@@ -241,6 +273,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithoutAnsiOptionDoesNotColorOutput(): void
@@ -256,6 +289,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithAnsiOptionForcesColoredOutputEvenWithoutATty(): void
@@ -271,6 +305,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithNoAnsiOptionNeverColorsOutput(): void
@@ -286,6 +321,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithBothAnsiAndNoAnsiOptionsNoAnsiWins(): void
@@ -301,6 +337,7 @@ final class CommandDispatcherTest extends TestCase
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     #[Test]
     public function runWithDryRunOptionDoesNotModifyFile(): void
@@ -336,8 +373,30 @@ final class CommandDispatcherTest extends TestCase
      * @param list<string> $args
      *
      * @return array{stdout: string, stderr: string, exitCode: int}
+     *
+     * @throws \RuntimeException
+     * @throws \LogicException
      */
     private function runCli(array $args): array
+    {
+        $outputStream = new MemoryStream();
+        $errorStream = new MemoryStream();
+
+        $exitCode = CommandDispatcher::withStreams([$this->binPath, ...$args], $outputStream, $errorStream)->run();
+
+        return [
+            'stdout' => $outputStream->getContent(),
+            'stderr' => $errorStream->getContent(),
+            'exitCode' => $exitCode,
+        ];
+    }
+
+    /**
+     * @param list<string> $args
+     *
+     * @return array{stdout: string, stderr: string, exitCode: int}
+     */
+    private function runBinary(array $args): array
     {
         $command = [\PHP_BINARY, $this->binPath, ...$args];
 
@@ -391,5 +450,15 @@ final class CommandDispatcherTest extends TestCase
         }
 
         rmdir($dir);
+    }
+
+    /**
+     * @throws \RuntimeException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function fromArgsCreatesADispatcherForTheStandardStreams(): void
+    {
+        self::assertSame(0, CommandDispatcher::fromArgs([$this->binPath, '--quiet', '--version'])->run());
     }
 }

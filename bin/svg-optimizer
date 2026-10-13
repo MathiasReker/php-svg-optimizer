@@ -35,9 +35,15 @@ foreach ($autoloadCandidates as $path) {
     }
 }
 
+if (\PHP_SAPI !== 'cli') {
+    echo 'This command can only be run in a CLI environment.', \PHP_EOL;
+
+    exit(1);
+}
+
 /**
  * @see https://github.com/MathiasReker/php-svg-optimizer
  *
  * @var array<int, string> $argv
  */
-CommandDispatcher::fromArgs($argv)->run();
+exit(CommandDispatcher::fromArgs($argv)->run());

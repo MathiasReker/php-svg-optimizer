@@ -19,6 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StderrStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
 use MathiasReker\PhpSvgOptimizer\Console\Type\Application;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
+use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 
 /**
  * @internal
@@ -28,63 +29,71 @@ use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
 final readonly class CommandDispatcher
 {
     /**
-     * @param array<int, string> $argv The command line arguments
+     * @param array<int, string> $argv         The command line arguments
+     * @param StreamInterface    $outputStream The stream for regular output
+     * @param StreamInterface    $errorStream  The stream for errors
      */
     private function __construct(
         private array $argv,
+        private StreamInterface $outputStream,
+        private StreamInterface $errorStream,
     ) {}
 
     /**
      * @param array<int, string> $argv The command line arguments
+     *
+     * @throws \RuntimeException If the standard output or error stream cannot be opened
      */
     public static function fromArgs(array $argv): self
     {
-        return new self($argv);
+        return new self($argv, new StdoutStream(), new StderrStream());
     }
 
     /**
-     * @throws \RuntimeException If the application is not run in a CLI environment or if an error occurs during command execution
+     * @param array<int, string> $argv         The command line arguments
+     * @param StreamInterface    $outputStream The stream for regular output
+     * @param StreamInterface    $errorStream  The stream for errors
+     */
+    public static function withStreams(array $argv, StreamInterface $outputStream, StreamInterface $errorStream): self
+    {
+        return new self($argv, $outputStream, $errorStream);
+    }
+
+    /**
+     * @return int The exit code of the command line tool
+     *
      * @throws \LogicException
      */
-    public function run(): void
+    public function run(): int
     {
         $argumentParser = new ArgumentParser($this->argv);
         $optionIntent = new OptionIntent($argumentParser);
-        $stream = $optionIntent->isQuiet()
-            ? new SilentStream()
-            : new StdoutStream();
+        $stream = $optionIntent->isQuiet() ? new SilentStream() : $this->outputStream;
         $colorEnabled = match (true) {
             $optionIntent->forceNoColor() => false,
             $optionIntent->forceColor() => true,
             default => $stream->supportsColor(),
         };
-        $stderrStream = new StderrStream();
-        $outputManager = new OutputManager($stream, $colorEnabled, $stderrStream);
+        $outputManager = new OutputManager($stream, $colorEnabled, $this->errorStream);
 
         try {
             $argumentParser->validateOptions();
         } catch (\InvalidArgumentException $invalidArgumentException) {
             $outputManager->printError($invalidArgumentException->getMessage());
-            exit(1);
-        }
 
-        if (\PHP_SAPI !== 'cli') {
-            $outputManager->printError('This command can only be run in a CLI environment.');
-            exit(1);
+            return Command::FAILURE;
         }
 
         if ($argumentParser->isEmpty() || $optionIntent->isHelp()) {
             $outputManager->printHelp();
-            exit(0);
+
+            return Command::SUCCESS;
         }
 
         if ($optionIntent->isVersion()) {
-            $outputManager->printVersion(
-                Application::Name->value,
-                Application::Version->value,
-                Application::Author->value
-            );
-            exit(0);
+            $outputManager->printVersion(Application::Name->value, Application::Version->value, Application::Author->value);
+
+            return Command::SUCCESS;
         }
 
         try {
@@ -94,14 +103,14 @@ final readonly class CommandDispatcher
                 $optionIntent->allowRisky(),
                 $optionIntent->withAllRules(),
             );
-            $exitCode = (new CommandFactory($stream, $argumentParser, $colorEnabled, $stderrStream))
+
+            return (new CommandFactory($stream, $argumentParser, $colorEnabled, $this->errorStream))
                 ->create($commandOption)
                 ->run();
         } catch (\InvalidArgumentException $invalidArgumentException) {
             $outputManager->printError($invalidArgumentException->getMessage());
-            exit(Command::FAILURE);
-        }
 
-        exit($exitCode);
+            return Command::FAILURE;
+        }
     }
 }
