@@ -22,6 +22,8 @@ interface SvgProviderInterface
 {
     /**
      * @return \DOMDocument The \DOMDocument instance representing the loaded SVG content
+     *
+     * @throws XmlProcessingException If the content is not well-formed XML
      */
     public function loadContent(): \DOMDocument;
 

@@ -36,18 +36,22 @@ trait XmlContentTrait
      */
     private function processXmlContent(\DOMDocument $domDocument, \Closure $callback): string
     {
-        $content = $domDocument->saveXML();
+        $original = $domDocument->saveXML();
 
-        if (false === $content) {
+        if (false === $original) {
             throw new XmlProcessingException('Failed to save SVG XML content.');
         }
 
         try {
-            $content = $callback($content);
+            $content = $callback($original);
         } catch (XmlProcessingException $xmlProcessingException) {
             throw $xmlProcessingException;
         } catch (\Exception $exception) {
             throw new XmlProcessingException('Failed to process the XML content.', 0, $exception);
+        }
+
+        if ($content === $original) {
+            return $content;
         }
 
         if ('' === $content || !(new SvgValidator())->isValid($content)) {

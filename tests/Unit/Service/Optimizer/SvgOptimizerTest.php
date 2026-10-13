@@ -132,10 +132,7 @@ final class SvgOptimizerTest extends TestCase
 
             public function loadContent(): \DOMDocument
             {
-                $domDocument = new \DOMDocument();
-                $domDocument->loadXML('<svg></svg>');
-
-                return $domDocument;
+                throw new XmlProcessingException('Failed to load DOMDocument.');
             }
 
             public function optimize(\DOMDocument $domDocument): SvgProviderInterface
@@ -165,6 +162,40 @@ final class SvgOptimizerTest extends TestCase
         $this->expectExceptionMessage('The file does not appear to be a valid SVG file.');
 
         $svgOptimizer->optimize();
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     */
+    #[Test]
+    public function optimizeThrowsExceptionWhenTheDocumentElementIsNotSvg(): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<html xmlns="http://www.w3.org/1999/xhtml"/>'));
+
+        try {
+            $svgOptimizer->optimize();
+            self::fail('Expected SvgValidationException was not thrown.');
+        } catch (SvgValidationException $svgValidationException) {
+            self::assertSame('The file does not appear to be a valid SVG file.', $svgValidationException->getMessage());
+            self::assertNotInstanceOf(XmlProcessingException::class, $svgValidationException->getPrevious());
+        }
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     */
+    #[Test]
+    public function optimizeKeepsTheReasonWhenTheInputIsNotWellFormed(): void
+    {
+        try {
+            (new SvgOptimizer(new StringProvider('<svg>')))->optimize();
+            self::fail('Expected SvgValidationException was not thrown.');
+        } catch (SvgValidationException $svgValidationException) {
+            self::assertSame('The file does not appear to be a valid SVG file.', $svgValidationException->getMessage());
+            self::assertInstanceOf(XmlProcessingException::class, $svgValidationException->getPrevious());
+        }
     }
 
     /**

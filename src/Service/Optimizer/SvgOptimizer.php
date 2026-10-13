@@ -125,13 +125,16 @@ final class SvgOptimizer
             throw new RiskyRulesNotAllowedException('Risky optimization rules are disabled. Enable them to use these rules.');
         }
 
-        $content = $this->svgProvider->getInputContent();
+        try {
+            $domDocument = $this->svgProvider->loadContent();
+        } catch (XmlProcessingException $xmlProcessingException) {
+            throw new SvgValidationException('The file does not appear to be a valid SVG file.', 0, $xmlProcessingException);
+        }
 
-        if (!$this->svgValidator->isValid($content)) {
+        if (!$this->svgValidator->isValidDocument($domDocument)) {
             throw new SvgValidationException('The file does not appear to be a valid SVG file.');
         }
 
-        $domDocument = $this->svgProvider->loadContent();
         $this->applyRules($domDocument);
         $this->domDocumentContent = $this->svgProvider->optimize($domDocument)->getOutputContent();
 

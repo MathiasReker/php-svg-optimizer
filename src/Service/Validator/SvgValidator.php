@@ -42,6 +42,16 @@ final readonly class SvgValidator
             return false;
         }
 
+        return $this->isValidDocument($domDocument);
+    }
+
+    /**
+     * @param \DOMDocument $domDocument The loaded document to be validated
+     *
+     * @return bool True if the document element is an SVG element, false otherwise
+     */
+    public function isValidDocument(\DOMDocument $domDocument): bool
+    {
         $root = $domDocument->documentElement;
 
         return $root instanceof \DOMElement
