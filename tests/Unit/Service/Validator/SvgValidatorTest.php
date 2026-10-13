@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Validator;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -113,6 +114,30 @@ final class SvgValidatorTest extends TestCase
     {
         $svg = '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"/>';
         self::assertTrue($this->svgValidator->isValid($svg));
+    }
+
+    #[Test]
+    public function isValidWithSvgRootWithoutNamespace(): void
+    {
+        self::assertTrue($this->svgValidator->isValid('<svg><rect width="1" height="1"/></svg>'));
+    }
+
+    #[DataProvider('provideIsValidRejectsRootsThatAreNotSvgElementsCases')]
+    #[Test]
+    public function isValidRejectsRootsThatAreNotSvgElements(string $content): void
+    {
+        self::assertFalse($this->svgValidator->isValid($content));
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideIsValidRejectsRootsThatAreNotSvgElementsCases(): iterable
+    {
+        yield 'uppercase local name' => ['<SVG xmlns="http://www.w3.org/2000/svg"/>'];
+        yield 'mixed case local name' => ['<Svg/>'];
+        yield 'svg in another default namespace' => ['<svg xmlns="http://www.w3.org/1999/xhtml"/>'];
+        yield 'prefixed svg in another namespace' => ['<x:svg xmlns:x="urn:example"/>'];
     }
 
     #[\Override]

@@ -380,8 +380,8 @@ final class RemoveAriaAndRoleTest extends TestCase
         ];
 
         yield 'Removes ARIA attributes with uppercase and mixed-case tags' => [
-            '<SVG ARIA-LABEL="icon" ROLE="img"><RECT width="10" height="10"/></SVG>',
-            '<SVG><RECT width="10" height="10"/></SVG>',
+            '<svg ARIA-LABEL="icon" ROLE="img"><RECT ARIA-HIDDEN="true" Role="presentation" width="10" height="10"/></svg>',
+            '<svg><RECT width="10" height="10"/></svg>',
         ];
 
         yield 'Removes ARIA attributes on empty elements' => [

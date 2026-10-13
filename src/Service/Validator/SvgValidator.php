@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Validator;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
@@ -48,13 +49,14 @@ final readonly class SvgValidator
     /**
      * @param \DOMDocument $domDocument The loaded document to be validated
      *
-     * @return bool True if the document element is an SVG element, false otherwise
+     * @return bool True if the document element is an svg element in the SVG namespace or in no namespace, false otherwise
      */
     public function isValidDocument(\DOMDocument $domDocument): bool
     {
         $root = $domDocument->documentElement;
 
         return $root instanceof \DOMElement
-            && 0 === strcasecmp($root->localName ?? $root->tagName, SvgTag::Svg->value);
+            && SvgTag::Svg->value === ($root->localName ?? $root->tagName)
+            && \in_array($root->namespaceURI, [null, SvgNamespace::Svg->value], true);
     }
 }
