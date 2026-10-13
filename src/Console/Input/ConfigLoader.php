@@ -18,6 +18,8 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Input;
  */
 final readonly class ConfigLoader
 {
+    private const string FILE_PATH_REGEX = '~^(?!\s*[{\[]).*(?:[/\\\]|\.json\s*$)~is';
+
     private const string UTF8_BOM = "\xEF\xBB\xBF";
 
     /**
@@ -30,17 +32,7 @@ final readonly class ConfigLoader
      */
     public static function loadConfig(string $config): array
     {
-        if (is_dir($config)) {
-            throw new \InvalidArgumentException(\sprintf('Configuration "%s" is a directory, not a file or a JSON string.', $config));
-        }
-
-        $configContent = file_exists($config)
-            ? file_get_contents($config)
-            : $config;
-
-        if (false === $configContent) {
-            throw new \InvalidArgumentException('Failed to read configuration content.');
-        }
+        $configContent = self::readConfig($config);
 
         if (str_starts_with($configContent, self::UTF8_BOM)) {
             $configContent = mb_substr($configContent, mb_strlen(self::UTF8_BOM));
@@ -72,5 +64,33 @@ final readonly class ConfigLoader
         }
 
         return $ruleFlags;
+    }
+
+    /**
+     * @param string $config The path to a config file or a JSON string
+     *
+     * @return string The configuration content
+     *
+     * @throws \InvalidArgumentException If the configuration is a directory, a missing file or cannot be read
+     */
+    private static function readConfig(string $config): string
+    {
+        if (is_dir($config)) {
+            throw new \InvalidArgumentException(\sprintf('Configuration "%s" is a directory, not a file or a JSON string.', $config));
+        }
+
+        if (!file_exists($config) && 1 === preg_match(self::FILE_PATH_REGEX, $config)) {
+            throw new \InvalidArgumentException(\sprintf('Configuration file "%s" does not exist.', $config));
+        }
+
+        $configContent = file_exists($config)
+            ? file_get_contents($config)
+            : $config;
+
+        if (false === $configContent) {
+            throw new \InvalidArgumentException('Failed to read configuration content.');
+        }
+
+        return $configContent;
     }
 }

@@ -240,9 +240,10 @@ final class ConfigLoaderTest extends TestCase
      * @throws \JsonException
      */
     #[Test]
-    public function loadConfigWithNonExistentFilePathThrowsJsonException(): void
+    public function loadConfigWithNonExistentFilePathReportsTheMissingFile(): void
     {
-        $this->expectException(\JsonException::class);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Configuration file "/path/to/non-existent-file.json" does not exist.');
 
         $nonExistentFile = '/path/to/non-existent-file.json';
 

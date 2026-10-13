@@ -253,16 +253,10 @@ final class ArgumentParserTest extends TestCase
     #[Test]
     public function emptyConfigOption(): void
     {
-        $args = [
-            'vendor/bin/svg-optimizer',
-            '--config=',
-        ];
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Option "--config" requires a value.');
 
-        $argumentParser = new ArgumentParser($args);
-
-        $value = $argumentParser->getOption(Option::Config);
-
-        self::assertSame('', $value);
+        (new ArgumentParser(['vendor/bin/svg-optimizer', '--config=']))->getOption(Option::Config);
     }
 
     /**
@@ -273,7 +267,7 @@ final class ArgumentParserTest extends TestCase
     {
         $args = [
             'vendor/bin/svg-optimizer',
-            '--config=',
+            '--config=a.json',
             '--foo=',
         ];
 
@@ -281,7 +275,7 @@ final class ArgumentParserTest extends TestCase
 
         $value = $argumentParser->getOption(Option::Config);
 
-        self::assertSame('', $value);
+        self::assertSame('a.json', $value);
     }
 
     /**

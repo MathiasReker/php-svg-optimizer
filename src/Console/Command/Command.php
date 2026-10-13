@@ -69,9 +69,11 @@ final readonly class Command implements CommandInterface
     {
         $exitCode = self::SUCCESS;
 
-        try {
-            $this->printUnknownConfigKeys();
+        if (!$this->validateConfiguration()) {
+            return self::FAILURE;
+        }
 
+        try {
             foreach ($this->paths as $path) {
                 if (!$this->processPath($path)) {
                     $exitCode = self::FAILURE;
@@ -115,17 +117,28 @@ final readonly class Command implements CommandInterface
         return false;
     }
 
-    private function printUnknownConfigKeys(): void
+    /**
+     * @return bool True if the configuration can be used, false if an error was printed
+     */
+    private function validateConfiguration(): bool
     {
         try {
             $unknownConfigKeys = $this->svgFileProcessor->getUnknownConfigKeys();
-        } catch (\JsonException|\InvalidArgumentException) {
-            return;
+        } catch (\JsonException $jsonException) {
+            $this->outputManager->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOption->getConfigPath(), $jsonException->getMessage()));
+
+            return false;
+        } catch (\InvalidArgumentException $invalidArgumentException) {
+            $this->outputManager->printError($invalidArgumentException->getMessage());
+
+            return false;
         }
 
         foreach ($unknownConfigKeys as $unknownConfigKey) {
             $this->outputManager->printWarning(\sprintf('Unknown rule "%s" in the configuration is ignored.', $unknownConfigKey));
         }
+
+        return true;
     }
 
     private function printSummary(): void

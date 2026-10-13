@@ -93,7 +93,7 @@ final readonly class ArgumentParser
         $parts = explode(self::OPTION_VALUE_SEPARATOR, $arg, self::OPTION_LIMIT);
 
         if (self::OPTION_LIMIT === \count($parts)) {
-            return ['name' => $parts[0], 'value' => $parts[1], 'hasValue' => true, 'consumesNextArgument' => false];
+            return ['name' => $parts[0], 'value' => $parts[1], 'hasValue' => '' !== $parts[1], 'consumesNextArgument' => false];
         }
 
         $takesNextArgument = $this->requiresValue($arg) && self::END_OF_OPTIONS_MARKER !== $nextArg;

@@ -206,6 +206,19 @@ final class CommandDispatcherTest extends TestCase
      * @throws \LogicException
      */
     #[Test]
+    public function runWithAnEmptyConfigValuePrintsErrorAndExitsOne(): void
+    {
+        $result = $this->runCli(['--config=', '--with-all-rules', 'process', $this->tempDir]);
+
+        self::assertSame(1, $result['exitCode']);
+        self::assertStringContainsString('Option "--config" requires a value.', $result['stderr']);
+    }
+
+    /**
+     * @throws \RuntimeException
+     * @throws \LogicException
+     */
+    #[Test]
     public function runWithMissingCommandPrintsErrorAndExitsOne(): void
     {
         $result = $this->runCli(['--dry-run']);

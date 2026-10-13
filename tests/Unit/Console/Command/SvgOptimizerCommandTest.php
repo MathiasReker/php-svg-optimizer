@@ -288,6 +288,26 @@ final class SvgOptimizerCommandTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
+    public function runReportsAnInvalidConfigurationOnceAndProcessesNothing(): void
+    {
+        $first = $this->tempDir . '/first.svg';
+        $second = $this->tempDir . '/second.svg';
+        file_put_contents($first, '<svg xmlns="http://www.w3.org/2000/svg"><!-- c --></svg>');
+        file_put_contents($second, '<svg xmlns="http://www.w3.org/2000/svg"><!-- c --></svg>');
+        $memoryStream = new MemoryStream();
+
+        $exitCode = (new Command([$first, $second], new CommandOption(false, '{bad', false, false), new OutputManager(new MemoryStream(), false, $memoryStream)))->run();
+
+        self::assertSame(1, $exitCode);
+        self::assertSame(1, mb_substr_count($memoryStream->getContent(), 'Error: '));
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><!-- c --></svg>', file_get_contents($first));
+    }
+
+    /**
+     * @throws \LogicException
+     * @throws \RuntimeException
+     */
+    #[Test]
     public function runWithInvalidJsonConfigPrintsJsonExceptionMessage(): void
     {
         $svgFile = $this->tempDir . '/invalid-json.svg';
