@@ -90,13 +90,6 @@
         "process-timeout": 1800,
         "sort-packages": true
     },
-    "extra": {
-        "phpstan": {
-            "includes": [
-                "extension.neon"
-            ]
-        }
-    },
     "scripts": {
         "analyze:all": [
             "@analyze:normalize",
