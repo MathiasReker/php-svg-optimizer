@@ -108,10 +108,8 @@ final readonly class Command implements CommandInterface
             return true;
         } catch (\RuntimeException|SvgValidationException $exception) {
             $this->outputManager->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
-        } catch (\JsonException $jsonException) {
-            $this->outputManager->printError(\sprintf('Invalid JSON in configuration file "%s": %s', $this->commandOption->getConfigPath(), $jsonException->getMessage()));
-        } catch (\InvalidArgumentException $invalidArgumentException) {
-            $this->outputManager->printError($invalidArgumentException->getMessage());
+        } catch (\InvalidArgumentException|\JsonException $exception) {
+            $this->outputManager->printError($exception->getMessage());
         }
 
         return false;
