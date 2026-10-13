@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
  * @internal
@@ -22,6 +23,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  */
 final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterface
 {
+    use ElementTrait;
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -41,7 +44,7 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
     public function optimize(\DOMDocument $domDocument): void
     {
         $root = $domDocument->documentElement;
-        if ($root instanceof \DOMElement) {
+        if ($root instanceof \DOMElement && !$this->hasSiblingSensitiveStyle($domDocument)) {
             $this->removeEmptyTextRecursive($root);
         }
     }
@@ -68,7 +71,7 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
     {
         $tag = $domElement->tagName;
 
-        if (($tag === SvgTag::Text->value || $tag === SvgTag::Tspan->value) && $this->isEmptyElement($domElement)) {
+        if (($tag === SvgTag::Text->value || $tag === SvgTag::Tspan->value) && $this->hasNoContent($domElement)) {
             $domElement->parentNode?->removeChild($domElement);
 
             return;
@@ -85,7 +88,7 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
      * @return bool true if the element has no child elements and no text, not even whitespace, which renders as a space
      *              between the surrounding text
      */
-    private function isEmptyElement(\DOMElement $domElement): bool
+    private function hasNoContent(\DOMElement $domElement): bool
     {
         foreach ($domElement->childNodes as $child) {
             if ($child instanceof \DOMElement) {

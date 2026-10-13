@@ -179,6 +179,11 @@ final class RemoveEmptyTextElementsTest extends TestCase
                 XML,
         ];
 
+        yield 'Keeps empty text elements when a style sheet depends on sibling positions' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:first-child{fill:red}</style><g><text></text><rect width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:first-child{fill:red}</style><g><text/><rect width="5" height="5"/></g></svg>',
+        ];
+
         yield 'Removes deeply nested empty elements with siblings' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
