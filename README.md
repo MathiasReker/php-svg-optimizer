@@ -1171,7 +1171,7 @@ various scenarios to verify the correct behavior and edge cases for your rule.
 ### 4. **Update Documentation**
 
 Document the functionality and purpose of your rule in the `README.md` to ensure users understand its behavior and
-usage, and add it to the `CHANGELOG.md`.
+usage.
 
 #### Docker
 
