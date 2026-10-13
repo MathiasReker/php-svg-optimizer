@@ -43,7 +43,6 @@ final readonly class CommandDispatcher
     }
 
     /**
-     * @throws \ValueError
      * @throws \RuntimeException If the application is not run in a CLI environment or if an error occurs during command execution
      * @throws \LogicException
      */

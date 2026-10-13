@@ -162,7 +162,6 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \LogicException
      * @throws RiskyRulesNotAllowedException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function processSingleSvgFile(): void
@@ -199,7 +198,6 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \LogicException
      * @throws RiskyRulesNotAllowedException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function processDirectory(): void
@@ -237,7 +235,6 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \LogicException
      * @throws RiskyRulesNotAllowedException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function processInvalidPathThrows(): void
@@ -266,7 +263,6 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \LogicException
      * @throws RiskyRulesNotAllowedException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function processFileWithUppercaseExtension(): void
@@ -292,7 +288,6 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \LogicException
      * @throws RiskyRulesNotAllowedException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function processWithRiskyRulesAllowed(): void
@@ -320,7 +315,6 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \LogicException
      * @throws RiskyRulesNotAllowedException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function itDoesNotModifyFileOnDryRun(): void
@@ -350,7 +344,6 @@ final class SvgFileProcessorTest extends TestCase
      * @throws \LogicException
      * @throws RiskyRulesNotAllowedException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function itUsesConfigFile(): void

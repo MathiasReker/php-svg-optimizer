@@ -64,7 +64,6 @@ final readonly class Command implements CommandInterface
      * @return int The exit code: SUCCESS if every path was processed, FAILURE otherwise
      *
      * @throws \LogicException
-     * @throws \ValueError
      */
     public function run(): int
     {
@@ -97,7 +96,6 @@ final readonly class Command implements CommandInterface
      * @return bool True if the path was processed, false if an error was printed
      *
      * @throws \LogicException
-     * @throws \ValueError
      * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     private function processPath(string $path): bool
@@ -117,9 +115,6 @@ final readonly class Command implements CommandInterface
         return false;
     }
 
-    /**
-     * @throws \ValueError
-     */
     private function printUnknownConfigKeys(): void
     {
         try {

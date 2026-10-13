@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -27,7 +28,6 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
-     * @throws \ValueError
      */
     #[Test]
     public function loadConfigWithValidJsonString(): void
@@ -47,7 +47,6 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
-     * @throws \ValueError
      */
     #[Test]
     public function loadConfigWithValidJsonFile(): void
@@ -63,7 +62,6 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
-     * @throws \ValueError
      */
     #[Test]
     public function loadConfigWithInvalidJsonString(): void
@@ -78,7 +76,6 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
-     * @throws \ValueError
      */
     #[Test]
     public function loadConfigWithInvalidJsonFile(): void
@@ -94,7 +91,6 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
-     * @throws \ValueError
      */
     #[Test]
     public function loadConfigWithEmptyJsonContent(): void
@@ -109,51 +105,45 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
-     * @throws \ValueError
      */
+    #[DataProvider('provideLoadConfigWithNonBooleanValueThrowsExceptionNamingTheKeyCases')]
     #[Test]
-    public function loadConfigWithBooleanAndNumericValues(): void
+    public function loadConfigWithNonBooleanValueThrowsExceptionNamingTheKey(string $value): void
     {
-        $jsonString = '{"flag": true, "disabled": 0, "enabled": 1}';
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Configuration value for "removeComments" must be true or false.');
 
-        $result = ConfigLoader::loadConfig($jsonString);
+        ConfigLoader::loadConfig(\sprintf('{"flattenGroups": true, "removeComments": %s}', $value));
+    }
 
-        self::assertSame(
-            [
-                'flag' => true,
-                'disabled' => false,
-                'enabled' => true,
-            ],
-            $result
-        );
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideLoadConfigWithNonBooleanValueThrowsExceptionNamingTheKeyCases(): iterable
+    {
+        yield 'string "false"' => ['"false"'];
+        yield 'string "true"' => ['"true"'];
+        yield 'zero' => ['0'];
+        yield 'one' => ['1'];
+        yield 'null' => ['null'];
+        yield 'string "yes"' => ['"yes"'];
     }
 
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
-     * @throws \ValueError
      */
     #[Test]
-    public function loadConfigWithNonBooleanValues(): void
+    public function loadConfigFromFileWithUtf8ByteOrderMark(): void
     {
-        $jsonString = '{"key1": "yes", "key2": 123, "key3": null}';
+        file_put_contents($this->configFile, "\xEF\xBB\xBF{\"removeComments\": true, \"flattenGroups\": false}");
 
-        $result = ConfigLoader::loadConfig($jsonString);
-
-        self::assertSame(
-            [
-                'key1' => true,
-                'key2' => true,
-                'key3' => false,
-            ],
-            $result
-        );
+        self::assertSame(['removeComments' => true, 'flattenGroups' => false], ConfigLoader::loadConfig($this->configFile));
     }
 
     /**
      * @throws \JsonException
      * @throws \InvalidArgumentException
-     * @throws \ValueError
      */
     #[Test]
     public function loadConfigWithNumericKeys(): void
@@ -168,7 +158,6 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
-     * @throws \ValueError
      */
     #[Test]
     public function loadConfigWithEmptyStringThrowsException(): void
@@ -182,7 +171,6 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
-     * @throws \ValueError
      */
     #[Test]
     public function loadConfigWithNestedJsonObject(): void
@@ -198,7 +186,6 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
-     * @throws \ValueError
      */
     #[Test]
     public function loadConfigWithInvalidStringThrowsException(): void
@@ -211,7 +198,6 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
-     * @throws \ValueError
      */
     #[Test]
     public function loadConfigWithEmptyJsonObjectReturnsEmptyArray(): void
@@ -224,7 +210,6 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
-     * @throws \ValueError
      */
     #[Test]
     public function itFailsOnTooDeeplyNestedJson(): void
@@ -239,7 +224,6 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
-     * @throws \ValueError
      */
     #[Test]
     public function loadConfigWithNonArrayJsonThrowsException(): void
@@ -253,7 +237,6 @@ final class ConfigLoaderTest extends TestCase
     /**
      * @throws \InvalidArgumentException
      * @throws \JsonException
-     * @throws \ValueError
      */
     #[Test]
     public function loadConfigWithNonExistentFilePathThrowsJsonException(): void

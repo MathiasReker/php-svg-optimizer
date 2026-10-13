@@ -145,6 +145,9 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
 }
 ```
 
+Each value must be the JSON boolean `true` or `false`; any other value, such as `"false"` or `0`, is reported as an
+error. Rules that are left out are not applied.
+
 ### Example Workflow for GitHub Actions
 
 ```yaml

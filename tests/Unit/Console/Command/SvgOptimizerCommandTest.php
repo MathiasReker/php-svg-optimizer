@@ -147,7 +147,6 @@ final class SvgOptimizerCommandTest extends TestCase
      * @throws \ReflectionException
      * @throws \RuntimeException
      * @throws \LogicException
-     * @throws \ValueError
      */
     #[Test]
     public function runWithValidSvgFile(): void
@@ -188,7 +187,6 @@ final class SvgOptimizerCommandTest extends TestCase
      * @throws \ReflectionException
      * @throws \RuntimeException
      * @throws \LogicException
-     * @throws \ValueError
      */
     #[Test]
     public function runWithNoInputFiles(): void
@@ -230,7 +228,6 @@ final class SvgOptimizerCommandTest extends TestCase
     /**
      * @throws \LogicException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function runWithDryRunOption(): void
@@ -258,7 +255,6 @@ final class SvgOptimizerCommandTest extends TestCase
     /**
      * @throws \LogicException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function runWithRiskyRuleInConfigButRiskyNotAllowedPrintsErrorAndDoesNotThrow(): void
@@ -290,7 +286,6 @@ final class SvgOptimizerCommandTest extends TestCase
     /**
      * @throws \LogicException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function runWithInvalidJsonConfigPrintsJsonExceptionMessage(): void
@@ -325,7 +320,6 @@ final class SvgOptimizerCommandTest extends TestCase
     /**
      * @throws \LogicException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function runWithUnknownConfigKeysWarnsOnceAndStillOptimizes(): void
@@ -366,7 +360,6 @@ final class SvgOptimizerCommandTest extends TestCase
     /**
      * @throws \LogicException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function runPrintsTheSummaryOnlyWhenFilesWereOptimized(): void
@@ -391,7 +384,6 @@ final class SvgOptimizerCommandTest extends TestCase
     /**
      * @throws \LogicException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function runWithOnlyKnownConfigKeysDoesNotWarn(): void
@@ -421,7 +413,6 @@ final class SvgOptimizerCommandTest extends TestCase
     /**
      * @throws \LogicException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function runWithNonArrayJsonConfigPrintsInvalidArgumentExceptionMessage(): void
@@ -453,7 +444,6 @@ final class SvgOptimizerCommandTest extends TestCase
     /**
      * @throws \LogicException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function runWithUnwritableFilePrintsRuntimeExceptionMessage(): void
@@ -496,7 +486,6 @@ final class SvgOptimizerCommandTest extends TestCase
     /**
      * @throws \LogicException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function runWithInvalidSvgFileNamesTheFileInTheError(): void
@@ -517,7 +506,6 @@ final class SvgOptimizerCommandTest extends TestCase
     /**
      * @throws \LogicException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[Test]
     public function runReturnsSuccessWhenEveryPathIsProcessed(): void
@@ -539,7 +527,6 @@ final class SvgOptimizerCommandTest extends TestCase
      *
      * @throws \LogicException
      * @throws \RuntimeException
-     * @throws \ValueError
      */
     #[DataProvider('provideRunReturnsFailureWhenAnyPathFailsCases')]
     #[Test]
@@ -568,6 +555,7 @@ final class SvgOptimizerCommandTest extends TestCase
         yield 'invalid SVG before a valid file' => [['invalid.svg', 'valid.svg'], ''];
         yield 'invalid JSON configuration' => [['valid.svg'], '{invalid'];
         yield 'non-array configuration' => [['valid.svg'], '1'];
+        yield 'non-boolean configuration value' => [['valid.svg'], '{"removeComments":"false"}'];
         yield 'risky rule not allowed' => [['valid.svg'], '{"removeDataAttributes":true}'];
     }
 

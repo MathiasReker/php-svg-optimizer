@@ -42,7 +42,6 @@ final readonly class SvgFileProcessor
      * @throws \RuntimeException
      * @throws \JsonException
      * @throws \LogicException
-     * @throws \ValueError
      * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     public function processPath(string $path): void
@@ -60,7 +59,6 @@ final readonly class SvgFileProcessor
      * @throws \RuntimeException
      * @throws \JsonException
      * @throws \LogicException
-     * @throws \ValueError
      * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     private function processDirectory(string $directory): void
@@ -80,7 +78,6 @@ final readonly class SvgFileProcessor
      * @throws \RuntimeException
      * @throws \JsonException
      * @throws \LogicException
-     * @throws \ValueError
      * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     private function optimizeSvg(string $filePath): void
@@ -111,7 +108,6 @@ final readonly class SvgFileProcessor
      *
      * @throws \JsonException
      * @throws \LogicException
-     * @throws \ValueError
      */
     private function ruleFlags(): array
     {
@@ -127,7 +123,6 @@ final readonly class SvgFileProcessor
      * @return list<string> The configuration keys that do not name an optimization rule
      *
      * @throws \JsonException            If the configuration file contains invalid JSON
-     * @throws \ValueError
      * @throws \InvalidArgumentException If the configuration cannot be read
      */
     public function getUnknownConfigKeys(): array
@@ -150,7 +145,6 @@ final readonly class SvgFileProcessor
      * @return array<array-key, bool> The configuration array for rule flags
      *
      * @throws \JsonException            If the configuration file contains invalid JSON
-     * @throws \ValueError
      * @throws \InvalidArgumentException
      */
     private function getConfig(): array
