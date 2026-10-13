@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 12.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 51448)  -->
+<svg  version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+	 width="200" height="200" viewBox="0 0 200 200" overflow="visible" enable-background="new 0 0 200 200"
+	 xml:space="preserve">
+<defs>
+</defs>
+<linearGradient id="XMLID_1_" gradientUnits="userSpaceOnUse" x1="10" y1="100" x2="190" y2="100">
+	<stop  offset="0" style="stop-color:#FFFF00"/>
+	<stop  offset="1" style="stop-color:#FF0000"/>
+	<a:midPointStop  offset="0" style="stop-color:#FFFF00"/>
+	<a:midPointStop  offset="0.5" style="stop-color:#FFFF00"/>
+	<a:midPointStop  offset="1" style="stop-color:#FF0000"/>
+</linearGradient>
+<rect x="10" y="10" fill="url(#XMLID_1_)" width="180" height="90"/>
+<g a:adobe-blending-mode="multiply">
+	<use xlink:href="#shape" x="0" y="100" opacity="0.8"/>
+</g>
+<symbol id="shape" viewBox="0 0 50 50">
+	<path fill="#00AA00" d="M0,0h50v50H0V0z"/>
+</symbol>
+<text transform="matrix(1 0 0 1 20 190)" font-family="'Arial'" font-size="20">World</text>
+</svg>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 13.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 14948)  -->
+<svg xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200" viewBox="0 0 200 200"
+	 overflow="visible" enable-background="new 0 0 200 200" xml:space="preserve">
+<switch>
+	<foreignObject requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/" x="0" y="0" width="1" height="1">
+		<i:pgfRef  xlink:href="#adobe_illustrator_pgf">
+		</i:pgfRef>
+	</foreignObject>
+	<g i:extraneous="self">
+		<g id="Layer_1" i:layer="yes" i:dimmedPercent="50" i:rgbTrio="#4F00FFFF0000">
+			<rect x="10" y="10" i:knockout="Off" fill="#FF0000" stroke="#000000" stroke-width="2" width="80" height="80"/>
+			<circle i:knockout="Off" fill="#0000FF" cx="140" cy="60" r="40"/>
+			<text transform="matrix(1 0 0 1 20 170)" i:knockout="Off" font-family="'Arial'" font-size="24">Hello</text>
+		</g>
+	</g>
+</switch>
+<i:pgf  id="adobe_illustrator_pgf">
+	<![CDATA[
+	eJzsvWmTHUdyKPgdZvof7/VAUSIIx8Ywv1nPswOgWngAk7DlOW1OD0zHPmV0O6qY5S5r/Pmn2D
+	]]>
+</i:pgf>
+</svg>
