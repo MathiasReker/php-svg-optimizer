@@ -99,8 +99,9 @@ final class CommandDispatcherTest extends TestCase
         self::assertSame(1, $result['exitCode']);
         self::assertStringContainsString(
             'Error: Unknown option: "--not-a-real-option". Run with --help to see valid options.',
-            $result['stdout']
+            $result['stderr']
         );
+        self::assertSame('', $result['stdout']);
     }
 
     /**
@@ -114,7 +115,27 @@ final class CommandDispatcherTest extends TestCase
         self::assertSame(1, $result['exitCode']);
         self::assertStringContainsString(
             'Error: Unknown option: "--not-a-real-option". Run with --help to see valid options.',
-            $result['stdout']
+            $result['stderr']
+        );
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function runWithQuietStillPrintsProcessingErrorsToStderr(): void
+    {
+        $validFile = $this->tempDir . '/valid.svg';
+        file_put_contents($validFile, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+        $invalidFile = $this->tempDir . '/invalid.svg';
+        file_put_contents($invalidFile, 'not an svg');
+
+        $result = $this->runCli(['--quiet', 'process', $this->tempDir]);
+
+        self::assertSame('', $result['stdout']);
+        self::assertStringContainsString(
+            \sprintf('Error: Failed processing "%s": The file does not appear to be a valid SVG file.', (string) realpath($invalidFile)),
+            $result['stderr']
         );
     }
 

@@ -16,6 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Output\Formatter\ByteFormatter;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\SilentStream;
 use MathiasReker\PhpSvgOptimizer\Console\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
@@ -31,6 +32,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(OutputManager::class)]
 #[CoversClass(AbstractStream::class)]
 #[CoversClass(MemoryStream::class)]
+#[CoversClass(SilentStream::class)]
 #[CoversClass(ByteFormatter::class)]
 #[CoversClass(ArgumentData::class)]
 #[CoversClass(Command::class)]
@@ -60,6 +62,38 @@ final class OutputManagerTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
+    public function printErrorWritesToTheErrorStreamOnly(): void
+    {
+        $outputStream = new MemoryStream();
+        $errorStream = new MemoryStream();
+        $outputManager = new OutputManager($outputStream, false, $errorStream);
+
+        $outputManager->printError('Something went wrong');
+        $outputManager->printOptimizationResult('file.svg', 10.0);
+
+        self::assertSame('Error: Something went wrong' . \PHP_EOL, $errorStream->getContent());
+        self::assertSame('file.svg (10.00%)' . \PHP_EOL, $outputStream->getContent());
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printErrorIsNotSilencedBySilentOutputStream(): void
+    {
+        $memoryStream = new MemoryStream();
+        $outputManager = new OutputManager(new SilentStream(), false, $memoryStream);
+
+        $outputManager->printError('Something went wrong');
+        $outputManager->printWarning('Something looks odd');
+
+        self::assertSame('Error: Something went wrong' . \PHP_EOL, $memoryStream->getContent());
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
     public function printVersion(): void
     {
         $this->outputManager->printVersion('PHP SVG Optimizer', '1.2.3', 'Mathias Reker');
@@ -78,7 +112,7 @@ final class OutputManagerTest extends TestCase
     public function printVersionWithColorEnabledColorsVersionYellow(): void
     {
         $memoryStream = new MemoryStream();
-        $outputManager = new OutputManager($memoryStream, true);
+        $outputManager = new OutputManager($memoryStream, true, $memoryStream);
 
         $outputManager->printVersion('PHP SVG Optimizer', '1.2.3', 'Mathias Reker');
 
@@ -131,7 +165,7 @@ final class OutputManagerTest extends TestCase
     public function printOptimizationResultWithColorEnabledColorsHighPercentageGreen(): void
     {
         $memoryStream = new MemoryStream();
-        $outputManager = new OutputManager($memoryStream, true);
+        $outputManager = new OutputManager($memoryStream, true, $memoryStream);
 
         $outputManager->printOptimizationResult('file.svg', 80.0);
 
@@ -148,7 +182,7 @@ final class OutputManagerTest extends TestCase
     public function printOptimizationResultWithColorEnabledColorsAnyPositivePercentageGreen(): void
     {
         $memoryStream = new MemoryStream();
-        $outputManager = new OutputManager($memoryStream, true);
+        $outputManager = new OutputManager($memoryStream, true, $memoryStream);
 
         $outputManager->printOptimizationResult('file.svg', 0.01);
 
@@ -165,7 +199,7 @@ final class OutputManagerTest extends TestCase
     public function printOptimizationResultWithColorEnabledLeavesZeroPercentageUncolored(): void
     {
         $memoryStream = new MemoryStream();
-        $outputManager = new OutputManager($memoryStream, true);
+        $outputManager = new OutputManager($memoryStream, true, $memoryStream);
 
         $outputManager->printOptimizationResult('file.svg', 0.0);
 
@@ -182,7 +216,7 @@ final class OutputManagerTest extends TestCase
     public function printOptimizationResultWithColorEnabledLeavesNegativePercentageUncolored(): void
     {
         $memoryStream = new MemoryStream();
-        $outputManager = new OutputManager($memoryStream, true);
+        $outputManager = new OutputManager($memoryStream, true, $memoryStream);
 
         $outputManager->printOptimizationResult('file.svg', -5.0);
 
@@ -210,7 +244,7 @@ final class OutputManagerTest extends TestCase
     public function printWarningWithColorEnabledWrapsMessageInYellow(): void
     {
         $memoryStream = new MemoryStream();
-        $outputManager = new OutputManager($memoryStream, true);
+        $outputManager = new OutputManager($memoryStream, true, $memoryStream);
 
         $outputManager->printWarning('Something looks odd');
 
@@ -227,7 +261,7 @@ final class OutputManagerTest extends TestCase
     public function printErrorWithColorEnabledWrapsMessageInRed(): void
     {
         $memoryStream = new MemoryStream();
-        $outputManager = new OutputManager($memoryStream, true);
+        $outputManager = new OutputManager($memoryStream, true, $memoryStream);
 
         $outputManager->printError('Something went wrong');
 
@@ -255,7 +289,7 @@ final class OutputManagerTest extends TestCase
     public function printTotalSummaryWithColorEnabledColorsSavedPercentage(): void
     {
         $memoryStream = new MemoryStream();
-        $outputManager = new OutputManager($memoryStream, true);
+        $outputManager = new OutputManager($memoryStream, true, $memoryStream);
 
         $outputManager->printTotalSummary(
             3,
@@ -279,7 +313,7 @@ final class OutputManagerTest extends TestCase
     public function printTotalSummaryWithColorEnabledBoldsSummaryHeader(): void
     {
         $memoryStream = new MemoryStream();
-        $outputManager = new OutputManager($memoryStream, true);
+        $outputManager = new OutputManager($memoryStream, true, $memoryStream);
 
         $outputManager->printTotalSummary(3, 10_240, 5_120, 5_120, 50.0, 0.001);
 
@@ -307,7 +341,7 @@ final class OutputManagerTest extends TestCase
     public function printHelpWithColorEnabledBoldsSectionHeaders(): void
     {
         $memoryStream = new MemoryStream();
-        $outputManager = new OutputManager($memoryStream, true);
+        $outputManager = new OutputManager($memoryStream, true, $memoryStream);
 
         $outputManager->printHelp();
 
@@ -326,7 +360,7 @@ final class OutputManagerTest extends TestCase
     public function printHelpWithColorEnabledColorsOptionFlagsCyan(): void
     {
         $memoryStream = new MemoryStream();
-        $outputManager = new OutputManager($memoryStream, true);
+        $outputManager = new OutputManager($memoryStream, true, $memoryStream);
 
         $outputManager->printHelp();
 
@@ -346,7 +380,7 @@ final class OutputManagerTest extends TestCase
     public function printHelpWithColorEnabledColorsCommandTitleCyan(): void
     {
         $memoryStream = new MemoryStream();
-        $outputManager = new OutputManager($memoryStream, true);
+        $outputManager = new OutputManager($memoryStream, true, $memoryStream);
 
         $outputManager->printHelp();
 
@@ -449,6 +483,6 @@ final class OutputManagerTest extends TestCase
     protected function setUp(): void
     {
         $this->memoryStream = new MemoryStream();
-        $this->outputManager = new OutputManager($this->memoryStream, false);
+        $this->outputManager = new OutputManager($this->memoryStream, false, $this->memoryStream);
     }
 }

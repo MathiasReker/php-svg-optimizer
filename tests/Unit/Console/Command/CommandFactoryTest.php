@@ -52,9 +52,11 @@ final class CommandFactoryTest extends TestCase
             ]
         );
 
-        $commandFactory = new CommandFactory($memoryStream, $argumentParser, false);
+        $errorStream = new MemoryStream();
+        $commandFactory = new CommandFactory($memoryStream, $argumentParser, false, $errorStream);
 
         self::assertSame($memoryStream, $commandFactory->stream);
+        self::assertSame($errorStream, $commandFactory->errorStream);
         self::assertSame($argumentParser, $commandFactory->argumentParser);
 
         $commandOption = new CommandOption(false, '', false, false);
@@ -75,6 +77,9 @@ final class CommandFactoryTest extends TestCase
 
         $reflectionProperty = new \ReflectionProperty(OutputManager::class, 'stream');
         self::assertSame($memoryStream, $reflectionProperty->getValue($outputManager));
+
+        $errorStreamProperty = new \ReflectionProperty(OutputManager::class, 'errorStream');
+        self::assertSame($errorStream, $errorStreamProperty->getValue($outputManager));
 
         $metaDataAggregatorProperty = $reflectionClass->getProperty('metaDataAggregator');
         self::assertInstanceOf(MetaDataAggregator::class, $metaDataAggregatorProperty->getValue($command));

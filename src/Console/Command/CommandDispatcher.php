@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Console\Input\OptionIntent;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\SilentStream;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StderrStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
 use MathiasReker\PhpSvgOptimizer\Console\Type\Application;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
@@ -58,7 +59,8 @@ final readonly class CommandDispatcher
             $optionIntent->forceColor() => true,
             default => $stream->supportsColor(),
         };
-        $outputManager = new OutputManager($stream, $colorEnabled);
+        $stderrStream = new StderrStream();
+        $outputManager = new OutputManager($stream, $colorEnabled, $stderrStream);
 
         try {
             $argumentParser->validateOptions();
@@ -93,7 +95,7 @@ final readonly class CommandDispatcher
                 $optionIntent->allowRisky(),
                 $optionIntent->withAllRules(),
             );
-            (new CommandFactory($stream, $argumentParser, $colorEnabled))
+            (new CommandFactory($stream, $argumentParser, $colorEnabled, $stderrStream))
                 ->create($commandOption)
                 ->run();
         } catch (\InvalidArgumentException $invalidArgumentException) {

@@ -394,7 +394,7 @@ final class SvgFileProcessorTest extends TestCase
         );
 
         $this->memoryStream = new MemoryStream();
-        $this->outputManager = new OutputManager($this->memoryStream, false);
+        $this->outputManager = new OutputManager($this->memoryStream, false, $this->memoryStream);
         $this->metaDataAggregator = new MetaDataAggregator();
     }
 

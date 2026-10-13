@@ -27,11 +27,13 @@ final readonly class CommandFactory
      * @param StreamInterface $stream         The output stream to use
      * @param ArgumentParser  $argumentParser The argument parser to use
      * @param bool            $colorEnabled   Whether ANSI color output should be used
+     * @param StreamInterface $errorStream    The output stream to write errors to
      */
     public function __construct(
         public StreamInterface $stream,
         public ArgumentParser $argumentParser,
         public bool $colorEnabled,
+        public StreamInterface $errorStream,
     ) {}
 
     /**
@@ -52,6 +54,6 @@ final readonly class CommandFactory
 
     private function buildOutputHelper(): OutputManager
     {
-        return new OutputManager($this->stream, $this->colorEnabled);
+        return new OutputManager($this->stream, $this->colorEnabled, $this->errorStream);
     }
 }

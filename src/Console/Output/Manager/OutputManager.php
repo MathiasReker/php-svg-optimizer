@@ -37,10 +37,12 @@ final readonly class OutputManager
     /**
      * @param StreamInterface $stream       The output stream to write messages to
      * @param bool            $colorEnabled Whether ANSI color output should be used
+     * @param StreamInterface $errorStream  The output stream to write errors to
      */
     public function __construct(
         private StreamInterface $stream,
         private bool $colorEnabled,
+        private StreamInterface $errorStream,
     ) {}
 
     /**
@@ -48,7 +50,7 @@ final readonly class OutputManager
      */
     public function printError(string $message): void
     {
-        $this->stream->writeln($this->colorize('Error: ' . $message, self::COLOR_RED));
+        $this->errorStream->writeln($this->colorize('Error: ' . $message, self::COLOR_RED));
     }
 
     /**
