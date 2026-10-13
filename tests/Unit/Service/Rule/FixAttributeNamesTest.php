@@ -58,6 +58,16 @@ final class FixAttributeNamesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps a misspelled attribute when the canonical attribute exists' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill-opacity="1" fillOpacity="0.1"/><rect fillOpacity="0.1" fill-opacity="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill-opacity="1" fillOpacity="0.1"/><rect fillOpacity="0.1" fill-opacity="1"/></svg>',
+        ];
+
+        yield 'Keeps a misspelled namespaced attribute when the canonical attribute exists' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><rect x:fill-opacity="1" x:fillOpacity="0.1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><rect x:fill-opacity="1" x:fillOpacity="0.1"/></svg>',
+        ];
+
         yield 'Normalizes clippath variations' => [
             '<svg><rect clipPath="rect"/></svg>',
             '<svg><rect clip-path="rect"/></svg>',
@@ -69,7 +79,7 @@ final class FixAttributeNamesTest extends TestCase
         ];
 
         yield 'Keeps referrerpolicy lowercase as the specifications spell it' => [
-            '<svg><a referrerpolicy="no-referrer" referrerPolicy="origin"/></svg>',
+            '<svg><a referrerPolicy="origin"/></svg>',
             '<svg><a referrerpolicy="origin"/></svg>',
         ];
 
@@ -178,9 +188,9 @@ final class FixAttributeNamesTest extends TestCase
             '<svg><defs><clipPath id="c"><rect stroke-width="1"/></clipPath></defs></svg>',
         ];
 
-        yield 'Does not duplicate attributes when normalizing' => [
+        yield 'Does not overwrite the canonical attribute when normalizing' => [
             '<svg><rect clip-path="a" ClIpPaTh="b"/></svg>',
-            '<svg><rect clip-path="b"/></svg>',
+            '<svg><rect clip-path="a" ClIpPaTh="b"/></svg>',
         ];
 
         yield 'Normalization is deterministic regardless of attribute order' => [

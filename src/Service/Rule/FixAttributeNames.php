@@ -79,6 +79,24 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
     }
 
     /**
+     * @param \DOMElement           $domElement the element of the attribute
+     * @param \DOMAttr              $domAttr    the attribute to rename
+     * @param array<string, string> $lookup     the normalization lookup table
+     *
+     * @return string the canonical name to rename the attribute to, or an empty string to keep it
+     */
+    private function canonicalName(\DOMElement $domElement, \DOMAttr $domAttr, array $lookup): string
+    {
+        $canonicalName = $lookup[$this->normalizeName($domAttr->name)] ?? $domAttr->name;
+
+        $exists = null === $domAttr->namespaceURI
+            ? $domElement->hasAttribute($canonicalName)
+            : $domElement->hasAttributeNS($domAttr->namespaceURI, $canonicalName);
+
+        return $exists ? '' : $canonicalName;
+    }
+
+    /**
      * @param \DOMElement           $domElement the element to process
      * @param array<string, string> $lookup     the normalization lookup table
      */
@@ -87,19 +105,13 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
         $attributes = iterator_to_array($domElement->attributes, false);
 
         foreach ($attributes as $attribute) {
-            $normalized = $this->normalizeName($attribute->name);
+            $canonicalName = $this->canonicalName($domElement, $attribute, $lookup);
 
-            if (!\array_key_exists($normalized, $lookup)) {
+            if ('' === $canonicalName) {
                 continue;
             }
 
-            if ($attribute->name === $lookup[$normalized]) {
-                continue;
-            }
-
-            $canonicalName = $lookup[$normalized];
             $value = $attribute->value;
-
             $namespaceURI = $attribute->namespaceURI;
             $localName = $attribute->localName;
 
