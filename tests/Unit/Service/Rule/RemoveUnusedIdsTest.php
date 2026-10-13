@@ -300,6 +300,10 @@ final class RemoveUnusedIdsTest extends TestCase
             'an id selector before a general sibling combinator' => '#a~rect{fill:red}',
             'an id selector before a universal selector' => '#a*{fill:red}',
             'an id selector with an attribute selector' => '#a[x]{fill:red}',
+            'an attribute selector' => '[id="a"]{fill:red}',
+            'a single-quoted attribute selector' => "rect[ ID = 'a' ]{fill:red}",
+            'an unquoted attribute selector' => '[id=a]{fill:red}',
+            'a namespaced attribute selector' => '[*|id="a"]{fill:red}',
         ];
 
         foreach ($styles as $name => $style) {
@@ -317,6 +321,17 @@ final class RemoveUnusedIdsTest extends TestCase
             self::SVG . '<style>#a\.b{fill:red}</style><rect id="a.b"/></svg>',
             self::SVG . '<style>#a\.b{fill:red}</style><rect id="a.b"/></svg>',
         ];
+
+        yield 'Removes an id that an exact attribute selector does not reference' => [
+            self::SVG . '<style>[id="b"]{fill:red}</style><rect id="a"/><rect id="b"/></svg>',
+            self::SVG . '<style>[id="b"]{fill:red}</style><rect/><rect id="b"/></svg>',
+        ];
+
+        foreach (['[id]', '[id^="a"]', '[id*=b]', '[id="A" i]', '[ xml|id ]'] as $selector) {
+            $svg = self::SVG . '<style>' . $selector . '{fill:red}</style><rect id="ab"/><rect id="c"/></svg>';
+
+            yield 'Keeps every id when the attribute selector ' . $selector . ' may match several' => [$svg, $svg];
+        }
 
         yield 'Removes an id that a style element does not reference' => [
             self::SVG . '<style>#ab{fill:red} .a{fill:red}</style><rect id="a"/></svg>',

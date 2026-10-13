@@ -28,6 +28,11 @@ trait IdReferenceTrait
 
     private const string ID_LIST_ITEM_REGEX = '/\S+/';
 
+    private const string ID_ATTRIBUTE_SELECTOR_REGEX = '/\[\s*(?:[\w*-]*\|)?id\b/i';
+
+    private const string EXACT_ID_ATTRIBUTE_SELECTOR_REGEX
+        = '/\[\s*(?:[\w*-]*\|)?id\s*=\s*(?<id>"[^"]*"|\'[^\']*\'|[^\s\]"\']+)\s*\]/i';
+
     private const string SMIL_ITEM_SEPARATOR = ';';
 
     private const array ID_LIST_ATTRIBUTES = [
@@ -50,7 +55,7 @@ trait IdReferenceTrait
             }
 
             if (SvgTag::Style->value === $domNodeList->localName) {
-                $referencedIds += $this->fragmentReferences($domNodeList->textContent);
+                $referencedIds += $this->styleSheetReferences($domNodeList->textContent);
             }
         }
 
@@ -159,7 +164,7 @@ trait IdReferenceTrait
     private function elementReferences(\DOMElement $domElement): array
     {
         $referencedIds = SvgTag::Style->value === $domElement->localName
-            ? $this->fragmentReferences($domElement->textContent)
+            ? $this->styleSheetReferences($domElement->textContent)
             : [];
 
         foreach ($domElement->attributes as $attribute) {
@@ -214,6 +219,36 @@ trait IdReferenceTrait
         }
 
         return $referencedIds;
+    }
+
+    /**
+     * @param string $css the style sheet to scan
+     *
+     * @return array<string, true> the ids referenced through `#id` or an exact attribute selector such as `[id="a"]`
+     */
+    private function styleSheetReferences(string $css): array
+    {
+        $referencedIds = $this->fragmentReferences($css);
+
+        preg_match_all(self::EXACT_ID_ATTRIBUTE_SELECTOR_REGEX, $css, $matches);
+
+        foreach ($matches['id'] as $id) {
+            $referencedIds[trim($id, '"\'')] = true;
+        }
+
+        return $referencedIds;
+    }
+
+    /**
+     * @param string $css the style sheet to scan
+     *
+     * @return bool true if the style sheet has an attribute selector on `id` that may match other ids than its value,
+     *              such as `[id]` or `[id^="a"]`
+     */
+    private function hasInexactIdAttributeSelector(string $css): bool
+    {
+        return preg_match_all(self::ID_ATTRIBUTE_SELECTOR_REGEX, $css)
+            !== preg_match_all(self::EXACT_ID_ATTRIBUTE_SELECTOR_REGEX, $css);
     }
 
     /**

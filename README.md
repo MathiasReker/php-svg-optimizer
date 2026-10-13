@@ -935,9 +935,10 @@ $svgOptimizer->removeUnsafeElements();
 ### `removeUnusedIds` (**risky**)
 
 Removes `id` attributes that nothing in the document references, through `url(#id)`, `href`, ARIA attributes,
-animation timing or `<style>` rules. The ids of the root `<svg>`, `<symbol>` and `<view>` elements are kept, and nothing
-is removed when the document contains a script or an event handler attribute. The rule is risky because CSS,
-JavaScript or links outside the SVG may target the removed ids.
+animation timing or `<style>` rules (id selectors and attribute selectors such as `[id="a"]`). The ids of the root
+`<svg>`, `<symbol>` and `<view>` elements are kept, and nothing is removed when the document contains a script, an event
+handler attribute, or an attribute selector that may match several ids (such as `[id^="a"]`). The rule is risky because
+CSS, JavaScript or links outside the SVG may target the removed ids.
 
 ```php
 $svgOptimizer->removeUnusedIds();
@@ -964,6 +965,8 @@ This ensures multiple SVGs can coexist in the same document without interfering 
 Rules with a bare element selector (such as `rect`) or the universal selector (`*`) cannot be scoped and would style
 the whole page, so they are removed; a style sheet left without rules is removed too.
 Names that are already scoped are left unchanged, so optimizing a scoped SVG again does not change it.
+Documents whose style sheets nest rules in at-rule blocks (such as `@media` or `@supports`) or use `@import` are left
+untouched, as those rules cannot be rewritten.
 
 ```php
 $svgOptimizer->scopeSvgStyles();

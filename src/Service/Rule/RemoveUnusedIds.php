@@ -54,7 +54,7 @@ final readonly class RemoveUnusedIds implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        if ($this->isScripted($domDocument)) {
+        if ($this->mayTargetAnyId($domDocument)) {
             return;
         }
 
@@ -74,6 +74,23 @@ final readonly class RemoveUnusedIds implements SvgOptimizerRuleInterface
                 $domNodeList->removeAttributeNS(SvgNamespace::Xml->value, SvgAttribute::Id->value);
             }
         }
+    }
+
+    /**
+     * @param \DOMDocument $domDocument the document to check
+     *
+     * @return bool true if the document has a script, or a style sheet with an attribute selector that may match ids
+     *              other than its value
+     */
+    private function mayTargetAnyId(\DOMDocument $domDocument): bool
+    {
+        foreach ($this->elementsNamed($domDocument, SvgTag::Style->value) as $domElement) {
+            if ($this->hasInexactIdAttributeSelector($domElement->textContent)) {
+                return true;
+            }
+        }
+
+        return $this->isScripted($domDocument);
     }
 
     /**
