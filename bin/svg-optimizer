@@ -21,8 +21,8 @@ if (function_exists('error_reporting')) {
 }
 
 $autoloadCandidates = [
-    __DIR__ . '/../../../../vendor/autoload.php',
     __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../../vendor/autoload.php',
 ];
 
 $autoloadLoaded = false;
