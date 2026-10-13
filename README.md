@@ -26,9 +26,10 @@ The resulting SVGs remain visually identical to the original but are smaller, cl
 
 ### Versions & Dependencies
 
-| Version | PHP  | Documentation                                                |
-|---------|------|--------------------------------------------------------------|
-| ^8.8    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer) |
+| Version | PHP  | Documentation                                                      |
+|---------|------|--------------------------------------------------------------------|
+| ^9.0    | ^8.3 | [current](https://github.com/MathiasReker/php-svg-optimizer)       |
+| ^8.7    | ^8.3 | [v8](https://github.com/MathiasReker/php-svg-optimizer/tree/8.7.1) |
 
 ### Requirements
 
