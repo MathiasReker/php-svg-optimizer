@@ -13,7 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Provider;
 
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
@@ -26,7 +25,6 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(AbstractProvider::class)]
 #[CoversClass(IOException::class)]
-#[CoversClass(MetaData::class)]
 #[CoversClass(Metrics::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 final class ConcreteProviderTest extends TestCase

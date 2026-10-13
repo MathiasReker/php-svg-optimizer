@@ -20,9 +20,8 @@ use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Console\Processor\SvgFileProcessor;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
-use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
+use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
@@ -95,7 +94,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(SvgOptimizerFacade::class)]
 #[CoversClass(Rule::class)]
-#[CoversClass(MetaData::class)]
 #[CoversClass(Metrics::class)]
 #[CoversClass(AbstractProvider::class)]
 #[CoversClass(AbstractStream::class)]

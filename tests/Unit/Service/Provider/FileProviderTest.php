@@ -14,7 +14,6 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Provider;
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
@@ -26,7 +25,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(FileProvider::class)]
-#[CoversClass(MetaData::class)]
 #[CoversClass(Metrics::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 final class FileProviderTest extends TestCase

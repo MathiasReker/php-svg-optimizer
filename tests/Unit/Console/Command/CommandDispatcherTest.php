@@ -18,7 +18,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Input\OptionIntent;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\SilentStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
-use MathiasReker\PhpSvgOptimizer\Type\Application;
+use MathiasReker\PhpSvgOptimizer\Console\Type\Application;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

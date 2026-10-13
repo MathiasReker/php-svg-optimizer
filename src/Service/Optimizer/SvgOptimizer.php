@@ -9,14 +9,13 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Model;
+namespace MathiasReker\PhpSvgOptimizer\Service\Optimizer;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
@@ -67,13 +66,17 @@ final class SvgOptimizer
             throw new \LogicException('Metadata is not available before optimization.');
         }
 
-        $metaData = new MetaData(
-            mb_strlen($this->svgProvider->getInputContent(), '8bit'),
-            mb_strlen($this->svgProvider->getOutputContent(), '8bit'),
+        $originalSize = mb_strlen($this->svgProvider->getInputContent(), '8bit');
+        $optimizedSize = mb_strlen($this->svgProvider->getOutputContent(), '8bit');
+        $savedBytes = $originalSize - $optimizedSize;
+
+        return new Metrics(
+            $originalSize,
+            $optimizedSize,
+            $savedBytes,
+            $savedBytes / $originalSize * 100,
             $this->optimizationTime,
         );
-
-        return $metaData->toValueObject();
     }
 
     /**

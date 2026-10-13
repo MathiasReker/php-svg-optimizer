@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardAttributes;

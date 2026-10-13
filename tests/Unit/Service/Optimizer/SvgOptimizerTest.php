@@ -9,15 +9,14 @@
 
 declare(strict_types=1);
 
-namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Model;
+namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Optimizer;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Service\Data\MetaData;
+use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
@@ -41,7 +40,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Metrics::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
-#[CoversClass(MetaData::class)]
 #[CoversClass(Rule::class)]
 final class SvgOptimizerTest extends TestCase
 {
@@ -595,6 +593,27 @@ final class SvgOptimizerTest extends TestCase
 
         self::assertSame([], $warnings);
         self::assertStringNotContainsString('data-padding', $svgOptimizer->getContent());
+    }
+
+    /**
+     * @throws \LogicException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function getMetaDataMeasuresTheInputAndTheOutputInBytes(): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider("<svg xmlns=\"http://www.w3.org/2000/svg\"><!-- \u{e9} --></svg>"));
+        $svgOptimizer->configureRules([RemoveComments::class => true]);
+        $svgOptimizer->optimize();
+
+        $metrics = $svgOptimizer->getMetaData();
+
+        self::assertSame(57, $metrics->getOriginalSize());
+        self::assertSame(41, $metrics->getOptimizedSize());
+        self::assertSame(16, $metrics->getSavedBytes());
+        self::assertEqualsWithDelta(16 / 57 * 100, $metrics->getSavedPercentage(), \PHP_FLOAT_EPSILON);
+        self::assertGreaterThan(0.0, $metrics->getOptimizationTime());
     }
 
     /**

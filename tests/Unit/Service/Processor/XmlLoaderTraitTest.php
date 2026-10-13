@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Processor;
 
-use MathiasReker\PhpSvgOptimizer\Model\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
