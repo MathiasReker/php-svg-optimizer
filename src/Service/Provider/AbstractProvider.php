@@ -79,12 +79,16 @@ abstract class AbstractProvider implements SvgProviderInterface
             return true;
         }
 
-        $parent = \dirname($directoryPath);
-        if (!is_dir($parent)) {
+        $existingAncestor = \dirname($directoryPath);
+        while (!file_exists($existingAncestor) && \dirname($existingAncestor) !== $existingAncestor) {
+            $existingAncestor = \dirname($existingAncestor);
+        }
+
+        if (!is_dir($existingAncestor)) {
             return false;
         }
 
-        return mkdir($directoryPath, self::DIRECTORY_PERMISSION, true);
+        return mkdir($directoryPath, self::DIRECTORY_PERMISSION, true) || is_dir($directoryPath);
     }
 
     #[\Override]

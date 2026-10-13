@@ -231,6 +231,41 @@ final class FileProviderTest extends TestCase
      * @throws XmlProcessingException
      */
     #[Test]
+    public function saveToFileCreatesEveryMissingParentDirectory(): void
+    {
+        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg/>');
+
+        $fileProvider->optimize($domDocument);
+
+        $baseDirectory = sys_get_temp_dir() . '/' . uniqid('svgtest_nested_', true);
+        $outputPath = $baseDirectory . '/a/b/c/output.svg';
+
+        try {
+            $fileProvider->saveToFile($outputPath);
+
+            self::assertFileExists($outputPath);
+            self::assertSame($fileProvider->getOutputContent(), file_get_contents($outputPath));
+        } finally {
+            if (is_file($outputPath)) {
+                unlink($outputPath);
+            }
+
+            foreach (['/a/b/c', '/a/b', '/a', ''] as $directory) {
+                if (is_dir($baseDirectory . $directory)) {
+                    rmdir($baseDirectory . $directory);
+                }
+            }
+        }
+    }
+
+    /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws XmlProcessingException
+     */
+    #[Test]
     public function saveToFileThrowsIOException(): void
     {
         $fileProvider = new FileProvider(self::TEST_INPUT_FILE);

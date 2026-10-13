@@ -1084,7 +1084,7 @@ $svgOptimizer->optimize();
 
 #### `saveToFile`
 
-Saves the optimized SVG file to the specified path. Throws a `\LogicException` if `optimize()` has not been called.
+Saves the optimized SVG file to the specified path, creating missing directories. Throws a `\LogicException` if `optimize()` has not been called.
 
 ```php
 $svgOptimizer->saveToFile('path/to/output.svg');
