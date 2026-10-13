@@ -171,8 +171,6 @@ enum SvgTag: string implements SvgDataInterface
     }
 
     /**
-     * Elements whose href may embed a data: image.
-     *
      * @return list<string>
      */
     public static function dataUri(): array

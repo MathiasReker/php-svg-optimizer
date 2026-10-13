@@ -46,9 +46,6 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
         SvgAttribute::GlyphOrientationHorizontal->value,
     ];
 
-    /**
-     * The SVG 1.1 `xlink:show` value that opens a link in a new window, which SVG 2 expresses with `target`.
-     */
     private const string XLINK_SHOW_NEW = 'new';
 
     private const string TARGET_BLANK = '_blank';
@@ -58,9 +55,6 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
         SvgAttribute::XmlLang->value => SvgAttribute::Lang->value,
     ];
 
-    /**
-     * Where both are set, `href` takes precedence over `xlink:href`, but `xml:lang` takes precedence over `lang`.
-     */
     private const array DEPRECATED_ATTRIBUTES_TAKING_PRECEDENCE = [
         SvgAttribute::XmlLang->value,
     ];
@@ -94,8 +88,6 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     }
 
     /**
-     * Keeps the new-window behavior of `xlink:show="new"`, which is removed below, as `target="_blank"`.
-     *
      * @param \DOMXPath $domXPath the XPath object for querying the document
      */
     private function convertXlinkShow(\DOMXPath $domXPath): void
@@ -114,9 +106,6 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     }
 
     /**
-     * SVG 2 has no title attribute; a `<title>` child element provides the tooltip and accessible name instead.
-     * An existing `<title>` child takes precedence.
-     *
      * @param \DOMXPath $domXPath the XPath object for querying the document
      */
     private function convertXlinkTitles(\DOMXPath $domXPath): void

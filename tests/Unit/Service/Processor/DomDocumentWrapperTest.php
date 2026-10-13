@@ -307,8 +307,6 @@ final class DomDocumentWrapperTest extends TestCase
     }
 
     /**
-     * Outside text content, whitespace is removed exactly where the parser removes it when not preserving whitespace.
-     *
      * @param non-empty-string $content
      *
      * @throws XmlProcessingException

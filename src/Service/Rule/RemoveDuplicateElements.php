@@ -15,20 +15,12 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
- * Removes an element that is identical to its preceding element sibling, but
- * only where the duplicate has no visual effect. Rendered duplicates are always
- * kept: painting a shape twice changes paint order, translucency and
- * anti-aliased edges.
- *
  * @internal
  *
  * @no-named-arguments
  */
 final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterface
 {
-    /**
-     * Elements for which an identical directly following copy is redundant.
-     */
     private const array NON_RENDERING_TAGS = [
         SvgTag::Desc->value,
         SvgTag::Metadata->value,
@@ -96,7 +88,6 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
             return true;
         }
 
-        // Children of defs are never rendered directly; scripts would run twice.
         return SvgTag::Defs->value === $parent->localName
             && SvgTag::Script->value !== $domElement->localName;
     }

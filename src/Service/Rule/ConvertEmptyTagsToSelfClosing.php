@@ -20,10 +20,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
  */
 final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
 {
-    /**
-     * The lookbehind keeps an already self-closing tag, such as a nested `<svg/>` followed by the closing tag of its
-     * parent, from being read as an opening tag.
-     */
     private const string EMPTY_TAG_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)(?<!\/)>\s*<\/\1>/';
 
     private const string SELF_CLOSING_SPACE_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)\s+\/>/';

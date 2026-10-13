@@ -19,9 +19,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EmptyElementRemovalTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
 
 /**
- * Removes container elements that have no content and cannot be referenced, such as an empty `<defs>`, `<symbol>`
- * or `<mask>`. Containers emptied by the removal are removed as well.
- *
  * @internal
  *
  * @no-named-arguments
@@ -54,8 +51,6 @@ final readonly class RemoveEmptyContainers implements SvgOptimizerRuleInterface
     }
 
     /**
-     * A filter on an empty group can still paint, for example a flood in user space, so such groups are kept.
-     *
      * @param \DOMElement $domElement the element to check
      */
     private function isRemovable(\DOMElement $domElement): bool

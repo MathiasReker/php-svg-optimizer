@@ -19,9 +19,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PathDataParserTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PathDataSerializerTrait;
 
 /**
- * Rewrites path data in its shortest form: drops repeated command letters and unneeded separators, shortens number
- * literals, and writes relative linetos along one axis as `h`/`v`. Coordinates are never recalculated or rounded.
- *
  * @internal
  *
  * @no-named-arguments

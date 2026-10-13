@@ -12,8 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Contract\Exception;
 
 /**
- * Implemented by every exception thrown by this library, so all of them can be caught at once.
- *
  * @api
  */
 interface SvgOptimizerExceptionInterface extends \Throwable

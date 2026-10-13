@@ -27,8 +27,6 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The DOCTYPE is not written to the output, so every reference to an entity it declares must be resolved.
- *
  * @internal
  */
 #[CoversClass(DomDocumentWrapper::class)]

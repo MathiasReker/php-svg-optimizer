@@ -12,9 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Processor\Trait;
 
 /**
- * Loads XML without passing libxml diagnostics to the PHP error handler. Many applications turn PHP warnings into
- * exceptions, so a recoverable diagnostic, such as an undeclared namespace prefix, must not abort the optimization.
- *
  * @internal
  *
  * @no-named-arguments

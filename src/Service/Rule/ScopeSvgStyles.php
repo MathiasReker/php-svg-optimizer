@@ -41,15 +41,8 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
 
     private const string CLASS_QUERY = './/*[@class]';
 
-    /**
-     * Attributes and style elements that may hold `url(#id)`, `url('#id')` or `url("#id")` references.
-     */
     private const string URL_REFERENCE_QUERY = './/@*[contains(., "url(")] | .//*[local-name()="style"][contains(., "url(")]';
 
-    /**
-     * Names this rule has already scoped end with the scope hash, so running the rule again leaves them unchanged.
-     * A name of the document that happens to end with a hyphen and ten hexadecimal digits is treated the same way.
-     */
     private const string SCOPED_NAME_REGEX = '/-[0-9a-f]{10}(?:-\d+)?$/';
 
     #[\Override]
@@ -137,7 +130,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
 
             $classReplacements = [...$classReplacements, ...$newClassReplacements];
 
-            // A style sheet whose rules were all removed would only keep other rules from optimizing the document.
             if ('' === $processedCss) {
                 $styleElement->parentNode?->removeChild($styleElement);
 
@@ -162,7 +154,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
             function (array $match) use ($hash, &$newClassReplacements): string {
                 $body = $match['body'];
 
-                // Element and universal selectors cannot be scoped, also when they are part of a selector list.
                 $selectors = array_filter(
                     array_map(trim(...), explode(',', $match['selector'])),
                     fn (string $single): bool => !$this->isUnsafeSelector($single),
@@ -234,9 +225,6 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
         return [$newSelector, $scopedClasses];
     }
 
-    /**
-     * Ids are renamed exactly like scopeIds() renames them on the elements.
-     */
     private function scopeSelectorIds(string $selector, string $hash): string
     {
         return (string) preg_replace_callback(

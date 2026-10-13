@@ -15,10 +15,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
- * Whitespace between elements is insignificant, except in text content, where whitespace between characters renders
- * as a space. Documents are parsed preserving whitespace, so that it survives in text content; elsewhere it is removed
- * where the parser would remove it when not preserving whitespace.
- *
  * @internal
  *
  * @no-named-arguments
@@ -37,19 +33,11 @@ trait TextWhitespaceTrait
 
     private const string RENDERED_TEXT_QUERY = '//*[local-name() = "text"]//text()';
 
-    /**
-     * A run of whitespace holding a space or a tab: browsers render any run as one space, and SVG 1.1 renderers drop
-     * line breaks and render the remaining spaces and tabs as one space. A run of line breaks only renders as a space
-     * in browsers and as nothing in SVG 1.1 renderers, so it is kept.
-     */
     private const string COLLAPSIBLE_WHITESPACE_REGEX = '/[\n\r]*[\t ][\t\n\r ]*/';
 
     private const string WHITE_SPACE_PROPERTY = 'white-space';
 
     /**
-     * Collapses whitespace in text content and removes it elsewhere. CDATA sections are kept apart while parsing, so
-     * whitespace around them is removed as the parser would, and are then merged into the text.
-     *
      * @param \DOMDocument $domDocument the parsed document
      */
     private function removeBlankTextNodes(\DOMDocument $domDocument): void
@@ -72,9 +60,6 @@ trait TextWhitespaceTrait
     }
 
     /**
-     * Collapses whitespace in the characters of `<text>` elements, such as the indentation of pretty-printed text. Text
-     * where `xml:space` is `preserve`, and documents that may set the `white-space` property, are left untouched.
-     *
      * @param \DOMDocument $domDocument the parsed document
      */
     private function collapseTextContentWhitespace(\DOMDocument $domDocument): void
@@ -93,8 +78,6 @@ trait TextWhitespaceTrait
     }
 
     /**
-     * Sets every blank text node to the whitespace it renders as: a space in text content, and nothing elsewhere.
-     *
      * @param \DOMDocument $domDocument the document to serialize
      *
      * @return array{list<\DOMText>, list<string>} the blank text nodes and their whitespace, to restore it
@@ -147,11 +130,6 @@ trait TextWhitespaceTrait
     }
 
     /**
-     * The parser keeps whitespace where `xml:space` is `preserve`, and whitespace that is the only content of an
-     * element. As content is then mixed, it also keeps whitespace in an element whose first child is text, and, where
-     * `xml:space` is not set, whitespace that follows text starting with whitespace. Nodes are checked in document
-     * order, so the siblings before a node are those the parser would have kept.
-     *
      * @param \DOMText $domText a text node holding only whitespace
      */
     private function isIgnorableBlank(\DOMText $domText): bool
@@ -184,9 +162,6 @@ trait TextWhitespaceTrait
     }
 
     /**
-     * Whitespace in a `<text>` renders as a space where `xml:space` is `preserve`, and elsewhere between two
-     * characters of the text; leading and trailing whitespace is removed when rendering.
-     *
      * @param \DOMDocument $domDocument the document containing the node
      * @param \DOMText     $domText     a text node holding only whitespace
      */
@@ -247,8 +222,6 @@ trait TextWhitespaceTrait
     }
 
     /**
-     * Each whitespace character renders as a space where `xml:space` is `preserve`; elsewhere a run renders as one.
-     *
      * @param \DOMText $domText a text node in text content holding only whitespace
      *
      * @return string the whitespace as spaces

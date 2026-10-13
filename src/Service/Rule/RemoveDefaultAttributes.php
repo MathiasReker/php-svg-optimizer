@@ -16,9 +16,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
- * Removes inherited presentation attributes whose value equals the initial
- * value, but only when the element would inherit that same value without it.
- *
  * @internal
  *
  * @no-named-arguments
@@ -57,7 +54,6 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        // Stylesheet rules may set these properties on ancestors.
         if ($this->hasStyleElement($domDocument)) {
             return;
         }
@@ -105,8 +101,6 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Whether the element would get the default value through inheritance.
-     *
      * @param \DOMElement $domElement the element carrying the attribute
      * @param string      $name       the attribute name
      */
@@ -114,7 +108,6 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
     {
         $node = $domElement;
 
-        // An element with an id may be cloned by a use element and inherit from it instead.
         while (!$this->isReferenceable($node)) {
             $parent = $node->parentNode;
             if (!$parent instanceof \DOMElement) {
@@ -135,9 +128,6 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
         return false;
     }
 
-    /**
-     * The id of the document element is ignored: the context of the root is external anyway.
-     */
     private function isReferenceable(\DOMElement $domElement): bool
     {
         return $domElement->hasAttribute(SvgAttribute::Id->value)

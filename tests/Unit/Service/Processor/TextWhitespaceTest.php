@@ -24,8 +24,6 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Whitespace between the children of a text content element renders as a space, so it must survive loading and saving.
- *
  * @internal
  */
 #[CoversClass(DomDocumentWrapper::class)]

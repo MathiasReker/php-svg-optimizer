@@ -19,8 +19,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 trait TagMatcherTrait
 {
     /**
-     * Matches case-insensitively on the local name, and on the part after the last colon for undeclared prefixes.
-     *
      * @param \DOMElement  $domElement the element to check
      * @param list<string> $tags       the tag names to match
      *

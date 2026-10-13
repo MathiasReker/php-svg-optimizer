@@ -16,11 +16,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
 
 /**
- * Writes colors in their shortest exact form: `rgb()` becomes hex, hex is lowercased and shortened from `#aabbcc` to
- * `#abc` (and `#aabbccdd` to `#abcd`), and a color is written as a named color or as hex, whichever is shorter, such
- * as `#ff0000` to `red` and `white` to `#fff`. On a tie, a named color is kept and any other color is written as hex.
- * Keywords without a fixed value, such as `currentColor`, `transparent` or `none`, are kept.
- *
  * @internal
  *
  * @no-named-arguments
@@ -33,16 +28,10 @@ final readonly class ConvertColorsToHex implements SvgOptimizerRuleInterface
 
     private const string HEX_REGEX = '/^#(?:[a-fA-F0-9]{3,6}|[a-fA-F0-9]{8})$/';
 
-    /**
-     * Matches a 6- or 8-digit hex color whose every channel repeats its digit.
-     */
     private const string SHORTENABLE_HEX_REGEX = '/^#(?:([0-9a-f])\1){3,4}$/';
 
     private const string REPEATED_DIGIT_REGEX = '/([0-9a-f])\1/';
 
-    /**
-     * The CSS named colors with their exact values.
-     */
     private const array NAMED_COLORS = [
         'aliceblue' => '#f0f8ff', 'antiquewhite' => '#faebd7', 'aqua' => '#00ffff', 'aquamarine' => '#7fffd4',
         'azure' => '#f0ffff', 'beige' => '#f5f5dc', 'bisque' => '#ffe4c4', 'black' => '#000000',

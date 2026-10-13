@@ -33,8 +33,6 @@ final class FileProvider extends AbstractProvider
     ) {
         parent::__construct();
 
-        // The file is read once, so the content that is optimized and measured stays the same, also when the optimized
-        // content is saved to the input file.
         $this->inputContent = $this->readInputFile();
     }
 

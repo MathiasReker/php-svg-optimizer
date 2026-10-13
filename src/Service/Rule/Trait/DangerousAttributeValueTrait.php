@@ -125,8 +125,6 @@ trait DangerousAttributeValueTrait
             static function (array $match): string {
                 $code = (int) hexdec($match[1]);
 
-                // A surrogate or a code point above U+10FFFF has no character; U+0000 is removed with the control
-                // characters.
                 return $code > 0x10_FF_FF || ($code >= 0xD8_00 && $code <= 0xDF_FF)
                     ? ''
                     : mb_chr($code, SvgDefaults::XML_ENCODING);

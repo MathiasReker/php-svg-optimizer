@@ -19,11 +19,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
 
 /**
- * Removes `id` and `xml:id` attributes that nothing in the document references. Documents with a `<script>` or an
- * event attribute are left untouched, since scripts may look elements up by id. The ids of the root element, of
- * `<symbol>` elements (sprite icons) and of `<view>` elements are kept, as they are typically targeted from outside the
- * document. Risky, because a page's style sheets, scripts or fragment links may still target the removed ids.
- *
  * @internal
  *
  * @no-named-arguments
@@ -35,14 +30,8 @@ final readonly class RemoveUnusedIds implements SvgOptimizerRuleInterface
 
     private const string EVENT_ATTRIBUTE_PREFIX = 'on';
 
-    /**
-     * Elements whose id exists to be targeted from outside the document.
-     */
     private const array EXTERNALLY_TARGETED_TAGS = ['symbol', 'view'];
 
-    /**
-     * Elements that only render when referenced, so references made from inside them only count when they are used.
-     */
     private const array DEFINITION_TAGS = [
         'clipPath', 'filter', 'linearGradient', 'marker', 'mask', 'pattern', 'radialGradient', 'symbol',
     ];

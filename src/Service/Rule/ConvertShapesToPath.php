@@ -20,9 +20,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PathDataSerializerTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RenameElementTrait;
 
 /**
- * Converts `<rect>`, `<line>`, `<polyline>` and `<polygon>` to `<path>`. The path data reuses the original numbers
- * (a rect is drawn with relative moves), so no coordinate is recalculated.
- *
  * @internal
  *
  * @no-named-arguments
@@ -34,9 +31,6 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
     use PathDataSerializerTrait;
     use RenameElementTrait;
 
-    /**
-     * Geometry attributes per shape, in the order the path data uses them.
-     */
     private const array GEOMETRY_ATTRIBUTES = [
         'rect' => ['x', 'y', 'width', 'height'],
         'line' => ['x1', 'y1', 'x2', 'y2'],
@@ -109,8 +103,6 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Rects with rounded corners are kept, as are rects without a positive size, which do not render.
-     *
      * @param \DOMElement $domElement the rect element
      *
      * @return list<array{string, list<string>}>
@@ -149,8 +141,6 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Point lists with an odd number of coordinates are an error that renders partially, so they are kept.
-     *
      * @param \DOMElement $domElement the polyline or polygon element
      * @param bool        $close      whether to close the path
      *

@@ -12,20 +12,12 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 
 /**
- * Parses and writes lists of number literals separated by whitespace and/or a comma.
- *
- * Requires NumberFormatterTrait.
- *
  * @internal
  *
  * @no-named-arguments
  */
 trait NumberListTrait
 {
-    /**
-     * Each number is matched atomically, and a separator is required between numbers, so `1.5.5` or `1-2` is not
-     * accepted as a list.
-     */
     private const string NUMBER_LIST_REGEX = '/^\s*+(?>' . self::NUMBER_PATTERN . ')(?:(?:\s++,?+|,)\s*+(?>' . self::NUMBER_PATTERN . '))*+\s*+$/';
 
     private const string NUMBER_LIST_ITEM_REGEX = '/' . self::NUMBER_PATTERN . '/';

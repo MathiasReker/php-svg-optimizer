@@ -15,41 +15,26 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
- * Collects the ids an SVG document references internally. The collection over-counts on purpose (a hex color such as
- * `#fff` also counts as a reference to the id `fff`), so callers only ever keep too much, never too little.
- *
  * @internal
  *
  * @no-named-arguments
  */
 trait IdReferenceTrait
 {
-    /**
-     * A `#` followed by everything up to a delimiter, which covers `url(#id)`, `href="#id"` and CSS id selectors.
-     */
     private const string FRAGMENT_REFERENCE_REGEX = '/#((?:\\\.|[^\s#,;\'"()\[\]{}<>\\\])+)/';
 
-    /**
-     * Splits before every character other than a word character or `-`, so `a.b:hover` yields the candidate ids `a`,
-     * `a.b` and `a.b:hover`.
-     */
     private const string ID_PART_REGEX = '/[^\w-]?[\w-]*/';
 
     private const string ID_LIST_ITEM_REGEX = '/\S+/';
 
     private const string SMIL_ITEM_SEPARATOR = ';';
 
-    /**
-     * Attributes holding a whitespace-separated list of ids.
-     */
     private const array ID_LIST_ATTRIBUTES = [
         'aria-activedescendant', 'aria-controls', 'aria-describedby', 'aria-details', 'aria-errormessage',
         'aria-flowto', 'aria-labelledby', 'aria-owns', 'for', 'form', 'headers', 'list',
     ];
 
     /**
-     * Collects every id referenced by an attribute or a `<style>` element.
-     *
      * @param \DOMDocument $domDocument the DOM document to scan
      *
      * @return array<string, true> the referenced ids
@@ -72,10 +57,6 @@ trait IdReferenceTrait
     }
 
     /**
-     * Collects the ids that are referenced from rendered content, directly or through definitions that are themselves
-     * referenced. A reference made only from inside an unused definition, such as the last gradient of an unused
-     * chain of linked gradients, does not count.
-     *
      * @param \DOMDocument $domDocument the DOM document to scan
      * @param list<string> $definitions the elements that only render when referenced
      * @param list<string> $alwaysLive  the elements whose content counts as referenced, such as sprite symbols
@@ -211,7 +192,6 @@ trait IdReferenceTrait
         $referencedIds = [];
 
         foreach ($matches[1] as $token) {
-            // A URL fragment may percent-encode the id, such as `#%E4%BA%BA` for the id `人`.
             $referencedIds += $this->idCandidates($token) + $this->idCandidates(rawurldecode($token));
         }
 

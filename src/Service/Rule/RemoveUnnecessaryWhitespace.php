@@ -27,17 +27,11 @@ final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor im
 
     private const string WHITESPACE_REGEX = '/\s+/';
 
-    /**
-     * Quoted CSS strings, captured so they are kept as written.
-     */
     private const string CSS_STRING_REGEX = '/("(?:[^"\\\]|\\\.)*"|\'(?:[^\'\\\]|\\\.)*\')/';
 
     private const string CSS_SEPARATOR_WHITESPACE_REGEX = '/\s*([;:,])\s*/';
 
     /**
-     * Whitespace inside a declaration value can be significant (`stroke-dasharray: 1 2`, `font-family: Arial Black`),
-     * so runs of whitespace are collapsed to one space and only the whitespace around `;`, `:` and `,` is removed.
-     *
      * @param string $style the style attribute value
      */
     private static function minifyStyle(string $style): string

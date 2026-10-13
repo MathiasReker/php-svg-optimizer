@@ -97,8 +97,6 @@ final readonly class Command implements CommandInterface
     }
 
     /**
-     * Warns once about configuration keys that do not name a rule, such as a misspelled rule name.
-     *
      * @throws \ValueError
      */
     private function printUnknownConfigKeys(): void
@@ -106,7 +104,6 @@ final readonly class Command implements CommandInterface
         try {
             $unknownConfigKeys = $this->svgFileProcessor->getUnknownConfigKeys();
         } catch (\JsonException|\InvalidArgumentException) {
-            // An unreadable configuration is reported for every processed path.
             return;
         }
 

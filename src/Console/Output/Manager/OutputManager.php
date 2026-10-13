@@ -22,12 +22,6 @@ use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
  */
 final readonly class OutputManager
 {
-    /**
-     * Standard 8-color ANSI SGR codes only (no 256-color/truecolor), for maximum
-     * terminal compatibility. The palette mirrors Git's own conventions: green for
-     * success, red for errors, yellow for version/ref-like identifiers, cyan for
-     * flags/commands, and bold for section headers.
-     */
     private const string COLOR_GREEN = "\033[32m";
 
     private const string COLOR_RED = "\033[31m";

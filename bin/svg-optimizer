@@ -35,11 +35,7 @@ foreach ($autoloadCandidates as $path) {
     }
 }
 
-/*
- * This is the entry point for the PHP SVG Optimizer command-line tool.
- * It parses the arguments, initializes the SvgOptimizerCommand, and runs the optimization process.
- *
- * For more information, please refer to the project repository:
+/**
  * @see https://github.com/MathiasReker/php-svg-optimizer
  *
  * @var array<int, string> $argv

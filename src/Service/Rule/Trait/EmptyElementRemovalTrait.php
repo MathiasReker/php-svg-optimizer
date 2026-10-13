@@ -21,9 +21,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 trait EmptyElementRemovalTrait
 {
     /**
-     * Visits elements in reverse document order, so descendants are removed before their ancestors are checked and an
-     * element emptied by the removal is removed as well. The document element is never removed.
-     *
      * @param \DOMDocument                $domDocument the document to clean
      * @param callable(\DOMElement): bool $isRemovable returns true for elements to remove
      */
@@ -34,7 +31,6 @@ trait EmptyElementRemovalTrait
         foreach ($elements as $element) {
             $parent = $element->parentNode;
 
-            // A switch renders its first child whose conditions pass, so removing one would let another render.
             if ($parent instanceof \DOMElement && SvgTag::Switch->value !== $parent->localName && $isRemovable($element)) {
                 $parent->removeChild($element);
             }

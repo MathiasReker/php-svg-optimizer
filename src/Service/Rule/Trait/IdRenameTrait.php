@@ -14,33 +14,22 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
- * Keeps references intact when ids are renamed.
- *
  * @internal
  *
  * @no-named-arguments
  */
 trait IdRenameTrait
 {
-    /**
-     * Attributes that reference elements by id other than through `url(#id)`: `href` fragments, animation timing and
-     * ARIA id lists.
-     */
     private const string ID_REFERENCE_QUERY = './/@*[local-name()="href" or local-name()="begin" or local-name()="end"'
         . ' or local-name()="aria-labelledby" or local-name()="aria-describedby" or local-name()="aria-controls"'
         . ' or local-name()="aria-owns" or local-name()="aria-flowto" or local-name()="aria-activedescendant"'
         . ' or local-name()="aria-details" or local-name()="aria-errormessage"]';
 
-    /**
-     * The id before the event of a timing value such as `b.click` or `b.end+1s`, at the start of each `;` item.
-     */
     private const string TIMING_REFERENCE_REGEX = '/((?:^|;)\s*)([\w\-]+)(?=\.)/';
 
     private const string ID_LIST_SEPARATOR_REGEX = '/\s+/';
 
     /**
-     * Updates references to renamed ids in `href` fragments, animation timing (`begin="id.click"`) and ARIA id lists.
-     *
      * @param array<string, string> $idReplacements
      */
     private function updateIdReferenceAttributes(

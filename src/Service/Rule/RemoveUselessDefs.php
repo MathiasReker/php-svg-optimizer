@@ -16,10 +16,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
- * Removes definitions that can never be used because neither they nor any descendant has an id: children of `<defs>`,
- * and gradients, patterns, clip paths, masks, markers, symbols and filters anywhere in the document. A `<defs>` left
- * empty is removed as well.
- *
  * @internal
  *
  * @no-named-arguments
@@ -28,16 +24,10 @@ final readonly class RemoveUselessDefs implements SvgOptimizerRuleInterface
 {
     use ElementTrait;
 
-    /**
-     * Elements that only render when referenced by id.
-     */
     private const array REFERENCE_ONLY_TAGS = [
         'clipPath', 'filter', 'linearGradient', 'marker', 'mask', 'pattern', 'radialGradient', 'symbol',
     ];
 
-    /**
-     * Children of `<defs>` that take effect without being referenced by id.
-     */
     private const array DEFS_EFFECTIVE_TAGS = [
         'color-profile', 'font', 'font-face', 'script', 'style',
     ];

@@ -12,9 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 
 /**
- * CSS keywords, property names and color names are ASCII case-insensitive. `mb_strtolower()` would also fold
- * non-ASCII letters, such as the Kelvin sign into `k`, and turn an invalid value into a valid one.
- *
  * @internal
  *
  * @no-named-arguments

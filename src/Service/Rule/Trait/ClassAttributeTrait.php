@@ -14,8 +14,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
- * Reads and updates the class list of an element.
- *
  * @internal
  *
  * @no-named-arguments

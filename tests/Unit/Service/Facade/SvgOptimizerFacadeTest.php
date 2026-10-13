@@ -465,8 +465,6 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
-     * Frameworks commonly turn PHP warnings into exceptions, so libxml diagnostics must never reach the error handler.
-     *
      * @return iterable<string, array{string, bool}>
      */
     public static function provideOptimizeDoesNotEmitPhpWarningsCases(): iterable
@@ -538,8 +536,6 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
-     * Enabling a rule again, as the command line does for a configuration combined with all rules, runs it once.
-     *
      * @throws SvgValidationException
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException

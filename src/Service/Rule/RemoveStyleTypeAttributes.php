@@ -17,9 +17,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
- * Removes the type attribute from style and script elements when it holds the default type
- * (text/css for style, a JavaScript MIME type for script).
- *
  * @internal
  *
  * @no-named-arguments
@@ -99,8 +96,6 @@ final readonly class RemoveStyleTypeAttributes implements SvgOptimizerRuleInterf
     }
 
     /**
-     * Compares ASCII case-insensitively, like browsers do for MIME types.
-     *
      * @param string       $type         the trimmed type attribute value
      * @param list<string> $defaultTypes the default types of the element
      *

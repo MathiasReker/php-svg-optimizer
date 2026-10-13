@@ -58,9 +58,6 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
     }
 
     /**
-     * Known SVG elements allow the attributes the specification defines for them; other elements fall back to every
-     * known SVG attribute. Event handler attributes and `xml:base`, which redirects relative URLs, are never allowed.
-     *
      * @param \DOMElement $domElement the element whose attributes are checked
      *
      * @return array<string, true> a map where keys are the allowed attribute names
@@ -110,7 +107,6 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
      */
     private function removeNonStandardAttributesFromElement(\DOMElement $domElement, array $allowed): void
     {
-        /* @var \DOMAttr $attr */
         foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
             if (!$this->isAttributeAllowed($domAttr, $allowed)) {
                 $domElement->removeAttributeNode($domAttr);
@@ -133,9 +129,6 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
     }
 
     /**
-     * Resolves the attribute to its canonical prefixed name based on its namespace URI,
-     * so an attribute is only allowed when bound to the namespace its prefix implies.
-     *
      * @param \DOMAttr $domAttr the attribute to resolve
      *
      * @return string the canonical name, or an empty string if the attribute belongs to a foreign namespace

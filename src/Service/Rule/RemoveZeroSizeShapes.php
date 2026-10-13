@@ -18,9 +18,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 
 /**
- * Removes shapes that the SVG specification says are not rendered: a circle with a zero radius, an ellipse with a zero
- * radius, a rect with a zero width or height, and a path, polyline or polygon without any data.
- *
  * @internal
  *
  * @no-named-arguments
@@ -30,18 +27,12 @@ final readonly class RemoveZeroSizeShapes implements SvgOptimizerRuleInterface
     use ElementTrait;
     use NumberFormatterTrait;
 
-    /**
-     * Attributes of which a zero value disables rendering, per shape.
-     */
     private const array ZERO_DISABLES_RENDERING = [
         'circle' => ['r'],
         'ellipse' => ['rx', 'ry'],
         'rect' => ['width', 'height'],
     ];
 
-    /**
-     * Attribute that holds the geometry, for shapes that are not rendered when it is missing or empty.
-     */
     private const array EMPTY_DISABLES_RENDERING = [
         'path' => 'd',
         'polyline' => 'points',
@@ -78,13 +69,10 @@ final readonly class RemoveZeroSizeShapes implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Shapes that may be referenced, animated or sized by CSS are kept.
-     *
      * @param \DOMElement $domElement the element to check
      */
     private function isRemovable(\DOMElement $domElement): bool
     {
-        // A switch renders its first child whose conditions pass, so removing one would let another render.
         $parent = $domElement->parentNode;
 
         return !$this->hasId($domElement)

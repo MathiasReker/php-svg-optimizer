@@ -17,10 +17,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
 
 /**
- * Shortens transform lists, such as `translate(10, 0) scale(2, 2) rotate(0)` to `translate(10)scale(2)`. Identity
- * transforms are dropped, default arguments are omitted, and numbers are written in their shortest notation.
- * Values are never rounded and transforms are never combined; a value that is not a valid transform list is kept.
- *
  * @internal
  *
  * @no-named-arguments
@@ -36,9 +32,6 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
         SvgAttribute::PatternTransform,
     ];
 
-    /**
-     * The number of arguments each transform function accepts.
-     */
     private const array ARGUMENT_COUNTS = [
         'matrix' => [6],
         'translate' => [1, 2],
@@ -152,8 +145,6 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     }
 
     /**
-     * A matrix without rotation or skew is written as the equivalent translate or scale.
-     *
      * @param list<string> $arguments the six minified arguments
      */
     private function minifyMatrix(array $arguments): string
@@ -200,8 +191,6 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     }
 
     /**
-     * A rotation by zero degrees is an identity around any center.
-     *
      * @param list<string> $arguments the minified arguments
      */
     private function minifyRotate(array $arguments): string

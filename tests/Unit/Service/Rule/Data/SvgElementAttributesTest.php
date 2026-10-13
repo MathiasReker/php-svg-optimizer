@@ -25,10 +25,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgElementAttributes::class)]
 final class SvgElementAttributesTest extends TestCase
 {
-    /**
-     * SVG 2 spellings that are not values of SvgAttribute: the enum keeps the SVG Tiny 1.2 camelCase spelling, and
-     * FixAttributeNames matches names case-insensitively, so both spellings cannot be values.
-     */
     private const array EXPECTED_MISSING_FROM_ENUM = [
         'playbackorder',
         'timelinebegin',

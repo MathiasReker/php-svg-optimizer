@@ -26,10 +26,6 @@ final readonly class DomDocumentWrapper
     use EntityReferenceTrait;
     use TextWhitespaceTrait;
 
-    /**
-     * Only parser options belong here: a save option such as LIBXML_NOEMPTYTAG shares its value with the option that
-     * loads the external DTD. CDATA sections are merged into the text after parsing.
-     */
     private const int LOAD_FLAGS = \LIBXML_NONET;
 
     private const string STYLESHEET_INSTRUCTION = 'xml-stylesheet';
@@ -46,7 +42,6 @@ final readonly class DomDocumentWrapper
         [$blankTextNodes, $whitespace] = $this->collapseBlankTextNodes($domDocument);
         $saveXML = $domDocument->saveXML($domDocument->documentElement);
 
-        // The document is left as it was, as rules may serialize it to parse it again.
         foreach ($blankTextNodes as $index => $domText) {
             $domText->data = $whitespace[$index];
         }
@@ -59,9 +54,6 @@ final readonly class DomDocumentWrapper
     }
 
     /**
-     * Only the document element is written, which would drop the `<?xml-stylesheet?>` instructions before it and
-     * with them the styles they link.
-     *
      * @param \DOMDocument $domDocument the document to read
      *
      * @return string the stylesheet instructions that precede the document element
@@ -135,9 +127,6 @@ final readonly class DomDocumentWrapper
     }
 
     /**
-     * Namespace declarations keep entity references unexpanded, and the DOCTYPE declaring the entities is not written
-     * to the output, so they are resolved by parsing the document element again.
-     *
      * @param \DOMDocument $domDocument the loaded document
      *
      * @return \DOMDocument the document, or a document parsed again without entity references

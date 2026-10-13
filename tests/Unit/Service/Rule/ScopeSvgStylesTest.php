@@ -494,9 +494,6 @@ final class ScopeSvgStylesTest extends TestCase
         ];
     }
 
-    /**
-     * The scope hash is the first ten hexadecimal digits of the MD5 hash of the svg element's markup.
-     */
     #[Test]
     public function scopeHashIsTheStartOfTheMd5OfTheSvgMarkup(): void
     {

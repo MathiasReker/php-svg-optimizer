@@ -12,36 +12,18 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data;
 
 /**
- * Per-element attribute data: for each known element, the attributes the specifications allow on it.
- *
- * Sources: SVG 2, SVG 1.1 (removed elements and legacy attributes), SVG Tiny 1.2, Filter Effects 1,
- * CSS Masking 1 and SVG Animations. The data is deliberately permissive: attributes that browsers
- * honour in real-world files are kept even when a newer specification dropped them.
- *
  * @internal
  *
  * @no-named-arguments
  */
 final class SvgElementAttributes
 {
-    /**
-     * SVG 2 core attributes.
-     */
     private const array CORE = ['id', 'tabindex', 'autofocus', 'lang', 'xml:space', 'class', 'style'];
 
-    /**
-     * SVG 1.1 core attributes and attributes removed in SVG 2 that are still common in real files.
-     */
     private const array LEGACY = ['xml:base', 'xml:lang', 'xml:id', 'externalResourcesRequired'];
 
-    /**
-     * SVG Tiny 1.2 metadata (RDFa) attributes, part of the Tiny 1.2 core attribute set.
-     */
     private const array RDFA = ['about', 'content', 'datatype', 'property', 'rel', 'resource', 'rev', 'typeof'];
 
-    /**
-     * Conditional processing attributes (SVG 2, plus SVG 1.1 and SVG Tiny 1.2 additions).
-     */
     private const array CONDITIONAL_PROCESSING = [
         'requiredExtensions',
         'systemLanguage',
@@ -50,11 +32,6 @@ final class SvgElementAttributes
         'requiredFormats',
     ];
 
-    /**
-     * SVG 2 presentation attributes that may be specified on any SVG element.
-     * The geometry properties (x, y, cx, d, ...) are element-specific and listed per element,
-     * and transform is a separate group because it does not apply to gradients and patterns.
-     */
     private const array PRESENTATION = [
         'alignment-baseline',
         'baseline-shift',
@@ -117,9 +94,6 @@ final class SvgElementAttributes
         'writing-mode',
     ];
 
-    /**
-     * Presentation attributes from SVG 1.1 and SVG Tiny 1.2 that SVG 2 dropped.
-     */
     private const array LEGACY_PRESENTATION = [
         'clip',
         'color-profile',
@@ -135,14 +109,8 @@ final class SvgElementAttributes
         'audio-level',
     ];
 
-    /**
-     * The transform presentation attribute.
-     */
     private const array TRANSFORM = ['transform'];
 
-    /**
-     * WAI-ARIA attributes.
-     */
     private const array ARIA = [
         'role',
         'aria-activedescendant',
@@ -195,9 +163,6 @@ final class SvgElementAttributes
         'aria-valuetext',
     ];
 
-    /**
-     * Global event attributes.
-     */
     private const array GLOBAL_EVENTS = [
         'oncancel',
         'oncanplay',
@@ -259,19 +224,10 @@ final class SvgElementAttributes
         'onwaiting',
     ];
 
-    /**
-     * Document element event attributes.
-     */
     private const array DOCUMENT_ELEMENT_EVENTS = ['oncopy', 'oncut', 'onpaste'];
 
-    /**
-     * Graphical event attributes from SVG 1.1 not covered by the global event attributes.
-     */
     private const array GRAPHICAL_EVENTS = ['onfocusin', 'onfocusout'];
 
-    /**
-     * Document event attributes (outermost svg element).
-     */
     private const array DOCUMENT_EVENTS = [
         'onabort',
         'onafterprint',
@@ -291,14 +247,8 @@ final class SvgElementAttributes
         'onunload',
     ];
 
-    /**
-     * Animation event attributes.
-     */
     private const array ANIMATION_EVENTS = ['onbegin', 'onend', 'onrepeat'];
 
-    /**
-     * Animation timing attributes (plus SVG Tiny 1.2 synchronization attributes).
-     */
     private const array ANIMATION_TIMING = [
         'begin',
         'dur',
@@ -314,24 +264,12 @@ final class SvgElementAttributes
         'syncMaster',
     ];
 
-    /**
-     * Animation value attributes.
-     */
     private const array ANIMATION_VALUE = ['calcMode', 'values', 'keyTimes', 'keySplines', 'from', 'to', 'by'];
 
-    /**
-     * Animation addition attributes.
-     */
     private const array ANIMATION_ADDITION = ['additive', 'accumulate'];
 
-    /**
-     * Animation attribute target attributes.
-     */
     private const array ANIMATION_TARGET = ['attributeName', 'attributeType'];
 
-    /**
-     * Reference attributes: href and the XLink attributes.
-     */
     private const array XLINK = [
         'href',
         'xlink:href',
@@ -343,9 +281,6 @@ final class SvgElementAttributes
         'xlink:actuate',
     ];
 
-    /**
-     * SVG Tiny 1.2 focus and navigation attributes.
-     */
     private const array NAVIGATION = [
         'focusable',
         'focusHighlight',
@@ -361,14 +296,8 @@ final class SvgElementAttributes
         'nav-up-left',
     ];
 
-    /**
-     * Filter primitive attributes.
-     */
     private const array FILTER_PRIMITIVE = ['x', 'y', 'width', 'height', 'result'];
 
-    /**
-     * Transfer function element attributes (feFuncR, feFuncG, feFuncB, feFuncA).
-     */
     private const array TRANSFER_FUNCTION = [
         'type',
         'tableValues',
@@ -379,14 +308,8 @@ final class SvgElementAttributes
         'offset',
     ];
 
-    /**
-     * Text positioning attributes shared by text, tspan, tref, altGlyph and glyphRef.
-     */
     private const array TEXT_POSITIONING = ['x', 'y', 'dx', 'dy', 'rotate'];
 
-    /**
-     * Attributes of HTML elements that may appear inside an SVG document.
-     */
     private const array HTML_GLOBAL = ['title'];
 
     private const array GROUPS = [
@@ -415,19 +338,10 @@ final class SvgElementAttributes
         'htmlGlobal' => self::HTML_GLOBAL,
     ];
 
-    /**
-     * Groups shared by every SVG element.
-     */
     private const array BASE = ['core', 'legacy', 'rdfa', 'presentation', 'legacyPresentation'];
 
-    /**
-     * Event groups of elements that receive global events.
-     */
     private const array EVENTS = ['globalEvents', 'documentElementEvents', 'graphicalEvents'];
 
-    /**
-     * Groups of graphics elements, containers and text content elements.
-     */
     private const array GRAPHICS = [
         ...self::BASE,
         ...self::EVENTS,
@@ -437,9 +351,6 @@ final class SvgElementAttributes
         'navigation',
     ];
 
-    /**
-     * Groups shared by every animation element.
-     */
     private const array ANIMATION = [
         ...self::BASE,
         ...self::EVENTS,
@@ -449,20 +360,10 @@ final class SvgElementAttributes
         'xlink',
     ];
 
-    /**
-     * Groups of filter primitive elements.
-     */
     private const array FILTER_PRIMITIVE_GROUPS = [...self::BASE, 'filterPrimitive'];
 
-    /**
-     * Groups of HTML elements that may appear inside an SVG document.
-     */
     private const array HTML = ['core', 'legacy', 'aria', 'globalEvents', 'documentElementEvents', 'htmlGlobal'];
 
-    /**
-     * Element name => groups and element-specific attributes.
-     * Keys are the SvgTag values; camelCase spellings are added where SvgTag uses a lowercase value.
-     */
     private const array ELEMENTS = [
         '#text' => ['groups' => [], 'attributes' => []],
         'a' => [

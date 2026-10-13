@@ -30,19 +30,9 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
 
     private const string INHERIT_KEYWORD = 'inherit';
 
-    /**
-     * Elements a group transform cannot move onto: a nested svg establishes a new viewport, and an animated transform
-     * replaces the transform of its element (motion animations are treated the same way).
-     */
     private const string XPATH_TRANSFORM_BLOCKING_ELEMENTS = '//svg:g/svg:svg'
         . ' | //*[svg:animateMotion or *[normalize-space(@attributeName) = "transform"]]';
 
-    /**
-     * Inherited presentation attributes. A group carrying only these (plus a
-     * transform) renders exactly like its children carrying them directly.
-     * Group-level effects such as opacity, filter, mask, clip-path or display
-     * are not inherited and composite the group as a whole, so they block flattening.
-     */
     private const array INHERITED_ATTRIBUTES = [
         SvgAttribute::ClipRule->value,
         SvgAttribute::Color->value,
@@ -87,25 +77,14 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         SvgAttribute::WritingMode->value,
     ];
 
-    /**
-     * Properties whose value on a child may be relative to the parent's value
-     * (e.g. "2em", "bolder", "wider"), so the child must keep its parent.
-     */
     private const array PARENT_RELATIVE_ATTRIBUTES = [
         SvgAttribute::FontSize->value,
         SvgAttribute::FontStretch->value,
         SvgAttribute::FontWeight->value,
     ];
 
-    /**
-     * A length relative to the font size of the element it is set on.
-     */
     private const string FONT_RELATIVE_UNIT_REGEX = '/[\d.](?:em|ex|ch)\b/i';
 
-    /**
-     * Elements that are only rendered through a reference, in the user space of the referencing element, so the
-     * transform of their parent group never applies to them. A clipPath would apply a transform set on it on top.
-     */
     private const array NON_RENDERED_TAGS = [
         SvgTag::ClipPath->value,
         SvgTag::Defs->value,
@@ -136,7 +115,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        // Stylesheet selectors may match groups or depend on the document structure.
         if ($this->hasStyleElement($domDocument)) {
             return;
         }
@@ -167,7 +145,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
      */
     private function canFlatten(\DOMElement $domElement, \DOMElement $parentNode, array $transformBlockingElements): bool
     {
-        // A switch renders only its first matching direct child.
         if (SvgTag::Switch->value === $parentNode->localName) {
             return false;
         }
@@ -204,7 +181,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
      */
     private function dependsOnGroup(\DOMElement $domElement, \DOMElement $child, array $transformBlockingElements): bool
     {
-        // Animation elements without an explicit target animate their parent.
         if (\in_array(mb_strtolower($child->localName ?? ''), SvgTag::animation(), true)) {
             return true;
         }
@@ -221,8 +197,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Animations targeting an element through its id are treated like animations inside it.
-     *
      * @param \DOMDocument $domDocument the DOM document to scan
      * @param \DOMXPath    $domXPath    the XPath object with the svg prefix registered
      *
@@ -237,9 +211,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Font-relative values (e.g. "2em", "bolder") resolve against the font of the element they are set on, so moving
-     * them from the group to a child that sets its own font size changes their computed value.
-     *
      * @param \DOMElement $domElement the group element
      * @param \DOMElement $child      the child element
      */

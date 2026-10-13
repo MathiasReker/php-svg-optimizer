@@ -16,9 +16,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
- * Element lookups and checks shared by rules that rewrite or remove elements, so they only act where the result
- * renders identically.
- *
  * @internal
  *
  * @no-named-arguments
@@ -26,9 +23,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 trait ElementTrait
 {
     /**
-     * A `<style>` element may target elements by tag name or set properties, so rules that change element types or
-     * rely on attribute values bail out when one is present.
-     *
      * @param \DOMDocument $domDocument the document to check
      */
     private function hasStyleElement(\DOMDocument $domDocument): bool
@@ -105,9 +99,6 @@ trait ElementTrait
     }
 
     /**
-     * Animation elements may target another element through `href` or `xlink:href` instead of their parent, so rules
-     * that change the element type must leave such targets alone.
-     *
      * @param \DOMDocument $domDocument the document to scan
      *
      * @return array<string, true> the ids targeted by an animation element
@@ -162,8 +153,6 @@ trait ElementTrait
     }
 
     /**
-     * Removes `<defs>` elements that have no content and cannot be referenced.
-     *
      * @param \DOMDocument $domDocument the document to clean
      */
     private function removeEmptyDefs(\DOMDocument $domDocument): void

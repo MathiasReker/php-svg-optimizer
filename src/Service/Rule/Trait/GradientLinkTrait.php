@@ -15,18 +15,12 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 
 /**
- * Resolves gradient inheritance: a gradient inherits stops and attributes it does not set from the gradient its `href`
- * or `xlink:href` links to.
- *
  * @internal
  *
  * @no-named-arguments
  */
 trait GradientLinkTrait
 {
-    /**
-     * Bounds the walk through linked gradients, so a cycle cannot loop forever.
-     */
     private const int MAX_LINK_DEPTH = 16;
 
     private const array GRADIENT_TAGS = ['linearGradient', 'radialGradient'];

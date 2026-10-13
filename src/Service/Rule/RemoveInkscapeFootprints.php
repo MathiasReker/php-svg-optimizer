@@ -17,12 +17,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
- * Removes editor metadata written by Inkscape, Sodipodi, Adobe Illustrator, Sketch, Serif (Affinity) and Microsoft Visio.
- *
- * Elements and attributes are matched by namespace URI (also when the URI is declared through a DTD entity), so the
- * prefix used in the file does not matter. Illustrator's private data placeholders (a foreignObject that requires an
- * editor extension) are removed as well, since no browser supports those extensions and they are never rendered.
- *
  * @internal
  *
  * @no-named-arguments
@@ -101,9 +95,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     }
 
     /**
-     * Namespace URIs declared through a DTD entity (e.g. xmlns:i="&ns_ai;") are stored unexpanded on the nodes,
-     * so the raw values of declarations resolving to an editor namespace are collected as well.
-     *
      * @param \DOMXPath $domXPath the XPath object for querying the document
      *
      * @return list<string> the namespace URIs of the nodes to remove
@@ -169,8 +160,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     }
 
     /**
-     * Elements containing anything other than editor elements are kept, since their content may be referenced.
-     *
      * @param \DOMXPath    $domXPath      the XPath object for querying the document
      * @param \DOMElement  $domElement    the element to inspect
      * @param list<string> $namespaceUris the namespace URIs of the nodes to remove
@@ -218,8 +207,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     }
 
     /**
-     * Declarations still in use (e.g. by a kept editor element) are left untouched by the DOM.
-     *
      * @param \DOMXPath $domXPath the XPath object for querying the document
      */
     private function removeNamespaceDeclarations(\DOMXPath $domXPath): void

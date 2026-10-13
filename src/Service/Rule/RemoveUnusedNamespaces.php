@@ -83,7 +83,6 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
 
         preg_match_all(self::NAMESPACE_REGEX, $content, $matches);
 
-        // The prefix pattern only allows characters that are literal in a regex.
         foreach ($matches[1] as $prefix) {
             $namespaceKey = \sprintf('%s:%s', SvgAttribute::Xmlns->value, $prefix);
             preg_match_all(\sprintf(self::ELEMENT_TEMPLATE_REGEX, $prefix), $content, $elementMatches);

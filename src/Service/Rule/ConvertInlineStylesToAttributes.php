@@ -56,7 +56,6 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
         /** @var \DOMNodeList<\DOMNode> $styleSheets */
         $styleSheets = $domXPath->query(self::STYLE_SHEET_QUERY);
 
-        // Presentation attributes lose to every style sheet rule, while inline styles beat them.
         if ($styleSheets->length > 0) {
             return;
         }
@@ -80,7 +79,6 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
             return;
         }
 
-        // A string or parenthesis that is not closed leaves the declarations ambiguous.
         if (!$this->isSplittableCssDeclarationBlock($style)) {
             return;
         }

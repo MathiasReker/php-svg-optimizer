@@ -20,11 +20,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 
 /**
- * Replaces `fill="url(#g)"` and `stroke="url(#g)"` with the color of the gradient's only stop, since a gradient with
- * a single stop paints that stop's color, then removes the gradient. A gradient without stops of its own uses the
- * stops of the gradient it links to. Gradients referenced in any other way, stops with an opacity, a style or a color
- * that does not mean the same as a paint, and documents with a `<style>` or `<script>` are left untouched.
- *
  * @internal
  *
  * @no-named-arguments
@@ -48,14 +43,8 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
 
     private const string USER_SPACE_ON_USE = 'userSpaceOnUse';
 
-    /**
-     * Shapes that are not rendered at all when their bounding box has no width or no height.
-     */
     private const array BOX_SHAPES = ['rect', 'circle', 'ellipse'];
 
-    /**
-     * Color keywords that paint the same as a fill or stroke as they do as a stop color.
-     */
     private const array NAMED_COLORS = [
         'aliceblue', 'antiquewhite', 'aqua', 'aquamarine', 'azure', 'beige', 'bisque', 'black', 'blanchedalmond',
         'blue', 'blueviolet', 'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate', 'coral', 'cornflowerblue',
@@ -120,8 +109,6 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * Splits the references into plain `fill`/`stroke` paint references and all other references.
-     *
      * @param \DOMDocument $domDocument the DOM document to scan
      *
      * @return array{array<string, list<\DOMAttr>>, array<string, true>} the paint attributes by gradient id, and the
@@ -163,8 +150,6 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * A gradient without child elements uses the stops of the gradient it links to.
-     *
      * @param list<\DOMElement> $chain the gradient and the gradients it links to
      *
      * @return string the color of the gradient's only stop, or '' if it cannot be replaced by a solid color
@@ -219,7 +204,6 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
 
         $color = trim($domElement->getAttribute(SvgAttribute::StopColor->value));
 
-        // Color keywords are ASCII case-insensitive, so a non-ASCII letter that lowercases to ASCII does not match.
         return 1 === preg_match(self::HEX_COLOR_REGEX, $color)
             || [] !== preg_grep('/^' . preg_quote($color, '/') . '$/i', self::NAMED_COLORS) ? $color : '';
     }
@@ -233,10 +217,6 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
     }
 
     /**
-     * A gradient in object bounding box units is not rendered on an element whose bounding box has no width or no
-     * height, while a solid color is, for example on the stroke of a straight line. Such gradients are only replaced on
-     * a rect, circle or ellipse, which are either rendered with a box of positive size or not rendered at all.
-     *
      * @param list<\DOMElement> $chain      the gradient and the gradients it links to
      * @param list<\DOMAttr>    $attributes the paint attributes referencing the gradient
      */

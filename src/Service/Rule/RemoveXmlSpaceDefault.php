@@ -15,12 +15,6 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 
 /**
- * Removes xml:space="default" when it does not override an inherited xml:space value.
- *
- * Some renderers map xml:space to the white-space property, so nothing is removed when the document
- * may set white-space through CSS (inline styles, style elements, presentation attributes or external
- * style sheets) on the element or its ancestors.
- *
  * @internal
  *
  * @no-named-arguments

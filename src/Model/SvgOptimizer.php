@@ -180,8 +180,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Reverts the document to the content before a size-checked rule ran, if the rule made the document larger.
-     *
      * @throws XmlProcessingException
      */
     private function revertIfLarger(\DOMDocument $domDocument, string $contentBeforeRule): void
@@ -202,8 +200,6 @@ final class SvgOptimizer
     }
 
     /**
-     * Enables rules once each, however often they are configured, and orders all rules by their priority.
-     *
      * @param array<class-string<SvgOptimizerRuleInterface>, bool> $ruleFlags
      */
     public function configureRules(array $ruleFlags): void
@@ -214,7 +210,6 @@ final class SvgOptimizer
             }
         }
 
-        // The sort is stable, so rules without a priority keep the order they were added in, after the others.
         usort(
             $this->rules,
             static fn (SvgOptimizerRuleInterface $a, SvgOptimizerRuleInterface $b): int => self::priority($a) <=> self::priority($b),

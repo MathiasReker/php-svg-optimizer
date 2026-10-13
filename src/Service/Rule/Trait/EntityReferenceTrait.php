@@ -14,10 +14,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
 
 /**
- * Resolves references to entities declared in the internal DTD subset. Documents are loaded without substituting
- * entities, and only the document element is written, so a reference left in the output would point to a declaration
- * that is no longer there.
- *
  * @internal
  *
  * @no-named-arguments
@@ -26,9 +22,6 @@ trait EntityReferenceTrait
 {
     use XmlLoaderTrait;
 
-    /**
-     * Internal general entities; parameter entities and external entities (SYSTEM or PUBLIC) do not match.
-     */
     private const string INTERNAL_ENTITY_REGEX = '/<!ENTITY\s+([^\s%"\'>]+)\s+(["\'])(.*?)\2\s*>/s';
 
     private const string ENTITY_REFERENCE_REGEX = '/&([^\s&;#]+);/';
@@ -37,16 +30,9 @@ trait EntityReferenceTrait
 
     private const string NAMESPACE_DECLARATION_REGEX = '/(\sxmlns(?::[^\s=]+)?=")([^"]*)(")/';
 
-    /**
-     * Bounds the resolution of entities that reference other entities, so a cycle cannot loop forever.
-     */
     private const int MAX_ENTITY_DEPTH = 8;
 
     /**
-     * Replaces entity references with their expansion. An entity whose replacement text contains markup is expanded
-     * to elements in element content; otherwise, and in attributes, it is expanded to text. External entities, which
-     * are never loaded, expand to nothing.
-     *
      * @param \DOMNode $domNode the node whose descendants and attributes to expand
      */
     private function expandEntityReferences(\DOMNode $domNode): void
@@ -74,7 +60,6 @@ trait EntityReferenceTrait
             if ($child instanceof \DOMEntityReference) {
                 $this->replaceEntityReference($domNode, $child, $entities);
             } elseif (!$child instanceof \DOMDocumentType) {
-                // The entity declarations in the DOCTYPE are read-only and not written to the output.
                 $this->expandEntityReferencesIn($child, $entities);
             }
         }
@@ -108,9 +93,6 @@ trait EntityReferenceTrait
     }
 
     /**
-     * The parser reads the markup of an entity without the namespaces declared around the reference, so it is parsed
-     * again with those namespaces declared.
-     *
      * @param \DOMElement $domElement the element the reference appears in
      * @param string      $markup     the replacement text of the entity
      *
@@ -132,7 +114,6 @@ trait EntityReferenceTrait
             \LIBXML_NONET,
         );
 
-        // A document that fails to load keeps no document element.
         if (!$domDocument->documentElement instanceof \DOMElement) {
             return [];
         }
@@ -168,8 +149,6 @@ trait EntityReferenceTrait
     }
 
     /**
-     * Namespace declarations keep entity references unexpanded, so they are resolved in the serialized markup.
-     *
      * @param string                $xml      the serialized document element
      * @param array<string, string> $entities the replacement text of each internal entity, by name
      *
@@ -226,9 +205,6 @@ trait EntityReferenceTrait
     }
 
     /**
-     * Character references in an entity value are expanded when the entity is declared, before its replacement text is
-     * parsed where the entity is referenced.
-     *
      * @param string $literal the entity value as written in the declaration
      *
      * @return string the replacement text of the entity

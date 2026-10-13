@@ -635,8 +635,6 @@ enum SvgAttribute: string implements SvgDataInterface
     }
 
     /**
-     * HTML attributes that have no meaning on any SVG element.
-     *
      * @return list<SvgAttribute>
      */
     public static function htmlOnlyCases(): array

@@ -16,11 +16,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
 
 /**
- * Shortens number list attribute values, such as `viewBox="0.0, 0.0, 100.0, 50.0"` to `viewBox="0 0 100 50"`. Only
- * the notation changes: numbers are written in their shortest form and separated by a single space, or by nothing
- * where the coordinates of `points` stay distinct. Values are never rounded, and a value holding anything other than
- * plain numbers, such as units, percentages or keywords, is kept.
- *
  * @internal
  *
  * @no-named-arguments
@@ -30,9 +25,6 @@ final readonly class MinifyListValues implements SvgOptimizerRuleInterface
     use NumberFormatterTrait;
     use NumberListTrait;
 
-    /**
-     * Number list attributes, mapped to the elements they are limited to; an empty list allows any element.
-     */
     private const array LIST_ATTRIBUTES = [
         'baseFrequency' => [],
         'filterRes' => [],
@@ -57,38 +49,22 @@ final readonly class MinifyListValues implements SvgOptimizerRuleInterface
 
     private const array TEXT_ELEMENTS = ['text', 'tspan'];
 
-    /**
-     * Text positions holding a single number are left to MinifyNumericValues.
-     */
     private const array POSITION_ATTRIBUTES = ['dx', 'dy', 'x', 'y'];
 
-    /**
-     * Attributes holding a `;`-separated list of number lists, except for the `values` of a color matrix.
-     */
     private const array SEMICOLON_ATTRIBUTES = ['keyPoints', 'keySplines', 'keyTimes', self::VALUES];
 
     private const string COLOR_MATRIX = 'feColorMatrix';
 
-    /**
-     * Attributes whose coordinates may follow each other without a separator, as in path data.
-     */
     private const array COMPACT_ATTRIBUTES = ['points'];
 
     private const string VALUES = 'values';
 
-    /**
-     * Elements whose `values` always hold numbers.
-     */
     private const array NUMERIC_VALUES_ELEMENTS = ['animateMotion', 'animateTransform', self::COLOR_MATRIX];
 
     private const string ANIMATE = 'animate';
 
     private const string ATTRIBUTE_NAME = 'attributeName';
 
-    /**
-     * Attributes an `<animate>` can animate whose values are numbers or number lists. Other attributes, such as
-     * `class` or `href`, may hold strings that only look like numbers.
-     */
     private const array NUMERIC_ANIMATED_ATTRIBUTES = [
         'baseFrequency', 'cx', 'cy', 'dx', 'dy', 'fill-opacity', 'flood-opacity', 'font-size', 'fr', 'fx', 'fy',
         'height', 'k1', 'k2', 'k3', 'k4', 'offset', 'opacity', 'points', 'r', 'rx', 'ry', 'stdDeviation',

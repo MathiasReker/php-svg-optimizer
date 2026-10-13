@@ -25,8 +25,6 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Only the document element is serialized, so the stylesheet instructions before it are written separately.
- *
  * @internal
  */
 #[CoversClass(DomDocumentWrapper::class)]

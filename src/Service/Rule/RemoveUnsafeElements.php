@@ -34,9 +34,6 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         'on',
     ];
 
-    /**
-     * Attributes that carry a URL but are not covered by the SVG attribute lists.
-     */
     private const array URI_ATTRIBUTES = [
         'action',
         'background',
@@ -51,16 +48,10 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         'poster',
     ];
 
-    /**
-     * Attributes removed unconditionally, as they let markup clobber DOM properties.
-     */
     private const array CLOBBERING_ATTRIBUTES = [
         'name',
     ];
 
-    /**
-     * HTML tags that end SVG foreign content when the SVG is inlined in HTML.
-     */
     private const array HTML_BREAKOUT_TAGS = [
         'b', 'big', 'blockquote', 'body', 'br', 'center', 'code', 'dd', 'div', 'dl', 'dt', 'em', 'embed',
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'hr', 'i', 'img', 'li', 'listing', 'menu', 'meta', 'nobr',
@@ -68,9 +59,6 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         'ul', 'var',
     ];
 
-    /**
-     * Attributes that make a `<font>` start tag end SVG foreign content when inlined in HTML.
-     */
     private const array FONT_BREAKOUT_ATTRIBUTES = ['color', 'face', 'size'];
 
     private const string FONT_TAG = 'font';
@@ -79,24 +67,14 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 
     private const string DATA_URI_REGEX = '/^\s*data:/i';
 
-    /**
-     * Comment content that can close the comment early or open markup when the SVG is inlined in HTML.
-     */
     private const string UNSAFE_COMMENT_REGEX = '~^-?>|<[/\w!?]~';
 
-    /**
-     * Captures the arguments up to the closing parenthesis, skipping nested calls such as `url()` or `type()`, and up
-     * to the end of the value when the call is never closed.
-     */
     private const string CSS_IMAGE_SET_REGEX = '/image-set\s*\(((?:[^()]++|\([^()]*+\)?)*+)/i';
 
     private const string CSS_QUOTED_STRING_REGEX = '/([\'"])(.*?)\1/s';
 
     private const string STYLE_NODE_DANGEROUS_TAG_REGEX = '/<\s*(script|iframe|object|textarea|embed|link|svg)/i';
 
-    /**
-     * Captures the start of the URL only, as browsers accept a `url(` that is never closed.
-     */
     private const string URL_FUNCTION_REGEX = '/url\(\s*([\'"]?)([^\'")]*)/i';
 
     private const string CSS_HEX_ESCAPE_REGEX = '/\\\([0-9a-f]{2,6})/i';
@@ -152,9 +130,6 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Processing instructions are always removed, as an HTML parser ends one at the first `>` and parses the rest as
-     * markup. Comments are removed when they could close early or open markup once the SVG is inlined in HTML.
-     *
      * @param \DOMDocument             $domDocument the DOM document to clean
      * @param string                   $query       the XPath query selecting candidate nodes
      * @param callable(\DOMNode): bool $predicate   returns true for nodes to remove
@@ -199,8 +174,6 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Elements bound to a namespace other than SVG, such as XHTML or MathML.
-     *
      * @param \DOMElement $domElement the element to check
      */
     private function isForeignElement(\DOMElement $domElement): bool
@@ -209,8 +182,6 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     }
 
     /**
-     * Animation and link elements that rewrite a link target, as their values are applied after sanitizing.
-     *
      * @param \DOMElement $domElement the element to check
      */
     private function isHrefAnimation(\DOMElement $domElement): bool

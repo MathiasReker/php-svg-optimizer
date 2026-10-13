@@ -305,7 +305,6 @@ final class SvgOptimizerTest extends TestCase
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg"><rect style="stroke-width:1"/></svg>'));
 
-        // Defaults are only removed after styles became attributes.
         $svgOptimizer->configureRules([RemoveDefaultAttributes::class => true]);
         $svgOptimizer->configureRules([ConvertInlineStylesToAttributes::class => true]);
         $svgOptimizer->optimize();

@@ -107,9 +107,6 @@ final readonly class SvgFileProcessor
     }
 
     /**
-     * The flags are passed positionally in the order of the parameters of `withRules()`, which does not follow the
-     * order of the rule enum, as new parameters are appended to keep the method backwards compatible.
-     *
      * @return list<bool>
      *
      * @throws \JsonException

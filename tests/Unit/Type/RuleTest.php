@@ -202,9 +202,6 @@ final class RuleTest extends TestCase
         self::assertSame(max($priorities), Rule::SortAttributes->priority());
     }
 
-    /**
-     * Each pair is a rule that leaves work for, or unblocks, the rule that must run after it.
-     */
     #[DataProvider('provideRuleRunsBeforeCases')]
     #[Test]
     public function ruleRunsBefore(Rule $first, Rule $second): void

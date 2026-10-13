@@ -12,8 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 
 /**
- * Shortens number literals by rewriting the string only, so the represented value never changes.
- *
  * @internal
  *
  * @no-named-arguments
@@ -22,9 +20,6 @@ trait NumberFormatterTrait
 {
     private const string NUMBER_PATTERN = '[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?';
 
-    /**
-     * The lookahead requires a digit in the mantissa, so a lone sign or `.` is not a number.
-     */
     private const string NUMBER_PARTS_REGEX = '/^([+-]?)(?=\.?\d)(\d*)(?:\.(\d*))?(?:[eE]([+-]?)(\d+))?$/';
 
     private const string PLAIN_NUMBER_REGEX = '/^\s*' . self::NUMBER_PATTERN . '\s*$/';

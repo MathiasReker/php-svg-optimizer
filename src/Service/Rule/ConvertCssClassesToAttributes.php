@@ -20,10 +20,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ClassAttributeTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
 
 /**
- * Style sheets for specific media or with nested blocks (such as `@media`) or comments are left untouched, as are `!important` declarations
- * and properties that other CSS may set, since presentation attributes lose to every style sheet rule. A class is only
- * removed from its elements when no remaining CSS refers to it.
- *
  * @internal
  *
  * @no-named-arguments
@@ -118,9 +114,6 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     /**
-     * Presentation attributes lose to every style sheet rule, so a property that CSS other than the simple class
-     * rules may set is not converted.
-     *
      * @param \DOMNodeList<\DOMElement> $domNodeList the style elements of the document
      *
      * @return string the CSS that stays CSS: unconvertible style elements and rules with other selectors
@@ -220,8 +213,6 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
     }
 
     /**
-     * Applies the convertible declarations of a single-class rule to the elements with that class.
-     *
      * @param string                           $class        the class name
      * @param string                           $declarations the declaration block of the rule
      * @param array<string, list<\DOMElement>> $classMap     the class-to-element map
@@ -306,7 +297,6 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
         ));
 
         foreach ($convertedClasses as $convertedClass) {
-            // Class names of simple selectors consist of letters, digits, `_` and `-` only, so they need no escaping.
             if (1 === preg_match('/\.' . $convertedClass . '(?![\w-])/', $remainingCss)) {
                 continue;
             }

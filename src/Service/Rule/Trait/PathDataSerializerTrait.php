@@ -12,19 +12,12 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 
 /**
- * Writes path segments in their shortest form without changing any coordinate value.
- *
- * Requires NumberFormatterTrait.
- *
  * @internal
  *
  * @no-named-arguments
  */
 trait PathDataSerializerTrait
 {
-    /**
-     * Command that an implicit repetition after a moveto stands for.
-     */
     private const array PATH_IMPLICIT_AFTER_MOVETO = ['M' => 'L', 'm' => 'l'];
 
     private const string PATH_CLOSE = 'z';
@@ -58,8 +51,6 @@ trait PathDataSerializerTrait
     }
 
     /**
-     * Minifies the numbers, and rewrites a relative lineto along one axis as a horizontal or vertical lineto.
-     *
      * @param string       $command   the command letter
      * @param list<string> $arguments the arguments
      *

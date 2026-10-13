@@ -12,37 +12,23 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 
 /**
- * Parses SVG path data into segments. Parsing is strict: any input a browser would treat as an error yields an empty
- * list, so callers leave such data untouched instead of changing how much of it renders.
- *
- * Requires NumberFormatterTrait.
- *
  * @internal
  *
  * @no-named-arguments
  */
 trait PathDataParserTrait
 {
-    /**
-     * Argument types per command: `n` for a number, `f` for an arc flag.
-     */
     private const array PATH_ARGUMENT_TYPES = [
         'm' => 'nn', 'l' => 'nn', 'h' => 'n', 'v' => 'n', 'c' => 'nnnnnn', 's' => 'nnnn', 'q' => 'nnnn', 't' => 'nn',
         'a' => 'nnnffnn', 'z' => '',
     ];
 
-    /**
-     * Path data is ASCII by grammar; other input is left untouched, which also keeps byte offsets and lengths equal.
-     */
     private const string PATH_ASCII_REGEX = '/^[\x00-\x7F]*$/';
 
     private const string PATH_COMMAND_REGEX = '/([MmLlHhVvCcSsQqTtAaZz])([^MmLlHhVvCcSsQqTtAaZz]*)/';
 
     private const string PATH_WHITESPACE = '[\x20\x09\x0A\x0C\x0D]*';
 
-    /**
-     * Atomic, so a number is never split to satisfy the grammar.
-     */
     private const string PATH_NUMBER_CAPTURE = '((?>' . self::NUMBER_PATTERN . '))';
 
     private const string PATH_FLAG_CAPTURE = '([01])';
@@ -127,8 +113,6 @@ trait PathDataParserTrait
     }
 
     /**
-     * Extra coordinate pairs after a moveto are implicit lineto commands.
-     *
      * @param string $command the command letter
      * @param int    $index   the index of the argument group within the command
      */

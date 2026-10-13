@@ -40,11 +40,6 @@ abstract class AbstractStream implements StreamInterface
     }
 
     /**
-     * Auto-detects color support, honoring the same environment variables most CLI
-     * tools do: https://no-color.org (opt-out, takes precedence over everything else),
-     * https://force-color.org (FORCE_COLOR=0 disables, any other value forces it on),
-     * and the BSD/macOS CLICOLOR_FORCE convention (forces it on unless "0").
-     *
      * @return bool True if the stream supports ANSI color output, false otherwise
      */
     final public function supportsColor(): bool

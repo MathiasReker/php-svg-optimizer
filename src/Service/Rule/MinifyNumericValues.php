@@ -15,10 +15,6 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 
 /**
- * Shortens single-number attribute values, such as `stroke-width="01.50px"` to `stroke-width="1.5"`. Only the
- * notation changes: leading and trailing zeros and a `+` sign are dropped, and `px` is dropped from lengths, as a
- * pixel equals one user unit. Values are never rounded.
- *
  * @internal
  *
  * @no-named-arguments
@@ -27,18 +23,12 @@ final readonly class MinifyNumericValues implements SvgOptimizerRuleInterface
 {
     use NumberFormatterTrait;
 
-    /**
-     * Attributes holding a length, where `px` equals a unitless value.
-     */
     private const array LENGTH_ATTRIBUTES = [
         'cx', 'cy', 'dx', 'dy', 'font-size', 'fr', 'fx', 'fy', 'height', 'letter-spacing', 'markerHeight',
         'markerWidth', 'r', 'refX', 'refY', 'rx', 'ry', 'startOffset', 'stroke-dashoffset', 'stroke-width',
         'textLength', 'width', 'word-spacing', 'x', 'x1', 'x2', 'y', 'y1', 'y2',
     ];
 
-    /**
-     * Attributes holding a unitless number.
-     */
     private const array NUMBER_ATTRIBUTES = [
         'amplitude', 'azimuth', 'diffuseConstant', 'elevation', 'exponent', 'fill-opacity', 'flood-opacity',
         'intercept', 'k', 'k1', 'k2', 'k3', 'k4', 'limitingConeAngle', 'numOctaves', 'offset', 'opacity',

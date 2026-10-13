@@ -39,7 +39,6 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
     public function optimize(\DOMDocument $domDocument): void
     {
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
-            // Removing the node itself, not by name, as the name of a namespaced attribute is its local name.
             foreach (iterator_to_array($domNodeList->attributes, false) as $domAttr) {
                 if ('' === trim($domAttr->value)) {
                     $domNodeList->removeAttributeNode($domAttr);
