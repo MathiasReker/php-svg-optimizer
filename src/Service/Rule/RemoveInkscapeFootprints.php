@@ -43,8 +43,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
 
     private const string XPATH_ALL_ELEMENTS = '//*';
 
-    private const string XPATH_ALL_NAMESPACE_NODES = '//namespace::*';
-
     private const string XPATH_ELEMENT_NAMESPACE_NODES = 'namespace::*';
 
     private const string XPATH_DESCENDANT_ELEMENTS = './/*';
@@ -74,7 +72,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $namespaceUris = $this->collectEditorNamespaceUris($domXPath);
+        $namespaceUris = self::EDITOR_NAMESPACE_URIS;
 
         $this->removeEditorExtensionElements($domXPath);
 
@@ -92,29 +90,6 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
         }
 
         $this->removeNamespaceDeclarations($domXPath);
-    }
-
-    /**
-     * @param \DOMXPath $domXPath the XPath object for querying the document
-     *
-     * @return list<string> the namespace URIs of the nodes to remove
-     */
-    private function collectEditorNamespaceUris(\DOMXPath $domXPath): array
-    {
-        $namespaceUris = self::EDITOR_NAMESPACE_URIS;
-
-        /** @var \DOMNodeList<\DOMNameSpaceNode> $domNodeList */
-        $domNodeList = $domXPath->query(self::XPATH_ALL_NAMESPACE_NODES);
-
-        foreach ($domNodeList as $domNameSpaceNode) {
-            if (null !== $domNameSpaceNode->namespaceURI
-                && $this->isEditorNamespace((string) $domNameSpaceNode->nodeValue)
-            ) {
-                $namespaceUris[] = $domNameSpaceNode->namespaceURI;
-            }
-        }
-
-        return array_values(array_unique($namespaceUris));
     }
 
     /**
