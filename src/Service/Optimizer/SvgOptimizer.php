@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Optimizer;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
@@ -277,6 +278,7 @@ final class SvgOptimizer
      * @param string $outputPath The path to save the optimized SVG content to
      *
      * @throws \LogicException If the content is saved before optimization
+     * @throws IOException     If the output file cannot be written
      */
     public function saveToFile(string $outputPath): self
     {

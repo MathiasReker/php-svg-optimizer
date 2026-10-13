@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Contract\Service\Provider;
 
+use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 
 /**
@@ -46,6 +47,8 @@ interface SvgProviderInterface
 
     /**
      * @param string $path The path to save the optimized SVG content to
+     *
+     * @throws IOException If the output file cannot be written
      */
     public function saveToFile(string $path): self;
 

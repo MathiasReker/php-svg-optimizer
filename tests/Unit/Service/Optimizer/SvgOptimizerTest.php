@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Optimizer;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
@@ -221,6 +222,7 @@ final class SvgOptimizerTest extends TestCase
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
      * @throws \LogicException
+     * @throws IOException
      */
     #[Test]
     public function saveToFileReturnsSelf(): void
@@ -235,6 +237,7 @@ final class SvgOptimizerTest extends TestCase
 
     /**
      * @throws \LogicException
+     * @throws IOException
      */
     #[Test]
     public function saveToFileThrowsBeforeOptimize(): void
@@ -280,6 +283,7 @@ final class SvgOptimizerTest extends TestCase
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
      * @throws \LogicException
+     * @throws IOException
      */
     #[Test]
     public function saveToFileChainingWithDifferentPaths(): void

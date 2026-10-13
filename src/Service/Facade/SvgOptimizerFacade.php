@@ -242,6 +242,7 @@ final readonly class SvgOptimizerFacade
      * @return $this The SvgOptimizerFacade instance
      *
      * @throws \LogicException If the content is saved before optimize() is called
+     * @throws IOException     If the output file cannot be written
      */
     public function saveToFile(string $outputPath): self
     {

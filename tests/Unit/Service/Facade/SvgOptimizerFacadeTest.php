@@ -157,6 +157,7 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
      * @throws \LogicException
+     * @throws IOException
      */
     #[Test]
     public function saveToFileWritesOptimizedSvg(): void
@@ -349,6 +350,7 @@ final class SvgOptimizerFacadeTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
      * @throws \LogicException
+     * @throws IOException
      */
     #[Test]
     public function methodChaining(): void
@@ -417,6 +419,9 @@ final class SvgOptimizerFacadeTest extends TestCase
         self::assertStringNotContainsString('data-x', $allowRiskyLast);
     }
 
+    /**
+     * @throws IOException
+     */
     #[Test]
     public function saveToFileBeforeOptimizeThrowsAndWritesNothing(): void
     {
@@ -585,6 +590,47 @@ final class SvgOptimizerFacadeTest extends TestCase
 
             yield basename($file) . ', risky' => [$file, true];
         }
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideSaveToFileThrowsOnlyAnIoExceptionCases')]
+    #[Test]
+    public function saveToFileThrowsOnlyAnIoException(string $suffix): void
+    {
+        $directory = sys_get_temp_dir() . '/svgopt_save_' . uniqid();
+        mkdir($directory);
+        file_put_contents($directory . '/file.txt', 'x');
+        $warnings = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$warnings): bool {
+            $warnings[] = $errstr;
+
+            return true;
+        });
+
+        try {
+            SvgOptimizerFacade::fromString('<svg xmlns="http://www.w3.org/2000/svg"/>')->optimize()->saveToFile($directory . $suffix);
+            self::fail('Expected IOException was not thrown.');
+        } catch (IOException) {
+            self::assertSame([], $warnings);
+        } finally {
+            restore_error_handler();
+            unlink($directory . '/file.txt');
+            rmdir($directory);
+        }
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideSaveToFileThrowsOnlyAnIoExceptionCases(): iterable
+    {
+        yield 'below a file' => ['/file.txt/out.svg'];
+
+        yield 'a directory' => [''];
     }
 
     /**

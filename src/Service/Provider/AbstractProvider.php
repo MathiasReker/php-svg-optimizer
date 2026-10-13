@@ -59,7 +59,7 @@ abstract class AbstractProvider implements SvgProviderInterface
             throw new IOException(\sprintf('Failed to create directory for output file: %s', $path));
         }
 
-        if (false === file_put_contents($path, $this->getOutputContent())) {
+        if (is_dir($path) || false === $this->withoutWarnings(fn (): false|int => file_put_contents($path, $this->getOutputContent()))) {
             throw new IOException(\sprintf('Failed to write optimized content to the output file: %s', $path));
         }
 
@@ -75,6 +75,10 @@ abstract class AbstractProvider implements SvgProviderInterface
             return true;
         }
 
+        if (file_exists($directoryPath)) {
+            return false;
+        }
+
         $existingAncestor = \dirname($directoryPath);
         while (!file_exists($existingAncestor) && \dirname($existingAncestor) !== $existingAncestor) {
             $existingAncestor = \dirname($existingAncestor);
@@ -84,7 +88,27 @@ abstract class AbstractProvider implements SvgProviderInterface
             return false;
         }
 
-        return mkdir($directoryPath, self::DIRECTORY_PERMISSION, true) || is_dir($directoryPath);
+        return $this->withoutWarnings(static fn (): bool => mkdir($directoryPath, self::DIRECTORY_PERMISSION, true)) || is_dir($directoryPath);
+    }
+
+    /**
+     * @template T
+     *
+     * @param \Closure(): T $callback a file system operation that reports a failure through its return value
+     *
+     * @param-immediately-invoked-callable $callback
+     *
+     * @return T
+     */
+    private function withoutWarnings(\Closure $callback): mixed
+    {
+        set_error_handler(static fn (): bool => true);
+
+        try {
+            return $callback();
+        } finally {
+            restore_error_handler();
+        }
     }
 
     #[\Override]
