@@ -517,6 +517,29 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function metaDataDescribesTheInputFileAfterTheOptimizedContentIsSavedOverIt(): void
+    {
+        file_put_contents($this->tempFilePath, '<svg xmlns="http://www.w3.org/2000/svg"><!-- comment --></svg>');
+
+        $svgOptimizerFacade = SvgOptimizerFacade::fromFile($this->tempFilePath)
+            ->withAllRules()
+            ->optimize()
+            ->saveToFile($this->tempFilePath);
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"/>', file_get_contents($this->tempFilePath));
+        self::assertSame(62, $svgOptimizerFacade->getMetaData()->getOriginalSize());
+        self::assertSame(41, $svgOptimizerFacade->getMetaData()->getOptimizedSize());
+        self::assertSame(21, $svgOptimizerFacade->getMetaData()->getSavedBytes());
+    }
+
+    /**
      * Enabling a rule again, as the command line does for a configuration combined with all rules, runs it once.
      *
      * @throws SvgValidationException

@@ -33,15 +33,31 @@ final class FileProvider extends AbstractProvider
     ) {
         parent::__construct();
 
-        $this->inputContent = $this->getInputContent();
+        // The file is read once, so the content that is optimized and measured stays the same, also when the optimized
+        // content is saved to the input file.
+        $this->inputContent = $this->readInputFile();
+    }
+
+    #[\Override]
+    public function getInputContent(): string
+    {
+        return $this->inputContent;
+    }
+
+    /**
+     * @throws XmlProcessingException If the XML processing fails
+     */
+    #[\Override]
+    public function loadContent(): \DOMDocument
+    {
+        return $this->domDocumentWrapper->loadFromString($this->inputContent);
     }
 
     /**
      * @throws FileNotFoundException If the file does not exist
-     * @throws IOException           If the file does not exist or cannot be read
+     * @throws IOException           If the file cannot be read
      */
-    #[\Override]
-    public function getInputContent(): string
+    private function readInputFile(): string
     {
         if (!file_exists($this->inputFile) || !is_file($this->inputFile)) {
             throw new FileNotFoundException(\sprintf('Input file does not exist: %s', $this->inputFile));
@@ -58,14 +74,5 @@ final class FileProvider extends AbstractProvider
         }
 
         return $content;
-    }
-
-    /**
-     * @throws XmlProcessingException If the XML processing fails
-     */
-    #[\Override]
-    public function loadContent(): \DOMDocument
-    {
-        return $this->domDocumentWrapper->loadFromFile($this->inputFile);
     }
 }
