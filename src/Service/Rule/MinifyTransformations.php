@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
 
@@ -48,6 +49,8 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     private const string TRANSFORM_ITEM_REGEX = '/([a-zA-Z]+)\s*\(([^()]*)\)/';
 
     private const string ONE = '1';
+
+    private const string IDENTITY_TRANSFORM = 'scale(1)';
 
     #[\Override]
     public static function isRisky(): bool
@@ -91,11 +94,32 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
 
         $minified = implode('', array_map(fn (array $item): string => $this->minifyItem($item[0], $item[1]), $items));
 
-        if ('' === $minified) {
+        if ('' === $minified && !$this->canBeInherited($domElement, $name)) {
             $domElement->removeAttribute($name);
-        } elseif (mb_strlen($minified) < mb_strlen($value)) {
+
+            return;
+        }
+
+        if ('' === $minified) {
+            $minified = self::IDENTITY_TRANSFORM;
+        }
+
+        if (mb_strlen($minified) < mb_strlen($value)) {
             $domElement->setAttribute($name, $minified);
         }
+    }
+
+    /**
+     * @param \DOMElement $domElement the element holding the transform
+     * @param string      $name       the attribute name
+     *
+     * @return bool true if the element would inherit the attribute from a referenced element when it is removed
+     */
+    private function canBeInherited(\DOMElement $domElement, string $name): bool
+    {
+        return SvgAttribute::Transform->value !== $name
+            && ($domElement->hasAttribute(SvgAttribute::Href->value)
+                || $domElement->hasAttributeNS(SvgNamespace::Xlink->value, SvgAttribute::Href->value));
     }
 
     /**

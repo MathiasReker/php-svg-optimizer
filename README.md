@@ -604,8 +604,9 @@ $svgOptimizer->minifySvgCoordinates();
 Shortens `transform`, `gradientTransform` and `patternTransform` values without recalculating them: numbers and
 separators are written in their shortest form, identity transformations such as `translate(0)`, `scale(1)` and
 `rotate(0)` are removed, default arguments are dropped (`translate(10 0)` becomes `translate(10)`), and a matrix that
-only translates or scales is written as `translate()` or `scale()`. Values that do not parse as a transform list are
-left untouched.
+only translates or scales is written as `translate()` or `scale()`. An identity `gradientTransform` or
+`patternTransform` on an element with `href` or `xlink:href` is kept (as `scale(1)` when shorter), since removing it
+would inherit the transform of the referenced element. Values that do not parse as a transform list are left untouched.
 
 ```php
 $svgOptimizer->minifyTransformations();

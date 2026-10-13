@@ -502,6 +502,36 @@ final class MinifyTransformationsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><g/></svg>',
         ];
 
+        yield 'Removes identity gradientTransform without a reference' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient id="a" gradientTransform="translate(0, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient id="a"/></svg>',
+        ];
+
+        yield 'Keeps identity gradientTransform on a gradient with href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient id="a" gradientTransform="rotate(45)"/><linearGradient id="b" href="#a" gradientTransform="translate(0, 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient id="a" gradientTransform="rotate(45)"/><linearGradient id="b" href="#a" gradientTransform="scale(1)"/></svg>',
+        ];
+
+        yield 'Keeps identity gradientTransform on a gradient with xlink:href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><radialGradient id="b" xlink:href="#a" gradientTransform="matrix(1 0 0 1 0 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><radialGradient id="b" xlink:href="#a" gradientTransform="scale(1)"/></svg>',
+        ];
+
+        yield 'Keeps short identity patternTransform on a pattern with href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><pattern id="b" href="#a" patternTransform="scale(1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><pattern id="b" href="#a" patternTransform="scale(1)"/></svg>',
+        ];
+
+        yield 'Keeps identity patternTransform on a pattern with a custom xlink prefix' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="http://www.w3.org/1999/xlink"><pattern id="b" x:href="#a" patternTransform="rotate(0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="http://www.w3.org/1999/xlink"><pattern id="b" x:href="#a" patternTransform="scale(1)"/></svg>',
+        ];
+
+        yield 'Removes identity transform on an element with href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><use href="#a" transform="translate(0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><use href="#a"/></svg>',
+        ];
+
         yield 'Keeps negative scale' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(-1)"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(-1)"/></svg>',
