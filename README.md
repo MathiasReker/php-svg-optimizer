@@ -345,12 +345,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 try {
     $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
         ->withRules(
-            fixAttributeNames: true,
             removeDataAttributes: true,
             removeEnableBackgroundAttribute: true,
-            removeNonStandardAttributes: true,
-            removeNonStandardTags: true,
-            removeUnsafeElements: true,
             removeUnusedIds: true,
             removeWidthHeightAttributes: true,
             scopeSvgStyles: true,
@@ -1235,6 +1231,13 @@ Run mutation testing:
 
 ```bash
 composer test:mutation
+```
+
+Run the benchmark (`--save=<file>` stores checksums of the optimized output and `--compare=<file>` checks that a change
+keeps the output identical):
+
+```bash
+composer test:benchmark
 ```
 
 Fix code style:
