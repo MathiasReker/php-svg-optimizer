@@ -56,7 +56,7 @@ final class OptionTest extends TestCase
             'config',
             '-c',
             '--config',
-            'Path to a JSON file, or a raw JSON string, with custom optimization rules. If not provided, all default optimizations will be applied.',
+            'Path to a JSON file, or a raw JSON string, with the optimization rules to enable. Without --config and --with-all-rules, no rules are applied.',
         ];
 
         yield 'DryRun' => [

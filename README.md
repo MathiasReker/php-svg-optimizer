@@ -64,7 +64,7 @@ vendor/bin/svg-optimizer [options] process <path1> <path2> ...
 ```bash
 Options:
 -h , --help               Display help for the command.
--c , --config             Path to a JSON file, or a raw JSON string, with custom optimization rules. If not provided, all default optimizations will be applied.
+-c , --config             Path to a JSON file, or a raw JSON string, with the optimization rules to enable. Without --config and --with-all-rules, no rules are applied.
 -d , --dry-run            Only calculate potential savings without modifying the files.
 -r , --allow-risky        Explicitly enables risky rules, allowing them to be applied.
 -a , --with-all-rules     Enable all non-risky rules. Use --allow-risky to include risky rules as well.
