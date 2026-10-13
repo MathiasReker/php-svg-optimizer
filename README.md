@@ -699,7 +699,9 @@ $svgOptimizer->removeDuplicateElements();
 ### `removeEmptyAttributes`
 
 Removes attributes that have empty values. Such attributes add noise to the markup without affecting rendering and can
-safely be removed to produce cleaner output.
+safely be removed to produce cleaner output. Empty conditional processing attributes (`systemLanguage`,
+`requiredExtensions`, `requiredFeatures`), which keep an element from rendering, and attributes on elements outside the
+SVG namespace, such as `<foreignObject>` content, are kept.
 
 ```php
 $svgOptimizer->removeEmptyAttributes();

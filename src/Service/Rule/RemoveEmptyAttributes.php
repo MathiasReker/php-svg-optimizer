@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
  * @internal
@@ -20,6 +22,14 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
  */
 final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
 {
+    use ElementTrait;
+
+    private const array CONDITIONAL_ATTRIBUTES = [
+        SvgAttribute::RequiredExtensions->value,
+        SvgAttribute::RequiredFeatures->value,
+        SvgAttribute::SystemLanguage->value,
+    ];
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -39,8 +49,12 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
     public function optimize(\DOMDocument $domDocument): void
     {
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            if (!$this->isSvgElement($domNodeList)) {
+                continue;
+            }
+
             foreach (iterator_to_array($domNodeList->attributes, false) as $domAttr) {
-                if ('' === trim($domAttr->value)) {
+                if ('' === trim($domAttr->value) && !\in_array($domAttr->nodeName, self::CONDITIONAL_ATTRIBUTES, true)) {
                     $domNodeList->removeAttributeNode($domAttr);
                 }
             }

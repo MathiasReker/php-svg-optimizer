@@ -70,6 +70,16 @@ trait ElementTrait
     /**
      * @param \DOMElement $domElement the element to check
      *
+     * @return bool true if the element is in the SVG namespace
+     */
+    private function isSvgElement(\DOMElement $domElement): bool
+    {
+        return SvgNamespace::Svg->value === $domElement->namespaceURI;
+    }
+
+    /**
+     * @param \DOMElement $domElement the element to check
+     *
      * @return bool true if the element can be referenced by id
      */
     private function hasId(\DOMElement $domElement): bool

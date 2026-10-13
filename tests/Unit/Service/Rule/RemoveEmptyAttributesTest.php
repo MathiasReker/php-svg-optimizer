@@ -55,6 +55,16 @@ final class RemoveEmptyAttributesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps empty conditional processing attributes, which keep the element from rendering' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="5" height="5" systemLanguage=""/><rect width="5" height="5" requiredExtensions=" "/><rect width="5" height="5" requiredFeatures="" fill=""/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="5" height="5" systemLanguage=""/><rect width="5" height="5" requiredExtensions=" "/><rect width="5" height="5" requiredFeatures=""/></svg>',
+        ];
+
+        yield 'Keeps empty attributes on elements outside the SVG namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10" class=""><div xmlns="http://www.w3.org/1999/xhtml" hidden="">a<input type="checkbox" checked=""/></div></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10"><div xmlns="http://www.w3.org/1999/xhtml" hidden="">a<input type="checkbox" checked=""/></div></foreignObject></svg>',
+        ];
+
         yield 'Removes an empty namespaced attribute without touching a same-named plain attribute' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a title="keep" xlink:title=""/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a title="keep"/></svg>',
