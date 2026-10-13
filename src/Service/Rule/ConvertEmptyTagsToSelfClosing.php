@@ -13,13 +13,15 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\XmlContentTrait;
 
 /**
  * @internal
  */
-final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
+final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleInterface
 {
+    use XmlContentTrait;
+
     private const string EMPTY_TAG_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)(?<!\/)>\s*<\/\1>/';
 
     private const string SELF_CLOSING_SPACE_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)\s+\/>/';
@@ -44,7 +46,7 @@ final readonly class ConvertEmptyTagsToSelfClosing extends AbstractXmlProcessor 
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->process($domDocument, $this->convertEmptyTagsToSelfClosing(...));
+        $this->processXmlContent($domDocument, $this->convertEmptyTagsToSelfClosing(...));
     }
 
     /**

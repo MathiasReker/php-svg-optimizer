@@ -13,16 +13,18 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\XmlContentTrait;
 
 /**
  * @internal
  *
  * @no-named-arguments
  */
-final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
+final readonly class RemoveUnnecessaryWhitespace implements SvgOptimizerRuleInterface
 {
+    use XmlContentTrait;
+
     private const string ATTRIBUTE_REGEX = '/(\S+)\s*=\s*"([^"]*)"/';
 
     private const string WHITESPACE_REGEX = '/\s+/';
@@ -72,7 +74,7 @@ final readonly class RemoveUnnecessaryWhitespace extends AbstractXmlProcessor im
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->process(
+        $this->processXmlContent(
             $domDocument,
             static fn (string $content): string => preg_replace_callback(
                 self::ATTRIBUTE_REGEX,

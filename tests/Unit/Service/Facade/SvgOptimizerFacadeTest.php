@@ -18,7 +18,6 @@ use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
@@ -93,7 +92,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RemoveEnableBackgroundAttribute::class)]
 #[CoversClass(RemoveComments::class)]
 #[CoversClass(RemoveTitleAndDesc::class)]
-#[CoversClass(AbstractXmlProcessor::class)]
 #[CoversClass(ConvertCssClassesToAttributes::class)]
 #[CoversClass(ConvertEllipseToCircle::class)]
 #[CoversClass(ConvertEmptyTagsToSelfClosing::class)]

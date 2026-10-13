@@ -13,15 +13,17 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\XmlContentTrait;
 
 /**
  * @internal
  *
  * @no-named-arguments
  */
-final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
+final readonly class RemoveInvisibleCharacters implements SvgOptimizerRuleInterface
 {
+    use XmlContentTrait;
+
     private const string INVISIBLE_CHARACTERS_REGEX = '/&#x(?:200B|200C|200D|2028|2029|AD|0A|0D|09|D);/u';
 
     #[\Override]
@@ -44,7 +46,7 @@ final readonly class RemoveInvisibleCharacters extends AbstractXmlProcessor impl
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->process($domDocument, $this->removeInvisibleCharacters(...));
+        $this->processXmlContent($domDocument, $this->removeInvisibleCharacters(...));
     }
 
     /**

@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -22,7 +21,6 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(AbstractXmlProcessor::class)]
 #[CoversClass(SvgOptimizer::class)]
 final class XmlLoaderTraitTest extends TestCase
 {

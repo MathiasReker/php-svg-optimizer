@@ -13,16 +13,18 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\XmlContentTrait;
 
 /**
  * @internal
  *
  * @no-named-arguments
  */
-final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor implements SvgOptimizerRuleInterface
+final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
 {
+    use XmlContentTrait;
+
     private const string NAMESPACE_REGEX = '/xmlns:([a-zA-Z0-9\-]+)="([^"]+)"/';
 
     private const string ELEMENT_TEMPLATE_REGEX = '/%s:[a-zA-Z0-9\-]+/';
@@ -47,7 +49,7 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->process($domDocument, fn (): string => $this->cleanNamespaces($domDocument));
+        $this->processXmlContent($domDocument, fn (): string => $this->cleanNamespaces($domDocument));
     }
 
     /**
@@ -59,7 +61,7 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
      */
     private function cleanNamespaces(\DOMDocument $domDocument): string
     {
-        $content = $this->process($domDocument, static fn (string $content): string => $content);
+        $content = $this->processXmlContent($domDocument, static fn (string $content): string => $content);
 
         $namespaceCounts = $this->countNamespaceElementsWithRegex($content);
 
@@ -69,7 +71,7 @@ final readonly class RemoveUnusedNamespaces extends AbstractXmlProcessor impleme
             }
         }
 
-        return $this->process($domDocument, static fn (string $content): string => $content);
+        return $this->processXmlContent($domDocument, static fn (string $content): string => $content);
     }
 
     /**

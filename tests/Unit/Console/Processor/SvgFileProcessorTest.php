@@ -22,7 +22,6 @@ use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
@@ -100,7 +99,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Finder::class)]
 #[CoversClass(ConfigLoader::class)]
 #[CoversClass(RemoveComments::class)]
-#[CoversClass(AbstractXmlProcessor::class)]
 #[CoversClass(ConvertColorsToHex::class)]
 #[CoversClass(ConvertCssClassesToAttributes::class)]
 #[CoversClass(ConvertEllipseToCircle::class)]

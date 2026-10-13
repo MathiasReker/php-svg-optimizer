@@ -27,7 +27,6 @@ use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\ExampleCommand;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\AbstractXmlProcessor;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
@@ -82,7 +81,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Command::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(DomDocumentWrapper::class)]
-#[CoversClass(AbstractXmlProcessor::class)]
 #[CoversClass(AbstractProvider::class)]
 #[CoversClass(FileProvider::class)]
 #[CoversClass(ConvertColorsToHex::class)]
