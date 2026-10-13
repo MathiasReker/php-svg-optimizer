@@ -75,8 +75,8 @@ trait EntityReferenceTrait
         $markup = \array_key_exists($domEntityReference->nodeName, $entities)
             ? $this->resolveEntityText($this->decodeCharacterReferences($entities[$domEntityReference->nodeName]), $entities, 0)
             : '';
-        $nodes = $domNode instanceof \DOMElement && str_contains($markup, '<')
-            ? $this->parseEntityMarkup($domNode, $markup)
+        $nodes = $domNode instanceof \DOMElement && $domNode->ownerDocument instanceof \DOMDocument && str_contains($markup, '<')
+            ? $this->parseEntityMarkup($domNode->ownerDocument, $domNode, $markup)
             : [];
 
         if ([] === $nodes) {
@@ -99,14 +99,8 @@ trait EntityReferenceTrait
      * @return list<\DOMNode> the parsed nodes, imported into the context document, or an empty list if the markup is
      *                        not well-formed
      */
-    private function parseEntityMarkup(\DOMElement $domElement, string $markup): array
+    private function parseEntityMarkup(\DOMDocument $document, \DOMElement $domElement, string $markup): array
     {
-        $document = $domElement->ownerDocument;
-
-        if (!$document instanceof \DOMDocument) {
-            return [];
-        }
-
         $domDocument = new \DOMDocument();
         $this->loadXmlSilently(
             $domDocument,

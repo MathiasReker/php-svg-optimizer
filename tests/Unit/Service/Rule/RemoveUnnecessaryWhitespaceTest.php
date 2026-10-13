@@ -18,8 +18,10 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
+use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\RegexFailureTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -33,6 +35,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class RemoveUnnecessaryWhitespaceTest extends TestCase
 {
+    use RegexFailureTrait;
+
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -455,6 +459,18 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="20"/><circle cx="50" cy="50" r="20"/></svg>
                 XML,
         ];
+    }
+
+    #[RunInSeparateProcess]
+    #[Test]
+    public function keepsAStyleThatCannotBeMatched(): void
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill : red ;  font-family: &quot;a  b&quot;"/></svg>');
+
+        $this->withFailingRegularExpressions(static fn () => (new RemoveUnnecessaryWhitespace())->optimize($domDocument));
+
+        self::assertSame('fill : red ;  font-family: "a  b"', $domDocument->documentElement?->firstElementChild?->getAttribute('style'));
     }
 
     #[Test]

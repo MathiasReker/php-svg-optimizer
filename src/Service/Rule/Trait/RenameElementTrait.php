@@ -22,22 +22,12 @@ trait RenameElementTrait
      * @param \DOMElement $domElement the element to replace
      * @param string      $localName  the new element name
      */
-    private function renameElement(\DOMElement $domElement, string $localName): void
+    private function renameElement(\DOMDocument $domDocument, \DOMElement $domElement, string $localName): void
     {
-        $document = $domElement->ownerDocument;
+        $replacement = $domDocument->createElementNS($domElement->namespaceURI, $localName);
 
-        if (!$document instanceof \DOMDocument) {
-            return;
-        }
-
-        try {
-            $replacement = $document->createElementNS($domElement->namespaceURI, $localName);
-
-            foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
-                $replacement->setAttributeNS($domAttr->namespaceURI, $domAttr->nodeName, $domAttr->value);
-            }
-        } catch (\DOMException) {
-            return;
+        foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
+            $replacement->setAttributeNS($domAttr->namespaceURI, $domAttr->nodeName, $domAttr->value);
         }
 
         while ($domElement->firstChild instanceof \DOMNode) {

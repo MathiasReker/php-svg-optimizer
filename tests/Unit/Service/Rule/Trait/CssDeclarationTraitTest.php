@@ -14,8 +14,10 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule\Trait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
+use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\RegexFailureTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -27,6 +29,7 @@ use PHPUnit\Framework\TestCase;
 final class CssDeclarationTraitTest extends TestCase
 {
     use CssDeclarationTrait;
+    use RegexFailureTrait;
 
     /**
      * @param list<string> $expected
@@ -90,5 +93,12 @@ final class CssDeclarationTraitTest extends TestCase
         yield 'unclosed single quote' => ["a:'x;b:c"];
 
         yield 'trailing backslash' => ['a:b\\'];
+    }
+
+    #[RunInSeparateProcess]
+    #[Test]
+    public function splitsIntoNoDeclarationsWhenTheBlockCannotBeMatched(): void
+    {
+        self::assertSame([], $this->withFailingRegularExpressions(fn (): array => $this->splitCssDeclarations('fill:red;stroke:blue')));
     }
 }

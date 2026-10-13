@@ -121,11 +121,7 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
                 continue;
             }
 
-            try {
-                $titleElement = $domElement->ownerDocument?->createElementNS($domElement->namespaceURI, SvgTag::Title->value);
-            } catch (\DOMException) {
-                continue;
-            }
+            $titleElement = $domElement->ownerDocument?->createElementNS($domElement->namespaceURI, SvgTag::Title->value);
 
             if ($titleElement instanceof \DOMElement) {
                 $titleElement->textContent = $title;

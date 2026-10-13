@@ -21,17 +21,11 @@ use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 final class MemoryStream extends AbstractStream implements StreamInterface
 {
     /**
-     * @throws \RuntimeException If unable to open the memory stream
+     * @throws \RuntimeException If the stream cannot be opened
      */
     public function __construct()
     {
-        $stream = fopen('php://memory', 'w+');
-
-        if (!\is_resource($stream)) {
-            throw new \RuntimeException('Unable to open memory stream.');
-        }
-
-        $this->stream = $stream;
+        parent::__construct('php://memory', 'w+');
     }
 
     public function getContent(): string
@@ -39,12 +33,5 @@ final class MemoryStream extends AbstractStream implements StreamInterface
         rewind($this->stream);
 
         return stream_get_contents($this->stream);
-    }
-
-    public function __destruct()
-    {
-        if (\is_resource($this->stream)) {
-            fclose($this->stream);
-        }
     }
 }

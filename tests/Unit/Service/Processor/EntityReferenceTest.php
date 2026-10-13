@@ -232,7 +232,7 @@ final class EntityReferenceTest extends TestCase
         $domDocumentWrapper = new DomDocumentWrapper();
         $reflectionMethod = new \ReflectionMethod($domDocumentWrapper, 'parseEntityMarkup');
 
-        self::assertSame([], $reflectionMethod->invoke($domDocumentWrapper, $domElement, '<a>'));
+        self::assertSame([], $reflectionMethod->invoke($domDocumentWrapper, $domDocument, $domElement, '<a>'));
     }
 
     /**

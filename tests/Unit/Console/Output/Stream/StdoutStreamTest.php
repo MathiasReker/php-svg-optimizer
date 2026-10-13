@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Output\Stream;
 
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -38,12 +39,12 @@ final class StdoutStreamTest extends TestCase
     #[Test]
     public function writeAndWritelnToMemoryStream(): void
     {
-        $testStream = new TestStream();
+        $memoryStream = new MemoryStream();
 
-        $testStream->write('Hello');
-        $testStream->writeln(' World');
+        $memoryStream->write('Hello');
+        $memoryStream->writeln(' World');
 
-        $output = $testStream->getContent();
+        $output = $memoryStream->getContent();
 
         self::assertStringContainsString('Hello', $output);
         self::assertStringContainsString(' World', $output);
@@ -55,14 +56,14 @@ final class StdoutStreamTest extends TestCase
     #[Test]
     public function multipleWrites(): void
     {
-        $testStream = new TestStream();
+        $memoryStream = new MemoryStream();
 
-        $testStream->write('Line 1');
-        $testStream->writeln(' Line 2');
-        $testStream->write('Line 3');
-        $testStream->writeln(' Line 4');
+        $memoryStream->write('Line 1');
+        $memoryStream->writeln(' Line 2');
+        $memoryStream->write('Line 3');
+        $memoryStream->writeln(' Line 4');
 
-        $output = $testStream->getContent();
+        $output = $memoryStream->getContent();
 
         self::assertStringContainsString('Line 1', $output);
         self::assertStringContainsString('Line 2' . \PHP_EOL, $output);

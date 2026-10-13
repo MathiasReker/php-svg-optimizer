@@ -24,6 +24,30 @@ abstract class AbstractStream implements StreamInterface
     protected $stream;
 
     /**
+     * @param string $filename The stream to open
+     * @param string $mode     The mode to open the stream in
+     *
+     * @throws \RuntimeException If the stream cannot be opened
+     */
+    public function __construct(string $filename, string $mode)
+    {
+        $stream = fopen($filename, $mode);
+
+        if (!\is_resource($stream)) {
+            throw new \RuntimeException(\sprintf('Unable to open the stream "%s".', $filename));
+        }
+
+        $this->stream = $stream;
+    }
+
+    final public function __destruct()
+    {
+        if (\is_resource($this->stream)) {
+            fclose($this->stream);
+        }
+    }
+
+    /**
      * @param string $message The message to write
      */
     final public function writeln(string $message): void

@@ -21,23 +21,10 @@ use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 final class StdoutStream extends AbstractStream implements StreamInterface
 {
     /**
-     * @throws \RuntimeException If unable to open the stdout stream
+     * @throws \RuntimeException If the stream cannot be opened
      */
     public function __construct()
     {
-        $stream = fopen('php://stdout', 'w');
-
-        if (!\is_resource($stream)) {
-            throw new \RuntimeException('Unable to open stdout stream.');
-        }
-
-        $this->stream = $stream;
-    }
-
-    public function __destruct()
-    {
-        if (\is_resource($this->stream)) {
-            fclose($this->stream);
-        }
+        parent::__construct('php://stdout', 'w');
     }
 }

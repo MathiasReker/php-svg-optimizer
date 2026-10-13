@@ -57,7 +57,7 @@ final readonly class ConvertEllipseToCircle implements SvgOptimizerRuleInterface
             if ($this->hasEqualRadii($domElement)
                 && !\array_key_exists($domElement->getAttribute(SvgAttribute::Id->value), $animationTargetIds)
             ) {
-                $this->convert($domElement);
+                $this->convert($domDocument, $domElement);
             }
         }
     }
@@ -80,7 +80,7 @@ final readonly class ConvertEllipseToCircle implements SvgOptimizerRuleInterface
     /**
      * @param \DOMElement $domElement the ellipse element
      */
-    private function convert(\DOMElement $domElement): void
+    private function convert(\DOMDocument $domDocument, \DOMElement $domElement): void
     {
         $radius = $domElement->getAttribute(SvgAttribute::Rx->value);
 
@@ -88,6 +88,6 @@ final readonly class ConvertEllipseToCircle implements SvgOptimizerRuleInterface
         $domElement->removeAttribute(SvgAttribute::Ry->value);
         $domElement->setAttribute(SvgAttribute::R->value, $radius);
 
-        $this->renameElement($domElement, SvgTag::Circle->value);
+        $this->renameElement($domDocument, $domElement, SvgTag::Circle->value);
     }
 }

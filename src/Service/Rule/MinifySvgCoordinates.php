@@ -100,12 +100,8 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     {
         $nodes = $domXPath->query($query);
 
-        if (false === $nodes) {
-            return;
-        }
-
         /** @var \DOMElement $node */
-        foreach ($nodes as $node) {
+        foreach (false === $nodes ? [] : $nodes as $node) {
             $this->minifyAttributesOnElement($node, $attributes);
         }
     }

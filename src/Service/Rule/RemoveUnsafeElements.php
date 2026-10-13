@@ -138,11 +138,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     {
         $domNodeList = (new \DOMXPath($domDocument))->query($query);
 
-        if (false === $domNodeList) {
-            return;
-        }
-
-        foreach (iterator_to_array($domNodeList, false) as $domNode) {
+        foreach (false === $domNodeList ? [] : iterator_to_array($domNodeList, false) as $domNode) {
             if ($domNode instanceof \DOMNode && $predicate($domNode)) {
                 $domNode->parentNode?->removeChild($domNode);
             }
@@ -196,14 +192,8 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     private function removeConditionallyDangerousTags(\DOMDocument $domDocument): void
     {
         foreach (SvgTag::conditionalDangerous() as $tag) {
-            $nodes = $domDocument->getElementsByTagName($tag);
-
-            for ($i = $nodes->length - 1; $i >= 0; --$i) {
-                if (!$nodes->item($i) instanceof \DOMElement) {
-                    continue;
-                }
-
-                $this->removeIfDangerous($nodes->item($i));
+            foreach (array_reverse(iterator_to_array($domDocument->getElementsByTagName($tag), false)) as $domElement) {
+                $this->removeIfDangerous($domElement);
             }
         }
     }
@@ -256,15 +246,10 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     {
         $domNodeList = $domDocument->getElementsByTagName(SvgTag::Style->value);
 
-        for ($i = $domNodeList->length - 1; $i >= 0; --$i) {
-            $style = $domNodeList->item($i);
-            if (!$style instanceof \DOMElement) {
-                continue;
-            }
-
-            $text = $style->textContent ?? '';
-            if ($this->isStyleNodeDangerous($text) && $style->parentNode instanceof \DOMNode) {
-                $style->parentNode->removeChild($style);
+        foreach (array_reverse(iterator_to_array($domNodeList, false)) as $domElement) {
+            $text = $domElement->textContent ?? '';
+            if ($this->isStyleNodeDangerous($text) && $domElement->parentNode instanceof \DOMNode) {
+                $domElement->parentNode->removeChild($domElement);
             }
         }
     }

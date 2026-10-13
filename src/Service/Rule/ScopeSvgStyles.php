@@ -73,12 +73,7 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
         $multiple = $svgs->length > 1;
 
         foreach ($svgs as $index => $node) {
-            $xml = $domDocument->saveXML($node);
-            if (false === $xml) {
-                continue;
-            }
-
-            $baseHash = mb_substr(md5($xml), 0, 10);
+            $baseHash = mb_substr(md5((string) $domDocument->saveXML($node)), 0, 10);
             $hash = $multiple ? $baseHash . '-' . $index : $baseHash;
 
             $this->scopeSingleSvg($domXPath, $node, $hash);
@@ -279,17 +274,13 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
      */
     private function updateSingleClassAttribute(\DOMElement $domElement, array $classReplacements): void
     {
-        $classes = preg_split(self::WHITESPACE_REGEX, $domElement->getAttribute(SvgAttribute::Class_->value));
-        if (!\is_array($classes)) {
-            return;
-        }
+        $value = $domElement->getAttribute(SvgAttribute::Class_->value);
+        $classes = preg_split(self::WHITESPACE_REGEX, $value);
 
-        $classes = array_map(
-            static fn (string $class): string => $classReplacements[$class] ?? $class,
-            $classes
+        $domElement->setAttribute(
+            SvgAttribute::Class_->value,
+            false === $classes ? $value : implode(' ', array_map(static fn (string $class): string => $classReplacements[$class] ?? $class, $classes)),
         );
-
-        $domElement->setAttribute(SvgAttribute::Class_->value, implode(' ', $classes));
     }
 
     /**

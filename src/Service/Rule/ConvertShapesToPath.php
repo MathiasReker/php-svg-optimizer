@@ -67,7 +67,7 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
         foreach (self::GEOMETRY_ATTRIBUTES as $tag => $attributes) {
             foreach ($this->elementsNamed($domDocument, $tag) as $domElement) {
                 if (!\array_key_exists($domElement->getAttribute(SvgAttribute::Id->value), $animationTargetIds)) {
-                    $this->convert($domElement, $tag, $attributes);
+                    $this->convert($domDocument, $domElement, $tag, $attributes);
                 }
             }
         }
@@ -78,7 +78,7 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
      * @param string       $tag        the shape name
      * @param list<string> $attributes the geometry attributes that the path data replaces
      */
-    private function convert(\DOMElement $domElement, string $tag, array $attributes): void
+    private function convert(\DOMDocument $domDocument, \DOMElement $domElement, string $tag, array $attributes): void
     {
         if ($this->hasElementChildren($domElement) || $domElement->hasAttribute(SvgAttribute::Style->value)) {
             return;
@@ -99,7 +99,7 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
         }
 
         $domElement->setAttribute(SvgAttribute::D->value, $this->serializePathData($segments));
-        $this->renameElement($domElement, SvgTag::Path->value);
+        $this->renameElement($domDocument, $domElement, SvgTag::Path->value);
     }
 
     /**

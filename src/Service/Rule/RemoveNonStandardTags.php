@@ -50,13 +50,9 @@ final readonly class RemoveNonStandardTags implements SvgOptimizerRuleInterface
 
         foreach ($elements as $element) {
             $normalized = $this->normalizeName($element->tagName);
-
-            if (\array_key_exists($normalized, $allowed) || $this->isForeignContent($element)) {
-                continue;
-            }
-
             $parent = $element->parentNode;
-            if (null === $parent) {
+
+            if (\array_key_exists($normalized, $allowed) || $this->isForeignContent($element) || !$parent instanceof \DOMNode) {
                 continue;
             }
 

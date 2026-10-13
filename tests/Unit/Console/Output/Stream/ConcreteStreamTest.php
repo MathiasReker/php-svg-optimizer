@@ -131,27 +131,28 @@ final class ConcreteStreamTest extends TestCase
         }
     }
 
+    #[Test]
+    public function throwsWhenTheStreamCannotBeOpened(): void
+    {
+        set_error_handler(static fn (): bool => true);
+
+        try {
+            new class('php://unknown-stream', 'r') extends AbstractStream {};
+            self::fail('Expected RuntimeException was not thrown.');
+        } catch (\RuntimeException $runtimeException) {
+            self::assertSame('Unable to open the stream "php://unknown-stream".', $runtimeException->getMessage());
+        } finally {
+            restore_error_handler();
+        }
+    }
+
     /**
      * @throws \RuntimeException
      */
     #[Test]
     public function writeAppendsToStream(): void
     {
-        $stream = new class extends AbstractStream {
-            /**
-             * @throws \RuntimeException
-             */
-            public function __construct()
-            {
-                $stream = fopen('php://memory', 'w+');
-
-                if (false === $stream) {
-                    throw new \RuntimeException('Unable to open memory stream.');
-                }
-
-                $this->stream = $stream;
-            }
-
+        $stream = new class('php://memory', 'w+') extends AbstractStream {
             public function getContent(): string
             {
                 rewind($this->stream);
@@ -172,21 +173,7 @@ final class ConcreteStreamTest extends TestCase
     #[Test]
     public function writelnAppendsWithNewline(): void
     {
-        $stream = new class extends AbstractStream {
-            /**
-             * @throws \RuntimeException
-             */
-            public function __construct()
-            {
-                $stream = fopen('php://memory', 'w+');
-
-                if (false === $stream) {
-                    throw new \RuntimeException('Unable to open memory stream.');
-                }
-
-                $this->stream = $stream;
-            }
-
+        $stream = new class('php://memory', 'w+') extends AbstractStream {
             public function getContent(): string
             {
                 rewind($this->stream);

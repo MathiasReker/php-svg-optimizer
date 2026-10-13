@@ -21,23 +21,10 @@ use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 final class StderrStream extends AbstractStream implements StreamInterface
 {
     /**
-     * @throws \RuntimeException If unable to open the stderr stream
+     * @throws \RuntimeException If the stream cannot be opened
      */
     public function __construct()
     {
-        $stream = fopen('php://stderr', 'w');
-
-        if (!\is_resource($stream)) {
-            throw new \RuntimeException('Unable to open stderr stream.');
-        }
-
-        $this->stream = $stream;
-    }
-
-    public function __destruct()
-    {
-        if (\is_resource($this->stream)) {
-            fclose($this->stream);
-        }
+        parent::__construct('php://stderr', 'w');
     }
 }
