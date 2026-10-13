@@ -805,7 +805,8 @@ apply to it (core, presentation, ARIA, conditional processing, animation, filter
 attributes, without HTML-only attributes such as `src`, `srcset` and `action`. Event handler attributes (`on*`) and
 `xml:base` are always removed.
 Prefixed attributes are matched by namespace: only known `xlink:`, `xml:` and `ev:` attributes are kept, and attributes bound to any
-other namespace are removed. `data-*` attributes are kept when their name is valid.
+other namespace are removed. `data-*` attributes are kept when their name is valid. Elements outside the SVG namespace
+and the content of a `<foreignObject>`, such as XHTML, are left untouched.
 
 ```php
 $svgOptimizer->removeNonStandardAttributes();
@@ -815,8 +816,9 @@ $svgOptimizer->removeNonStandardAttributes();
 
 ### `removeNonStandardTags`
 
-Removes elements (tags) that are not part of the official SVG specification.
-This is useful for sanitizing SVGs that may contain editor-specific or foreign XML elements.
+Removes elements (tags) that are not part of the official SVG specification, keeping their content.
+This is useful for cleaning up SVGs that may contain unknown elements. Elements outside the SVG namespace, whose content
+does not render, and the content of a `<foreignObject>`, such as XHTML, are left untouched.
 
 ```php
 $svgOptimizer->removeNonStandardTags();

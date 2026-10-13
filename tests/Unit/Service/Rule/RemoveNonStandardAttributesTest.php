@@ -59,6 +59,16 @@ final class RemoveNonStandardAttributesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps the attributes of the XHTML content of a foreignObject' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10" foo="1"><div xmlns="http://www.w3.org/1999/xhtml" hidden="hidden"><input type="checkbox" checked="checked" value="1"/></div></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10"><div xmlns="http://www.w3.org/1999/xhtml" hidden="hidden"><input type="checkbox" checked="checked" value="1"/></div></foreignObject></svg>',
+        ];
+
+        yield 'Keeps the attributes of elements inside a foreignObject' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10"><rect width="1" points="1 2"/></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10"><rect width="1" points="1 2"/></foreignObject></svg>',
+        ];
+
         yield 'Keeps standard width and height' => [
             '<svg width="100" height="50"><rect width="10" height="10"/></svg>',
             '<svg width="100" height="50"><rect width="10" height="10"/></svg>',

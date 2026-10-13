@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgElementAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
  * @internal
@@ -23,6 +24,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
  */
 final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInterface
 {
+    use ElementTrait;
+
     private const string XPATH_ALL_WITH_ATTRIBUTES = '//*[@*]';
 
     private const string XML_EVENTS_NAMESPACE = 'http://www.w3.org/2001/xml-events';
@@ -53,6 +56,10 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
         $elements = $domXPath->query(self::XPATH_ALL_WITH_ATTRIBUTES);
 
         foreach ($elements as $element) {
+            if ($this->isForeignContent($element)) {
+                continue;
+            }
+
             $this->removeNonStandardAttributesFromElement($element, $this->getAllowedLookupFor($element));
         }
     }

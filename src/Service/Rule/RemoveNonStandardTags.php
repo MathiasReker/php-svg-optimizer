@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
  * @internal
@@ -21,6 +22,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  */
 final readonly class RemoveNonStandardTags implements SvgOptimizerRuleInterface
 {
+    use ElementTrait;
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -48,7 +51,7 @@ final readonly class RemoveNonStandardTags implements SvgOptimizerRuleInterface
         foreach ($elements as $element) {
             $normalized = $this->normalizeName($element->tagName);
 
-            if (\array_key_exists($normalized, $allowed)) {
+            if (\array_key_exists($normalized, $allowed) || $this->isForeignContent($element)) {
                 continue;
             }
 

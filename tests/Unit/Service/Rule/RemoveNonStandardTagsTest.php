@@ -55,6 +55,21 @@ final class RemoveNonStandardTagsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps the XHTML content of a foreignObject' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10"><div xmlns="http://www.w3.org/1999/xhtml"><p>a</p><input type="checkbox" checked="checked"/></div></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10"><div xmlns="http://www.w3.org/1999/xhtml"><p>a</p><input type="checkbox" checked="checked"/></div></foreignObject></svg>',
+        ];
+
+        yield 'Keeps unknown elements inside a foreignObject' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10"><foo><rect width="1" height="1"/></foo></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10"><foo><rect width="1" height="1"/></foo></foreignObject></svg>',
+        ];
+
+        yield 'Keeps elements in another namespace, whose children do not render' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><x:foo><rect width="10" height="10"/></x:foo></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><x:foo><rect width="10" height="10"/></x:foo></svg>',
+        ];
+
         yield 'Removes single unknown tag' => [
             '<svg><unknown/></svg>',
             '<svg/>',

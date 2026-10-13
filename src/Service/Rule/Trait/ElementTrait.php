@@ -94,11 +94,32 @@ trait ElementTrait
     /**
      * @param \DOMElement $domElement the element to check
      *
-     * @return bool true if the element is in the SVG namespace
+     * @return bool true if the element is in the SVG namespace, or in no namespace as in a document without a namespace
+     *              declaration
      */
     private function isSvgElement(\DOMElement $domElement): bool
     {
-        return SvgNamespace::Svg->value === $domElement->namespaceURI;
+        return \in_array($domElement->namespaceURI, [null, SvgNamespace::Svg->value], true);
+    }
+
+    /**
+     * @param \DOMElement $domElement the element to check
+     *
+     * @return bool true if the element is outside the SVG namespace or inside a `<foreignObject>`
+     */
+    private function isForeignContent(\DOMElement $domElement): bool
+    {
+        if (!$this->isSvgElement($domElement)) {
+            return true;
+        }
+
+        for ($node = $domElement->parentNode; $node instanceof \DOMElement; $node = $node->parentNode) {
+            if (SvgTag::ForeignObject->value === $node->localName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
