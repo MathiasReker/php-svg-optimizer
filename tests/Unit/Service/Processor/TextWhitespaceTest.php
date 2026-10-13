@@ -77,7 +77,7 @@ final class TextWhitespaceTest extends TestCase
 
         yield 'Removes leading and trailing whitespace in text' => [
             "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>\n  <tspan>A</tspan>\n  <tspan> </tspan>\n</text></svg>",
-            '<svg xmlns="http://www.w3.org/2000/svg"><text><tspan>A</tspan><tspan></tspan></text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text><tspan>A</tspan><tspan/></text></svg>',
         ];
 
         yield 'Collapses whitespace where a nearer xml:space is default' => [
@@ -92,7 +92,7 @@ final class TextWhitespaceTest extends TestCase
 
         yield 'Removes whitespace outside text' => [
             "<svg xmlns=\"http://www.w3.org/2000/svg\">\n  <g>\n    <rect width=\"1\"/>\n  </g>\n  <title> </title>\n  <tspan>A</tspan> <tspan>B</tspan>\n</svg>",
-            '<svg xmlns="http://www.w3.org/2000/svg"><g><rect width="1"/></g><title></title><tspan>A</tspan><tspan>B</tspan></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><rect width="1"/></g><title/><tspan>A</tspan><tspan>B</tspan></svg>',
         ];
 
         yield 'Collapses the indentation of pretty-printed text' => [

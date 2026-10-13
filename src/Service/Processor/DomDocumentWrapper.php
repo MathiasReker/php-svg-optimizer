@@ -40,7 +40,12 @@ final readonly class DomDocumentWrapper
     public function saveToString(\DOMDocument $domDocument): string
     {
         [$blankTextNodes, $whitespace] = $this->collapseBlankTextNodes($domDocument);
+        $detached = $this->detachEmptyTextNodes($blankTextNodes);
         $saveXML = $domDocument->saveXML($domDocument->documentElement);
+
+        foreach (array_reverse($detached) as [$domText, $parent, $nextSibling]) {
+            $parent->insertBefore($domText, $nextSibling);
+        }
 
         foreach ($blankTextNodes as $index => $domText) {
             $domText->data = $whitespace[$index];
@@ -69,6 +74,27 @@ final readonly class DomDocumentWrapper
         }
 
         return $instructions;
+    }
+
+    /**
+     * @param list<\DOMText> $domTexts the collapsed blank text nodes
+     *
+     * @return list<array{\DOMText, \DOMNode, \DOMNode|null}> the detached empty text nodes, with their parent and next sibling
+     */
+    private function detachEmptyTextNodes(array $domTexts): array
+    {
+        $detached = [];
+
+        foreach ($domTexts as $domText) {
+            $parent = $domText->parentNode;
+
+            if ('' === $domText->data && $parent instanceof \DOMNode) {
+                $detached[] = [$domText, $parent, $domText->nextSibling];
+                $parent->removeChild($domText);
+            }
+        }
+
+        return $detached;
     }
 
     /**

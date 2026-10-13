@@ -113,7 +113,7 @@ final class RemoveInvisibleCharactersTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">&#xAD;&#x0D;&#x0A;&#x09;</svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>
                 XML,
         ];
 
@@ -122,7 +122,7 @@ final class RemoveInvisibleCharactersTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">&#xAD;&#x200B;&#x09;&#x0A;&#x2029;</svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>
                 XML,
         ];
 

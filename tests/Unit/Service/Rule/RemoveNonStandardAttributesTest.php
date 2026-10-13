@@ -200,7 +200,7 @@ final class RemoveNonStandardAttributesTest extends TestCase
 
         yield 'Handles svg with whitespace only' => [
             '<svg>   </svg>',
-            '<svg></svg>',
+            '<svg/>',
         ];
 
         yield 'Removes unknown attributes but keeps structure' => [

@@ -129,7 +129,7 @@ final class RemoveUnusedNamespacesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>
                 XML,
         ];
 
@@ -139,7 +139,7 @@ final class RemoveUnusedNamespacesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>
                 XML,
         ];
     }

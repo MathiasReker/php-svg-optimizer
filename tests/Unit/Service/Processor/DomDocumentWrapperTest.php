@@ -154,6 +154,37 @@ final class DomDocumentWrapperTest extends TestCase
      * @throws XmlProcessingException
      */
     #[Test]
+    public function saveToStringWritesElementsWithIgnorableWhitespaceOnlyAsEmptyElements(): void
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML("<svg xmlns=\"http://www.w3.org/2000/svg\"><g>\n  </g><text>a<tspan> </tspan>b</text></svg>");
+
+        self::assertSame(
+            '<svg xmlns="http://www.w3.org/2000/svg"><g/><text>a<tspan> </tspan>b</text></svg>',
+            $this->domDocumentWrapper->saveToString($domDocument),
+        );
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function saveToStringLeavesTheDocumentAsItWas(): void
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML("<svg xmlns=\"http://www.w3.org/2000/svg\">\n  <g>\n    </g>\n  <text>a <tspan>b</tspan>\n  </text>\n</svg>");
+
+        $before = $domDocument->saveXML();
+
+        $this->domDocumentWrapper->saveToString($domDocument);
+
+        self::assertSame($before, $domDocument->saveXML());
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
+    #[Test]
     public function saveToStringHandlesEmptyDomDocument(): void
     {
         $domDocument = new \DOMDocument();
