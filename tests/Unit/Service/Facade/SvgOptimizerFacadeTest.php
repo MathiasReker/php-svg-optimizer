@@ -400,6 +400,56 @@ final class SvgOptimizerFacadeTest extends TestCase
     }
 
     /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function withAllRulesIncludesRiskyRulesWhetherAllowRiskyIsCalledBeforeOrAfter(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" data-x="1"><rect width="10" height="10"/></svg>';
+
+        $allowRiskyFirst = SvgOptimizerFacade::fromString($svg)->allowRisky()->withAllRules()->optimize()->getContent();
+        $allowRiskyLast = SvgOptimizerFacade::fromString($svg)->withAllRules()->allowRisky()->optimize()->getContent();
+
+        self::assertSame($allowRiskyFirst, $allowRiskyLast);
+        self::assertStringNotContainsString('width="100"', $allowRiskyLast);
+        self::assertStringNotContainsString('data-x', $allowRiskyLast);
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function withAllRulesWithoutAllowRiskyLeavesRiskyRulesOut(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" data-x="1"><rect width="10" height="10"/></svg>';
+
+        $content = SvgOptimizerFacade::fromString($svg)->withAllRules()->allowRisky(false)->optimize()->getContent();
+
+        self::assertStringContainsString('width="100"', $content);
+        self::assertStringContainsString('data-x="1"', $content);
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function optimizeThrowsIfARiskyRuleIsEnabledWithoutAllowRisky(): void
+    {
+        $this->expectException(RiskyRulesNotAllowedException::class);
+
+        SvgOptimizerFacade::fromString('<svg xmlns="http://www.w3.org/2000/svg" width="100"></svg>')
+            ->withAllRules()
+            ->withRules(false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)
+            ->optimize();
+    }
+
+    /**
      * @throws RiskyRulesNotAllowedException
      * @throws XmlProcessingException
      * @throws \LogicException

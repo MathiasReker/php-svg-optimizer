@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Facade;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
@@ -230,24 +229,9 @@ final readonly class SvgOptimizerFacade
      */
     public function withAllRules(bool $enable = true): self
     {
-        if (!$enable) {
-            return $this;
+        if ($enable) {
+            $this->svgOptimizer->enableAllRules();
         }
-
-        $allowRiskyRules = $this->svgOptimizer->isRiskyRulesAllowed();
-
-        $rules = [];
-
-        foreach (Rule::cases() as $rule) {
-            /** @var class-string<SvgOptimizerRuleInterface> $ruleClass */
-            $ruleClass = $rule->value;
-
-            if ($allowRiskyRules || !$ruleClass::isRisky()) {
-                $rules[$ruleClass] = true;
-            }
-        }
-
-        $this->svgOptimizer->configureRules($rules);
 
         return $this;
     }

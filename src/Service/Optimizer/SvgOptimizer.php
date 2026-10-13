@@ -38,6 +38,8 @@ final class SvgOptimizer
 
     private bool $allowRisky = false;
 
+    private bool $allRulesEnabled = false;
+
     /** @var SvgValidator The SVG validator */
     private readonly SvgValidator $svgValidator;
 
@@ -95,19 +97,39 @@ final class SvgOptimizer
         return \count($this->rules);
     }
 
-    /**
-     * @return bool True if risky rules are allowed, false otherwise
-     */
-    public function isRiskyRulesAllowed(): bool
-    {
-        return $this->allowRisky;
-    }
-
     public function allowRisky(): self
     {
         $this->allowRisky = true;
 
+        if ($this->allRulesEnabled) {
+            $this->configureRules($this->allRuleFlags());
+        }
+
         return $this;
+    }
+
+    public function enableAllRules(): self
+    {
+        $this->allRulesEnabled = true;
+        $this->configureRules($this->allRuleFlags());
+
+        return $this;
+    }
+
+    /**
+     * @return array<class-string<SvgOptimizerRuleInterface>, bool> Every rule, with risky rules only if risky rules are allowed
+     */
+    private function allRuleFlags(): array
+    {
+        $ruleFlags = [];
+
+        foreach (Rule::cases() as $rule) {
+            /** @var class-string<SvgOptimizerRuleInterface> $ruleClass */
+            $ruleClass = $rule->value;
+            $ruleFlags[$ruleClass] = $this->allowRisky || !$ruleClass::isRisky();
+        }
+
+        return $ruleFlags;
     }
 
     /**
@@ -169,10 +191,6 @@ final class SvgOptimizer
     private function applyRules(\DOMDocument $domDocument): void
     {
         foreach ($this->rules as $rule) {
-            if ($rule::isRisky() && !$this->allowRisky) {
-                continue;
-            }
-
             if (!$rule::shouldCheckSize()) {
                 $rule->optimize($domDocument);
 

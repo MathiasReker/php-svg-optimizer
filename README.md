@@ -1052,7 +1052,8 @@ $svgOptimizer->withRules(
 
 #### `withAllRules`
 
-Enable all rules. Risky rules remain disabled unless `allowRisky()` is explicitly set.
+Enable all rules. Risky rules are only included when risky rules are allowed with `allowRisky()`, no matter whether
+`allowRisky()` is called before or after `withAllRules()`.
 
 ```php
 $svgOptimizer->withAllRules();
@@ -1062,7 +1063,8 @@ $svgOptimizer->withAllRules();
 
 #### `allowRisky`
 
-By default, risky rules are not applied even if you add them unless explicitly allowed.
+Allow risky rules. By default, `optimize()` throws a `RiskyRulesNotAllowedException` if a risky rule is enabled with
+`withRules()`, and `withAllRules()` leaves the risky rules out.
 
 ```php
 $svgOptimizer->allowRisky();
