@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
+use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\UnreadableFileStreamWrapper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -263,5 +264,31 @@ final class ConfigLoaderTest extends TestCase
         if (file_exists($this->configFile)) {
             unlink($this->configFile);
         }
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function loadConfigRejectsADirectory(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(\sprintf('Configuration "%s" is a directory, not a file or a JSON string.', sys_get_temp_dir()));
+
+        ConfigLoader::loadConfig(sys_get_temp_dir());
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function loadConfigRejectsAFileThatCannotBeRead(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Failed to read configuration content.');
+
+        UnreadableFileStreamWrapper::run(static fn (string $path): array => ConfigLoader::loadConfig($path));
     }
 }

@@ -30,6 +30,10 @@ final readonly class ConfigLoader
      */
     public static function loadConfig(string $config): array
     {
+        if (is_dir($config)) {
+            throw new \InvalidArgumentException(\sprintf('Configuration "%s" is a directory, not a file or a JSON string.', $config));
+        }
+
         $configContent = file_exists($config)
             ? file_get_contents($config)
             : $config;
