@@ -445,16 +445,16 @@
         },
         {
             "name": "entropy/entropy",
-            "version": "0.4.30",
+            "version": "0.4.31",
             "source": {
                 "type": "git",
                 "url": "https://github.com/TomasVotruba/entropy.git",
-                "reference": "733042a17988ba7c2c58f5245e9257cb687b7904"
+                "reference": "e31f93b8e987982e8d579c7c7f0cfa8aa7ae7e18"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/TomasVotruba/entropy/zipball/733042a17988ba7c2c58f5245e9257cb687b7904",
-                "reference": "733042a17988ba7c2c58f5245e9257cb687b7904",
+                "url": "https://api.github.com/repos/TomasVotruba/entropy/zipball/e31f93b8e987982e8d579c7c7f0cfa8aa7ae7e18",
+                "reference": "e31f93b8e987982e8d579c7c7f0cfa8aa7ae7e18",
                 "shasum": ""
             },
             "require": {
@@ -490,9 +490,9 @@
             "description": "Entropy framework",
             "support": {
                 "issues": "https://github.com/TomasVotruba/entropy/issues",
-                "source": "https://github.com/TomasVotruba/entropy/tree/0.4.30"
+                "source": "https://github.com/TomasVotruba/entropy/tree/0.4.31"
             },
-            "time": "2026-10-10T07:02:38+00:00"
+            "time": "2026-10-13T12:04:57+00:00"
         },
         {
             "name": "ergebnis/agent-detector",
@@ -7386,16 +7386,16 @@
         },
         {
             "name": "symplify/phpstan-rules",
-            "version": "v14.18.2",
+            "version": "14.19.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symplify/phpstan-rules.git",
-                "reference": "912bd59d7045887ae6db9d32f9d8c5a3b2d6d389"
+                "reference": "df19d02176ee1e8ad545658fb91ec6db983fd234"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/912bd59d7045887ae6db9d32f9d8c5a3b2d6d389",
-                "reference": "912bd59d7045887ae6db9d32f9d8c5a3b2d6d389",
+                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/df19d02176ee1e8ad545658fb91ec6db983fd234",
+                "reference": "df19d02176ee1e8ad545658fb91ec6db983fd234",
                 "shasum": ""
             },
             "require": {
@@ -7428,9 +7428,11 @@
                         "config/code-complexity-rules.neon",
                         "config/configurable-rules.neon",
                         "config/static-rules.neon",
+                        "config/modern-rules.neon",
                         "config/symfony-rules.neon",
                         "config/symfony-config-rules.neon",
                         "config/doctrine-rules.neon",
+                        "config/collection-rules.neon",
                         "config/phpunit-rules.neon",
                         "config/ctor-rules.neon",
                         "config/mock-rules.neon",
@@ -7453,7 +7455,7 @@
             "description": "Set of Symplify rules, type extensions and error formatter for PHPStan",
             "support": {
                 "issues": "https://github.com/symplify/phpstan-rules/issues",
-                "source": "https://github.com/symplify/phpstan-rules/tree/v14.18.2"
+                "source": "https://github.com/symplify/phpstan-rules/tree/14.19.0"
             },
             "funding": [
                 {
@@ -7465,7 +7467,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-12T08:44:21+00:00"
+            "time": "2026-10-13T20:33:27+00:00"
         },
         {
             "name": "thecodingmachine/safe",
