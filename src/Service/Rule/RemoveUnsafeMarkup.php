@@ -13,7 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementListTrait;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
 
 /**
  * @internal
@@ -23,7 +22,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
 final readonly class RemoveUnsafeMarkup implements PassInterface
 {
     use ElementListTrait;
-    use EntityReferenceTrait;
 
     private const string UNSAFE_COMMENT_REGEX = '~^-?>|<[/\w!?]~';
 
@@ -33,8 +31,6 @@ final readonly class RemoveUnsafeMarkup implements PassInterface
     #[\Override]
     public function apply(\DOMDocument $domDocument): void
     {
-        $this->expandEntityReferences($domDocument);
-
         foreach ([$domDocument, ...$this->elementList($domDocument, '*')] as $domNode) {
             foreach ([...$domNode->childNodes] as $child) {
                 if ($child instanceof \DOMProcessingInstruction || ($child instanceof \DOMComment && 1 === preg_match(self::UNSAFE_COMMENT_REGEX, $child->data))) {

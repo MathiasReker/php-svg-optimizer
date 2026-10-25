@@ -13,7 +13,11 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\TextWhitespaceTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -22,6 +26,9 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(EntityReferenceTrait::class)]
+#[CoversTrait(TextWhitespaceTrait::class)]
+#[CoversTrait(XmlLoaderTrait::class)]
 final class DomDocumentWrapperTest extends TestCase
 {
     private DomDocumentWrapper $domDocumentWrapper;
@@ -52,27 +59,6 @@ final class DomDocumentWrapperTest extends TestCase
      * @throws XmlProcessingException
      */
     #[Test]
-    public function loadFromFileValid(): void
-    {
-        $filePath = __DIR__ . '/test.xml';
-
-        try {
-            file_put_contents($filePath, '<root><child>Test</child></root>');
-            $domDocument = $this->domDocumentWrapper->loadFromFile($filePath);
-
-            $xmlString = $domDocument->saveXML();
-
-            self::assertNotFalse($xmlString, 'saveXML() returned false');
-            self::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
-        } finally {
-            unlink($filePath);
-        }
-    }
-
-    /**
-     * @throws XmlProcessingException
-     */
-    #[Test]
     public function loadFromStringValid(): void
     {
         $content = '<root><child>Test</child></root>';
@@ -82,23 +68,6 @@ final class DomDocumentWrapperTest extends TestCase
 
         self::assertNotFalse($xmlString, 'saveXML() returned false');
         self::assertStringContainsString('<root><child>Test</child></root>', $xmlString);
-    }
-
-    /**
-     * @throws XmlProcessingException
-     */
-    public function loadFromString(string $content): void
-    {
-        if ('' === trim($content)) {
-            throw new XmlProcessingException('Failed to load DOMDocument: input is empty.');
-        }
-
-        $domDocument = new \DOMDocument();
-
-        libxml_use_internal_errors(true);
-        if (!$domDocument->loadXML($content)) {
-            throw new XmlProcessingException('Failed to load DOMDocument.');
-        }
     }
 
     /**
@@ -135,10 +104,37 @@ final class DomDocumentWrapperTest extends TestCase
     public function loadFromStringInvalidThrowsException(): void
     {
         $this->expectException(XmlProcessingException::class);
-        $this->expectExceptionMessage('Failed to load DOMDocument.');
+        $this->expectExceptionMessage('Failed to load DOMDocument: Opening and ending tag mismatch: unclosed line 1 and root on line 1, column 24.');
 
         $invalidXml = '<root><unclosed></root>';
         $this->domDocumentWrapper->loadFromString($invalidXml);
+    }
+
+    #[Test]
+    public function loadFromStringRestoresTheLibxmlErrorStateAfterAFailure(): void
+    {
+        $previous = libxml_use_internal_errors(false);
+
+        try {
+            $this->domDocumentWrapper->loadFromString('<root><unclosed>');
+            self::fail('Expected an XmlProcessingException.');
+        } catch (XmlProcessingException) {
+            self::assertFalse(libxml_use_internal_errors());
+            self::assertSame([], libxml_get_errors());
+        } finally {
+            libxml_use_internal_errors($previous);
+        }
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function loadFromStringAppliesAttributeDefaultsToElementsFromEntities(): void
+    {
+        $domDocument = $this->domDocumentWrapper->loadFromString('<!DOCTYPE svg [<!ATTLIST rect fill CDATA "red"><!ENTITY e "<rect x=\'1\'/>">]><svg xmlns="http://www.w3.org/2000/svg"><g>&e;</g><rect/></svg>');
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><g><rect x="1" fill="red"/></g><rect fill="red"/></svg>', $this->domDocumentWrapper->saveToString($domDocument));
     }
 
     #[Test]
@@ -172,62 +168,6 @@ final class DomDocumentWrapperTest extends TestCase
         $domDocument = new \DOMDocument();
         $result = $this->domDocumentWrapper->saveToString($domDocument);
         self::assertSame("<?xml version=\"1.0\"?>\n", $result);
-    }
-
-    /**
-     * @throws XmlProcessingException
-     */
-    #[Test]
-    public function loadFromFileThrowsExceptionOnMalformedXml(): void
-    {
-        $filePath = __DIR__ . '/malformed.xml';
-        file_put_contents($filePath, '<root><unclosed>');
-
-        $this->expectException(XmlProcessingException::class);
-        $this->expectExceptionMessage('Failed to load DOMDocument.');
-
-        try {
-            $this->domDocumentWrapper->loadFromFile($filePath);
-        } finally {
-            unlink($filePath);
-        }
-    }
-
-    /**
-     * @throws XmlProcessingException
-     */
-    #[Test]
-    public function loadFromFileThrowsExceptionOnNonExistentFile(): void
-    {
-        $this->expectException(XmlProcessingException::class);
-        $this->expectExceptionMessage('Failed to load DOMDocument.');
-
-        $this->domDocumentWrapper->loadFromFile('/non/existent/file.xml');
-    }
-
-    #[Test]
-    public function loadFromFileWrapsTheErrorForAPathWithANullByte(): void
-    {
-        try {
-            $this->domDocumentWrapper->loadFromFile("icon\0.svg");
-            self::fail('Expected XmlProcessingException was not thrown.');
-        } catch (XmlProcessingException $xmlProcessingException) {
-            self::assertSame('Failed to load DOMDocument.', $xmlProcessingException->getMessage());
-            self::assertSame(0, $xmlProcessingException->getCode());
-            self::assertInstanceOf(\ValueError::class, $xmlProcessingException->getPrevious());
-        }
-    }
-
-    /**
-     * @throws XmlProcessingException
-     */
-    #[Test]
-    public function loadFromFileThrowsExceptionOnEmptyFilePath(): void
-    {
-        $this->expectException(XmlProcessingException::class);
-        $this->expectExceptionMessage('File path cannot be empty.');
-
-        $this->domDocumentWrapper->loadFromFile('');
     }
 
     /**
@@ -398,9 +338,14 @@ final class DomDocumentWrapperTest extends TestCase
             "<svg xmlns=\"http://www.w3.org/2000/svg\"><foreignObject><div xmlns=\"http://www.w3.org/1999/xhtml\"><abbr></abbr><colgroup></colgroup><lin\u{212A}></lin\u{212A}></div></foreignObject></svg>",
         ];
 
+        yield 'Prefixed XHTML void element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:h="http://www.w3.org/1999/xhtml"><foreignObject><h:br/><h:img/></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:h="http://www.w3.org/1999/xhtml"><foreignObject><h:br/><h:img/></foreignObject></svg>',
+        ];
+
         yield 'Prefixed XHTML element holding only whitespace' => [
             "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:h=\"http://www.w3.org/1999/xhtml\"><foreignObject><h:div>\n  </h:div></foreignObject></svg>",
-            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:h="http://www.w3.org/1999/xhtml"><foreignObject><h:div></h:div></foreignObject></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:h=\"http://www.w3.org/1999/xhtml\"><foreignObject><h:div>\n  </h:div></foreignObject></svg>",
         ];
 
         yield 'Elements in other namespaces stay self-closing' => [
@@ -485,28 +430,11 @@ final class DomDocumentWrapperTest extends TestCase
     public function saveToStringLeavesNoPlaceholderInTheDocument(): void
     {
         $domDocument = new \DOMDocument();
-        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><div xmlns="http://www.w3.org/1999/xhtml"/></foreignObject></svg>');
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><div xmlns="http://www.w3.org/1999/xhtml"/><p xmlns="http://www.w3.org/1999/xhtml"/></foreignObject></svg>');
 
         $this->domDocumentWrapper->saveToString($domDocument);
 
-        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><div xmlns="http://www.w3.org/1999/xhtml"/></foreignObject></svg>', $domDocument->saveXML($domDocument->documentElement));
-    }
-
-    #[Test]
-    public function loadFromFileRejectsAPathWithANullByteAndRestoresTheLibxmlErrorState(): void
-    {
-        $previous = libxml_use_internal_errors(false);
-
-        try {
-            $this->domDocumentWrapper->loadFromFile("icon\0.svg");
-            self::fail('Expected an XmlProcessingException.');
-        } catch (XmlProcessingException $xmlProcessingException) {
-            self::assertSame('Failed to load DOMDocument.', $xmlProcessingException->getMessage());
-            self::assertInstanceOf(\ValueError::class, $xmlProcessingException->getPrevious());
-            self::assertFalse(libxml_use_internal_errors());
-        } finally {
-            libxml_use_internal_errors($previous);
-        }
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><div xmlns="http://www.w3.org/1999/xhtml"/><p xmlns="http://www.w3.org/1999/xhtml"/></foreignObject></svg>', $domDocument->saveXML($domDocument->documentElement));
     }
 
     /**

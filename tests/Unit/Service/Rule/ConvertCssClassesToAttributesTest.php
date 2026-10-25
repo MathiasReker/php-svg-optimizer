@@ -13,15 +13,25 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ClassAttributeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssStyleElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -33,6 +43,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(SvgInlineStyleProperty::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(ClassAttributeTrait::class)]
+#[CoversTrait(CssDeclarationTrait::class)]
+#[CoversTrait(CssStyleElementTrait::class)]
+#[CoversTrait(DocumentScriptTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class ConvertCssClassesToAttributesTest extends TestCase
 {
     /**
@@ -56,6 +74,15 @@ final class ConvertCssClassesToAttributesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps a declaration when a later element with the class sets the attribute to another value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:foo}</style><rect class="a"/><rect class="a" fill="blue"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:foo}</style><rect class="a"/><rect class="a" fill="blue"/></svg>',
+        ];
+
+        yield 'Keeps every property that two class rules set on one element to different values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red;stroke:red;opacity:.5}.b{fill:blue;stroke:blue;opacity:.5}</style><rect class="a b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red;stroke:red}.b{fill:blue;stroke:blue}</style><rect class="a b" opacity=".5"/></svg>',
+        ];
         yield 'Leaves the document untouched when an animation sets the class' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}</style><rect class="b"><set attributeName="class" to="a"/></rect></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}</style><rect class="b"><set attributeName="class" to="a"/></rect></svg>',
@@ -263,7 +290,7 @@ final class ConvertCssClassesToAttributesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><style>.a{font-size:12px}</style><rect class="a"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><style>.a { font-size: 12px; }</style><rect class="a"/></svg>
                 XML,
         ];
 
@@ -289,7 +316,7 @@ final class ConvertCssClassesToAttributesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><style>#foo{fill: red;}</style><rect id="foo"/><circle stroke="blue"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><style>#foo { fill: red; }</style><rect id="foo"/><circle stroke="blue"/></svg>
                 XML,
         ];
 
@@ -338,9 +365,9 @@ final class ConvertCssClassesToAttributesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path fill="red"/></svg>',
         ];
 
-        yield 'Splits a class selector that follows another selector into its own rule' => [
+        yield 'Keeps a rule whose selector list has another selector than a class' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>g, .a{fill:red}</style><path class="a"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}g{fill:red}</style><path class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g, .a{fill:red}</style><path class="a"/></svg>',
         ];
 
         yield 'Keeps properties that a rule with another selector also sets' => [
@@ -588,14 +615,64 @@ final class ConvertCssClassesToAttributesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/></svg>',
         ];
 
-        yield 'Lets the later of two class rules win, whatever the order of the classes' => [
+        yield 'Keeps two class rules that set a property of one element to different values' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>.b{fill:blue}.a{fill:red}</style><rect class="a b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.b{fill:blue}.a{fill:red}</style><rect class="a b"/></svg>',
+        ];
+
+        yield 'Keeps rules of two style elements that set a property of one element to different values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}</style><style>.b{fill:blue}</style><rect class="b a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}</style><style>.b{fill:blue}</style><rect class="b a"/></svg>',
+        ];
+
+        yield 'Keeps a valid value that a later invalid value of another class rule may not override' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:green}.b{fill:nonsense}</style><rect class="a b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:green}.b{fill:nonsense}</style><rect class="a b"/></svg>',
+        ];
+
+        yield 'Keeps a valid value that a later invalid value of the same class may not override' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:green}.a{fill:nonsense}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:green}.a{fill:nonsense}</style><rect class="a"/></svg>',
+        ];
+
+        yield 'Converts two class rules that set a property of one element to the same value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}.b{fill:red}</style><rect class="a b"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/></svg>',
         ];
 
-        yield 'Lets a rule of a later style element win' => [
-            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}</style><style>.b{fill:blue}</style><rect class="b a"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="blue"/></svg>',
+        yield 'Converts class rules that set a property of different elements to different values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}.b{fill:blue}</style><rect class="a"/><rect class="b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/><rect fill="blue"/></svg>',
+        ];
+
+        yield 'Keeps a class selector whose identifier starts with a digit, which browsers drop' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.1a{fill:red}</style><rect class="1a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.1a{fill:red}</style><rect class="1a"/></svg>',
+        ];
+
+        yield 'Keeps a class selector whose identifier starts with a hyphen and a digit, which browsers drop' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.-1{fill:red}</style><rect class="-1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.-1{fill:red}</style><rect class="-1"/></svg>',
+        ];
+
+        yield 'Keeps a rule whose selector list has an invalid selector, which invalidates the whole rule' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a,.1b{fill:red}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a,.1b{fill:red}</style><rect class="a"/></svg>',
+        ];
+
+        yield 'Converts class selectors whose identifiers start with a hyphen or an underscore' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.-a{fill:red}._b{stroke:blue}.-_c{opacity:.5}</style><rect class="-a _b -_c"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red" stroke="blue" opacity=".5"/></svg>',
+        ];
+
+        yield 'Converts every class of a selector list made of class selectors' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a, .b{fill:red}</style><rect class="a"/><rect class="b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/><rect fill="red"/></svg>',
+        ];
+
+        yield 'Leaves a style sheet as written when no declaration becomes an attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a { font-size: 12px }  .b { fill : red ; fill : blue }</style><rect class="a b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a { font-size: 12px }  .b { fill : red ; fill : blue }</style><rect class="a b"/></svg>',
         ];
 
         yield 'Keeps a class rule that an id selector competes with' => [
@@ -745,7 +822,7 @@ final class ConvertCssClassesToAttributesTest extends TestCase
 
         yield 'Keeps a declaration when an element of any selector of the list sets the attribute to another value' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>.a,.b{fill:foo}</style><rect class="a" fill="blue"/><rect class="b"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:foo}.b{fill:foo}</style><rect class="a" fill="blue"/><rect class="b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a,.b{fill:foo}</style><rect class="a" fill="blue"/><rect class="b"/></svg>',
         ];
 
         yield 'Keeps a property in a later rule that an earlier rule has to keep' => [
@@ -805,6 +882,41 @@ final class ConvertCssClassesToAttributesTest extends TestCase
 
         $start = hrtime(true);
         (new ConvertCssClassesToAttributes())->apply($domDocument);
+
+        return (hrtime(true) - $start) / 1e9;
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function convertsALargeStyleSheetInLinearTime(): void
+    {
+        $small = $this->secondsToConvert(2_000);
+        $large = $this->secondsToConvert(8_000);
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    private function secondsToConvert(int $rules): float
+    {
+        $css = implode('', array_map(static fn (int $i): string => '.c' . $i . '{fill:red;stroke:blue}', range(1, $rules)));
+        $elements = implode('', array_map(static fn (int $i): string => '<rect class="c' . $i . '"/>', range(1, 1_000)));
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg"><style>' . $css . '</style>' . $elements . '</svg>'));
+        $svgOptimizer->addPass(new ConvertCssClassesToAttributes());
+
+        $start = hrtime(true);
+
+        $content = $svgOptimizer->optimize()->getContent();
+
+        self::assertStringContainsString('<rect fill="red" stroke="blue"/>', $content);
 
         return (hrtime(true) - $start) / 1e9;
     }

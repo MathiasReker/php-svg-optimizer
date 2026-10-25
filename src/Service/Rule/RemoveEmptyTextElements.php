@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
@@ -24,6 +25,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  */
 final readonly class RemoveEmptyTextElements implements PassInterface
 {
+    use DocumentScriptTrait;
     use ElementTrait;
 
     /**
@@ -33,7 +35,7 @@ final readonly class RemoveEmptyTextElements implements PassInterface
     public function apply(\DOMDocument $domDocument): void
     {
         $root = $domDocument->documentElement;
-        if ($root instanceof \DOMElement && !$this->hasSiblingSensitiveStyle($domDocument)) {
+        if ($root instanceof \DOMElement && !$this->hasSiblingSensitiveStyle($domDocument) && !$this->hasScriptOrEventHandler($domDocument)) {
             $this->removeEmptyTextRecursive($root);
         }
     }

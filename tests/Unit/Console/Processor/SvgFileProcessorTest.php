@@ -27,6 +27,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
+use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEllipseToCircle;
@@ -34,15 +35,21 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertOneStopGradients;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertShapesToPath;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgElementAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FixAttributeNames;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MergeDuplicateGradients;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MergeStyles;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MigrateToSvg2;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyListValues;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyNumericValues;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyPathData;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MoveCommonAttributesToGroup;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MoveGroupAttributesToElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveAriaAndRole;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDataAttributes;
@@ -55,9 +62,11 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyContainers;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveForeignContent;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveHiddenElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonInheritableGroupAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardTags;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveScripts;
@@ -66,22 +75,31 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeMarkup;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeUrls;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedDefinitions;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedTextAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUseBombs;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessDefs;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessStrokeAndFill;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveXmlSpaceDefault;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveZeroSizeShapes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SanitizeStyleSheets;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\SortDefsChildren;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PresentationAttributeCleanupTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2ElementMigrationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2TinyMigrationTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -123,7 +141,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MinifyListValues::class)]
 #[CoversClass(MinifyNumericValues::class)]
 #[CoversClass(MinifyPathData::class)]
-#[CoversClass(MinifySvgCoordinates::class)]
 #[CoversClass(MinifyTransformations::class)]
 #[CoversClass(RemoveAriaAndRole::class)]
 #[CoversClass(RemoveDataAttributes::class)]
@@ -155,6 +172,23 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RemoveNonStandardAttributes::class)]
 #[CoversClass(RemoveNonStandardTags::class)]
 #[CoversClass(RemoveStyleTypeAttributes::class)]
+#[UsesClass(MergeDuplicateGradients::class)]
+#[UsesClass(MergeStyles::class)]
+#[UsesClass(MigrateToSvg2::class)]
+#[UsesClass(MinifyStyles::class)]
+#[UsesClass(MoveCommonAttributesToGroup::class)]
+#[UsesClass(MoveGroupAttributesToElements::class)]
+#[UsesClass(RemoveHiddenElements::class)]
+#[UsesClass(RemoveNonInheritableGroupAttributes::class)]
+#[UsesClass(RemoveUnusedDefinitions::class)]
+#[UsesClass(RemoveUnusedTextAttributes::class)]
+#[UsesClass(RemoveUselessStrokeAndFill::class)]
+#[UsesClass(SortDefsChildren::class)]
+#[UsesClass(StringProvider::class)]
+#[UsesClass(SvgElementAttributes::class)]
+#[UsesTrait(PresentationAttributeCleanupTrait::class)]
+#[UsesTrait(Svg2ElementMigrationTrait::class)]
+#[UsesTrait(Svg2TinyMigrationTrait::class)]
 final class SvgFileProcessorTest extends TestCase
 {
     private string $tempDir;

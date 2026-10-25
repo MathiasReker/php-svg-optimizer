@@ -13,14 +13,22 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Command;
 
 use MathiasReker\PhpSvgOptimizer\Console\Command\Command;
 use MathiasReker\PhpSvgOptimizer\Console\Command\CommandFactory;
+use MathiasReker\PhpSvgOptimizer\Console\Help\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
+use MathiasReker\PhpSvgOptimizer\Console\Input\FileCollector;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\MetaDataAggregator;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Console\Processor\SvgFileProcessor;
+use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandHelp;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\ExampleCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -28,6 +36,19 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(CommandFactory::class)]
 #[CoversClass(Command::class)]
+#[UsesClass(\MathiasReker\PhpSvgOptimizer\Console\Type\Command::class)]
+#[UsesClass(AbstractStream::class)]
+#[UsesClass(ArgumentData::class)]
+#[UsesClass(ArgumentParser::class)]
+#[UsesClass(CliOption::class)]
+#[UsesClass(CommandHelp::class)]
+#[UsesClass(CommandOption::class)]
+#[UsesClass(ExampleCommand::class)]
+#[UsesClass(FileCollector::class)]
+#[UsesClass(MemoryStream::class)]
+#[UsesClass(Option::class)]
+#[UsesClass(OutputManager::class)]
+#[UsesClass(SvgFileProcessor::class)]
 final class CommandFactoryTest extends TestCase
 {
     private string $tempDir;

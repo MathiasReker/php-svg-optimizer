@@ -13,14 +13,24 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveHiddenElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\InheritanceBoundaryTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +41,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(DocumentScriptTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(IdReferenceTrait::class)]
+#[CoversTrait(InheritanceBoundaryTrait::class)]
+#[CoversTrait(NumberFormatterTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class RemoveHiddenElementsTest extends TestCase
 {
     /**
@@ -62,6 +80,63 @@ final class RemoveHiddenElementsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps an unpainted shape below an element with an xml:id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g xml:id="g"><rect width="1" height="1" fill="none"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g xml:id="g"><rect width="1" height="1" fill="none"/></g></svg>',
+        ];
+
+        yield 'Keeps a hidden group whose last child has an id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g display="none"><rect width="1" height="1"/><rect id="r" width="1" height="1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g display="none"><rect width="1" height="1"/><rect id="r" width="1" height="1"/></g></svg>',
+        ];
+        yield 'Keeps invisible shapes inside a group whose transform box they help size, set in a style' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g style="transform-box:fill-box;transform:rotate(45deg)"><rect width="5" height="5" fill="red"/><rect x="20" width="5" height="5" fill="none"/><rect x="40" width="5" height="5" opacity="0"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g style="transform-box:fill-box;transform:rotate(45deg)"><rect width="5" height="5" fill="red"/><rect x="20" width="5" height="5" fill="none"/><rect x="40" width="5" height="5" opacity="0"/></g></svg>',
+        ];
+
+        yield 'Keeps invisible shapes inside a group with a transform box or origin attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g transform-box="fill-box"><rect width="5" height="5" fill="none"/></g><g transform-origin="50% 50%"><rect width="5" height="5" opacity="0"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g transform-box="fill-box"><rect width="5" height="5" fill="none"/></g><g transform-origin="50% 50%"><rect width="5" height="5" opacity="0"/></g></svg>',
+        ];
+
+        yield 'Keeps a transparent element with a descendant title, which shows a tooltip on hover' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g opacity="0"><rect width="100" height="100"><title>tip</title></rect></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g opacity="0"><rect width="100" height="100"><title>tip</title></rect></g></svg>',
+        ];
+
+        yield 'Keeps a transparent element with a descendant that sets a cursor or pointer events' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g opacity="0"><rect width="9" height="9" cursor="pointer"/></g><g opacity="0"><rect width="9" height="9" pointer-events="all"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g opacity="0"><rect width="9" height="9" cursor="pointer"/></g><g opacity="0"><rect width="9" height="9" pointer-events="all"/></g></svg>',
+        ];
+
+        yield 'Removes a transparent element next to a group with a title' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g opacity="0"><rect width="9" height="9"/></g><g><title>t</title></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><title>t</title></g></svg>',
+        ];
+        yield 'Keeps hidden elements in a document with a script, which may show or query them' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><rect display="none"/><g stroke="none"><rect fill="none"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><rect display="none"/><g stroke="none"><rect fill="none"/></g></svg>',
+        ];
+
+        yield 'Keeps hidden elements in a document with an event handler on an unrelated element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect display="none"/><circle r="5" ONCLICK="a()"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect display="none"/><circle r="5" ONCLICK="a()"/></svg>',
+        ];
+        yield 'Keeps a shape without fill whose stroke the page or a use element may set' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="none"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="none"/></svg>',
+        ];
+
+        yield 'Removes a shape without fill below a root element without stroke' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><rect width="1" height="1" fill="none"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"/>',
+        ];
+
+        yield 'Removes a shape without stroke below a root element without fill' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" fill="none"><g stroke="inherit"><rect width="1" height="1" stroke="NONE"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" fill="none"><g stroke="inherit"/></svg>',
+        ];
+
         yield 'Keeps hidden elements inside a group with a filter in its style' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g style="filter:url(#f)"><rect width="5" height="5"/><rect opacity="0" width="5" height="5"/></g></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><g style="filter:url(#f)"><rect width="5" height="5"/><rect opacity="0" width="5" height="5"/></g></svg>',
@@ -279,7 +354,7 @@ final class RemoveHiddenElementsTest extends TestCase
 
         yield 'Removes shapes without fill and stroke' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" fill="none"/><path d="M0 0h1" fill=" None " stroke="NONE"/><circle r="1" fill="none"/><ellipse fill="none"/><line fill="none"/><polyline fill="none"/><polygon fill="none"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" fill="none"/><circle r="1" fill="none"/><ellipse fill="none"/><line fill="none"/><polyline fill="none"/><polygon fill="none"/></svg>',
         ];
 
         yield 'Removes shapes that inherit no fill and no stroke' => [
@@ -319,7 +394,7 @@ final class RemoveHiddenElementsTest extends TestCase
 
         yield 'Removes unpainted shapes in documents with scripts or tooltips' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><path fill="none"/><g><title>a</title><path fill="none"/></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><g><title>a</title></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><path fill="none"/><g><title>a</title><path fill="none"/></g></svg>',
         ];
 
         yield 'Keeps unpainted shapes whose inline style may paint them' => [
@@ -339,7 +414,7 @@ final class RemoveHiddenElementsTest extends TestCase
 
         yield 'Removes hidden elements with entities and deep nesting' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><text display="none">a &amp; b &#60;</text><g><g><g><g><g><g><rect display="none"/><rect fill="none"/><rect opacity="0"/><rect width="1"/></g></g></g></g></g></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g><g><g><rect width="1"/></g></g></g></g></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g><g><g><rect fill="none"/><rect width="1"/></g></g></g></g></g></g></svg>',
         ];
 
         yield 'Removes hidden layers from an Inkscape document' => [
@@ -380,7 +455,7 @@ final class RemoveHiddenElementsTest extends TestCase
     {
         yield 'transparent elements' => ['<rect width="1" height="1" opacity="0"/>'];
 
-        yield 'unpainted elements' => ['<rect width="1" height="1" fill="none"/>'];
+        yield 'unpainted elements' => ['<rect width="1" height="1" fill="none" stroke="none"/>'];
     }
 
     private function secondsToOptimize(int $count, string $element): float
@@ -407,5 +482,27 @@ final class RemoveHiddenElementsTest extends TestCase
         $svgOptimizer->addPass(new RemoveHiddenElements());
 
         return $svgOptimizer->optimize()->getContent();
+    }
+
+    #[Test]
+    public function handlesADeepTreeInLinearTime(): void
+    {
+        $small = $this->secondsForDeepTree(60);
+        $large = $this->secondsForDeepTree(240);
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    private function secondsForDeepTree(int $depth): float
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" stroke="none">' . str_repeat('<g x="1">' . str_repeat('<rect width="1" height="1" fill="none"/>', 20), $depth) . str_repeat('</g>', $depth) . '</svg>');
+
+        $start = hrtime(true);
+        (new RemoveHiddenElements())->apply($domDocument);
+
+        self::assertSame(0, $domDocument->getElementsByTagName('rect')->length);
+
+        return (hrtime(true) - $start) / 1e9;
     }
 }

@@ -13,14 +13,24 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DefinitionElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\FragmentTargetTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +41,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(DefinitionElementTrait::class)]
+#[CoversTrait(DocumentScriptTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(FragmentTargetTrait::class)]
+#[CoversTrait(IdReferenceTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class RemoveUnusedIdsTest extends TestCase
 {
     private const string SVG = '<svg xmlns="http://www.w3.org/2000/svg">';

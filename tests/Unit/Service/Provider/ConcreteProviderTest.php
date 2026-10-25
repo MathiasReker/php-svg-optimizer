@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
+use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\TemporaryDirectoryTrait;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -29,7 +30,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class ConcreteProviderTest extends TestCase
 {
-    private string $tmpFile = '';
+    use TemporaryDirectoryTrait;
 
     /**
      * @throws XmlProcessingException
@@ -85,11 +86,11 @@ final class ConcreteProviderTest extends TestCase
         $provider = $this->getConcreteProvider($input);
         $provider->optimize($provider->loadContent());
 
-        $this->tmpFile = sys_get_temp_dir() . '/svg-test-' . uniqid('', true) . '.svg';
-        $provider->saveToFile($this->tmpFile);
+        $file = $this->createTemporaryDirectory() . '/svg-test.svg';
+        $provider->saveToFile($file);
 
-        self::assertFileExists($this->tmpFile);
-        self::assertSame($provider->getOutputContent(), file_get_contents($this->tmpFile));
+        self::assertFileExists($file);
+        self::assertSame($provider->getOutputContent(), file_get_contents($file));
     }
 
     /**
@@ -106,12 +107,16 @@ final class ConcreteProviderTest extends TestCase
         $domDocument = $provider->loadContent();
         $provider->optimize($domDocument);
 
-        $baseFile = tempnam(sys_get_temp_dir(), 'svgtest');
+        $baseFile = $this->createTemporaryDirectory() . '/svgtest';
         file_put_contents($baseFile, '');
         $invalidPath = $baseFile . '/subdir/output.svg';
+        error_clear_last();
 
-        $provider->saveToFile($invalidPath);
-        unlink($baseFile);
+        try {
+            $provider->saveToFile($invalidPath);
+        } finally {
+            self::assertNull(error_get_last());
+        }
     }
 
     /**
@@ -125,7 +130,7 @@ final class ConcreteProviderTest extends TestCase
         $provider = $this->getConcreteProvider($input);
         $provider->optimize($provider->loadContent());
 
-        $tempDir = sys_get_temp_dir() . '/svgtest_' . uniqid();
+        $tempDir = $this->createTemporaryDirectory() . '/svgtest';
         $filePath = $tempDir . '/output.svg';
 
         self::assertDirectoryDoesNotExist($tempDir);
@@ -135,9 +140,6 @@ final class ConcreteProviderTest extends TestCase
         self::assertDirectoryExists($tempDir);
         self::assertFileExists($filePath);
         self::assertSame($provider->getOutputContent(), file_get_contents($filePath));
-
-        unlink($filePath);
-        rmdir($tempDir);
     }
 
     /**
@@ -151,26 +153,16 @@ final class ConcreteProviderTest extends TestCase
         $provider = $this->getConcreteProvider($input);
         $provider->optimize($provider->loadContent());
 
-        $directoryAsFilePath = sys_get_temp_dir() . '/svgtest_dir_as_file_' . uniqid();
-        mkdir($directoryAsFilePath);
+        $directoryAsFilePath = $this->createTemporaryDirectory();
 
         $this->expectException(IOException::class);
-        $this->expectExceptionMessage('Failed to write optimized content to the output file: ' . $directoryAsFilePath);
+        $this->expectExceptionMessage('Output path is a directory: ' . $directoryAsFilePath);
 
         set_error_handler(static fn (): bool => true, \E_WARNING);
         try {
             $provider->saveToFile($directoryAsFilePath);
         } finally {
             restore_error_handler();
-            rmdir($directoryAsFilePath);
-        }
-    }
-
-    #[\Override]
-    protected function tearDown(): void
-    {
-        if (file_exists($this->tmpFile)) {
-            unlink($this->tmpFile);
         }
     }
 }

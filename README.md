@@ -12,7 +12,7 @@
 [![Mutation Coverage](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/mutation-coverage.svg)](#)
 [![Tests](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/tests.svg)](#)
 [![Assertions](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/assertions.svg)](#)
-[![Filesize](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/filesize.svg)](#)
+[![Package size](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/package-size.svg)](#)
 [![Contributors](https://img.shields.io/github/contributors/MathiasReker/php-svg-optimizer.svg)](https://github.com/MathiasReker/php-svg-optimizer/graphs/contributors)
 [![Forks](https://img.shields.io/github/forks/MathiasReker/php-svg-optimizer.svg?style=flat)](https://github.com/MathiasReker/php-svg-optimizer/network/members)
 [![Stargazers](https://img.shields.io/github/stars/MathiasReker/php-svg-optimizer.svg?style=flat)](https://github.com/MathiasReker/php-svg-optimizer/stargazers)
@@ -120,7 +120,6 @@ vendor/bin/svg-optimizer -s cleanup -s structure --allow-risky process /path/to/
     "minifyNumericValues": true,
     "minifyPathData": true,
     "minifyStyles": true,
-    "minifySvgCoordinates": true,
     "minifyTransformations": true,
     "moveCommonAttributesToGroup": true,
     "moveGroupAttributesToElements": true,
@@ -229,7 +228,6 @@ try {
             minifyNumericValues: true,
             minifyPathData: true,
             minifyStyles: true,
-            minifySvgCoordinates: true,
             minifyTransformations: true,
             moveCommonAttributesToGroup: true,
             moveGroupAttributesToElements: true,
@@ -438,7 +436,7 @@ file with `"sets": ["security", "minification"]`.
 | `cleanup` | `RuleSet::Cleanup` | Remove editor data, comments, unused definitions and content that has no effect. | `removeComments`, `removeMetadata`, `removeInkscapeFootprints`, `removeUnusedIds` (risky), `removeDataAttributes` (risky), `removeInvisibleCharacters`, `removeDefaultAttributes`, `removeWidthHeightAttributes` (risky), `removeEmptyAttributes`, `removeUnusedDefinitions` (risky), `removeIneffectiveAttributes`, `removeHiddenElements`, `removeUselessDefs`, `removeDuplicateElements`, `removeEmptyElements`, `removeUnusedNamespaces` |
 | `conversion` | `RuleSet::Conversion` | Convert styles, colors, gradients and shapes into shorter equivalents. | `convertCssClassesToAttributes`, `convertInlineStylesToAttributes`, `convertColorsToHex`, `convertOneStopGradients` (risky), `convertEllipseToCircle`, `convertShapesToPath` |
 | `structure` | `RuleSet::Structure` | Restructure styles, gradients and groups. | `mergeStyles`, `mergeDuplicateGradients` (risky), `flattenGroups`, `moveGroupAttributesToElements`, `moveCommonAttributesToGroup` |
-| `minification` | `RuleSet::Minification` | Write numbers, paths, styles and whitespace in their shortest form and order the markup. | `minifyStyles`, `minifyNumericValues`, `minifySvgCoordinates`, `minifyTransformations`, `minifyPathData`, `removeUnnecessaryWhitespace`, `sortDefsChildren`, `sortAttributes` |
+| `minification` | `RuleSet::Minification` | Write numbers, paths, styles and whitespace in their shortest form and order the markup. | `minifyStyles`, `minifyNumericValues`, `minifyTransformations`, `minifyPathData`, `removeUnnecessaryWhitespace`, `sortDefsChildren`, `sortAttributes` |
 
 Risky rules belong to the set of their purpose, but, like with `withAllRules()`, they are only applied when risky rules
 are allowed with `allowRisky()` (or `--allow-risky`), whether `allowRisky()` is called before or after
@@ -465,7 +463,10 @@ also works on its own. For a stricter policy, you can combine them with `removeN
 
 Parsing is hardened for every rule set: external entities and DTDs are never loaded, and a document whose internal
 entities would expand to more than 512 KiB, or more than five times the size of the document if that is larger, is
-rejected with an `XmlProcessingException` ("Entity expansion exceeds the allowed size.") on every libxml version.
+rejected on every libxml version. Elements may be nested at most 255 levels deep, the limit of libxml. A document that
+cannot be parsed is rejected with an `SvgValidationException`; its previous exception says why, for example "Entity
+expansion exceeds the allowed size." or "Failed to load DOMDocument: Excessive depth in document: 256 use
+XML_PARSE_HUGE option on line 1, column 809.".
 
 ```php
 <?php
@@ -543,6 +544,12 @@ is rounded. A few rules change the SVG on purpose, and say so in their descripti
 `removeUnsafeMarkup` remove unsafe content, also when it is visible; and `removeTitles`, `removeDescriptions` and
 `removeAriaAndRole` remove accessibility information.
 
+The same holds when the SVG is used from outside: inlined in an HTML page or referenced with
+`<use href="file.svg#id">`. The root element then inherits properties such as `fill`, `stroke` or `stroke-width` from
+the page or from the `<use>` element, so a rule never assumes their initial values at the root: a value is only treated
+as known when an element of the document sets it. `stroke="none"` on a shape is kept unless an ancestor in the document
+also sets `stroke="none"`, for example.
+
 Some rules are marked **risky**: they rely on assumptions about how the SVG is used that the optimizer cannot check,
 such as no external CSS, JavaScript or `file.svg#id` reference depending on what they remove. Each risky rule says
 under **Why it is risky** what it can break. Risky rules only run after `allowRisky()`.
@@ -567,9 +574,14 @@ $svgOptimizer->withRules(convertColorsToHex: true);
 Replaces CSS class-based styling with equivalent inline SVG attributes on each affected element. Declarations that have
 to stay CSS, such as `!important` ones, ones that other rules may override, and properties that an element already sets
 as an attribute with another value, are kept in the style sheet. Style elements for other media, of another type, with
-a `title` (which may make them alternative style sheets) or with content other than text are kept as they are. The
-document is left untouched when a style sheet outside the document may apply, or when a script, an event handler
-attribute or an animation may change the classes.
+a `title` (which may make them alternative style sheets) or with content other than text are kept as they are. Only
+rules whose selector list consists of class selectors with valid identifiers are converted, and a property that two
+rules set on the same element with different values stays CSS. A style sheet is rewritten only when a declaration
+became an attribute. The document is left untouched when a style sheet outside the document may apply, or when a
+script, an event handler attribute or an animation may change the classes.
+The result renders the same as a standalone SVG. When the SVG is inlined in an HTML page, presentation attributes have
+a lower priority than any CSS rule of the page, while the class rules they replace may have won over page rules with a
+lower specificity.
 
 ```php
 $svgOptimizer->withRules(convertCssClassesToAttributes: true);
@@ -595,7 +607,10 @@ Extracts individual style declarations from inline `style` attributes and conver
 presentation attributes. This makes attribute-level optimizations more effective downstream. Declarations that are
 important, repeated, overridden by a related property, or for a property that the element already sets as an attribute
 with another value stay in the `style` attribute, and documents with a style sheet (a `<style>` element, an
-`xml-stylesheet` instruction or a linked style sheet) are left untouched.
+`xml-stylesheet` instruction or a linked style sheet) are left untouched. An element is only changed when its markup
+does not grow; the declarations that stay are written without spaces.
+The result renders the same as a standalone SVG. When the SVG is inlined in an HTML page, presentation attributes have
+a lower priority than any CSS rule of the page, while an inline style wins over page rules that are not `!important`.
 
 ```php
 $svgOptimizer->withRules(convertInlineStylesToAttributes: true);
@@ -784,20 +799,6 @@ $svgOptimizer->withRules(minifyStyles: true);
 
 ---
 
-### `minifySvgCoordinates`
-
-Shortens the number literals in coordinates, path data, `points`, `viewBox` and `enable-background` without changing
-their values. Leading and trailing zeros, redundant decimal points, explicit plus signs and zero exponents are removed,
-and a separator is kept wherever two numbers would otherwise merge. Values that cannot be tokenized safely, that contain
-a stray decimal point, or that would read differently once minified are left untouched, and so is the document when a
-style sheet may select elements by an attribute value.
-
-```php
-$svgOptimizer->withRules(minifySvgCoordinates: true);
-```
-
----
-
 ### `minifyTransformations`
 
 Shortens `transform`, `gradientTransform` and `patternTransform` values without recalculating them: numbers and
@@ -883,8 +884,9 @@ $svgOptimizer->withRules(removeDataAttributes: true)->allowRisky();
 ### `removeDefaultAttributes`
 
 Removes stroke attributes whose value is the default (`stroke="none"`, `stroke-width="1"`, `stroke-linecap="butt"`,
-`stroke-linejoin="miter"` and `stroke-miterlimit="4"`) when the element would inherit the same value: no ancestor sets
-another value, as an attribute or in its inline style, up to the root or an element that can be referenced by id.
+`stroke-linejoin="miter"` and `stroke-miterlimit="4"`) when the element would inherit the same value: the nearest
+ancestor that sets the attribute sets the same value, no ancestor in between sets the property in its inline style or
+can be referenced by id, and that ancestor is inside the document (the root inherits from the page or `<use>`).
 Attributes that are animated or that the element's own inline style overrides are kept, and documents with a style sheet
 are left untouched.
 
@@ -955,7 +957,8 @@ Removes container elements such as `<defs>`, `<g>`, `<symbol>`, `<mask>`, `<clip
 `role`, `aria-*` attributes, a `tabindex`, `autofocus` or an event handler, which can be referenced, are exposed to
 assistive technology or can take focus, children of a `<switch>`, and groups with a `filter`, which can paint on its
 own, are kept. Nothing is removed when a style sheet may apply a `filter`, or uses sibling combinators or structural
-pseudo-classes (such as `g + rect` or `:nth-child()`), whose matches depend on the surrounding elements.
+pseudo-classes (such as `g + rect` or `:nth-child()`), whose matches depend on the surrounding elements, or when the
+document has a script or an event handler attribute, which may fill or query the empty elements.
 
 It also removes empty text elements:
 
@@ -963,7 +966,8 @@ Removes `<text>` and `<tspan>` elements that contain no text at all, and `<tref>
 elements have no visual impact and can safely be eliminated to reduce file size. Whitespace-only elements are kept,
 since their whitespace may render as a space between the surrounding text, and so are elements with an `id`, a `role`,
 `aria-*` attributes, a `tabindex` or an event handler, and children of a `<switch>`. Nothing is removed when a style
-sheet uses sibling combinators or structural pseudo-classes.
+sheet uses sibling combinators or structural pseudo-classes, or when the document has a script or an event handler
+attribute.
 
 ```php
 $svgOptimizer->withRules(removeEmptyElements: true);
@@ -995,15 +999,19 @@ $svgOptimizer->withRules(removeForeignContent: true);
 ### `removeHiddenElements`
 
 Removes elements that cannot render anything: elements with `display="none"`, elements with `opacity="0"`, and
-shapes whose fill and stroke both resolve to `none`. Elements inside definitions, clip paths, masks, patterns, markers
+shapes whose fill and stroke both resolve to `none` through attributes set inside the document (the root inherits its
+fill and stroke from the page or `<use>`). Elements inside definitions, clip paths, masks, patterns, markers
 and symbols, elements with an `id` or a referenced descendant, animated elements, links and interactive or accessible
-content are kept. Documents with a style sheet are left untouched.
+content are kept. Invisible elements inside an element with a `transform-box` or `transform-origin` (whose reference box
+they help size) are kept, and so are transparent elements with a `<title>` (a tooltip), a `cursor` or `pointer-events`
+in their subtree, as they still react to the pointer. Documents with a style sheet, a script or an event handler
+attribute (which may show, resize or query the elements) are left untouched.
 
 It also removes shapes with a zero size:
 
 Removes shapes the SVG specification says are not rendered: circles and ellipses with a zero radius, rects with a
 zero width or height, and paths, polylines and polygons without any data. Shapes with an `id`, child elements or a
-`style` attribute, and documents with a `<style>` element, are kept.
+`style` attribute, and documents with a `<style>` element, a script or an event handler attribute, are kept.
 
 ```php
 $svgOptimizer->withRules(removeHiddenElements: true);
@@ -1017,8 +1025,9 @@ Removes attributes that have no effect.
 
 Removes stroke and fill attributes that have no effect: the other `stroke-*` attributes when the stroke is `none`,
 the stroke attributes except `stroke-width` when the stroke width is zero, and `fill-opacity` and `fill-rule` when the
-fill is `none`. Elements are skipped when a descendant could re-enable the stroke or fill, and documents with a style
-sheet, markers or `pointer-events` are left untouched.
+fill is `none`. The stroke, stroke width or fill counts only when an element of the document sets it, as the root
+inherits them from the page or `<use>`. Elements are skipped when a descendant could re-enable the stroke or fill, and
+documents with a style sheet, markers or `pointer-events` are left untouched.
 
 Removes attributes from `<g>` elements that are neither inherited by the children nor apply to the group itself, such
 as `x`, `y`, `width`, `height`, `stop-color` or `flood-color`. Animated attributes are kept, and documents with a style
@@ -1240,8 +1249,9 @@ $svgOptimizer->withRules(removeUnusedIds: true)->allowRisky();
 
 ### `removeUnusedNamespaces`
 
-Removes XML namespace declarations that are never referenced within the document. This cleans up the root element,
-reduces verbosity, and improves readability.
+Removes XML namespace declarations of the root element whose prefix no element or attribute name uses and no attribute
+value or text mentions (as in `attributeName="xlink:href"`). This cleans up the root element, reduces verbosity, and
+improves readability.
 
 ```php
 $svgOptimizer->withRules(removeUnusedNamespaces: true);
@@ -1315,12 +1325,16 @@ $svgOptimizer->withRules(sanitizeStyleSheets: true);
 Scopes all IDs and class names within SVG elements to avoid style collisions.
 Each embedded SVG gets unique identifiers, and CSS rules are rewritten accordingly.
 This ensures multiple SVGs can coexist in the same document without interfering with each other.
-Rules with a bare element selector (such as `rect`) or the universal selector (`*`) cannot be scoped and would style
-the whole page, so they are removed; a style sheet left without rules is removed too.
+Selectors without a class or id selector outside a functional pseudo-class (such as `rect`, `g rect`, `svg *`,
+`[fill]` or `rect:not(.a)`) cannot be scoped and would style the whole page, so they are removed; a style sheet left
+without rules is removed too.
 Names that are already scoped are left unchanged, so optimizing a scoped SVG again does not change it.
-Documents whose style sheets nest rules in at-rule blocks (such as `@media` or `@supports`) or use `@import`, or that
-have a style element of another type than `text/css` or with content other than text, are left untouched, as those
-rules cannot be rewritten.
+The suffix is derived from the drawing, not from its formatting, so a pretty-printed and a minified copy of the same
+SVG get the same suffix.
+Documents whose style sheets nest rules in at-rule blocks (such as `@media` or `@supports`), use `@import` or CSS
+escapes, select ids or class names with an attribute selector (such as `[id="a"]` or `[class~="b"]`), or that have a
+style element of another type than `text/css` or with content other than text, are left untouched, as those rules
+cannot be rewritten.
 Sprite targets (see `removeUnusedDefinitions`) keep their id, and the selectors and references that name them are left
 unchanged, so `<use href="#icon">` from the page and `sprite.svg#icon` keep working; when a style sheet uses `:target`,
 no id is renamed. Class names are still scoped.
@@ -1328,8 +1342,8 @@ no id is renamed. Class names are still scoped.
 **Why it is risky:** the renamed ids and class names no longer match anything outside the SVG that uses the original
 names: page-level CSS such as `.icon path { fill: currentColor }` or `#logo:hover`, JavaScript (`getElementById`,
 `querySelector`, toggling a class), analytics and test selectors, `url(#id)` references from other inline SVGs on the
-page, and `file.svg#id` references to ids that are not sprite targets. Removing rules with a bare element or universal
-selector also changes how the SVG itself renders when it relied on them.
+page, and `file.svg#id` references to ids that are not sprite targets. Removing rules whose selectors may match
+elements of the page (no class or id selector) also changes how the SVG itself renders when it relied on them.
 
 ```php
 $svgOptimizer->withRules(scopeSvgStyles: true)->allowRisky();
@@ -1339,8 +1353,10 @@ $svgOptimizer->withRules(scopeSvgStyles: true)->allowRisky();
 
 ### `sortAttributes`
 
-Sorts element attributes alphabetically. This improves consistency, makes diffs easier to read in version control
-systems, and results in more deterministic SVG output across optimization runs.
+Sorts element attributes: namespace declarations come first, then `id`, `width` and `height` in that order, then the
+other attributes alphabetically by name. This improves consistency, makes diffs easier to read in version control
+systems, and results in more deterministic SVG output across optimization runs. An element where an attribute without a
+namespace shares its local name with an attribute in a namespace (such as `href` and `xlink:href`) keeps its order.
 
 ```php
 $svgOptimizer->withRules(sortAttributes: true);
@@ -1381,7 +1397,6 @@ $svgOptimizer->withRules(
     minifyNumericValues: true,
     minifyPathData: true,
     minifyStyles: true,
-    minifySvgCoordinates: true,
     minifyTransformations: true,
     moveCommonAttributesToGroup: true,
     moveGroupAttributesToElements: true,
@@ -1526,7 +1541,8 @@ $svgOptimizer->getMetaData()->hasSavedBytes();
 
 #### `getSavedPercentage`
 
-Returns the percentage of bytes saved by the optimization process.
+Returns the percentage of bytes saved by the optimization process. It is negative when the output is larger than the
+input, which happens when expanding entities or character references grows the document.
 
 ```php
 $svgOptimizer->getMetaData()->getSavedPercentage();
@@ -1551,99 +1567,8 @@ the [open issues](https://github.com/MathiasReker/php-svg-optimizer/issues).
 
 ### Contributing
 
-We welcome all contributions! If you have ideas for improvements, feel free to fork the repository and submit a pull
-request. You can also open an issue. If you find this project helpful, don’t forget to give it a star!
-
-#### Library Structure and Contribution Guide
-
-The library implements the Strategy Pattern, where strategies are encapsulated as "rules" located in the
-`/src/Service/Rule` directory. Logic shared by several rules lives in traits in `/src/Service/Rule/Trait`. The
-command-line tool lives in `/src/Console`. Classes tagged `@api` are the public API; classes tagged `@internal` may
-change in any release.
-
-##### Adding a New Rule
-
-### 1. **Create the Rule**
-
-Create a new **final readonly class** (a pass) in the `/src/Service/Rule` directory and implement
-`MathiasReker\PhpSvgOptimizer\Pass\PassInterface`. Implement `RevertIfLargerPassInterface` instead when the pass can
-make the document larger, so the optimizer reverts it in that case.
-
-### 2. **Write Tests**
-
-Write comprehensive **unit tests** for your rule in the `/tests/Unit/Service/Rule` directory. Ensure the tests cover
-various scenarios to verify the correct behavior and edge cases for your rule.
-
-### 3. **Integrate the Rule**
-
-- **Add your rule to the rule enum** in `/src/Type/Rule.php`, with its passes in `Rule::passes()` and, if it is risky,
-  in `Rule::isRisky()`, and add each pass to `/src/Pass/ExecutionOrder.php` after the passes it depends on.
-- **Register the rule** in the SVG optimizer builder located at `/src/Service/Facade/SvgOptimizerFacade.php`. Append
-  the new parameter to `withRules()`, so existing calls with positional arguments keep working.
-
-### 4. **Update Documentation**
-
-Document the functionality and purpose of your rule in the `README.md` to ensure users understand its behavior and
-usage.
-
-#### Docker
-
-To use the project with Docker, you can start the container using:
-
-```bash
-docker-compose up --build -d
-```
-
-Then, access the container:
-
-```bash
-docker exec -it php-svg-optimizer bash
-```
-
-#### Tools
-
-Run static analysis:
-
-```bash
-composer analyze:all
-```
-
-Run tests:
-
-```bash
-composer test
-```
-
-Run mutation testing:
-
-```bash
-composer test:mutation
-```
-
-Run the benchmark (`--save=<file>` stores checksums of the optimized output and `--compare=<file>` checks that a change
-keeps the output identical):
-
-```bash
-composer test:benchmark
-```
-
-Fix code style:
-
-```bash
-composer lint:all
-```
-
-Build badges:
-
-```bash
-composer build:badges
-```
-
-Build baseline:
-
-```bash
-composer build:baseline
-```
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, the quality
+requirements and how to add a rule.
 
 ### License
 

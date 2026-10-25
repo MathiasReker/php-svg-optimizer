@@ -21,9 +21,9 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
  */
 final readonly class RemoveUnusedNamespaces implements PassInterface
 {
-    private const string NAMESPACE_REGEX = '/xmlns:([a-zA-Z0-9\-]+)="([^"]+)"/';
+    private const string NAMESPACE_QUERY = '/*/namespace::*[name() != "" and name() != "xml"]';
 
-    private const string PREFIXED_NAME_REGEX = '/([\w.\-]+):(?=[a-zA-Z0-9\-])/';
+    private const string TEXT_QUERY = '//text() | //@*';
 
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
@@ -31,46 +31,61 @@ final readonly class RemoveUnusedNamespaces implements PassInterface
     #[\Override]
     public function apply(\DOMDocument $domDocument): void
     {
-        $namespaceCounts = $this->countNamespaceElementsWithRegex((string) $domDocument->saveXML());
+        $domXPath = new \DOMXPath($domDocument);
+        $usedPrefixes = $this->usedPrefixes($domDocument);
+        $values = $this->values($domXPath);
 
-        foreach ($namespaceCounts as $namespaceKey => $count) {
-            if (0 === $count) {
-                $this->removeNamespaceFromSvgTags($domDocument, $namespaceKey);
+        /** @var \DOMNodeList<\DOMNameSpaceNode> $declarations */
+        $declarations = $domXPath->query(self::NAMESPACE_QUERY);
+
+        foreach (iterator_to_array($declarations, false) as $domNameSpaceNode) {
+            $prefix = $domNameSpaceNode->prefix;
+            $root = $domNameSpaceNode->parentNode;
+
+            if ($root instanceof \DOMElement && !\array_key_exists($prefix, $usedPrefixes) && !str_contains($values, $prefix . ':')) {
+                $root->removeAttribute(SvgAttribute::Xmlns->value . ':' . $prefix);
             }
         }
     }
 
     /**
-     * @param string $content the raw SVG content
+     * @param \DOMDocument $domDocument the document to scan
      *
-     * @return array<string, int> a map of namespace attributes to their usage count
+     * @return array<string, true> the prefixes of the element and attribute names
      */
-    private function countNamespaceElementsWithRegex(string $content): array
+    private function usedPrefixes(\DOMDocument $domDocument): array
     {
-        $namespaceCounts = [];
+        $prefixes = [];
 
-        preg_match_all(self::NAMESPACE_REGEX, $content, $matches);
-        preg_match_all(self::PREFIXED_NAME_REGEX, $content, $prefixedNames);
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            $prefixes[$domNodeList->prefix] = true;
 
-        $usages = array_count_values($prefixedNames[1]);
-
-        foreach ($matches[1] as $prefix) {
-            $namespaceCounts[\sprintf('%s:%s', SvgAttribute::Xmlns->value, $prefix)] = $usages[$prefix] ?? 0;
+            /** @var \DOMAttr $attribute */
+            foreach ($domNodeList->attributes as $attribute) {
+                $prefixes[$attribute->prefix] = true;
+            }
         }
 
-        return $namespaceCounts;
+        return $prefixes;
     }
 
     /**
-     * @param \DOMDocument $domDocument        the DOM document to modify
-     * @param string       $namespaceAttribute The namespace attribute to remove (e.g., "xmlns:xlink").
+     * @param \DOMXPath $domXPath the XPath object for querying the document
+     *
+     * @return string the attribute values and text of the document, which may name a prefix, as in
+     *                `attributeName="xlink:href"`
      */
-    private function removeNamespaceFromSvgTags(\DOMDocument $domDocument, string $namespaceAttribute): void
+    private function values(\DOMXPath $domXPath): string
     {
-        $root = $domDocument->documentElement;
+        $values = '';
 
-        if ($root instanceof \DOMElement) {
-            $root->removeAttribute($namespaceAttribute);
+        /** @var \DOMNodeList<\DOMNode> $domNodeList */
+        $domNodeList = $domXPath->query(self::TEXT_QUERY);
+
+        foreach ($domNodeList as $domNode) {
+            $values .= ($domNode->nodeValue ?? '') . "\n";
         }
+
+        return $values;
     }
 }

@@ -14,9 +14,17 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule\Trait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertShapesToPath;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyListValues;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AttributeNodeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PathDataSerializerTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RenameElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -27,57 +35,96 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ConvertShapesToPath::class)]
 #[CoversClass(MinifyListValues::class)]
 #[CoversClass(MinifyTransformations::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(AttributeNodeTrait::class)]
+#[CoversTrait(DocumentScriptTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(NumberFormatterTrait::class)]
+#[CoversTrait(NumberListTrait::class)]
+#[CoversTrait(PathDataSerializerTrait::class)]
+#[CoversTrait(RenameElementTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
 final class NumberListTraitTest extends TestCase
 {
     use NumberFormatterTrait;
     use NumberListTrait;
 
     /**
-     * @param list<string> $expected        the numbers of the list
-     * @param list<string> $expectedCompact the numbers of the list when separators may be omitted
+     * @param list<string> $expected                     the numbers of the list
+     * @param list<string> $expectedCompact              the numbers of the list when separators may be omitted
+     * @param list<string> $expectedCompactTrailingComma the numbers of the list when separators may be omitted and the
+     *                                                   list may end with a comma
      */
     #[DataProvider('provideParsesNumberListCases')]
     #[Test]
-    public function parsesNumberList(string $value, array $expected, array $expectedCompact): void
+    public function parsesNumberList(string $value, array $expected, array $expectedCompact, array $expectedCompactTrailingComma): void
     {
-        self::assertSame($expected, $this->parseNumberList($value, false));
-        self::assertSame($expectedCompact, $this->parseNumberList($value, true));
+        self::assertSame($expected, $this->parseNumberList($value, false, false));
+        self::assertSame($expected, $this->parseNumberList($value, false, true));
+        self::assertSame($expectedCompact, $this->parseNumberList($value, true, false));
+        self::assertSame($expectedCompactTrailingComma, $this->parseNumberList($value, true, true));
     }
 
     /**
-     * @return iterable<string, array{string, list<string>, list<string>}>
+     * @return iterable<string, array{string, list<string>, list<string>, list<string>}>
      */
     public static function provideParsesNumberListCases(): iterable
     {
-        yield 'whitespace and commas' => [" 1,2 \t3 , 4\n", ['1', '2', '3', '4'], ['1', '2', '3', '4']];
+        yield 'whitespace and commas' => [" 1,2 \t3 , 4\n", ['1', '2', '3', '4'], ['1', '2', '3', '4'], ['1', '2', '3', '4']];
 
-        yield 'exponents and signs' => ['1e2 -1E-2 +.5', ['1e2', '-1E-2', '+.5'], ['1e2', '-1E-2', '+.5']];
+        yield 'exponents and signs' => ['1e2 -1E-2 +.5', ['1e2', '-1E-2', '+.5'], ['1e2', '-1E-2', '+.5'], ['1e2', '-1E-2', '+.5']];
 
-        yield 'a single number' => ['7', ['7'], ['7']];
+        yield 'a single number' => ['7', ['7'], ['7'], ['7']];
 
-        yield 'numbers without a separator' => ['1-2', [], ['1', '-2']];
+        yield 'numbers without a separator' => ['1-2', [], ['1', '-2'], ['1', '-2']];
 
-        yield 'consecutive decimals' => ['1.5.5', [], ['1.5', '.5']];
+        yield 'consecutive decimals' => ['1.5.5', [], ['1.5', '.5'], ['1.5', '.5']];
 
-        yield 'an exponent followed by a decimal' => ['1e2.5', [], ['1e2', '.5']];
+        yield 'an exponent followed by a decimal' => ['1e2.5', [], ['1e2', '.5'], ['1e2', '.5']];
 
-        yield 'a double comma' => ['1,,2', [], []];
+        yield 'a double comma' => ['1,,2', [], [], []];
 
-        yield 'a leading comma' => [',1 2', [], []];
+        yield 'a leading comma' => [',1 2', [], [], []];
 
-        yield 'a trailing comma' => ['1 2,', [], ['1', '2']];
+        yield 'a trailing comma' => ['1 2,', [], [], ['1', '2']];
 
-        yield 'a trailing comma after whitespace' => ['1 2 , ', [], ['1', '2']];
+        yield 'a trailing comma after whitespace' => ['1 2 , ', [], [], ['1', '2']];
 
-        yield 'two trailing commas' => ['1 2,,', [], []];
+        yield 'two trailing commas' => ['1 2,,', [], [], []];
 
-        yield 'only a comma' => [',', [], []];
+        yield 'only a comma' => [',', [], [], []];
 
-        yield 'a unit' => ['1px 2', [], []];
+        yield 'a unit' => ['1px 2', [], [], []];
 
-        yield 'an empty value' => ['', [], []];
+        yield 'an empty value' => ['', [], [], []];
 
-        yield 'non-ASCII digits' => ['１ 2', [], []];
+        yield 'non-ASCII digits' => ['１ 2', [], [], []];
+    }
+
+    /**
+     * @param list<string> $numbers minified number literals
+     */
+    #[DataProvider('provideParsesWhatItJoinsCases')]
+    #[Test]
+    public function parsesWhatItJoins(array $numbers): void
+    {
+        self::assertSame($numbers, $this->parseNumberList($this->joinNumberList($numbers, true), true, false));
+        self::assertSame($numbers, $this->parseNumberList($this->joinNumberList($numbers, true), true, true));
+        self::assertSame($numbers, $this->parseNumberList($this->joinNumberList($numbers, false), false, false));
+    }
+
+    /**
+     * @return iterable<string, array{list<string>}>
+     */
+    public static function provideParsesWhatItJoinsCases(): iterable
+    {
+        yield 'signs' => [['10', '-10', '-.5', '1']];
+
+        yield 'fractions' => [['.5', '.5', '1.5', '.25']];
+
+        yield 'exponents' => [['1e5', '.5', '-1e-5', '2']];
+
+        yield 'integers' => [['1', '2', '3']];
     }
 
     /**

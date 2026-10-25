@@ -16,12 +16,14 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
 #[CoversClass(SvgOptimizer::class)]
+#[UsesTrait(XmlLoaderTrait::class)]
 final class XmlLoaderTraitTest extends TestCase
 {
     use XmlLoaderTrait;

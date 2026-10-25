@@ -13,15 +13,30 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NamedColorTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ParentValueTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TransformListTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -33,6 +48,19 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(SvgNamespace::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(DocumentScriptTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(IdReferenceTrait::class)]
+#[CoversTrait(NamedColorTrait::class)]
+#[CoversTrait(NumberFormatterTrait::class)]
+#[CoversTrait(NumberListTrait::class)]
+#[CoversTrait(ParentValueTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[CoversTrait(TransformListTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
+#[UsesClass(SvgAttribute::class)]
+#[UsesClass(SvgTag::class)]
 final class FlattenGroupsTest extends TestCase
 {
     /**

@@ -28,8 +28,6 @@ final readonly class DomDocumentWrapper
 
     private const int LOAD_FLAGS = \LIBXML_NONET;
 
-    private const string STYLESHEET_INSTRUCTION = 'xml-stylesheet';
-
     private const string ATTRIBUTE_LIST_DECLARATION = '<!ATTLIST';
 
     private const string ASCII_UTF16_DECLARATION_REGEX = '/^((?:\xEF\xBB\xBF)?<\?xml\s[^>]*?\bencoding\s*=\s*)(["\'])utf-16(?:le|be)?\2/i';
@@ -37,6 +35,8 @@ final readonly class DomDocumentWrapper
     private const string UTF8_DECLARATION = '$1$2UTF-8$2';
 
     private const string LOAD_FAILURE = 'Failed to load DOMDocument.';
+
+    private const string LOAD_FAILURE_DETAIL = 'Failed to load DOMDocument: %s on line %d, column %d.';
 
     private const string ENTITY_EXPANSION_FAILURE = 'Entity expansion exceeds the allowed size.';
 
@@ -159,19 +159,30 @@ final readonly class DomDocumentWrapper
     }
 
     /**
-     * @param string $filePath The path to the XML file
+     * @param \DOMDocument $domDocument the document to copy
      *
-     * @return \DOMDocument Returns the loaded \DOMDocument
+     * @return \DOMDocument an independent copy of the document, parsed again from its complete serialization, which
+     *                      keeps every node, unlike a clone, which may lose the prefix of `xml:` attributes
      *
-     * @throws XmlProcessingException If the XML file cannot be loaded
+     * @throws XmlProcessingException If the serialization cannot be parsed again
      */
-    public function loadFromFile(string $filePath): \DOMDocument
+    public function copy(\DOMDocument $domDocument): \DOMDocument
     {
-        if ('' === $filePath) {
-            throw new XmlProcessingException('File path cannot be empty.');
-        }
+        return $this->parse($this->serializeDocument($domDocument), self::LOAD_FLAGS);
+    }
 
-        return $this->loadDomDocument(static fn (\DOMDocument $domDocument, int $flags = self::LOAD_FLAGS): bool => $domDocument->load($filePath, $flags));
+    /**
+     * @param \DOMDocument $domDocument the document to serialize
+     *
+     * @return non-empty-string the complete document as libxml writes it
+     *
+     * @throws XmlProcessingException If the document cannot be serialized
+     */
+    private function serializeDocument(\DOMDocument $domDocument): string
+    {
+        $xml = $domDocument->saveXML();
+
+        return false === $xml || '' === $xml ? throw new XmlProcessingException(self::LOAD_FAILURE) : $xml;
     }
 
     /**
@@ -189,29 +200,14 @@ final readonly class DomDocumentWrapper
             throw new XmlProcessingException('XML content cannot be empty.');
         }
 
-        return $this->loadDomDocument(
-            static fn (\DOMDocument $domDocument, int $flags = self::LOAD_FLAGS): bool => $domDocument->loadXML($content, $flags)
-        );
-    }
-
-    /**
-     * @param callable(\DOMDocument, int=): bool $loader A callback that loads the \DOMDocument (file or string) with
-     *                                                   the given libxml options
-     *
-     * @return \DOMDocument Returns the loaded \DOMDocument
-     *
-     * @throws XmlProcessingException If the \DOMDocument fails to load
-     */
-    private function loadDomDocument(callable $loader): \DOMDocument
-    {
-        $domDocument = $this->parse($loader);
-
-        if ($this->declaresAttributeDefaults($domDocument)) {
-            $domDocument = $this->parse(static fn (\DOMDocument $domDocument): bool => $loader($domDocument, self::LOAD_FLAGS | \LIBXML_DTDATTR));
-        }
-
+        $domDocument = $this->parse($content, self::LOAD_FLAGS);
         $this->assertBoundedEntityExpansion($domDocument);
         $this->expandEntityReferences($domDocument);
+
+        if ($this->declaresAttributeDefaults($domDocument)) {
+            $domDocument = $this->parse($this->serializeDocument($domDocument), self::LOAD_FLAGS | \LIBXML_DTDATTR);
+        }
+
         $domDocument = $this->resolveNamespaceEntityReferences($domDocument);
         $this->removeBlankTextNodes($domDocument);
         $this->collapseTextContentWhitespace($domDocument);
@@ -331,26 +327,23 @@ final readonly class DomDocumentWrapper
         $markup = (string) $domDocument->saveXML($domDocument->documentElement);
         $resolved = $this->resolveNamespaceEntities($markup, $entities);
 
-        return '' === $resolved || $resolved === $markup
-            ? $domDocument
-            : $this->parse(static fn (\DOMDocument $domDocument): bool => $domDocument->loadXML($resolved, self::LOAD_FLAGS));
+        return '' === $resolved || $resolved === $markup ? $domDocument : $this->parse($resolved, self::LOAD_FLAGS);
     }
 
     /**
-     * @param callable $loader A callback that loads the \DOMDocument (file or string)
+     * @param non-empty-string $content the XML to parse
+     * @param int              $flags   the libxml options
      *
      * @throws XmlProcessingException If the \DOMDocument fails to load
      */
-    private function parse(callable $loader): \DOMDocument
+    private function parse(string $content, int $flags): \DOMDocument
     {
         $domDocument = $this->createDomDocument();
         $previous = libxml_use_internal_errors(true);
 
         try {
-            $loaded = $loader($domDocument);
+            $loaded = $domDocument->loadXML($content, $flags);
             $failure = $this->loadFailure();
-        } catch (\ValueError $valueError) {
-            throw new XmlProcessingException(self::LOAD_FAILURE, 0, $valueError);
         } finally {
             libxml_clear_errors();
             libxml_use_internal_errors($previous);
@@ -371,13 +364,19 @@ final readonly class DomDocumentWrapper
      */
     private function loadFailure(): string
     {
-        foreach (libxml_get_errors() as $libXMLError) {
+        $libXMLErrors = libxml_get_errors();
+
+        foreach ($libXMLErrors as $libXMLError) {
             if (1 === preg_match(self::LIBXML_ENTITY_LIMIT_REGEX, $libXMLError->message)) {
                 return self::ENTITY_EXPANSION_FAILURE;
             }
         }
 
-        return self::LOAD_FAILURE;
+        if ([] === $libXMLErrors) {
+            return self::LOAD_FAILURE;
+        }
+
+        return \sprintf(self::LOAD_FAILURE_DETAIL, trim($libXMLErrors[0]->message), $libXMLErrors[0]->line, $libXMLErrors[0]->column);
     }
 
     private function createDomDocument(): \DOMDocument

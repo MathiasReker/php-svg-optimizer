@@ -66,7 +66,7 @@ final readonly class RemoveWidthHeightAttributes implements PassInterface
      */
     private function hasValidViewBox(\DOMElement $domElement): bool
     {
-        $values = $this->parseNumberList($domElement->getAttribute(SvgAttribute::ViewBox->value), false);
+        $values = $this->parseNumberList($domElement->getAttribute(SvgAttribute::ViewBox->value), true, false);
 
         return self::VIEW_BOX_LENGTH === \count($values) && $this->isPositiveNumber($values[2]) && $this->isPositiveNumber($values[3]);
     }

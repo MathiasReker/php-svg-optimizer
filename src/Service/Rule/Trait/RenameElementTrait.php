@@ -18,6 +18,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
  */
 trait RenameElementTrait
 {
+    use AttributeNodeTrait;
+
     /**
      * @param \DOMElement $domElement the element to replace
      * @param string      $localName  the new element name
@@ -26,9 +28,7 @@ trait RenameElementTrait
     {
         $replacement = $domDocument->createElementNS($domElement->namespaceURI, $localName);
 
-        foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
-            $replacement->setAttributeNS($domAttr->namespaceURI, $domAttr->nodeName, $domAttr->value);
-        }
+        $this->moveAttributeNodes($domElement, $replacement);
 
         while ($domElement->firstChild instanceof \DOMNode) {
             $replacement->appendChild($domElement->firstChild);

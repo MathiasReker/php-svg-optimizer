@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\InheritanceBoundaryTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PresentationAttributeCleanupTrait;
 
 /**
@@ -23,17 +24,10 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PresentationAttributeCleanup
  */
 final readonly class RemoveUselessStrokeAndFill implements PassInterface
 {
+    use InheritanceBoundaryTrait;
     use PresentationAttributeCleanupTrait;
 
     private const string NONE = 'none';
-
-    private const string UNKNOWN = '';
-
-    private const array INITIAL_VALUES = [
-        SvgAttribute::Fill->value => 'black',
-        SvgAttribute::Stroke->value => self::NONE,
-        SvgAttribute::StrokeWidth->value => '1',
-    ];
 
     private const array STROKE_DETAILS = [
         SvgAttribute::StrokeDasharray->value,
@@ -180,43 +174,18 @@ final readonly class RemoveUselessStrokeAndFill implements PassInterface
      */
     private function isDisabled(\DOMElement $domElement, string $property): bool
     {
-        $value = $this->effectiveValue($domElement, $property);
+        $value = $this->inheritedValue(
+            $domElement,
+            $property,
+            fn (\DOMElement $domElement): bool => $this->styleSetsProperty($domElement, $property),
+            $this->hasId(...),
+        );
 
         $disables = SvgAttribute::StrokeWidth->value === $property
             ? 1 === preg_match(self::ZERO_REGEX, $value)
             : self::NONE === $value;
 
         return $disables && !$this->isOverriddenBelow($domElement, $property);
-    }
-
-    /**
-     * @param \DOMElement $domElement the element to check
-     * @param string      $property   the inherited property
-     *
-     * @return string the trimmed value the element uses, or an empty string if it cannot be known
-     */
-    private function effectiveValue(\DOMElement $domElement, string $property): string
-    {
-        $node = $domElement;
-
-        while (!$this->styleSetsProperty($node, $property)) {
-            if ($node->hasAttribute($property)) {
-                return trim($node->getAttribute($property));
-            }
-
-            $parent = $node->parentNode;
-            if (!$parent instanceof \DOMElement) {
-                return self::INITIAL_VALUES[$property];
-            }
-
-            if ($this->hasId($node)) {
-                return self::UNKNOWN;
-            }
-
-            $node = $parent;
-        }
-
-        return self::UNKNOWN;
     }
 
     /**

@@ -57,7 +57,13 @@ final class FileProvider extends AbstractProvider
      */
     private function readInputFile(): string
     {
-        if (!file_exists($this->inputFile) || !is_file($this->inputFile)) {
+        $this->assertUsablePath($this->inputFile, 'Input');
+
+        if (is_dir($this->inputFile)) {
+            throw new IOException(\sprintf('Input path is a directory: %s', $this->inputFile));
+        }
+
+        if (!is_file($this->inputFile)) {
             throw new FileNotFoundException(\sprintf('Input file does not exist: %s', $this->inputFile));
         }
 

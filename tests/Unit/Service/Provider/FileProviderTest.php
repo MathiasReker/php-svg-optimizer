@@ -19,6 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\UnreadableFileStreamWrapper;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -57,6 +58,59 @@ final class FileProviderTest extends TestCase
         $this->expectExceptionMessage('Input file does not exist: nonexistent.svg');
 
         new FileProvider('nonexistent.svg');
+    }
+
+    /**
+     * @throws FileNotFoundException
+     */
+    #[DataProvider('provideConstructorRejectsAnUnusablePathCases')]
+    #[Test]
+    public function constructorRejectsAnUnusablePath(string $path, string $message): void
+    {
+        try {
+            new FileProvider($path);
+            self::fail('Expected an IOException.');
+        } catch (IOException $ioException) {
+            self::assertSame($message, $ioException->getMessage());
+        }
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideConstructorRejectsAnUnusablePathCases(): iterable
+    {
+        yield 'empty path' => ['', 'Input path is empty.'];
+
+        yield 'path with a null byte' => ["a\0b.svg", 'Input path contains a null byte: a\0b.svg'];
+
+        yield 'directory' => [__DIR__, 'Input path is a directory: ' . __DIR__];
+    }
+
+    /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    #[DataProvider('provideSaveToFileRejectsAnUnusablePathCases')]
+    #[Test]
+    public function saveToFileRejectsAnUnusablePath(string $path, string $message): void
+    {
+        $fileProvider = new FileProvider($this->inputFile);
+
+        $this->expectException(IOException::class);
+        $this->expectExceptionMessage($message);
+
+        $fileProvider->saveToFile($path);
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideSaveToFileRejectsAnUnusablePathCases(): iterable
+    {
+        yield 'empty path' => ['', 'Output path is empty.'];
+
+        yield 'path with a null byte' => ["out\0.svg", 'Output path contains a null byte: out\0.svg'];
     }
 
     /**
@@ -273,7 +327,7 @@ final class FileProviderTest extends TestCase
             $fileProvider->saveToFile($directory . '/');
             self::fail('Expected an IOException.');
         } catch (IOException $ioException) {
-            self::assertSame('Failed to write optimized content to the output file: ' . $directory . '/', $ioException->getMessage());
+            self::assertSame('Output path is a directory: ' . $directory . '/', $ioException->getMessage());
             self::assertDirectoryExists($directory);
         } finally {
             rmdir($directory);

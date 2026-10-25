@@ -155,7 +155,7 @@ final readonly class MinifyListValues implements PassInterface
         $minifiedParts = [];
 
         foreach ($parts as $part) {
-            $numbers = $this->parseNumberList($part, $compact);
+            $numbers = $this->parseNumberList($part, $compact, $compact);
 
             if (\count($numbers) < $minimumCount) {
                 return '';

@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AttributeNodeTrait;
 
 /**
  * @internal
@@ -21,11 +22,12 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
  */
 final readonly class SortAttributes implements PassInterface
 {
+    use AttributeNodeTrait;
+
     private const array ATTRIBUTE_ORDER = [
-        SvgAttribute::Xmlns->value,
         SvgAttribute::Id->value,
-        SvgAttribute::Height->value,
         SvgAttribute::Width->value,
+        SvgAttribute::Height->value,
     ];
 
     /**
@@ -34,10 +36,8 @@ final readonly class SortAttributes implements PassInterface
     #[\Override]
     public function apply(\DOMDocument $domDocument): void
     {
-        $domNodeList = $domDocument->getElementsByTagName('*');
-
-        foreach ($domNodeList as $element) {
-            $this->sortElementAttributes($element);
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            $this->sortElementAttributes($domNodeList);
         }
     }
 
@@ -46,61 +46,39 @@ final readonly class SortAttributes implements PassInterface
      */
     private function sortElementAttributes(\DOMElement $domElement): void
     {
-        $attributes = $this->extractAttributes($domElement);
-        $sortedAttributes = $this->sortAttributes($attributes);
+        /** @var list<\DOMAttr> $attributes */
+        $attributes = iterator_to_array($domElement->attributes, false);
+        $sortedAttributes = $attributes;
+        usort($sortedAttributes, $this->compareAttributes(...));
 
-        if ($sortedAttributes === $attributes) {
+        if ($sortedAttributes === $attributes || $this->sharesLocalName($attributes)) {
             return;
         }
 
-        foreach (array_keys($attributes) as $name) {
-            $domElement->removeAttribute($name);
-        }
-
-        foreach ($sortedAttributes as $name => $value) {
-            $domElement->setAttribute($name, $value);
+        foreach ($sortedAttributes as $sortedAttribute) {
+            $this->appendAttributeNode($domElement, $sortedAttribute);
         }
     }
 
     /**
-     * @param \DOMElement $domElement the element to extract attributes from
-     *
-     * @return array<string, string> a map of attribute names to their values
+     * @param \DOMAttr $first  an attribute
+     * @param \DOMAttr $second another attribute of the same element
      */
-    private function extractAttributes(\DOMElement $domElement): array
+    private function compareAttributes(\DOMAttr $first, \DOMAttr $second): int
     {
-        $attributes = [];
-
-        /** @var \DOMNamedNodeMap<\DOMAttr> $domAttributes */
-        $domAttributes = $domElement->attributes;
-
-        foreach ($domAttributes as $domAttribute) {
-            $attributes[$domAttribute->nodeName] = $domAttribute->value;
-        }
-
-        return $attributes;
+        return [$this->priority($first), $first->nodeName] <=> [$this->priority($second), $second->nodeName];
     }
 
     /**
-     * @param array<string, string> $attributes the attributes to sort
+     * @param \DOMAttr $domAttr the attribute to rank
      *
-     * @return array<string, string> the sorted attributes
+     * @return int the position of the attribute among the attributes written first, or the number of those attributes
+     *             for any other attribute
      */
-    private function sortAttributes(array $attributes): array
+    private function priority(\DOMAttr $domAttr): int
     {
-        $priorityAttributes = [];
-        $otherAttributes = [];
+        $position = array_search($domAttr->nodeName, self::ATTRIBUTE_ORDER, true);
 
-        foreach ($attributes as $name => $value) {
-            if (\in_array($name, self::ATTRIBUTE_ORDER, true)) {
-                $priorityAttributes[$name] = $value;
-            } else {
-                $otherAttributes[$name] = $value;
-            }
-        }
-
-        ksort($otherAttributes, \SORT_STRING);
-
-        return [...$priorityAttributes, ...$otherAttributes];
+        return false === $position ? \count(self::ATTRIBUTE_ORDER) : $position;
     }
 }

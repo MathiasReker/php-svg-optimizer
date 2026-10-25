@@ -13,14 +13,21 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessStrokeAndFill;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\InheritanceBoundaryTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PresentationAttributeCleanupTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +38,11 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(InheritanceBoundaryTrait::class)]
+#[CoversTrait(PresentationAttributeCleanupTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class RemoveUselessStrokeAndFillTest extends TestCase
 {
     /**
@@ -51,6 +63,65 @@ final class RemoveUselessStrokeAndFillTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Leaves documents with a style element untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><style>path{stroke:red}</style><path d="M0 0h1" stroke-width="2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><style>path{stroke:red}</style><path d="M0 0h1" stroke-width="2"/></svg>',
+        ];
+
+        yield 'Leaves documents with markers or explicit hit testing untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><path d="M0 0h1" stroke-width="2" marker-end="url(#m)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><path d="M0 0h1" stroke-width="2" marker-end="url(#m)"/></svg>',
+        ];
+
+        yield 'Leaves documents with a marker in an inline style untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><path d="M0 0h1" stroke-width="2" style="marker-start:url(#m)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><path d="M0 0h1" stroke-width="2" style="marker-start:url(#m)"/></svg>',
+        ];
+
+        yield 'Removes stroke details when an attribute value mentions markers' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><path d="M0 0h1" stroke-width="2" class="marker"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><path d="M0 0h1" class="marker"/></svg>',
+        ];
+
+        yield 'Keeps the stroke details of a use element and of the ancestors of one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><defs><path id="p" d="M0 0h1" stroke="red"/></defs><use href="#p" stroke-width="2"/><g stroke-width="2"><g><use href="#p"/></g></g><path d="M0 0h1" stroke-width="2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><defs><path id="p" d="M0 0h1" stroke="red"/></defs><use href="#p" stroke-width="2"/><g stroke-width="2"><g><use href="#p"/></g></g><path d="M0 0h1"/></svg>',
+        ];
+
+        yield 'Keeps every stroke detail when one of them is animated' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><path d="M0 0h1" stroke-width="2"><animate attributeName="stroke-opacity" to="0" dur="1s"/></path></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><path d="M0 0h1" stroke-width="2"><animate attributeName="stroke-opacity" to="0" dur="1s"/></path></svg>',
+        ];
+
+        yield 'Keeps stroke details below an element with an id, which a use element may give another stroke' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g id="g"><path d="M0 0h1" stroke-width="2"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g id="g"><path d="M0 0h1" stroke-width="2"/></g></svg>',
+        ];
+        yield 'Keeps stroke details that the page or a use element may enable, as no element of the document sets the stroke' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke-width="2" stroke-linejoin="bevel"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke-width="2" stroke-linejoin="bevel"/></svg>',
+        ];
+
+        yield 'Removes stroke details below a root element without stroke' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><path d="M0 0h1" stroke-width="2" stroke-linejoin="bevel"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><path d="M0 0h1"/></svg>',
+        ];
+
+        yield 'Removes fill details below a root element without fill' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" fill="none"><path d="M0 0h1" fill-rule="evenodd"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" fill="none"><path d="M0 0h1"/></svg>',
+        ];
+
+        yield 'Keeps fill details that the page may enable, as no element of the document sets the fill' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" fill-rule="evenodd"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" fill-rule="evenodd"/></svg>',
+        ];
+
+        yield 'Keeps stroke details below an element whose stroke depends on a custom property' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g stroke="var(--s)"><path d="M0 0h1" stroke-width="2"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g stroke="var(--s)"><path d="M0 0h1" stroke-width="2"/></g></svg>',
+        ];
+
         yield 'Removes stroke details from an element without stroke' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="5" stroke-dasharray="1 2" stroke-dashoffset="1" stroke-opacity=".5"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke="none"/></svg>',
@@ -58,7 +129,7 @@ final class RemoveUselessStrokeAndFillTest extends TestCase
 
         yield 'Keeps a stroke detail that the inline style also sets, so the style is not turned into an attribute later' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke-width="0" stroke-miterlimit="10" stroke-linecap="round" style="stroke-miterlimit:10.4"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke-miterlimit="10" style="stroke-miterlimit:10.4"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke-width="0" stroke-miterlimit="10" style="stroke-miterlimit:10.4"/></svg>',
         ];
 
         yield 'Removes stroke details from an element that inherits no stroke' => [
@@ -68,7 +139,7 @@ final class RemoveUselessStrokeAndFillTest extends TestCase
 
         yield 'Removes stroke details from an element that inherits the initial stroke' => [
             '<svg xmlns="http://www.w3.org/2000/svg" stroke-width="3"><path d="M0 0h1" stroke-width="2" stroke-linejoin="bevel"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke-width="3"><path d="M0 0h1" stroke-width="2" stroke-linejoin="bevel"/></svg>',
         ];
 
         yield 'Removes stroke details below a padded none' => [
@@ -123,7 +194,7 @@ final class RemoveUselessStrokeAndFillTest extends TestCase
 
         yield 'Removes stroke details when another property is set in a style' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g style="stroke-width:3"><path d="M0 0h1" stroke-width="2" style="stroke-linecap:round"/></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g style="stroke-width:3"><path d="M0 0h1" style="stroke-linecap:round"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="stroke-width:3"><path d="M0 0h1" stroke-width="2" style="stroke-linecap:round"/></g></svg>',
         ];
 
         yield 'Keeps stroke details of an element with an id that does not set the stroke' => [
@@ -198,7 +269,7 @@ final class RemoveUselessStrokeAndFillTest extends TestCase
 
         yield 'Removes stroke details but keeps fill details when the fill is set below' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd" stroke-width="2"><path d="M0 0h1" fill="red"/></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><path d="M0 0h1" fill="red"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd" stroke-width="2"><path d="M0 0h1" fill="red"/></g></svg>',
         ];
 
         yield 'Removes fill details but keeps stroke details when the stroke is set below' => [
@@ -213,12 +284,12 @@ final class RemoveUselessStrokeAndFillTest extends TestCase
 
         yield 'Removes details of a later element when an earlier one uses inherit' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke-width="inherit"/><path d="M0 0h1" stroke-width="2"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke-width="inherit"/><path d="M0 0h1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke-width="inherit"/><path d="M0 0h1" stroke-width="2"/></svg>',
         ];
 
         yield 'Keeps details of a use element and its ancestors' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="p" d="M0 0h1" stroke="red"/></defs><g stroke-width="2"><g><use xlink:href="#p"/></g></g><use xlink:href="#p" stroke-width="2"/><path d="M0 0h1" stroke-width="2"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="p" d="M0 0h1" stroke="red"/></defs><g stroke-width="2"><g><use xlink:href="#p"/></g></g><use xlink:href="#p" stroke-width="2"/><path d="M0 0h1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="p" d="M0 0h1" stroke="red"/></defs><g stroke-width="2"><g><use xlink:href="#p"/></g></g><use xlink:href="#p" stroke-width="2"/><path d="M0 0h1" stroke-width="2"/></svg>',
         ];
 
         yield 'Keeps everything when a marker is used' => [
@@ -243,7 +314,7 @@ final class RemoveUselessStrokeAndFillTest extends TestCase
 
         yield 'Removes details when other attributes mention markers or pointer events in their value' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke-width="2" class="marker pointer-events"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" class="marker pointer-events"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke-width="2" class="marker pointer-events"/></svg>',
         ];
 
         yield 'Keeps stroke details when a stroke property is animated' => [
@@ -268,7 +339,7 @@ final class RemoveUselessStrokeAndFillTest extends TestCase
 
         yield 'Keeps fill details when a fill property is animated' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke-width="2" fill="none" fill-rule="evenodd"><animate attributeName="fill-opacity" to="0" dur="1s"/></path></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" fill="none" fill-rule="evenodd"><animate attributeName="fill-opacity" to="0" dur="1s"/></path></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke-width="2" fill="none" fill-rule="evenodd"><animate attributeName="fill-opacity" to="0" dur="1s"/></path></svg>',
         ];
 
         yield 'Keeps fill details when the fill is animated by reference' => [
@@ -278,7 +349,7 @@ final class RemoveUselessStrokeAndFillTest extends TestCase
 
         yield 'Removes details from prefixed elements' => [
             '<svg:svg xmlns:svg="http://www.w3.org/2000/svg" fill="none"><svg:g stroke-width="2"><svg:path d="M0 0h1" fill-rule="evenodd"/></svg:g></svg:svg>',
-            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg" fill="none"><svg:g><svg:path d="M0 0h1"/></svg:g></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg" fill="none"><svg:g stroke-width="2"><svg:path d="M0 0h1"/></svg:g></svg:svg>',
         ];
 
         yield 'Keeps details of prefixed use elements and their ancestors' => [
@@ -288,7 +359,7 @@ final class RemoveUselessStrokeAndFillTest extends TestCase
 
         yield 'Removes details in documents without a namespace' => [
             '<svg><path d="M0 0h1" stroke-width="2"/></svg>',
-            '<svg><path d="M0 0h1"/></svg>',
+            '<svg><path d="M0 0h1" stroke-width="2"/></svg>',
         ];
 
         yield 'Keeps details of elements in foreign content' => [

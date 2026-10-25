@@ -13,14 +13,23 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyStyles;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssStyleElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\StyleSheetContextTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\StyleSheetTokenTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +40,13 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(CssStyleElementTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(StyleSheetContextTrait::class)]
+#[CoversTrait(StyleSheetTokenTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class MinifyStylesTest extends TestCase
 {
     /**
@@ -488,5 +504,39 @@ final class MinifyStylesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><style xmlns="http://www.w3.org/1999/xhtml"> a { } </style><svg><style> b { } </style></svg></foreignObject><x:style xmlns:x="urn:x"> c { } </x:style><style> d { } </style></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><style xmlns="http://www.w3.org/1999/xhtml"> a { } </style><svg><style> b { } </style></svg></foreignObject><x:style xmlns:x="urn:x"> c { } </x:style><style>d{}</style></svg>',
         ];
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function minifiesALargeStyleSheetInLinearTime(): void
+    {
+        $small = $this->secondsToMinify(2_000);
+        $large = $this->secondsToMinify(8_000);
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    private function secondsToMinify(int $rules): float
+    {
+        $css = implode("\n", array_map(static fn (int $i): string => '.c' . $i . ' { fill : red ; stroke : blue }', range(1, $rules)));
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg"><style>' . $css . '</style></svg>'));
+        $svgOptimizer->addPass(new MinifyStyles());
+
+        $start = hrtime(true);
+
+        $content = $svgOptimizer->optimize()->getContent();
+
+        self::assertStringContainsString('.c1{fill:red;stroke:blue}.c2{', $content);
+
+        return (hrtime(true) - $start) / 1e9;
     }
 }

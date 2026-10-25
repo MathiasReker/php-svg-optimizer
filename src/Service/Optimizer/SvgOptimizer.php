@@ -19,7 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Pass\RevertIfLargerPassInterface;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
@@ -32,8 +32,6 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
  */
 final class SvgOptimizer
 {
-    use XmlLoaderTrait;
-
     /** @var list<PassInterface> The passes added one by one */
     private array $passes = [];
 
@@ -53,6 +51,8 @@ final class SvgOptimizer
     /** @var SvgValidator The SVG validator */
     private readonly SvgValidator $svgValidator;
 
+    private readonly DomDocumentWrapper $domDocumentWrapper;
+
     /** @var bool True if the SVG content has been optimized, false otherwise */
     private bool $isOptimized = false;
 
@@ -65,6 +65,7 @@ final class SvgOptimizer
         private readonly SvgProviderInterface $svgProvider,
     ) {
         $this->svgValidator = new SvgValidator();
+        $this->domDocumentWrapper = new DomDocumentWrapper();
     }
 
     /**
@@ -167,7 +168,7 @@ final class SvgOptimizer
 
     /**
      * @return list<PassInterface> The added passes and the passes of the selected rules, each pass once, in execution
-     *                             order
+     *                             order; added passes without a position run last, in the order they were added
      */
     public function getPasses(): array
     {
@@ -224,8 +225,7 @@ final class SvgOptimizer
             throw new SvgValidationException('The file does not appear to be a valid SVG file.');
         }
 
-        $this->applyPasses($domDocument);
-        $this->domDocumentContent = $this->svgProvider->optimize($domDocument)->getOutputContent();
+        $this->domDocumentContent = $this->svgProvider->optimize($this->applyPasses($domDocument))->getOutputContent();
 
         $this->isOptimized = true;
 
@@ -253,9 +253,11 @@ final class SvgOptimizer
     /**
      * @param \DOMDocument $domDocument The \DOMDocument instance representing the SVG file to be optimized
      *
+     * @return \DOMDocument the optimized document, which is a snapshot taken before a pass whose result was reverted
+     *
      * @throws XmlProcessingException
      */
-    private function applyPasses(\DOMDocument $domDocument): void
+    private function applyPasses(\DOMDocument $domDocument): \DOMDocument
     {
         foreach ($this->getPasses() as $pass) {
             if (!$pass instanceof RevertIfLargerPassInterface) {
@@ -264,22 +266,16 @@ final class SvgOptimizer
                 continue;
             }
 
-            $contentBeforePass = $this->svgProvider->serialize($domDocument);
+            $snapshot = $this->domDocumentWrapper->copy($domDocument);
+            $sizeBeforePass = mb_strlen($this->svgProvider->serialize($domDocument), '8bit');
             $pass->apply($domDocument);
-            $this->revertIfLarger($domDocument, $contentBeforePass);
-        }
-    }
 
-    /**
-     * @throws XmlProcessingException
-     */
-    private function revertIfLarger(\DOMDocument $domDocument, string $contentBeforePass): void
-    {
-        $newContent = $this->svgProvider->serialize($domDocument);
-
-        if ('' !== $contentBeforePass && mb_strlen($newContent, '8bit') > mb_strlen($contentBeforePass, '8bit')) {
-            $this->loadXmlSilently($domDocument, $contentBeforePass);
+            if (mb_strlen($this->svgProvider->serialize($domDocument), '8bit') > $sizeBeforePass) {
+                $domDocument = $snapshot;
+            }
         }
+
+        return $domDocument;
     }
 
     /**

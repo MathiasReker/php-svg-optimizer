@@ -41,7 +41,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyListValues;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyNumericValues;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyPathData;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
@@ -95,7 +94,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MinifyListValues::class)]
 #[CoversClass(MinifyNumericValues::class)]
 #[CoversClass(MinifyPathData::class)]
-#[CoversClass(MinifySvgCoordinates::class)]
 #[CoversClass(MinifyTransformations::class)]
 #[CoversClass(RemoveComments::class)]
 #[CoversClass(RemoveDefaultAttributes::class)]

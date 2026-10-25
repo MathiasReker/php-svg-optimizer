@@ -203,7 +203,7 @@ final readonly class ConvertShapesToPath implements RevertIfLargerPassInterface
      */
     private function pointsSegments(\DOMElement $domElement, bool $close): array
     {
-        $coordinates = $this->parseNumberList($domElement->getAttribute(SvgAttribute::Points->value), false);
+        $coordinates = $this->parseNumberList($domElement->getAttribute(SvgAttribute::Points->value), true, true);
 
         if ([] === $coordinates || 0 !== \count($coordinates) % 2) {
             return [];

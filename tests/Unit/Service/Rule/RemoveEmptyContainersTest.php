@@ -13,14 +13,23 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyContainers;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EmptyElementRemovalTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +40,13 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(DocumentScriptTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(EmptyElementRemovalTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[CoversTrait(TagMatcherTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class RemoveEmptyContainersTest extends TestCase
 {
     /**
@@ -58,6 +74,15 @@ final class RemoveEmptyContainersTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps empty containers in a document with a script, which may fill or query them' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><g/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><g/></svg>',
+        ];
+
+        yield 'Keeps empty containers in a document with an event handler on another element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g/><rect width="5" height="5" onclick="a()"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g/><rect width="5" height="5" onclick="a()"/></svg>',
+        ];
         yield 'Keeps an empty group exposed to assistive technology' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g role="img" aria-label="Chart"/><g/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><g role="img" aria-label="Chart"/></svg>',

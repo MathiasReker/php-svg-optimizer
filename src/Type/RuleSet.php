@@ -86,7 +86,6 @@ enum RuleSet: string
             self::Minification => [
                 Rule::MinifyStyles,
                 Rule::MinifyNumericValues,
-                Rule::MinifySvgCoordinates,
                 Rule::MinifyTransformations,
                 Rule::MinifyPathData,
                 Rule::RemoveUnnecessaryWhitespace,

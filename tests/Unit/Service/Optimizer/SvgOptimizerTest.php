@@ -16,15 +16,112 @@ use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Pass\RevertIfLargerPassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEllipseToCircle;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertOneStopGradients;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertShapesToPath;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgElementAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\FixAttributeNames;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MergeDuplicateGradients;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MergeStyles;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MigrateToSvg2;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyListValues;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyNumericValues;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyPathData;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyStyles;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MoveCommonAttributesToGroup;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\MoveGroupAttributesToElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveAriaAndRole;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDataAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDescriptions;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDuplicateElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyContainers;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveForeignContent;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveHiddenElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonInheritableGroupAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardTags;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveScripts;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveStyleTypeAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitles;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeMarkup;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeUrls;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedDefinitions;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedTextAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUseBombs;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessDefs;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessStrokeAndFill;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveXmlSpaceDefault;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveZeroSizeShapes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\SanitizeStyleSheets;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\SortDefsChildren;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AttributeNodeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CanonicalNameTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ClassAttributeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssStyleElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DangerousAttributeValueTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DefinitionElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementListTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementRemovalTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EmptyElementRemovalTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\FragmentTargetTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\GradientLinkTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdRenameTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\InheritanceBoundaryTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ParentValueTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PathDataParserTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PathDataSerializerTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PathDataTokenTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PresentationAttributeCleanupTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RemoveElementsByTagNameTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RenameElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\StyleSheetContextTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\StyleSheetTokenTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2AttributeMigrationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2ElementMigrationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2TinyMigrationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2XlinkMigrationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TransformListTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\UnsafeAttributeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\UseBombTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
@@ -32,6 +129,8 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -45,6 +144,108 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(Rule::class)]
 #[CoversClass(RuleSet::class)]
+#[UsesClass(AbstractProvider::class)]
+#[UsesClass(ConvertColorsToHex::class)]
+#[UsesClass(ConvertCssClassesToAttributes::class)]
+#[UsesClass(ConvertEllipseToCircle::class)]
+#[UsesClass(ConvertInlineStylesToAttributes::class)]
+#[UsesClass(ConvertOneStopGradients::class)]
+#[UsesClass(ConvertShapesToPath::class)]
+#[UsesClass(ExecutionOrder::class)]
+#[UsesClass(FixAttributeNames::class)]
+#[UsesClass(FlattenGroups::class)]
+#[UsesClass(MergeDuplicateGradients::class)]
+#[UsesClass(MergeStyles::class)]
+#[UsesClass(MigrateToSvg2::class)]
+#[UsesClass(MinifyListValues::class)]
+#[UsesClass(MinifyNumericValues::class)]
+#[UsesClass(MinifyPathData::class)]
+#[UsesClass(MinifyStyles::class)]
+#[UsesClass(MinifyTransformations::class)]
+#[UsesClass(MoveCommonAttributesToGroup::class)]
+#[UsesClass(MoveGroupAttributesToElements::class)]
+#[UsesClass(RemoveAriaAndRole::class)]
+#[UsesClass(RemoveComments::class)]
+#[UsesClass(RemoveDataAttributes::class)]
+#[UsesClass(RemoveDefaultAttributes::class)]
+#[UsesClass(RemoveDeprecatedAttributes::class)]
+#[UsesClass(RemoveDescriptions::class)]
+#[UsesClass(RemoveDuplicateElements::class)]
+#[UsesClass(RemoveEmptyAttributes::class)]
+#[UsesClass(RemoveEmptyContainers::class)]
+#[UsesClass(RemoveEmptyTextElements::class)]
+#[UsesClass(RemoveEnableBackgroundAttribute::class)]
+#[UsesClass(RemoveForeignContent::class)]
+#[UsesClass(RemoveHiddenElements::class)]
+#[UsesClass(RemoveInkscapeFootprints::class)]
+#[UsesClass(RemoveInvisibleCharacters::class)]
+#[UsesClass(RemoveMetadata::class)]
+#[UsesClass(RemoveNonInheritableGroupAttributes::class)]
+#[UsesClass(RemoveNonStandardAttributes::class)]
+#[UsesClass(RemoveNonStandardTags::class)]
+#[UsesClass(RemoveScripts::class)]
+#[UsesClass(RemoveStyleTypeAttributes::class)]
+#[UsesClass(RemoveTitles::class)]
+#[UsesClass(RemoveUnnecessaryWhitespace::class)]
+#[UsesClass(RemoveUnsafeMarkup::class)]
+#[UsesClass(RemoveUnsafeUrls::class)]
+#[UsesClass(RemoveUnusedDefinitions::class)]
+#[UsesClass(RemoveUnusedIds::class)]
+#[UsesClass(RemoveUnusedNamespaces::class)]
+#[UsesClass(RemoveUnusedTextAttributes::class)]
+#[UsesClass(RemoveUseBombs::class)]
+#[UsesClass(RemoveUselessDefs::class)]
+#[UsesClass(RemoveUselessStrokeAndFill::class)]
+#[UsesClass(RemoveWidthHeightAttributes::class)]
+#[UsesClass(RemoveXmlSpaceDefault::class)]
+#[UsesClass(RemoveZeroSizeShapes::class)]
+#[UsesClass(SanitizeStyleSheets::class)]
+#[UsesClass(ScopeSvgStyles::class)]
+#[UsesClass(SortAttributes::class)]
+#[UsesClass(SortDefsChildren::class)]
+#[UsesClass(StringProvider::class)]
+#[UsesClass(SvgAttribute::class)]
+#[UsesClass(SvgElementAttributes::class)]
+#[UsesClass(SvgNamespace::class)]
+#[UsesClass(SvgTag::class)]
+#[UsesTrait(AsciiCaseTrait::class)]
+#[UsesTrait(AttributeNodeTrait::class)]
+#[UsesTrait(CanonicalNameTrait::class)]
+#[UsesTrait(ClassAttributeTrait::class)]
+#[UsesTrait(CssDeclarationTrait::class)]
+#[UsesTrait(CssStyleElementTrait::class)]
+#[UsesTrait(DangerousAttributeValueTrait::class)]
+#[UsesTrait(DefinitionElementTrait::class)]
+#[UsesTrait(DocumentScriptTrait::class)]
+#[UsesTrait(ElementListTrait::class)]
+#[UsesTrait(ElementRemovalTrait::class)]
+#[UsesTrait(ElementTrait::class)]
+#[UsesTrait(EmptyElementRemovalTrait::class)]
+#[UsesTrait(FragmentTargetTrait::class)]
+#[UsesTrait(GradientLinkTrait::class)]
+#[UsesTrait(IdReferenceTrait::class)]
+#[UsesTrait(IdRenameTrait::class)]
+#[UsesTrait(InheritanceBoundaryTrait::class)]
+#[UsesTrait(NumberFormatterTrait::class)]
+#[UsesTrait(NumberListTrait::class)]
+#[UsesTrait(ParentValueTrait::class)]
+#[UsesTrait(PathDataParserTrait::class)]
+#[UsesTrait(PathDataSerializerTrait::class)]
+#[UsesTrait(PathDataTokenTrait::class)]
+#[UsesTrait(PresentationAttributeCleanupTrait::class)]
+#[UsesTrait(RemoveElementsByTagNameTrait::class)]
+#[UsesTrait(RenameElementTrait::class)]
+#[UsesTrait(StyleSheetContextTrait::class)]
+#[UsesTrait(StyleSheetTokenTrait::class)]
+#[UsesTrait(Svg2AttributeMigrationTrait::class)]
+#[UsesTrait(Svg2ElementMigrationTrait::class)]
+#[UsesTrait(Svg2TinyMigrationTrait::class)]
+#[UsesTrait(Svg2XlinkMigrationTrait::class)]
+#[UsesTrait(SvgElementTrait::class)]
+#[UsesTrait(TagMatcherTrait::class)]
+#[UsesTrait(TransformListTrait::class)]
+#[UsesTrait(UnsafeAttributeTrait::class)]
+#[UsesTrait(UseBombTrait::class)]
 final class SvgOptimizerTest extends TestCase
 {
     private SvgProviderInterface $svgProvider;
@@ -323,7 +524,7 @@ final class SvgOptimizerTest extends TestCase
 
         yield 'minifyNumericValues minifies numbers and number lists' => [Rule::MinifyNumericValues, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1.50" height="1"/><polygon points="0, 0, 1, 1"/></svg>', '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1.5" height="1"/><polygon points="0 0 1 1"/></svg>'];
 
-        yield 'removeDefaultAttributes removes defaults and xml:space="default"' => [Rule::RemoveDefaultAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" stroke-linejoin="miter"/><text xml:space="default">a</text></svg>', '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/><text>a</text></svg>'];
+        yield 'removeDefaultAttributes removes defaults and xml:space="default"' => [Rule::RemoveDefaultAttributes, '<svg xmlns="http://www.w3.org/2000/svg" stroke-linejoin="miter"><rect width="1" height="1" stroke-linejoin="miter"/><text xml:space="default">a</text></svg>', '<svg xmlns="http://www.w3.org/2000/svg" stroke-linejoin="miter"><rect width="1" height="1"/><text>a</text></svg>'];
 
         yield 'removeDefaultAttributes removes default style types' => [Rule::RemoveDefaultAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><style type="text/css">rect{fill:red}</style><rect width="1" height="1"/></svg>', '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}</style><rect width="1" height="1"/></svg>'];
 
@@ -331,7 +532,7 @@ final class SvgOptimizerTest extends TestCase
 
         yield 'removeHiddenElements removes hidden elements and zero-size shapes' => [Rule::RemoveHiddenElements, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" display="none"/><rect width="0" height="1"/><rect width="2" height="2"/></svg>', '<svg xmlns="http://www.w3.org/2000/svg"><rect width="2" height="2"/></svg>'];
 
-        yield 'removeIneffectiveAttributes removes useless strokes, non-inheritable group attributes and unused text attributes' => [Rule::RemoveIneffectiveAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" stroke-width="2"/><g x="1"><rect width="1" height="1"/></g><rect width="1" height="1" font-size="12"/></svg>', '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/><g><rect width="1" height="1"/></g><rect width="1" height="1"/></svg>'];
+        yield 'removeIneffectiveAttributes removes useless strokes, non-inheritable group attributes and unused text attributes' => [Rule::RemoveIneffectiveAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" stroke="none" stroke-width="2"/><g x="1"><rect width="1" height="1"/></g><rect width="1" height="1" font-size="12"/></svg>', '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" stroke="none"/><g><rect width="1" height="1"/></g><rect width="1" height="1"/></svg>'];
     }
 
     #[Test]
@@ -354,13 +555,13 @@ final class SvgOptimizerTest extends TestCase
     #[Test]
     public function enableRulesRunsPassesInExecutionOrderWhateverTheOrderTheyAreEnabledIn(): void
     {
-        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg"><rect style="stroke-width:1"/></svg>'));
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg" stroke-width="1"><rect style="stroke-width:1"/></svg>'));
 
         $svgOptimizer->enableRules(Rule::RemoveDefaultAttributes);
         $svgOptimizer->enableRules(Rule::ConvertInlineStylesToAttributes);
         $svgOptimizer->optimize();
 
-        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>', $svgOptimizer->getContent());
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg" stroke-width="1"><rect/></svg>', $svgOptimizer->getContent());
     }
 
     /**
@@ -496,6 +697,155 @@ final class SvgOptimizerTest extends TestCase
         $svgOptimizer->optimize();
 
         self::assertSame($originalContent, $svgOptimizer->getContent());
+    }
+
+    /**
+     * @param list<Rule> $rules
+     *
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideLaterPassesAcceptWhatEarlierMinifiersWriteCases')]
+    #[Test]
+    public function laterPassesAcceptWhatEarlierMinifiersWrite(array $rules, string $content, string $expected): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($content));
+        $svgOptimizer->enableRules(...$rules);
+
+        self::assertSame($expected, $svgOptimizer->optimize()->getContent());
+    }
+
+    /**
+     * @return iterable<string, array{list<Rule>, string, string}>
+     */
+    public static function provideLaterPassesAcceptWhatEarlierMinifiersWriteCases(): iterable
+    {
+        yield 'shapes become paths after their points are minified' => [
+            [Rule::MinifyNumericValues, Rule::ConvertShapesToPath],
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="0 0 10 -10 0.5 0.5" stroke="red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path stroke="red" d="M0 0 10-10 .5.5"/></svg>',
+        ];
+
+        yield 'groups with a minified transform are flattened' => [
+            [Rule::FlattenGroups],
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10-10)"><rect width="1" height="1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" transform="translate(10-10)"/></svg>',
+        ];
+
+        yield 'a minified group transform moves to the children' => [
+            [Rule::MoveGroupAttributesToElements],
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(.5.5)"><rect width="1" height="1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><rect width="1" height="1" transform="translate(.5.5)"/></g></svg>',
+        ];
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function revertingAPassRestoresTheDocumentAsLoaded(): void
+    {
+        $content = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE svg [<!ATTLIST rect fill CDATA \"red\">]>\n<svg xmlns=\"http://www.w3.org/2000/svg\"><text>\xE9 <tspan>a</tspan>\n<tspan>b</tspan></text><rect/></svg>";
+
+        self::assertSame($this->documentSeenAfter($content, false), $this->documentSeenAfter($content, true));
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideAllRulesGiveTheSameResultWhenPrefixingDropsRulesCases')]
+    #[Test]
+    public function allRulesGiveTheSameResultWhenPrefixingDropsRules(string $content): void
+    {
+        $once = (new SvgOptimizer(new StringProvider($content)))->enableAllRules()->allowRisky()->optimize()->getContent();
+        $twice = (new SvgOptimizer(new StringProvider($once)))->enableAllRules()->allowRisky()->optimize()->getContent();
+
+        self::assertSame($once, $twice);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideAllRulesGiveTheSameResultWhenPrefixingDropsRulesCases(): iterable
+    {
+        yield 'a dropped rule that blocked a class conversion' => ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><style>.a{stroke:red}[stroke]+path{stroke:purple}</style><path class="a" d="M10 10h20" stroke="red"/><path d="M10 20h20"/></svg>'];
+
+        yield 'a dropped rule that selected deprecated attributes' => ['<svg version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><style>svg[version="1.1"]{fill:blue}rect[clip]{fill:green}</style><rect x="10" y="10" width="80" height="80" clip="1"/></svg>'];
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function revertingAPassKeepsXmlAttributesAfterAnElementWasCloned(): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg"><text xml:space="preserve">a  b</text></svg>'));
+        $svgOptimizer->addPass(new class implements PassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
+            {
+                $domDocument->getElementsByTagName('text')->item(0)?->cloneNode(false);
+            }
+        });
+        $svgOptimizer->addPass(new class implements RevertIfLargerPassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
+            {
+                $domDocument->documentElement?->setAttribute('data-grow', 'x');
+            }
+        });
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><text xml:space="preserve">a  b</text></svg>', $svgOptimizer->optimize()->getContent());
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    private function documentSeenAfter(string $content, bool $grow): string
+    {
+        $arrayObject = new \ArrayObject();
+        $recorder = new /**
+         * @no-named-arguments
+         */
+        readonly class($arrayObject) implements PassInterface {
+            /**
+             * @param \ArrayObject<int, string> $arrayObject
+             */
+            public function __construct(
+                private \ArrayObject $arrayObject,
+            ) {}
+
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
+            {
+                $this->arrayObject->append((string) $domDocument->saveXML());
+            }
+        };
+        $svgOptimizer = new SvgOptimizer(new StringProvider($content));
+
+        if ($grow) {
+            $svgOptimizer->addPass(new class implements RevertIfLargerPassInterface {
+                #[\Override]
+                public function apply(\DOMDocument $domDocument): void
+                {
+                    $domDocument->documentElement?->setAttribute('data-grow', str_repeat('x', 50));
+                }
+            });
+        }
+
+        $svgOptimizer->addPass($recorder);
+        $svgOptimizer->optimize();
+
+        return implode('', $arrayObject->getArrayCopy());
     }
 
     /**

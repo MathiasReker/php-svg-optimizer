@@ -13,16 +13,26 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SanitizeStyleSheets;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssStyleElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DangerousAttributeValueTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementListTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\StyleSheetSanitizerTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\StyleSheetTokenTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\UnsafeAttributeTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -37,6 +47,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(SvgAttribute::class)]
 #[CoversClass(SvgTag::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(CssStyleElementTrait::class)]
+#[CoversTrait(DangerousAttributeValueTrait::class)]
+#[CoversTrait(ElementListTrait::class)]
+#[CoversTrait(StyleSheetSanitizerTrait::class)]
+#[CoversTrait(StyleSheetTokenTrait::class)]
+#[CoversTrait(UnsafeAttributeTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class SanitizeStyleSheetsTest extends TestCase
 {
     /**

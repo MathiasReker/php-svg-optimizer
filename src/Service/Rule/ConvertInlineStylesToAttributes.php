@@ -64,12 +64,59 @@ final readonly class ConvertInlineStylesToAttributes implements PassInterface
             return;
         }
 
-        $remaining = $this->processDeclarations($domElement, $style);
+        [$attributes, $remaining] = $this->processDeclarations($domElement, $style);
+
+        if ($this->convertedLength($domElement, $attributes, $remaining) <= $this->attributeLength(SvgAttribute::Style->value, $style)) {
+            $this->convertDeclarations($domElement, $attributes, $remaining);
+        }
+    }
+
+    /**
+     * @param \DOMElement           $domElement the element to change
+     * @param array<string, string> $attributes the presentation attributes to set, by name
+     * @param list<string>          $remaining  the declarations that stay in the style attribute
+     *
+     * @return int the number of bytes that the converted attributes, the remaining style and any attribute they replace
+     *             add to the markup of the element
+     */
+    private function convertedLength(\DOMElement $domElement, array $attributes, array $remaining): int
+    {
+        $length = [] === $remaining ? 0 : $this->attributeLength(SvgAttribute::Style->value, implode(';', $remaining));
+
+        foreach ($attributes as $name => $value) {
+            $length += $this->attributeLength($name, $value)
+                - ($domElement->hasAttribute($name) ? $this->attributeLength($name, $domElement->getAttribute($name)) : 0);
+        }
+
+        return $length;
+    }
+
+    /**
+     * @param string $name  the attribute name
+     * @param string $value the attribute value
+     *
+     * @return int the number of bytes of the attribute in the markup
+     */
+    private function attributeLength(string $name, string $value): int
+    {
+        return mb_strlen(' ' . $name . '="' . htmlspecialchars($value, \ENT_XML1 | \ENT_COMPAT) . '"', '8bit');
+    }
+
+    /**
+     * @param \DOMElement           $domElement the element to change
+     * @param array<string, string> $attributes the presentation attributes to set, by name
+     * @param list<string>          $remaining  the declarations that stay in the style attribute
+     */
+    private function convertDeclarations(\DOMElement $domElement, array $attributes, array $remaining): void
+    {
+        foreach ($attributes as $name => $value) {
+            $domElement->setAttribute($name, $value);
+        }
 
         if ([] === $remaining) {
             $domElement->removeAttribute(SvgAttribute::Style->value);
         } else {
-            $domElement->setAttribute(SvgAttribute::Style->value, implode('; ', $remaining));
+            $domElement->setAttribute(SvgAttribute::Style->value, implode(';', $remaining));
         }
     }
 
@@ -89,19 +136,21 @@ final readonly class ConvertInlineStylesToAttributes implements PassInterface
     /**
      * @param string $style a style attribute value that can be split safely
      *
-     * @return list<string> the declarations that stay in the style attribute
+     * @return array{array<string, string>, list<string>} the presentation attributes the declarations become, by name,
+     *                                                    and the declarations that stay in the style attribute
      */
     private function processDeclarations(\DOMElement $domElement, string $style): array
     {
         $pinned = $this->pinnedCssProperties($style, '', ';' . implode(':;', $this->cssPropertyNames($style)) . ':')
             + $this->differentlySetProperties($style, [$domElement]);
+        $attributes = [];
         $remaining = [];
 
         foreach ($this->parseDeclarations($style) as [$prop, $value]) {
             $propLower = $this->asciiLowercase($prop);
 
             if (!\array_key_exists($propLower, $pinned) && $this->isConvertibleProperty($propLower)) {
-                $domElement->setAttribute($propLower, $value);
+                $attributes[$propLower] = $value;
 
                 continue;
             }
@@ -109,7 +158,7 @@ final readonly class ConvertInlineStylesToAttributes implements PassInterface
             $remaining[] = $prop . ':' . $value;
         }
 
-        return $remaining;
+        return [$attributes, $remaining];
     }
 
     /**

@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+
 /**
  * @internal
  *
@@ -28,9 +30,17 @@ trait PresentationAttributeCleanupTrait
     private function svgElements(\DOMDocument $domDocument): array
     {
         $elements = [];
+        $foreignObjectScope = [];
 
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
-            if (!$this->isForeignContent($domNodeList)) {
+            $parent = $domNodeList->parentNode;
+            $inForeignObject = $parent instanceof \DOMElement && \array_key_exists(spl_object_id($parent), $foreignObjectScope);
+
+            if ($inForeignObject || SvgTag::ForeignObject->value === $domNodeList->localName) {
+                $foreignObjectScope[spl_object_id($domNodeList)] = $domNodeList;
+            }
+
+            if (!$inForeignObject && $this->isSvgElement($domNodeList)) {
                 $elements[] = $domNodeList;
             }
         }

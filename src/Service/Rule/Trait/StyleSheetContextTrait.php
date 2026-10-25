@@ -160,18 +160,13 @@ trait StyleSheetContextTrait
     private function endsAsDeclaration(array $tokens, int $index): bool
     {
         $depth = 0;
-        $end = '';
+        $position = $index;
 
-        foreach (\array_slice($tokens, $index) as $token) {
-            if (0 === $depth && \in_array($token[1], self::STATEMENT_ENDS, true)) {
-                $end = $token[1];
-
-                break;
-            }
-
-            $depth += $this->bracketDepthChange($token);
+        while (\array_key_exists($position, $tokens) && (0 !== $depth || !\in_array($tokens[$position][1], self::STATEMENT_ENDS, true))) {
+            $depth += $this->bracketDepthChange($tokens[$position]);
+            ++$position;
         }
 
-        return self::BLOCK_START !== $end;
+        return self::BLOCK_START !== ($tokens[$position][1] ?? '');
     }
 }

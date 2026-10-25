@@ -13,15 +13,22 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -33,6 +40,11 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(SvgInlineStyleProperty::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(CssDeclarationTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class ConvertInlineStylesToAttributesTest extends TestCase
 {
     /**
@@ -56,6 +68,20 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps a style whose conversion would be one byte longer' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red; foo:1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red; foo:1"/></svg>',
+        ];
+
+        yield 'Keeps a longhand inline that an earlier shorthand of it overrides' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0" style="marker: url(#m) ;  marker-start: none"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0" style="marker:url(#m);marker-start:none"/></svg>',
+        ];
+
+        yield 'Keeps a shorthand inline when a later longhand of it stays inline' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><svg style="overflow: visible ;  overflow-x: hidden"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><svg style="overflow:visible;overflow-x:hidden"/></svg>',
+        ];
         yield 'Leaves the document untouched with a linked style sheet' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/></foreignObject><rect style="fill:red"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/></foreignObject><rect style="fill:red"/></svg>',
@@ -146,7 +172,7 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect style="123abc:#f00" fill="#0f0"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><rect style="123abc:#f00;fill:#0f0"/></svg>
                 XML,
         ];
 
@@ -168,13 +194,28 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect fill="#000" style="fill:#f00" stroke="#0f0"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><rect fill="#000" style="fill:#f00;stroke:#0f0"/></svg>
                 XML,
+        ];
+
+        yield 'Converts part of a style when the result is shorter, writing the rest without spaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill: red; foo: 1; bar: 2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="foo:1;bar:2" fill="red"/></svg>',
+        ];
+
+        yield 'Keeps a style whose conversion would be longer' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;foo:1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;foo:1"/></svg>',
+        ];
+
+        yield 'Converts a style when the result has the same length' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;  foo:1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="foo:1" fill="red"/></svg>',
         ];
 
         yield 'Keeps important declarations' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:green!important;stroke:red"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:green!important" stroke="red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:green!important;stroke:red"/></svg>',
         ];
 
         yield 'Keeps inline styles when a style element exists' => [
@@ -184,37 +225,37 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
 
         yield 'Keeps repeated declarations, as an invalid later one falls back to the earlier one' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;fill:foo(1)"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red; fill:foo(1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;fill:foo(1)"/></svg>',
         ];
 
         yield 'Keeps repeated declarations in any case' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;FILL:green;stroke:blue"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red; FILL:green" stroke="blue"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;FILL:green;stroke:blue"/></svg>',
         ];
 
         yield 'Keeps a longhand that a later shorthand overrides' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0" style="marker:url(#m);marker-start:none"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0" style="marker:url(#m); marker-start:none"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0" style="marker:url(#m);marker-start:none"/></svg>',
         ];
 
         yield 'Keeps a shorthand when a longhand of it stays inline' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><svg style="overflow-x:hidden;overflow:visible"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><svg style="overflow-x:hidden; overflow:visible"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><svg style="overflow-x:hidden;overflow:visible"/></svg>',
         ];
 
         yield 'Keeps a mask shorthand when a mask longhand stays inline' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect style="mask-image:url(#a);mask:none;fill:red"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="mask-image:url(#a); mask:none" fill="red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="mask-image:url(#a);mask:none;fill:red"/></svg>',
         ];
 
         yield 'Keeps declarations next to a reset of all properties' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect style="all:initial;fill:red"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="all:initial; fill:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="all:initial;fill:red"/></svg>',
         ];
 
         yield 'Converts a property whose value mentions a shorthand' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect style="font-family:all;fill:red"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="font-family:all" fill="red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="font-family:all;fill:red"/></svg>',
         ];
 
         yield 'Leaves a style with a comment untouched' => [
@@ -229,7 +270,7 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
 
         yield 'Keeps the case of custom property names' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect style="--Main:red;fill:var(--Main)"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="--Main:red" fill="var(--Main)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="--Main:red;fill:var(--Main)"/></svg>',
         ];
 
         yield 'Converts styles in a prefixed SVG document' => [
@@ -254,12 +295,12 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
 
         yield 'Keeps ampersands and unicode in values' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:\'a&amp;b\';fill:url( &quot;#ü&quot; )">x</text></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:\'a&amp;b\'" fill="url( &quot;#ü&quot; )">x</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:\'a&amp;b\';fill:url( &quot;#ü&quot; )">x</text></svg>',
         ];
 
         yield 'Keeps important declarations in any spelling' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red ! IMPORTANT;stroke:blue"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red ! IMPORTANT" stroke="blue"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red ! IMPORTANT;stroke:blue"/></svg>',
         ];
 
         yield 'Converts mixed-case property names' => [
@@ -387,7 +428,7 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect style="invalid-prop:1; another-invalid:2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><rect style="invalid-prop:1;another-invalid:2"/></svg>
                 XML,
         ];
 
@@ -425,12 +466,12 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
 
         yield 'Keeps a semicolon inside a string as part of the value' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:&quot;a;b&quot;;fill:red"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:&quot;a;b&quot;" fill="red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:&quot;a;b&quot;;fill:red"/></svg>',
         ];
 
         yield 'Keeps an escaped semicolon as part of the value' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect style="background:a\;b;fill:red"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="background:a\;b" fill="red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="background:a\;b;fill:red"/></svg>',
         ];
 
         yield 'Keeps a semicolon inside nested parentheses as part of the value' => [
@@ -455,7 +496,7 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
 
         yield 'Keeps a longhand that the last declaration overrides as a shorthand' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path style="marker-end:url(#a);marker:url(#b)"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path style="marker-end:url(#a); marker:url(#b)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path style="marker-end:url(#a);marker:url(#b)"/></svg>',
         ];
     }
 }

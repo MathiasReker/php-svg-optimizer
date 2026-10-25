@@ -16,10 +16,16 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertShapesToPath;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyListValues;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyNumericValues;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyPathData;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AttributeNodeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RenameElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -32,8 +38,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MinifyListValues::class)]
 #[CoversClass(MinifyNumericValues::class)]
 #[CoversClass(MinifyPathData::class)]
-#[CoversClass(MinifySvgCoordinates::class)]
 #[CoversClass(MinifyTransformations::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(AttributeNodeTrait::class)]
+#[CoversTrait(DocumentScriptTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(NumberFormatterTrait::class)]
+#[CoversTrait(RenameElementTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
 final class NumberFormatterTraitTest extends TestCase
 {
     use NumberFormatterTrait;

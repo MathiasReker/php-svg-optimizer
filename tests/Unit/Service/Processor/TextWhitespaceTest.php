@@ -13,13 +13,19 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\TextWhitespaceTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -29,6 +35,10 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
+#[CoversTrait(EntityReferenceTrait::class)]
+#[CoversTrait(TextWhitespaceTrait::class)]
+#[CoversTrait(XmlLoaderTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class TextWhitespaceTest extends TestCase
 {
     /**
@@ -83,6 +93,11 @@ final class TextWhitespaceTest extends TestCase
         yield 'Collapses whitespace where a nearer xml:space is default' => [
             "<svg xmlns=\"http://www.w3.org/2000/svg\" xml:space=\"preserve\"><text xml:space=\"default\"><tspan>A</tspan>\n\t <tspan>B</tspan></text></svg>",
             '<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve"><text xml:space="default"><tspan>A</tspan> <tspan>B</tspan></text></svg>',
+        ];
+
+        yield 'Keeps whitespace after a text span holding only whitespace, as text precedes it' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>a<tspan> </tspan> <tspan>b</tspan></text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>a<tspan> </tspan> <tspan>b</tspan></text></svg>',
         ];
 
         yield 'Keeps whitespace between nested text content elements' => [
@@ -144,5 +159,68 @@ final class TextWhitespaceTest extends TestCase
             "<svg xmlns=\"http://www.w3.org/2000/svg\"><title>a\n  b</title><desc>c\t d</desc></svg>",
             "<svg xmlns=\"http://www.w3.org/2000/svg\"><title>a\n  b</title><desc>c\t d</desc></svg>",
         ];
+
+        yield 'Keeps a space between XHTML elements in a foreign object' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="300" height="100"><div xmlns="http://www.w3.org/1999/xhtml"><b>Hello</b> <i>World</i></div></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="300" height="100"><div xmlns="http://www.w3.org/1999/xhtml"><b>Hello</b> <i>World</i></div></foreignObject></svg>',
+        ];
+
+        yield 'Keeps whitespace directly in a foreign object' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><foreignObject>\n  <i>a</i>\n  <i>b</i>\n</foreignObject></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><foreignObject>\n  <i>a</i>\n  <i>b</i>\n</foreignObject></svg>",
+        ];
+
+        yield 'Keeps whitespace in an element of another namespace' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:x=\"urn:x\"><x:a>\n  <x:b/>\n  <x:b/>\n</x:a></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:x=\"urn:x\"><x:a>\n  <x:b/>\n  <x:b/>\n</x:a></svg>",
+        ];
+
+        yield 'Keeps whitespace in text when a linked style sheet may set the white-space property' => [
+            "<?xml-stylesheet type=\"text/css\" href=\"a.css\"?><svg xmlns=\"http://www.w3.org/2000/svg\"><text>a\n  b</text></svg>",
+            "<?xml-stylesheet type=\"text/css\" href=\"a.css\"?><svg xmlns=\"http://www.w3.org/2000/svg\"><text>a\n  b</text></svg>",
+        ];
+
+        yield 'Keeps whitespace in text when an imported style sheet may set the white-space property' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@IMPORT url(a.css);</style><text>a\n  b</text></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@IMPORT url(a.css);</style><text>a\n  b</text></svg>",
+        ];
+
+        yield 'Keeps whitespace in text when an escaped property name may set the white-space property' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>text{white\\-space:pre}</style><text>a\n  b</text></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>text{white\\-space:pre}</style><text>a\n  b</text></svg>",
+        ];
+
+        yield 'Collapses whitespace in text when another processing instruction precedes the document' => [
+            "<?other a?><svg xmlns=\"http://www.w3.org/2000/svg\"><text>a\n  b</text></svg>",
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>a b</text></svg>',
+        ];
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function loadsAndSavesManyPrettyPrintedTextSpansInLinearTime(): void
+    {
+        $small = $this->secondsToLoadAndSave(1_250);
+        $large = $this->secondsToLoadAndSave(5_000);
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     */
+    private function secondsToLoadAndSave(int $count): float
+    {
+        $domDocumentWrapper = new DomDocumentWrapper();
+        $content = "<svg xmlns=\"http://www.w3.org/2000/svg\">\n  <text>" . str_repeat("\n    <tspan>w</tspan>", $count) . "\n  </text>\n</svg>";
+        $start = hrtime(true);
+
+        $saved = $domDocumentWrapper->saveToString($domDocumentWrapper->loadFromString($content));
+
+        self::assertSame($count - 1, mb_substr_count($saved, '</tspan> <tspan>'));
+
+        return (hrtime(true) - $start) / 1e9;
     }
 }

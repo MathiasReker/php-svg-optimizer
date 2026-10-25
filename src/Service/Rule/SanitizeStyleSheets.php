@@ -16,7 +16,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DangerousAttributeValueTrait;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\StyleSheetSanitizerTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\UnsafeAttributeTrait;
 
@@ -29,7 +28,6 @@ final readonly class SanitizeStyleSheets implements PassInterface
 {
     use AsciiCaseTrait;
     use DangerousAttributeValueTrait;
-    use EntityReferenceTrait;
     use StyleSheetSanitizerTrait;
     use UnsafeAttributeTrait;
 
@@ -47,7 +45,6 @@ final readonly class SanitizeStyleSheets implements PassInterface
     #[\Override]
     public function apply(\DOMDocument $domDocument): void
     {
-        $this->expandEntityReferences($domDocument);
         $this->removeUnsafeAttributes($domDocument);
         $this->sanitizeStyleElements($domDocument);
     }

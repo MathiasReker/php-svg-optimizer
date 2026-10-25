@@ -13,14 +13,20 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +37,10 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(NumberFormatterTrait::class)]
+#[CoversTrait(NumberListTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class RemoveWidthHeightAttributesTest extends TestCase
 {
     /**
@@ -55,6 +65,15 @@ final class RemoveWidthHeightAttributesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Removes the size of a root with a view box written without separators' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 400.5.5e3"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400.5.5e3"/>',
+        ];
+
+        yield 'Keeps the size of a root with a view box ending with a comma, which browsers reject' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 400 400,"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 400 400,"/>',
+        ];
         yield 'Keeps width and height with a viewBox number ending in a decimal point' => [
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10. 10" width="10" height="10"/>',
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10. 10" width="10" height="10"/>',

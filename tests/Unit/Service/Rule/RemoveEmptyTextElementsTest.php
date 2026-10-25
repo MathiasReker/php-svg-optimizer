@@ -14,14 +14,21 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -33,6 +40,11 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidationException::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(SvgValidator::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(DocumentScriptTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class RemoveEmptyTextElementsTest extends TestCase
 {
     /**
@@ -60,6 +72,15 @@ final class RemoveEmptyTextElementsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps empty text elements in a document with a script, which may fill or query them' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><text/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><text/></svg>',
+        ];
+
+        yield 'Keeps empty text elements in a document with an event handler' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text/><rect width="5" height="5" onmouseover="a()"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text/><rect width="5" height="5" onmouseover="a()"/></svg>',
+        ];
         yield 'Removes a text whose only child is a comment' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><text><!--c--></text><text><?pi c?></text><rect width="5" height="5"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><rect width="5" height="5"/></svg>',

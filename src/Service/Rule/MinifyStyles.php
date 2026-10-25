@@ -104,8 +104,7 @@ final readonly class MinifyStyles implements PassInterface
             } elseif (self::TOKEN_COMMENT === $token[0] && !str_starts_with($token[1], self::LICENSE_COMMENT_START)) {
                 $separator = '' === $separator ? self::EMPTY_COMMENT : $separator;
             } else {
-                $compacted = $this->appendSeparator($compacted, $separator);
-                $compacted[] = $token;
+                array_push($compacted, ...$this->separatorTokens($separator), ...[$token]);
                 $separator = '';
             }
         }
@@ -114,18 +113,13 @@ final readonly class MinifyStyles implements PassInterface
     }
 
     /**
-     * @param list<array{string, string}> $tokens    the compacted tokens
-     * @param string                      $separator a space, an empty comment, or nothing
+     * @param string $separator a space, an empty comment, or nothing
      *
-     * @return list<array{string, string}> the tokens followed by the separator
+     * @return list<array{string, string}> the separator as a token, or no token for nothing
      */
-    private function appendSeparator(array $tokens, string $separator): array
+    private function separatorTokens(string $separator): array
     {
-        if ('' !== $separator) {
-            $tokens[] = [self::TOKEN_WHITESPACE, $separator];
-        }
-
-        return $tokens;
+        return '' === $separator ? [] : [[self::TOKEN_WHITESPACE, $separator]];
     }
 
     /**

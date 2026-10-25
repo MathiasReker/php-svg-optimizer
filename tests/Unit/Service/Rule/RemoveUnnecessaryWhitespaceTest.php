@@ -13,16 +13,23 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AttributeNodeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\RegexFailureTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -33,6 +40,11 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(AttributeNodeTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class RemoveUnnecessaryWhitespaceTest extends TestCase
 {
     use RegexFailureTrait;
@@ -62,6 +74,10 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Trims attributes whose names hold characters outside the basic multilingual plane, keeping ampersands' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:x\u{1F600}=\"urn:x\"><rect x\u{1F600}:a\u{1F600}=\" a &amp; b \" b\u{1F600}=\"  c  \"/></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:x\u{1F600}=\"urn:x\"><rect x\u{1F600}:a\u{1F600}=\"a &amp; b\" b\u{1F600}=\"c\"/></svg>",
+        ];
         yield 'Keeps the whitespace of event handlers' => [
             '<svg xmlns="http://www.w3.org/2000/svg" onload="var a=1&#10;f()"/>',
             '<svg xmlns="http://www.w3.org/2000/svg" onload="var a=1&#10;f()"/>',

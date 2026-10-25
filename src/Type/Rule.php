@@ -27,7 +27,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyListValues;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyNumericValues;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyPathData;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyStyles;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MoveCommonAttributesToGroup;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MoveGroupAttributesToElements;
@@ -105,8 +104,6 @@ enum Rule: string
     case MinifyPathData = MinifyPathData::class;
 
     case MinifyStyles = MinifyStyles::class;
-
-    case MinifySvgCoordinates = MinifySvgCoordinates::class;
 
     case MinifyTransformations = MinifyTransformations::class;
 
@@ -207,7 +204,6 @@ enum Rule: string
             self::MinifyNumericValues,
             self::MinifyPathData,
             self::MinifyStyles,
-            self::MinifySvgCoordinates,
             self::MinifyTransformations,
             self::MoveCommonAttributesToGroup,
             self::MoveGroupAttributesToElements,
@@ -266,7 +262,6 @@ enum Rule: string
             self::MergeStyles => [MergeStyles::class],
             self::MinifyPathData => [MinifyPathData::class],
             self::MinifyStyles => [MinifyStyles::class],
-            self::MinifySvgCoordinates => [MinifySvgCoordinates::class],
             self::MinifyTransformations => [MinifyTransformations::class],
             self::MoveCommonAttributesToGroup => [MoveCommonAttributesToGroup::class],
             self::MoveGroupAttributesToElements => [MoveGroupAttributesToElements::class],

@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 
@@ -24,6 +25,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
  */
 final readonly class RemoveZeroSizeShapes implements PassInterface
 {
+    use DocumentScriptTrait;
     use ElementTrait;
     use NumberFormatterTrait;
 
@@ -45,7 +47,7 @@ final readonly class RemoveZeroSizeShapes implements PassInterface
     #[\Override]
     public function apply(\DOMDocument $domDocument): void
     {
-        if ($this->hasStyleElement($domDocument)) {
+        if ($this->hasStyleElement($domDocument) || $this->hasScriptOrEventHandler($domDocument)) {
             return;
         }
 

@@ -59,19 +59,30 @@ final readonly class ConvertCssClassesToAttributes implements PassInterface
         $convertedClasses = [];
 
         foreach ($styleElements as $styleElement) {
-            [$remainingCss, $classes] = $this->processCss($styleElement->textContent, $classMap, $blockedProperties);
+            [$remainingCss, $classes, $converted] = $this->processCss($styleElement->textContent, $classMap, $blockedProperties);
             $convertedClasses = [...$convertedClasses, ...$classes];
 
-            if ('' !== $remainingCss) {
-                $styleElement->textContent = $remainingCss;
-            } elseif ($this->hasId($styleElement)) {
-                $styleElement->replaceChildren();
-            } else {
-                $styleElement->remove();
+            if ($converted || '' === $remainingCss) {
+                $this->replaceStyleSheet($styleElement, $remainingCss);
             }
         }
 
         $this->removeConvertedClasses($domNodeList, $classMap, $convertedClasses);
+    }
+
+    /**
+     * @param \DOMElement $domElement the style element to update
+     * @param string      $css        the CSS that stays, or an empty string to remove the style sheet
+     */
+    private function replaceStyleSheet(\DOMElement $domElement, string $css): void
+    {
+        if ('' !== $css) {
+            $domElement->textContent = $css;
+        } elseif ($this->hasId($domElement)) {
+            $domElement->replaceChildren();
+        } else {
+            $domElement->remove();
+        }
     }
 
     /**
@@ -147,10 +158,10 @@ final readonly class ConvertCssClassesToAttributes implements PassInterface
             $rules = [...$rules, ...$matches];
         }
 
-        $properties = array_merge([], ...array_map(
+        $properties = array_values(array_unique(array_merge([], ...array_map(
             fn (array $rule): array => $this->cssPropertyNames($rule[2]),
             $rules,
-        ));
+        ))));
         $blocked = $this->propertiesOverriddenByCss($properties, $otherCss, $styleCss);
 
         foreach ($rules as $rule) {
@@ -158,7 +169,7 @@ final readonly class ConvertCssClassesToAttributes implements PassInterface
             $blocked = [...$blocked, ...$this->blockedRuleProperties($rule[2], $elements)];
         }
 
-        return $blocked;
+        return $blocked + $this->conflictingProperties($rules, $classMap);
     }
 
     /**
@@ -179,37 +190,34 @@ final readonly class ConvertCssClassesToAttributes implements PassInterface
      * @param array<string, list<\DOMElement>> $classMap          the class-to-element map
      * @param array<string, true>              $blockedProperties the properties that stay CSS
      *
-     * @return array{string, list<string>} the CSS that could not be converted to attributes, and the converted classes
+     * @return array{string, list<string>, bool} the CSS that could not be converted to attributes, the converted
+     *                                           classes, and whether a declaration became an attribute
      */
     private function processCss(string $css, array $classMap, array $blockedProperties): array
     {
         preg_match_all(self::CSS_PLAIN_RULE_REGEX, $css, $matches, \PREG_SET_ORDER);
         $remainingCss = [];
         $convertedClasses = [];
+        $converted = false;
 
         foreach ($matches as $match) {
-            $declarations = trim($match[2]);
-            $selectors = $this->splitSelectorList($match[1]);
+            $classes = $this->classSelectorList($match[1]);
 
-            $unconvertibleSelectors = [];
+            if ([] === $classes) {
+                $remainingCss[] = $match[0];
 
-            foreach ($selectors as $selector) {
-                if (1 !== preg_match(self::SIMPLE_CLASS_SELECTOR_REGEX, $selector, $selectorMatch)) {
-                    $unconvertibleSelectors[] = $selector;
-
-                    continue;
-                }
-
-                $convertedClasses[] = $selectorMatch[1];
-                $remainingCss[] = $this->convertClassRule($selectorMatch[1], $declarations, $classMap, $blockedProperties);
+                continue;
             }
 
-            if ([] !== $unconvertibleSelectors) {
-                $remainingCss[] = \sprintf('%s{%s}', implode(',', $unconvertibleSelectors), $declarations);
+            foreach ($classes as $class) {
+                $convertedClasses[] = $class;
+                [$rule, $convertedRule] = $this->convertClassRule($class, $match[2], $classMap, $blockedProperties);
+                $remainingCss[] = $rule;
+                $converted = $converted || $convertedRule;
             }
         }
 
-        return [implode('', $remainingCss), $convertedClasses];
+        return [implode('', $remainingCss), $convertedClasses, $converted];
     }
 
     /**
@@ -218,14 +226,15 @@ final readonly class ConvertCssClassesToAttributes implements PassInterface
      * @param array<string, list<\DOMElement>> $classMap          the class-to-element map
      * @param array<string, true>              $blockedProperties the properties that stay CSS
      *
-     * @return string the rule with the declarations that stay CSS, or an empty string if none do
+     * @return array{string, bool} the rule with the declarations that stay CSS, or an empty string if none do, and
+     *                             whether a declaration became an attribute
      */
-    private function convertClassRule(string $class, string $declarations, array $classMap, array $blockedProperties): string
+    private function convertClassRule(string $class, string $declarations, array $classMap, array $blockedProperties): array
     {
         [$convertible, $nonConvertible] = $this->splitDeclarations($declarations, $blockedProperties);
         $this->applyStylesToElements($class, $classMap, $convertible);
 
-        return [] === $nonConvertible ? '' : \sprintf('.%s{', $class) . implode(';', $nonConvertible) . '}';
+        return [[] === $nonConvertible ? '' : \sprintf('.%s{', $class) . implode(';', $nonConvertible) . '}', [] !== $convertible];
     }
 
     /**

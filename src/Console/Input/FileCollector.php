@@ -48,7 +48,7 @@ final class FileCollector
         }
 
         if (is_dir($realPath)) {
-            return (new Finder())
+            return (new Finder(\DIRECTORY_SEPARATOR))
                 ->in($realPath)
                 ->files()
                 ->withExtension(SvgTag::Svg->value)

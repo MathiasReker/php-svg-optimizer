@@ -13,20 +13,96 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Command;
 
 use MathiasReker\PhpSvgOptimizer\Console\Command\CommandDispatcher;
 use MathiasReker\PhpSvgOptimizer\Console\Command\CommandFactory;
+use MathiasReker\PhpSvgOptimizer\Console\Filesystem\Finder;
+use MathiasReker\PhpSvgOptimizer\Console\Help\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
+use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
+use MathiasReker\PhpSvgOptimizer\Console\Input\FileCollector;
 use MathiasReker\PhpSvgOptimizer\Console\Input\OptionIntent;
 use MathiasReker\PhpSvgOptimizer\Console\Input\RuleSetParser;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Formatter\ByteFormatter;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
+use MathiasReker\PhpSvgOptimizer\Console\Output\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\SilentStream;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StderrStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
+use MathiasReker\PhpSvgOptimizer\Console\Processor\SvgFileProcessor;
 use MathiasReker\PhpSvgOptimizer\Console\Type\Application;
+use MathiasReker\PhpSvgOptimizer\Console\Type\Command;
+use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandHelp;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
+use MathiasReker\PhpSvgOptimizer\Console\ValueObject\ExampleCommand;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
+use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
+use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\TextWhitespaceTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
+use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
+use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEllipseToCircle;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertShapesToPath;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDataAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDuplicateElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyContainers;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveHiddenElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonInheritableGroupAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveStyleTypeAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedDefinitions;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedTextAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessDefs;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessStrokeAndFill;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveXmlSpaceDefault;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveZeroSizeShapes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AttributeNodeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ClassAttributeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssStyleElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DefinitionElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EmptyElementRemovalTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\FragmentTargetTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\InheritanceBoundaryTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PathDataSerializerTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PresentationAttributeCleanupTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RemoveElementsByTagNameTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RenameElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
+use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
+use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -41,6 +117,84 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SilentStream::class)]
 #[CoversClass(Application::class)]
 #[CoversClass(RuleSetParser::class)]
+#[UsesClass(\MathiasReker\PhpSvgOptimizer\Console\Command\Command::class)]
+#[UsesClass(AbstractProvider::class)]
+#[UsesClass(ArgumentData::class)]
+#[UsesClass(ByteFormatter::class)]
+#[UsesClass(CliOption::class)]
+#[UsesClass(Command::class)]
+#[UsesClass(CommandHelp::class)]
+#[UsesClass(CommandOption::class)]
+#[UsesClass(ConfigLoader::class)]
+#[UsesClass(ConvertColorsToHex::class)]
+#[UsesClass(ConvertCssClassesToAttributes::class)]
+#[UsesClass(ConvertEllipseToCircle::class)]
+#[UsesClass(ConvertInlineStylesToAttributes::class)]
+#[UsesClass(ConvertShapesToPath::class)]
+#[UsesClass(DomDocumentWrapper::class)]
+#[UsesClass(ExampleCommand::class)]
+#[UsesClass(ExecutionOrder::class)]
+#[UsesClass(FileCollector::class)]
+#[UsesClass(FileProvider::class)]
+#[UsesClass(Finder::class)]
+#[UsesClass(MemoryStream::class)]
+#[UsesClass(MetaDataAggregator::class)]
+#[UsesClass(Metrics::class)]
+#[UsesClass(Option::class)]
+#[UsesClass(RemoveComments::class)]
+#[UsesClass(RemoveDataAttributes::class)]
+#[UsesClass(RemoveDefaultAttributes::class)]
+#[UsesClass(RemoveDuplicateElements::class)]
+#[UsesClass(RemoveEmptyAttributes::class)]
+#[UsesClass(RemoveEmptyContainers::class)]
+#[UsesClass(RemoveEmptyTextElements::class)]
+#[UsesClass(RemoveHiddenElements::class)]
+#[UsesClass(RemoveInkscapeFootprints::class)]
+#[UsesClass(RemoveInvisibleCharacters::class)]
+#[UsesClass(RemoveMetadata::class)]
+#[UsesClass(RemoveNonInheritableGroupAttributes::class)]
+#[UsesClass(RemoveStyleTypeAttributes::class)]
+#[UsesClass(RemoveUnusedDefinitions::class)]
+#[UsesClass(RemoveUnusedIds::class)]
+#[UsesClass(RemoveUnusedNamespaces::class)]
+#[UsesClass(RemoveUnusedTextAttributes::class)]
+#[UsesClass(RemoveUselessDefs::class)]
+#[UsesClass(RemoveUselessStrokeAndFill::class)]
+#[UsesClass(RemoveWidthHeightAttributes::class)]
+#[UsesClass(RemoveXmlSpaceDefault::class)]
+#[UsesClass(RemoveZeroSizeShapes::class)]
+#[UsesClass(Rule::class)]
+#[UsesClass(RuleSet::class)]
+#[UsesClass(StderrStream::class)]
+#[UsesClass(StringProvider::class)]
+#[UsesClass(SvgAttribute::class)]
+#[UsesClass(SvgFileProcessor::class)]
+#[UsesClass(SvgOptimizer::class)]
+#[UsesClass(SvgOptimizerFacade::class)]
+#[UsesClass(SvgTag::class)]
+#[UsesClass(SvgValidator::class)]
+#[UsesTrait(AsciiCaseTrait::class)]
+#[UsesTrait(AttributeNodeTrait::class)]
+#[UsesTrait(ClassAttributeTrait::class)]
+#[UsesTrait(CssDeclarationTrait::class)]
+#[UsesTrait(CssStyleElementTrait::class)]
+#[UsesTrait(DefinitionElementTrait::class)]
+#[UsesTrait(DocumentScriptTrait::class)]
+#[UsesTrait(ElementTrait::class)]
+#[UsesTrait(EmptyElementRemovalTrait::class)]
+#[UsesTrait(EntityReferenceTrait::class)]
+#[UsesTrait(FragmentTargetTrait::class)]
+#[UsesTrait(IdReferenceTrait::class)]
+#[UsesTrait(InheritanceBoundaryTrait::class)]
+#[UsesTrait(NumberFormatterTrait::class)]
+#[UsesTrait(NumberListTrait::class)]
+#[UsesTrait(PathDataSerializerTrait::class)]
+#[UsesTrait(PresentationAttributeCleanupTrait::class)]
+#[UsesTrait(RemoveElementsByTagNameTrait::class)]
+#[UsesTrait(RenameElementTrait::class)]
+#[UsesTrait(SvgElementTrait::class)]
+#[UsesTrait(TagMatcherTrait::class)]
+#[UsesTrait(TextWhitespaceTrait::class)]
 final class CommandDispatcherTest extends TestCase
 {
     private string $binPath;

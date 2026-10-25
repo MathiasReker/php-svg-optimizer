@@ -22,7 +22,7 @@ trait ClassAttributeTrait
 {
     use CssDeclarationTrait;
 
-    private const string SIMPLE_CLASS_SELECTOR_REGEX = '/^\.([a-zA-Z0-9_-]+)$/';
+    private const string SIMPLE_CLASS_SELECTOR_REGEX = '/^\.(-?[a-zA-Z_][a-zA-Z0-9_-]*)$/';
 
     private const string CLASS_SEPARATOR_REGEX = '/\s+/';
 
@@ -48,19 +48,36 @@ trait ClassAttributeTrait
     }
 
     /**
+     * @param string $selectors a selector list
+     *
+     * @return list<string> the class names, if every selector of the list is a single class selector with a valid
+     *                      identifier, or an empty list otherwise, as one invalid selector invalidates the whole rule
+     */
+    private function classSelectorList(string $selectors): array
+    {
+        $classes = [];
+
+        foreach ($this->splitSelectorList($selectors) as $selector) {
+            if (1 !== preg_match(self::SIMPLE_CLASS_SELECTOR_REGEX, $selector, $selectorMatch)) {
+                return [];
+            }
+
+            $classes[] = $selectorMatch[1];
+        }
+
+        return $classes;
+    }
+
+    /**
      * @param string $css plain CSS rules
      *
-     * @return string the rules with a selector other than a single class
+     * @return string the rules whose selector list is not made of single class selectors
      */
     private function rulesWithOtherSelectors(string $css): string
     {
         return (string) preg_replace_callback(
             self::CSS_PLAIN_RULE_REGEX,
-            fn (array $match): string => [] === preg_grep(
-                self::SIMPLE_CLASS_SELECTOR_REGEX,
-                $this->splitSelectorList($match[1]),
-                \PREG_GREP_INVERT
-            ) ? '' : $match[0],
+            fn (array $match): string => [] === $this->classSelectorList($match[1]) ? $match[0] : '',
             $css
         );
     }
@@ -69,19 +86,66 @@ trait ClassAttributeTrait
      * @param string                           $selectors a selector list
      * @param array<string, list<\DOMElement>> $classMap  the elements by class
      *
-     * @return list<\DOMElement> the elements with a class that a simple class selector of the list selects
+     * @return list<\DOMElement> the elements with a class that the selector list selects, if it is made of single class
+     *                           selectors
      */
     private function elementsWithClassSelectors(string $selectors, array $classMap): array
     {
         $elements = [];
 
-        foreach ($this->splitSelectorList($selectors) as $selector) {
-            if (1 === preg_match(self::SIMPLE_CLASS_SELECTOR_REGEX, $selector, $selectorMatch)) {
-                $elements = [...$elements, ...$classMap[$selectorMatch[1]] ?? []];
-            }
+        foreach ($this->classSelectorList($selectors) as $class) {
+            $elements = [...$elements, ...$classMap[$class] ?? []];
         }
 
         return $elements;
+    }
+
+    /**
+     * @param list<array<int, string>>         $rules    plain rules, with the selector list and the declaration block
+     * @param array<string, list<\DOMElement>> $classMap the elements by class
+     *
+     * @return array<string, true> the properties that two rules selecting the same element declare with different
+     *                             values; as attributes the later value would win even where CSS drops it as invalid
+     */
+    private function conflictingProperties(array $rules, array $classMap): array
+    {
+        $values = [];
+        $conflicting = [];
+
+        foreach ($this->declaredValues($rules, $classMap) as [$element, $property, $value]) {
+            if (($values[$element][$property] ?? $value) !== $value) {
+                $conflicting[$property] = true;
+            }
+
+            $values[$element][$property] = $value;
+        }
+
+        return $conflicting;
+    }
+
+    /**
+     * @param list<array<int, string>>         $rules    plain rules, with the selector list and the declaration block
+     * @param array<string, list<\DOMElement>> $classMap the elements by class
+     *
+     * @return list<array{int, string, string}> each declaration of a rule for each element the rule selects, as the
+     *                                          object id of the element, the lowercase property and the value
+     */
+    private function declaredValues(array $rules, array $classMap): array
+    {
+        $declared = [];
+
+        foreach ($rules as $rule) {
+            $declarations = $this->parseCssDeclarations($rule[2]);
+
+            foreach ($this->elementsWithClassSelectors($rule[1], $classMap) as $element) {
+                foreach ($declarations as [$property, $value]) {
+                    $property = $this->asciiLowercase($property);
+                    $declared[] = [spl_object_id($element), $property, $value];
+                }
+            }
+        }
+
+        return $declared;
     }
 
     /**

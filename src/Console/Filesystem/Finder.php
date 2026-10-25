@@ -18,6 +18,8 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Filesystem;
  */
 final class Finder
 {
+    private const string WINDOWS_SEPARATOR = '\\';
+
     private string $directory;
 
     private bool $onlyFiles = false;
@@ -26,6 +28,15 @@ final class Finder
 
     /** @var array<string, true> */
     private array $visitedDirectories = [];
+
+    /**
+     * @param string $directorySeparator the directory separator of the system; on Windows, where `\` separates
+     *                                   directories, paths are written with it, elsewhere they are kept as found, as a
+     *                                   file name may contain a `\`
+     */
+    public function __construct(
+        private readonly string $directorySeparator,
+    ) {}
 
     /**
      * @param string $directory The directory to search in
@@ -95,7 +106,7 @@ final class Finder
 
         foreach ($iterator as $fileInfo) {
             if ($fileInfo instanceof \SplFileInfo && $this->matchesFilter($fileInfo)) {
-                $results[] = str_replace(['/', '\\'], \DIRECTORY_SEPARATOR, $fileInfo->getPathname());
+                $results[] = self::WINDOWS_SEPARATOR === $this->directorySeparator ? str_replace('/', self::WINDOWS_SEPARATOR, $fileInfo->getPathname()) : $fileInfo->getPathname();
             }
         }
 

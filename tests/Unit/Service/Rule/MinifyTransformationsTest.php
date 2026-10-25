@@ -13,14 +13,22 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TransformListTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +39,12 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(NumberFormatterTrait::class)]
+#[CoversTrait(NumberListTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[CoversTrait(TransformListTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class MinifyTransformationsTest extends TestCase
 {
     /**
@@ -726,9 +740,14 @@ final class MinifyTransformationsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(0, 0) x"/></svg>',
         ];
 
-        yield 'Keeps numbers without separators' => [
+        yield 'Minifies a transform list with numbers without separators, as minified transforms are written' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.5.5) scale(1, 1)"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.5.5) scale(1, 1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.5.5)"/></svg>',
+        ];
+
+        yield 'Keeps a transform with a trailing comma, which browsers reject' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10,) scale(1, 1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10,) scale(1, 1)"/></svg>',
         ];
 
         yield 'Keeps empty transform' => [

@@ -58,27 +58,35 @@ final readonly class RemoveNonInheritableGroupAttributes implements PassInterfac
         }
 
         $animated = $this->animatedAttributeNames($domDocument);
+        $inheritingDescendants = $this->elementsWithInheritingDescendant($domDocument);
 
         foreach ($this->svgElements($domDocument) as $domElement) {
-            if (SvgTag::G->value === $domElement->localName && !$this->hasInheritingDescendant($domElement)) {
+            if (SvgTag::G->value === $domElement->localName && !\array_key_exists(spl_object_id($domElement), $inheritingDescendants)) {
                 $this->removeUnanimatedAttributes($domElement, self::GROUP_IGNORED_ATTRIBUTES, $animated);
             }
         }
     }
 
     /**
-     * @param \DOMElement $domElement the group to check
+     * @param \DOMDocument $domDocument the document to scan
      *
-     * @return bool true if a descendant uses `inherit`, which also takes non-inherited values from the group
+     * @return array<int, \DOMElement> the elements with a descendant that uses `inherit`, which also takes non-inherited
+     *                                 values from them, by object id
      */
-    private function hasInheritingDescendant(\DOMElement $domElement): bool
+    private function elementsWithInheritingDescendant(\DOMDocument $domDocument): array
     {
-        foreach ($domElement->getElementsByTagName('*') as $domNodeList) {
-            if ($this->hasInheritValue($domNodeList)) {
-                return true;
+        $elements = [];
+
+        foreach (array_reverse(iterator_to_array($domDocument->getElementsByTagName('*'), false)) as $domElement) {
+            $parent = $domElement->parentNode;
+
+            if ($parent instanceof \DOMElement
+                && (\array_key_exists(spl_object_id($domElement), $elements) || $this->hasInheritValue($domElement))
+            ) {
+                $elements[spl_object_id($parent)] = $parent;
             }
         }
 
-        return false;
+        return $elements;
     }
 }

@@ -13,14 +13,18 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AttributeNodeTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +35,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(AttributeNodeTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class SortAttributesTest extends TestCase
 {
     /**
@@ -78,9 +84,9 @@ final class SortAttributesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""><rect a="2" z="1"/></g></svg>',
         ];
 
-        yield 'leaves attributes in order alone' => [
+        yield 'writes id, width and height first, in that order' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect id="a" height="1" width="1" a="1" b="2"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="a" height="1" width="1" a="1" b="2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="a" width="1" height="1" a="1" b="2"/></svg>',
         ];
 
         yield 'sorts attributes deep inside groups' => [
@@ -99,8 +105,18 @@ final class SortAttributesTest extends TestCase
         ];
 
         yield 'sorts attributes with the same local name in different namespaces' => [
-            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a" xmlns:b="urn:b"><rect b:z="1" a:z="2" z="3"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a" xmlns:b="urn:b"><rect a:z="2" b:z="1" z="3"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a" xmlns:b="urn:b"><rect y="0" b:z="1" a:z="2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a" xmlns:b="urn:b"><rect a:z="2" b:z="1" y="0"/></svg>',
+        ];
+
+        yield 'leaves an element alone when an attribute without a namespace shares its local name with one in a namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a" xmlns:b="urn:b"><rect z="3" b:z="1" a:z="2" y="0"/><rect y="0" b:y="1" a:z="2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a" xmlns:b="urn:b"><rect z="3" b:z="1" a:z="2" y="0"/><rect y="0" b:y="1" a:z="2"/></svg>',
+        ];
+
+        yield 'sorts attributes whose names hold characters outside the basic multilingual plane' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x😀="urn:x"><rect z😀="1" x😀:a😀="2" a="3"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x😀="urn:x"><rect a="3" x😀:a😀="2" z😀="1"/></svg>',
         ];
 
         yield 'keeps values with entities and multibyte characters' => [
@@ -125,7 +141,7 @@ final class SortAttributesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" id="rect1" fill="none" stroke="black"><rect id="rect2" width="30" height="30" stroke="red" x="10" y="10"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" id="rect1" width="100" height="100" fill="none" stroke="black"><rect id="rect2" width="30" height="30" stroke="red" x="10" y="10"/></svg>
                 XML,
         ];
 
@@ -136,7 +152,7 @@ final class SortAttributesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" id="rect1" fill="none" stroke="black"><rect id="rect2" width="30" height="30" stroke="red" x="10" y="10"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" id="rect1" width="100" height="100" fill="none" stroke="black"><rect id="rect2" width="30" height="30" stroke="red" x="10" y="10"/></svg>
                 XML,
         ];
 
@@ -170,7 +186,7 @@ final class SortAttributesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g id="group1" fill="none" stroke="black"><rect width="30" height="30" id="rect1" x="10" y="10"/><circle cx="50" cy="50" r="20" stroke="red"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g id="group1" fill="none" stroke="black"><rect id="rect1" width="30" height="30" x="10" y="10"/><circle cx="50" cy="50" r="20" stroke="red"/></g></svg>
                 XML,
         ];
 
@@ -218,7 +234,7 @@ final class SortAttributesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100"><a href="#bar" xlink:href="#foo"><rect width="30" height="30" x="10" y="10"/></a></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100"><a xlink:href="#foo" href="#bar"><rect width="30" height="30" x="10" y="10"/></a></svg>
                 XML,
         ];
     }

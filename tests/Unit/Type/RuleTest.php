@@ -32,6 +32,7 @@ use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -40,6 +41,7 @@ use PHPUnit\Framework\TestCase;
  * @no-named-arguments
  */
 #[CoversClass(Rule::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class RuleTest extends TestCase
 {
     private const array RISKY_RULES = [
@@ -71,7 +73,6 @@ final class RuleTest extends TestCase
             Rule::MinifyNumericValues->name => 'minifyNumericValues',
             Rule::MinifyPathData->name => 'minifyPathData',
             Rule::MinifyStyles->name => 'minifyStyles',
-            Rule::MinifySvgCoordinates->name => 'minifySvgCoordinates',
             Rule::MinifyTransformations->name => 'minifyTransformations',
             Rule::MoveCommonAttributesToGroup->name => 'moveCommonAttributesToGroup',
             Rule::MoveGroupAttributesToElements->name => 'moveGroupAttributesToElements',

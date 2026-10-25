@@ -13,14 +13,20 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\InheritanceBoundaryTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +37,10 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(InheritanceBoundaryTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class RemoveDefaultAttributesTest extends TestCase
 {
     /**
@@ -58,6 +68,25 @@ final class RemoveDefaultAttributesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Leaves documents with a style element untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><style>rect{stroke:red}</style><rect stroke="none" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><style>rect{stroke:red}</style><rect stroke="none" width="5" height="5"/></svg>',
+        ];
+
+        yield 'Keeps a default that the inline style of the element overrides' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><rect stroke="none" style="stroke:red" width="5" height="5"/><rect stroke="none" style="all:initial" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><rect stroke="none" style="stroke:red" width="5" height="5"/><rect stroke="none" style="all:initial" width="5" height="5"/></svg>',
+        ];
+
+        yield 'Keeps a default below an ancestor whose inline style sets the property' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g style="stroke:red"><rect stroke="none" width="5" height="5"/></g><g style="all:initial"><rect stroke="none" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g style="stroke:red"><rect stroke="none" width="5" height="5"/></g><g style="all:initial"><rect stroke="none" width="5" height="5"/></g></svg>',
+        ];
+
+        yield 'Keeps a default on or below an element that can be referenced by id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g id="g"><rect stroke="none" width="5" height="5"/></g><rect id="r" stroke="none" width="5" height="5"/><g><rect stroke="none" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g id="g"><rect stroke="none" width="5" height="5"/></g><rect id="r" stroke="none" width="5" height="5"/><g><rect width="5" height="5"/></g></svg>',
+        ];
         yield 'Keeps a default attribute that the inline style overrides' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="none" style="stroke:inherit"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="none" style="stroke:inherit"/></svg>',
@@ -80,12 +109,12 @@ final class RemoveDefaultAttributesTest extends TestCase
 
         yield 'removes defaults inside a group reset to no namespace' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""><rect stroke="none" width="5" height="5"/></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""><rect width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""><rect stroke="none" width="5" height="5"/></g></svg>',
         ];
 
         yield 'removes defaults deep inside groups without a value' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g><g><rect stroke-linejoin="miter" width="5" height="5"/></g></g></g></g></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g><g><rect width="5" height="5"/></g></g></g></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g><g><rect stroke-linejoin="miter" width="5" height="5"/></g></g></g></g></g></svg>',
         ];
 
         yield 'keeps a default when the parent sets the property after a comment in its style' => [
@@ -110,7 +139,7 @@ final class RemoveDefaultAttributesTest extends TestCase
 
         yield 'removes a default when the parent only sets a custom property with the same name' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g style="--stroke:red"><rect stroke="none" width="5" height="5"/></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g style="--stroke:red"><rect width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="--stroke:red"><rect stroke="none" width="5" height="5"/></g></svg>',
         ];
 
         yield 'keeps a default inside an element referenced through xml:id' => [
@@ -130,7 +159,7 @@ final class RemoveDefaultAttributesTest extends TestCase
 
         yield 'removes defaults on prefixed svg elements' => [
             '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect stroke="none" stroke-width="1" width="5" height="5"/></svg:svg>',
-            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect width="5" height="5"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect stroke="none" stroke-width="1" width="5" height="5"/></svg:svg>',
         ];
 
         yield 'keeps a namespaced attribute with a default value' => [
@@ -145,7 +174,7 @@ final class RemoveDefaultAttributesTest extends TestCase
 
         yield 'removes the default of a later element when an earlier one is kept' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g stroke="red"><rect stroke="none" width="5" height="5"/></g><rect stroke="none" width="5" height="5"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g stroke="red"><rect stroke="none" width="5" height="5"/></g><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g stroke="red"><rect stroke="none" width="5" height="5"/></g><rect stroke="none" width="5" height="5"/></svg>',
         ];
 
         yield 'keeps the default of an element inside a symbol with an id' => [
@@ -158,7 +187,7 @@ final class RemoveDefaultAttributesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke-width="1" width="5" height="5"><animate attributeName=" stroke-width " to="3" dur="1s"/></rect></svg>',
         ];
 
-        yield 'Removes Default Stroke Attribute' => [
+        yield 'Keeps defaults that no element of the document sets above, as the page or a use element may set them' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <rect x="10" y="10" width="30" height="30" stroke="none"/>
@@ -166,8 +195,28 @@ final class RemoveDefaultAttributesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect x="10" y="10" width="30" height="30" stroke="none"/><circle cx="50" cy="50" r="20" stroke="none"/></svg>
                 XML,
+        ];
+
+        yield 'Removes defaults below a root element that sets the same value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none" stroke-width="1"><rect stroke="none" stroke-width="1" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none" stroke-width="1"><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'Keeps a default below a root element that sets another value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="red"><rect stroke="none" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="red"><rect stroke="none" width="5" height="5"/></svg>',
+        ];
+
+        yield 'Removes a default below an element that inherits the same value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g stroke="inherit"><rect stroke="none" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g stroke="inherit"><rect width="5" height="5"/></g></svg>',
+        ];
+
+        yield 'Keeps a default below an element whose value depends on a custom property' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g stroke="var(--s)"><rect stroke="none" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g stroke="var(--s)"><rect stroke="none" width="5" height="5"/></g></svg>',
         ];
 
         yield 'Keeps every animated default attribute' => [
@@ -187,7 +236,7 @@ final class RemoveDefaultAttributesTest extends TestCase
                 XML,
         ];
 
-        yield 'Removes Default Stroke from Nested Elements' => [
+        yield 'Keeps the default of a group that no element of the document sets above' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g stroke="none">
@@ -197,7 +246,7 @@ final class RemoveDefaultAttributesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g stroke="none"><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></g></svg>
                 XML,
         ];
 
@@ -226,7 +275,7 @@ final class RemoveDefaultAttributesTest extends TestCase
                 XML,
         ];
 
-        yield 'Removes Default Attributes from Nested Groups' => [
+        yield 'Removes defaults below a group that sets the same value, and keeps that group value, which the page may override' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
                     <g stroke="none">
@@ -236,7 +285,7 @@ final class RemoveDefaultAttributesTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g stroke="none"><rect x="10" y="10" width="30" height="30"/><circle cx="50" cy="50" r="20"/></g></svg>
                 XML,
         ];
 
@@ -252,7 +301,7 @@ final class RemoveDefaultAttributesTest extends TestCase
 
         yield 'SVG with all default attributes' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4"/></svg>',
         ];
 
         yield 'Keeps default stroke when an ancestor sets a different stroke' => [
@@ -277,17 +326,17 @@ final class RemoveDefaultAttributesTest extends TestCase
 
         yield 'Removes default stroke when an ancestor style only sets other properties' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g style="fill:red;stroke-width:2"><path stroke="none" d="M0 0h1"/></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g style="fill:red;stroke-width:2"><path d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="fill:red;stroke-width:2"><path stroke="none" d="M0 0h1"/></g></svg>',
         ];
 
         yield 'Removes default stroke when an ancestor style only sets a custom property' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g style="--stroke:red"><path stroke="none" d="M0 0h1"/></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g style="--stroke:red"><path d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="--stroke:red"><path stroke="none" d="M0 0h1"/></g></svg>',
         ];
 
         yield 'Removes default stroke below a root element with an id' => [
             '<svg xmlns="http://www.w3.org/2000/svg" id="Layer_1"><path stroke="none" d="M0 0h1"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg" id="Layer_1"><path d="M0 0h1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" id="Layer_1"><path stroke="none" d="M0 0h1"/></svg>',
         ];
 
         yield 'Keeps default attributes when a style element is present' => [
@@ -312,7 +361,7 @@ final class RemoveDefaultAttributesTest extends TestCase
 
         yield 'Removes default stroke-linecap while keeping stroke animated elsewhere' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g><set attributeName="stroke" to="red"/><path stroke-linecap="butt" d="M0 0h1"/></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g><set attributeName="stroke" to="red"/><path d="M0 0h1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><set attributeName="stroke" to="red"/><path stroke-linecap="butt" d="M0 0h1"/></g></svg>',
         ];
     }
 }

@@ -31,17 +31,19 @@ final readonly class ScopeSvgStyles implements PassInterface
 
     private const string CSS_RULE_REGEX = '/(?<selector>[^{]+?){(?<body>[^}]+)}/';
 
-    private const string TAG_SELECTOR_REGEX = '/^[a-zA-Z][\w-]*$/';
+    private const string FUNCTIONAL_ARGUMENT_REGEX = '/\([^()]*\)/';
 
-    private const string CLASS_SELECTOR_REGEX = '/\[[^\]]*\](*SKIP)(*FAIL)|\.([\w\-]++)(?=[\s.#:\[>+~,()]|$)/';
+    private const string CLASS_SELECTOR_REGEX = '/\[[^\]]*\](*SKIP)(*FAIL)|\.((?:[\w\-]|[^\x00-\x7F])++)(?=[\s.#:\[>+~,()]|$)/';
 
-    private const string ID_SELECTOR_REGEX = '/\[[^\]]*\](*SKIP)(*FAIL)|#\K[\w\-]++(?=[\s.#:\[>+~,()]|$)/';
+    private const string ID_SELECTOR_REGEX = '/\[[^\]]*\](*SKIP)(*FAIL)|#\K(?:[\w\-]|[^\x00-\x7F])++(?=[\s.#:\[>+~,()]|$)/';
 
     private const string URL_REFERENCE_REGEX = '/url\(\s*([\'"]?)#([^\s\'")]+)\1\s*\)/';
 
     private const string WHITESPACE_REGEX = '/\s+/';
 
-    private const string UNSCOPABLE_CSS_REGEX = '/\{[^}]*\{|@import|\\\/i';
+    private const string BLANK_BETWEEN_TAGS_REGEX = '/>[\t\n\r ]+</';
+
+    private const string UNSCOPABLE_CSS_REGEX = '/\{[^}]*\{|@import|\\\|\[\s*(?:[^\]|=]*\|)?(?:id|class)\s*[\]~|^$*=]/i';
 
     private const string ESCAPED_URL_REFERENCE_QUERY = '//@*[contains(., "url(") and contains(., "\")]';
 
@@ -72,7 +74,7 @@ final readonly class ScopeSvgStyles implements PassInterface
         $fragmentTargets = $this->collectFragmentTargets($domDocument);
 
         foreach ($svgs as $index => $node) {
-            $baseHash = mb_substr(sha1((string) $domDocument->saveXML($node)), 0, 10);
+            $baseHash = mb_substr(sha1((string) preg_replace(self::BLANK_BETWEEN_TAGS_REGEX, '><', (string) $domDocument->saveXML($node))), 0, 10);
             $hash = $multiple ? $baseHash . '-' . $index : $baseHash;
 
             $this->scopeSingleSvg($domXPath, $node, $hash, $fragmentTargets);
@@ -229,13 +231,19 @@ final readonly class ScopeSvgStyles implements PassInterface
         return 1 === preg_match(self::SCOPED_NAME_REGEX, $name);
     }
 
+    /**
+     * @param string $selector a selector of a selector list
+     *
+     * @return bool true if the selector has no class or id selector outside a functional pseudo-class, so it may match
+     *              elements of the page the SVG is embedded in
+     */
     private function isUnsafeSelector(string $selector): bool
     {
-        if (str_starts_with($selector, '*')) {
-            return true;
-        }
+        do {
+            $selector = (string) preg_replace(self::FUNCTIONAL_ARGUMENT_REGEX, '', $selector, -1, $count);
+        } while ($count > 0);
 
-        return 1 === preg_match(self::TAG_SELECTOR_REGEX, $selector);
+        return 1 !== preg_match(self::CLASS_SELECTOR_REGEX, $selector) && 1 !== preg_match(self::ID_SELECTOR_REGEX, $selector);
     }
 
     /**

@@ -55,15 +55,38 @@ abstract class AbstractProvider implements SvgProviderInterface
     #[\Override]
     final public function saveToFile(string $path): self
     {
+        $this->assertUsablePath($path, 'Output');
+
+        if (is_dir($path)) {
+            throw new IOException(\sprintf('Output path is a directory: %s', $path));
+        }
+
         if (!$this->ensureDirectoryExists(\dirname($path))) {
             throw new IOException(\sprintf('Failed to create directory for output file: %s', $path));
         }
 
-        if (is_dir($path) || false === $this->withoutWarnings(fn (): false|int => file_put_contents($path, $this->getOutputContent()))) {
+        if (false === $this->withoutWarnings(fn (): false|int => file_put_contents($path, $this->getOutputContent()))) {
             throw new IOException(\sprintf('Failed to write optimized content to the output file: %s', $path));
         }
 
         return $this;
+    }
+
+    /**
+     * @param string $path the file path to check
+     * @param string $role the role of the file in messages, `Input` or `Output`
+     *
+     * @throws IOException If the path is empty or contains a null byte
+     */
+    final protected function assertUsablePath(string $path, string $role): void
+    {
+        if ('' === $path) {
+            throw new IOException(\sprintf('%s path is empty.', $role));
+        }
+
+        if (str_contains($path, "\0")) {
+            throw new IOException(\sprintf('%s path contains a null byte: %s', $role, str_replace("\0", '\0', $path)));
+        }
     }
 
     /**

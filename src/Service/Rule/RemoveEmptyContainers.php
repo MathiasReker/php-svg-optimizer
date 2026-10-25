@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EmptyElementRemovalTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
@@ -27,6 +28,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
 final readonly class RemoveEmptyContainers implements PassInterface
 {
     use AsciiCaseTrait;
+    use DocumentScriptTrait;
     use ElementTrait;
     use EmptyElementRemovalTrait;
     use TagMatcherTrait;
@@ -37,7 +39,9 @@ final readonly class RemoveEmptyContainers implements PassInterface
     #[\Override]
     public function apply(\DOMDocument $domDocument): void
     {
-        $this->removeElementsBottomUp($domDocument, $this->isRemovable(...));
+        if (!$this->hasScriptOrEventHandler($domDocument)) {
+            $this->removeElementsBottomUp($domDocument, $this->isRemovable(...));
+        }
     }
 
     /**

@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule\Data;
 
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\Trait\BaseEnumTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -20,6 +22,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(SvgNamespace::class)]
+#[CoversTrait(BaseEnumTrait::class)]
 final class SvgNamespaceTest extends TestCase
 {
     #[Test]

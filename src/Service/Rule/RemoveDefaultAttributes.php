@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\InheritanceBoundaryTrait;
 
 /**
  * @internal
@@ -23,6 +24,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 final readonly class RemoveDefaultAttributes implements PassInterface
 {
     use ElementTrait;
+    use InheritanceBoundaryTrait;
 
     private const array DEFAULT_SVG_ATTRIBUTES = [
         SvgAttribute::Stroke->value => 'none',
@@ -78,26 +80,16 @@ final readonly class RemoveDefaultAttributes implements PassInterface
      */
     private function inheritsDefault(\DOMElement $domElement, string $name): bool
     {
-        $node = $domElement;
+        $parent = $domElement->parentNode;
 
-        while (!$this->isReferenceable($node)) {
-            $parent = $node->parentNode;
-            if (!$parent instanceof \DOMElement) {
-                return true;
-            }
-
-            if ($this->styleDeclares($parent, 'all|' . $name)) {
-                return false;
-            }
-
-            if ($parent->hasAttribute($name)) {
-                return self::DEFAULT_SVG_ATTRIBUTES[$name] === $parent->getAttribute($name);
-            }
-
-            $node = $parent;
-        }
-
-        return false;
+        return $parent instanceof \DOMElement
+            && !$this->isReferenceable($domElement)
+            && self::DEFAULT_SVG_ATTRIBUTES[$name] === $this->inheritedValue(
+                $parent,
+                $name,
+                fn (\DOMElement $domElement): bool => $this->styleDeclares($domElement, 'all|' . $name),
+                $this->isReferenceable(...),
+            );
     }
 
     private function isReferenceable(\DOMElement $domElement): bool

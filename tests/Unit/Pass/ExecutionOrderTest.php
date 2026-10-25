@@ -62,6 +62,7 @@ use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -70,13 +71,15 @@ use PHPUnit\Framework\TestCase;
  * @no-named-arguments
  */
 #[CoversClass(ExecutionOrder::class)]
+#[UsesClass(Rule::class)]
+#[UsesClass(RuleSet::class)]
 final class ExecutionOrderTest extends TestCase
 {
     #[Test]
     public function everyPassAppearsOnce(): void
     {
         self::assertSame(ExecutionOrder::passes(), array_values(array_unique(ExecutionOrder::passes())));
-        self::assertCount(58, ExecutionOrder::passes());
+        self::assertCount(57, ExecutionOrder::passes());
     }
 
     #[Test]
@@ -119,11 +122,15 @@ final class ExecutionOrderTest extends TestCase
 
         yield 'titles and descriptions are removed one after the other' => [RemoveTitles::class, RemoveDescriptions::class];
 
-        yield 'unused ids are removed before ids and classes are prefixed' => [RemoveUnusedIds::class, ScopeSvgStyles::class];
+        yield 'attribute names are fixed before ids and classes are prefixed' => [FixAttributeNames::class, ScopeSvgStyles::class];
 
-        yield 'unused definitions are removed before ids and classes are prefixed' => [RemoveUnusedDefinitions::class, ScopeSvgStyles::class];
+        yield 'ids and classes are prefixed before unused ids are removed, so a rule that prefixing drops cannot keep ids for one run only' => [ScopeSvgStyles::class, RemoveUnusedIds::class];
 
-        yield 'duplicate gradients are merged before ids and classes are prefixed' => [MergeDuplicateGradients::class, ScopeSvgStyles::class];
+        yield 'ids and classes are prefixed before style elements are merged, which may wrap rules in at-rules that cannot be prefixed' => [ScopeSvgStyles::class, MergeStyles::class];
+
+        yield 'ids and classes are prefixed before class rules are converted, so a rule that prefixing drops cannot block a conversion for one run only' => [ScopeSvgStyles::class, ConvertCssClassesToAttributes::class];
+
+        yield 'ids and classes are prefixed before deprecated attributes are removed, so a rule that prefixing drops cannot keep them for one run only' => [ScopeSvgStyles::class, RemoveDeprecatedAttributes::class];
 
         yield 'class styles become attributes before colors are minified' => [ConvertCssClassesToAttributes::class, ConvertColorsToHex::class];
 
@@ -199,7 +206,31 @@ final class ExecutionOrderTest extends TestCase
     }
 
     #[Test]
-    public function sortOrdersPassesByExecutionOrderAndRunsUnknownPassesLastInTheirOrder(): void
+    public function everyPassOfEveryRuleHasAPosition(): void
+    {
+        $rulePasses = array_merge(...array_map(static fn (Rule $rule): array => $rule->passes(), Rule::cases()));
+        sort($rulePasses);
+        $passes = ExecutionOrder::passes();
+        sort($passes);
+
+        self::assertSame($passes, array_values(array_unique($rulePasses)));
+    }
+
+    #[Test]
+    public function sortOrdersPassesByExecutionOrder(): void
+    {
+        $sortAttributes = new SortAttributes();
+        $removeComments = new RemoveComments();
+        $flattenGroups = new FlattenGroups();
+
+        self::assertSame(
+            [$removeComments, $flattenGroups, $sortAttributes],
+            ExecutionOrder::sort([$sortAttributes, $removeComments, $flattenGroups]),
+        );
+    }
+
+    #[Test]
+    public function sortRunsPassesWithoutPositionLastInTheirOrder(): void
     {
         $first = new class implements PassInterface {
             #[\Override]
@@ -213,13 +244,9 @@ final class ExecutionOrderTest extends TestCase
             {
             }
         };
-        $sortAttributes = new SortAttributes();
         $removeComments = new RemoveComments();
 
-        self::assertSame(
-            [$removeComments, $sortAttributes, $first, $second],
-            ExecutionOrder::sort([$first, $sortAttributes, $second, $removeComments]),
-        );
+        self::assertSame([$removeComments, $first, $second], ExecutionOrder::sort([$first, $removeComments, $second]));
     }
 
     /**

@@ -13,14 +13,27 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertShapesToPath;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AttributeNodeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PathDataSerializerTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RenameElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +44,17 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(AttributeNodeTrait::class)]
+#[CoversTrait(DocumentScriptTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(NumberFormatterTrait::class)]
+#[CoversTrait(NumberListTrait::class)]
+#[CoversTrait(PathDataSerializerTrait::class)]
+#[CoversTrait(RenameElementTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
+#[UsesClass(SvgTag::class)]
 final class ConvertShapesToPathTest extends TestCase
 {
     /**
@@ -54,6 +78,20 @@ final class ConvertShapesToPathTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps attributes whose names hold characters outside the basic multilingual plane' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:x\u{1F600}=\"urn:x\"><rect width=\"5\" height=\"5\" x\u{1F600}:a\u{1F600}=\"1\" b\u{1F600}=\"2\"/></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:x\u{1F600}=\"urn:x\"><path x\u{1F600}:a\u{1F600}=\"1\" b\u{1F600}=\"2\" d=\"M0 0h5v5h-5z\"/></svg>",
+        ];
+
+        yield 'Keeps every attribute in a namespace when one shares its local name with an attribute without a namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a" xmlns:b="urn:b"><rect width="5" height="5" a:z="1" b:y="3" z="2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a" xmlns:b="urn:b"><path z="2" d="M0 0h5v5h-5z" a:z="1" b:y="3"/></svg>',
+        ];
+
+        yield 'Keeps an attribute in a namespace that shares its local name with one without a namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a"><rect width="5" height="5" a:z="1" z="2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a"><path z="2" d="M0 0h5v5h-5z" a:z="1"/></svg>',
+        ];
         yield 'Keeps a rect with a trailing decimal point' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect width="200." height="10"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><rect width="200." height="10"/></svg>',
@@ -96,7 +134,7 @@ final class ConvertShapesToPathTest extends TestCase
 
         yield 'Keeps attributes sharing a local name across namespaces' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><rect fill="red" x:fill="blue" x="10" y="20" width="30" height="40"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><path fill="red" x:fill="blue" d="M10 20h30v40h-30z"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><path fill="red" d="M10 20h30v40h-30z" x:fill="blue"/></svg>',
         ];
 
         yield 'Converts rect' => [
@@ -174,9 +212,14 @@ final class ConvertShapesToPathTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="0,0,,10,0 10,10"/></svg>',
         ];
 
-        yield 'Keeps polyline with a leading or trailing comma' => [
+        yield 'Keeps a polyline with a leading comma and converts a polygon with a trailing comma, which browsers accept' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><polyline points=",0 0 10 10"/><polygon points="0 0 10 10 20 0,"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points=",0 0 10 10"/><polygon points="0 0 10 10 20 0,"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points=",0 0 10 10"/><path d="M0 0 10 10 20 0z"/></svg>',
+        ];
+
+        yield 'Converts points without separators, as minified points are written' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="0 0 10-10 .5.5" stroke="red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path stroke="red" d="M0 0 10-10 .5.5"/></svg>',
         ];
 
         yield 'Keeps polyline with a comma surrounded by spaces twice' => [
@@ -256,7 +299,7 @@ final class ConvertShapesToPathTest extends TestCase
 
         yield 'Keeps the shapes that both references of a text path point to' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="a" width="5" height="5"/><rect id="b" width="5" height="5"/><text><textPath href="#a" xlink:href="#b">t</textPath><textPath href="#">u</textPath></text><rect width="5" height="5"/><rect id="c" xml:id="d" width="5" height="5"/><rect id="e" xml:id="f" width="5" height="5"/><mpath href="#f"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="a" width="5" height="5"/><rect id="b" width="5" height="5"/><text><textPath href="#a" xlink:href="#b">t</textPath><textPath href="#">u</textPath></text><path d="M0 0h5v5h-5z"/><path id="c" xml:id="d" d="M0 0h5v5h-5z"/><rect id="e" xml:id="f" width="5" height="5"/><mpath href="#f"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="a" width="5" height="5"/><rect id="b" width="5" height="5"/><text><textPath href="#a" xlink:href="#b">t</textPath><textPath href="#">u</textPath></text><path d="M0 0h5v5h-5z"/><path id="c" d="M0 0h5v5h-5z" xml:id="d"/><rect id="e" xml:id="f" width="5" height="5"/><mpath href="#f"/></svg>',
         ];
 
         yield 'Keeps shapes in other namespaces' => [

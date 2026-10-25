@@ -17,12 +17,15 @@ use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
 #[CoversClass(RuleSet::class)]
+#[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Rule::class)]
 final class RuleSetTest extends TestCase
 {
     private const array RULES_IN_NO_SET = [
@@ -103,7 +106,6 @@ final class RuleSetTest extends TestCase
         yield 'minification' => [RuleSet::Minification, 'minification', [
             Rule::MinifyStyles,
             Rule::MinifyNumericValues,
-            Rule::MinifySvgCoordinates,
             Rule::MinifyTransformations,
             Rule::MinifyPathData,
             Rule::RemoveUnnecessaryWhitespace,

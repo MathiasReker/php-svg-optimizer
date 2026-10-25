@@ -13,14 +13,28 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MigrateToSvg2;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DefinitionElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RemoveElementsByTagNameTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2AttributeMigrationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2ElementMigrationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2TinyMigrationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2XlinkMigrationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +45,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(CssDeclarationTrait::class)]
+#[CoversTrait(DefinitionElementTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(RemoveElementsByTagNameTrait::class)]
+#[CoversTrait(Svg2AttributeMigrationTrait::class)]
+#[CoversTrait(Svg2ElementMigrationTrait::class)]
+#[CoversTrait(Svg2TinyMigrationTrait::class)]
+#[CoversTrait(Svg2XlinkMigrationTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
+#[UsesClass(SvgTag::class)]
 final class MigrateToSvg2Test extends TestCase
 {
     /**
@@ -62,6 +88,10 @@ final class MigrateToSvg2Test extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Replaces a reference to an obsolete element whose id has a colon in an inline style' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><solidColor id="s:t" solid-color="red"/></defs><rect style="fill:url(#s:t) blue"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><solidColor id="s:t"/></defs><rect style="fill:blue"/></svg>',
+        ];
         yield from self::provideXlinkCases();
         yield from self::provideElementCases();
         yield from self::provideAttributeCases();

@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
@@ -21,6 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +33,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class RemoveUnusedNamespacesTest extends TestCase
 {
     /**
@@ -54,6 +57,10 @@ final class RemoveUnusedNamespacesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Removes a namespace whose prefix only spans two attribute values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:ab="urn:x"><rect class="a" id="b:c"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect class="a" id="b:c"/></svg>',
+        ];
         yield 'Removes unused namespaces' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:ns1="http://example.com/ns1" width="100" height="100">
@@ -145,7 +152,27 @@ final class RemoveUnusedNamespacesTest extends TestCase
 
         yield 'Keeps a namespace whose prefix is used by an element with an underscore local name' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><x:_a/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><x:_a xmlns:x="urn:x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><x:_a/></svg>',
+        ];
+
+        yield 'Keeps namespaces whose prefixes hold an underscore or characters outside ASCII' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:_x="urn:x" xmlns:é="urn:e" xmlns:u="urn:u"><_x:a/><rect é:b="1" u:_c="2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:_x="urn:x" xmlns:é="urn:e" xmlns:u="urn:u"><_x:a/><rect é:b="1" u:_c="2"/></svg>',
+        ];
+
+        yield 'Keeps a namespace whose prefix an attribute value names' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><rect><set attributeName="x:a" to="1"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><rect><set attributeName="x:a" to="1"/></rect></svg>',
+        ];
+
+        yield 'Removes a namespace whose prefix only a comment or a URL scheme mentions' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x" xmlns:http="urn:h"><!--x:a--><a href="https://a.b/"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><!--x:a--><a href="https://a.b/"/></svg>',
+        ];
+
+        yield 'Keeps a namespace whose prefix a namespaced child element uses after the root' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><g><g><x:a/></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><g><g><x:a/></g></g></svg>',
         ];
 
         yield 'Keeps a namespace whose prefix is only used in text' => [

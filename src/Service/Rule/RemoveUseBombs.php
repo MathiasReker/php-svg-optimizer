@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\UseBombTrait;
 
@@ -23,7 +22,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\UseBombTrait;
  */
 final readonly class RemoveUseBombs implements PassInterface
 {
-    use EntityReferenceTrait;
     use TagMatcherTrait;
     use UseBombTrait;
 
@@ -33,7 +31,6 @@ final readonly class RemoveUseBombs implements PassInterface
     #[\Override]
     public function apply(\DOMDocument $domDocument): void
     {
-        $this->expandEntityReferences($domDocument);
         $this->removeUseBombs($domDocument);
     }
 }

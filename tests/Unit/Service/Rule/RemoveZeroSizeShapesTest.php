@@ -13,14 +13,22 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveZeroSizeShapes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +39,12 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(DocumentScriptTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(NumberFormatterTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class RemoveZeroSizeShapesTest extends TestCase
 {
     /**
@@ -58,6 +72,15 @@ final class RemoveZeroSizeShapesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps zero size shapes in a document with a script, which may resize or query them' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><rect width="0" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><rect width="0" height="5"/></svg>',
+        ];
+
+        yield 'Keeps zero size shapes in a document with an event handler' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" onload="a()"><circle r="0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" onload="a()"><circle r="0"/></svg>',
+        ];
         yield 'Keeps a zero size shape exposed to assistive technology' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect width="0" height="5" aria-label="a"/><rect width="0" height="5"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><rect width="0" height="5" aria-label="a"/></svg>',

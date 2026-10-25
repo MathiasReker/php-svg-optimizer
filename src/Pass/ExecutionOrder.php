@@ -26,7 +26,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyListValues;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyNumericValues;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyPathData;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyStyles;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifySvgCoordinates;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MoveCommonAttributesToGroup;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\MoveGroupAttributesToElements;
@@ -88,6 +87,7 @@ final class ExecutionOrder
         RemoveMetadata::class,
         RemoveInkscapeFootprints::class,
         FixAttributeNames::class,
+        ScopeSvgStyles::class,
         RemoveUnusedIds::class,
         MigrateToSvg2::class,
         RemoveNonStandardTags::class,
@@ -109,12 +109,10 @@ final class ExecutionOrder
         RemoveEmptyAttributes::class,
         MinifyNumericValues::class,
         MinifyListValues::class,
-        MinifySvgCoordinates::class,
         ConvertColorsToHex::class,
         MergeDuplicateGradients::class,
         ConvertOneStopGradients::class,
         RemoveUnusedDefinitions::class,
-        ScopeSvgStyles::class,
         RemoveNonInheritableGroupAttributes::class,
         RemoveHiddenElements::class,
         RemoveZeroSizeShapes::class,

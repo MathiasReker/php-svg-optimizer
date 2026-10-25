@@ -87,7 +87,6 @@ final readonly class SvgOptimizerFacade
      * @param bool $convertInlineStylesToAttributes Whether to convert inline styles to attributes
      * @param bool $fixAttributeNames               Whether to fix typos in attribute names
      * @param bool $flattenGroups                   Whether to flatten nested group elements
-     * @param bool $minifySvgCoordinates            Whether to minify coordinate values within the SVG
      * @param bool $minifyTransformations           Whether to minify transformation attributes
      * @param bool $removeAriaAndRole               Whether to remove aria and role attributes
      * @param bool $removeComments                  Whether to remove XML comments from the SVG
@@ -140,7 +139,6 @@ final readonly class SvgOptimizerFacade
         bool $convertInlineStylesToAttributes = false,
         bool $fixAttributeNames = false,
         bool $flattenGroups = false,
-        bool $minifySvgCoordinates = false,
         bool $minifyTransformations = false,
         bool $removeAriaAndRole = false,
         bool $removeComments = false,
@@ -191,7 +189,6 @@ final readonly class SvgOptimizerFacade
             [Rule::ConvertInlineStylesToAttributes, $convertInlineStylesToAttributes],
             [Rule::FixAttributeNames, $fixAttributeNames],
             [Rule::FlattenGroups, $flattenGroups],
-            [Rule::MinifySvgCoordinates, $minifySvgCoordinates],
             [Rule::MinifyTransformations, $minifyTransformations],
             [Rule::RemoveAriaAndRole, $removeAriaAndRole],
             [Rule::RemoveComments, $removeComments],

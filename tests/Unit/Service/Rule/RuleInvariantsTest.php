@@ -229,7 +229,7 @@ final class RuleInvariantsTest extends TestCase
             iterator_to_array(self::provideNonRiskyRuleKeepsEveryIdCases(), false),
         ));
 
-        self::assertCount(32, $rules);
+        self::assertCount(31, $rules);
         self::assertNotContains(Rule::RemoveUnusedIds->name, $rules);
         self::assertNotContains(Rule::RemoveScripts->name, $rules);
         self::assertNotContains(Rule::RemoveTitles->name, $rules);

@@ -13,14 +13,22 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssStyleElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\FragmentTargetTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdRenameTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +39,12 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(CssDeclarationTrait::class)]
+#[CoversTrait(CssStyleElementTrait::class)]
+#[CoversTrait(FragmentTargetTrait::class)]
+#[CoversTrait(IdRenameTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class ScopeSvgStylesTest extends TestCase
 {
     /**
@@ -62,6 +76,10 @@ final class ScopeSvgStylesTest extends TestCase
             'an imported style sheet' => '<svg><style>@import url(a.css);.a{stroke:blue}</style><rect class="a"/></svg>',
             'a style element with an element child, whose text browsers do not apply' => '<svg><style><x>.a{fill:red}</x></style><rect class="a"/></svg>',
             'a style sheet of another type' => '<svg><style type="text/xsl">.a{fill:red}</style><rect class="a"/></svg>',
+            'an id attribute selector' => '<svg><style>[id="r"]{fill:red}</style><rect id="r"/></svg>',
+            'a class attribute selector' => '<svg><style>rect[CLASS~=a]{fill:red}.b{fill:blue}</style><rect class="a b"/></svg>',
+            'a class attribute selector with a namespace' => '<svg><style>[*|class^="a"]{fill:red}</style><rect class="ab"/></svg>',
+            'an id attribute presence selector' => '<svg><style>[ id ]{fill:red}#r{stroke:red}</style><rect id="r"/></svg>',
         ];
 
         foreach ($unscopable as $name => $svg) {
@@ -518,9 +536,16 @@ final class ScopeSvgStylesTest extends TestCase
         ];
 
         yield 'Keeps dots and hashes inside attribute selectors' => [
-            '<svg><style>[href="a.b"]{fill:red}[fill="#fff"]{stroke:red}</style><a href="a.b"><rect fill="#fff"/></a></svg>',
+            '<svg><style>.c[href="a.b"]{fill:red}.c[fill="#fff"]{stroke:red}</style><a href="a.b"><rect class="c" fill="#fff"/></a></svg>',
             static function (string $output): void {
-                self::assertStringContainsString('<style>[href="a.b"]{fill:red}[fill="#fff"]{stroke:red}</style>', $output);
+                self::assertMatchesRegularExpression('/<style>\.c-([0-9a-f]{10})\[href="a\.b"]\{fill:red}\.c-\1\[fill="#fff"]\{stroke:red}<\/style>/', $output);
+            },
+        ];
+
+        yield 'Removes rules whose selectors may match elements of the page' => [
+            '<svg><style>g rect{fill:red}svg *{fill:red}rect:hover{fill:red}[fill]{stroke:red}:root rect{fill:red}rect:not(.a){fill:red}:is(.a) rect{fill:red}.a rect{fill:blue}</style><g class="a"><rect/></g></svg>',
+            static function (string $output): void {
+                self::assertMatchesRegularExpression('/^<svg><style>\.a-([0-9a-f]{10}) rect\{fill:blue}<\/style><g class="a-\1"><rect\/><\/g><\/svg>$/', $output);
             },
         ];
 
@@ -531,11 +556,10 @@ final class ScopeSvgStylesTest extends TestCase
             },
         ];
 
-        yield 'Leaves a non-ASCII class selector and its class unscoped' => [
-            '<svg xmlns="http://www.w3.org/2000/svg"><style>.café{fill:red}#i{fill:blue}</style><rect class="café" id="i"/></svg>',
+        yield 'Scopes a non-ASCII class and id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.café{fill:red}#ï{fill:blue}</style><rect class="café" id="ï"/></svg>',
             static function (string $output): void {
-                self::assertStringContainsString('.café{fill:red}', $output);
-                self::assertStringContainsString('<rect class="café" id="i-', $output);
+                self::assertMatchesRegularExpression('/<style>\.café-([0-9a-f]{10})\{fill:red}#ï-\1\{fill:blue}<\/style><rect class="café-\1" id="ï-\1"\/>/u', $output);
             },
         ];
 
@@ -590,16 +614,16 @@ final class ScopeSvgStylesTest extends TestCase
         ];
 
         yield 'Keeps every selector of a :where() list' => [
-            '<svg><style>:where(text, rect, circle){fill:red}:is(.a, rect){stroke:red}</style><rect class="a"/></svg>',
+            '<svg><style>.a:where(text, rect, circle){fill:red}.a:is(.a, rect){stroke:red}</style><rect class="a"/></svg>',
             static function (string $output): void {
-                self::assertMatchesRegularExpression('/<style>:where\(text, rect, circle\)\{fill:red}:is\(\.a-([0-9a-f]{10}), rect\)\{stroke:red}<\/style><rect class="a-\1"\/>/', $output);
+                self::assertMatchesRegularExpression('/<style>\.a-([0-9a-f]{10}):where\(text, rect, circle\)\{fill:red}\.a-\1:is\(\.a-\1, rect\)\{stroke:red}<\/style><rect class="a-\1"\/>/', $output);
             },
         ];
 
         yield 'Scopes a class inside a :not() list' => [
-            '<svg><style>rect:not(.a, .b){fill:red}</style><rect class="b"/></svg>',
+            '<svg><style>.c:not(.a, .b){fill:red}</style><rect class="b c"/></svg>',
             static function (string $output): void {
-                self::assertMatchesRegularExpression('/rect:not\(\.a-([0-9a-f]{10}), \.b-\1\)\{fill:red}<\/style><rect class="b-\1"\/>/', $output);
+                self::assertMatchesRegularExpression('/\.c-([0-9a-f]{10}):not\(\.a-\1, \.b-\1\)\{fill:red}<\/style><rect class="b-\1 c-\1"\/>/', $output);
             },
         ];
 
@@ -826,8 +850,8 @@ final class ScopeSvgStylesTest extends TestCase
         ];
 
         yield 'Style elements with characters that need escaping' => [
-            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:url(#g)}text::after{content:"&amp;&lt;"}</style><linearGradient id="g"/><rect class="a"/></svg>',
-            ['/<style>\.a-([0-9a-f]{10})\{fill:url\(#g-\1\)}text::after\{content:"&amp;&lt;"}<\/style>/'],
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:url(#g)}.a::after{content:"&amp;&lt;"}</style><linearGradient id="g"/><rect class="a"/></svg>',
+            ['/<style>\.a-([0-9a-f]{10})\{fill:url\(#g-\1\)}\.a-\1::after\{content:"&amp;&lt;"}<\/style>/'],
         ];
 
         yield 'An id containing a dot' => [
@@ -921,6 +945,50 @@ final class ScopeSvgStylesTest extends TestCase
         $svgOptimizer->addPass(new ScopeSvgStyles());
 
         return $svgOptimizer->allowRisky()->optimize()->getContent();
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function scopesWhenAnAttributeSelectorOnlyResemblesAnIdOrClassSelector(): void
+    {
+        self::assertMatchesRegularExpression(
+            '/^<svg><style>\[data-id="r"]\.a-[0-9a-f]{10}\{fill:red}\[idx]\.a-[0-9a-f]{10}\{stroke:red}<\/style><rect class="a-[0-9a-f]{10}" data-id="r" idx="1"\/><\/svg>$/',
+            $this->scope('<svg><style>[data-id="r"].a{fill:red}[idx].a{stroke:red}</style><rect class="a" data-id="r" idx="1"/></svg>'),
+        );
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function givesTheSameDrawingTheSameSuffixWhateverItsFormatting(): void
+    {
+        $minified = $this->scope('<svg><style>.a{fill:red}</style><text class="a">a<tspan>b</tspan></text></svg>');
+        $pretty = $this->scope("<svg>\n  <style>.a{fill:red}</style>\n  <text class=\"a\">a<tspan>b</tspan>\n  </text>\n</svg>\n");
+        $other = $this->scope('<svg><style>.a{fill:red}</style><text class="a">a<tspan>c</tspan></text></svg>');
+
+        self::assertSame($minified, $pretty);
+        self::assertNotSame(mb_substr($minified, 0, 30), mb_substr($other, 0, 30));
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function removesASelectorWhoseOnlyClassIsNestedInFunctionalPseudoClasses(): void
+    {
+        self::assertMatchesRegularExpression(
+            '/^<svg><style>\.b-[0-9a-f]{10}\{fill:blue}<\/style><rect class="b-[0-9a-f]{10}"\/><\/svg>$/',
+            $this->scope('<svg><style>rect:not(.x:is(.a)){fill:red}.b{fill:blue}</style><rect class="b"/></svg>'),
+        );
     }
 
     #[Test]

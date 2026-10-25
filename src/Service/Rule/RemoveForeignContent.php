@@ -19,7 +19,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CanonicalNameTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DangerousAttributeValueTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementRemovalTrait;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\UnsafeAttributeTrait;
 
@@ -34,7 +33,6 @@ final readonly class RemoveForeignContent implements PassInterface
     use CanonicalNameTrait;
     use DangerousAttributeValueTrait;
     use ElementRemovalTrait;
-    use EntityReferenceTrait;
     use TagMatcherTrait;
     use UnsafeAttributeTrait;
 
@@ -63,7 +61,6 @@ final readonly class RemoveForeignContent implements PassInterface
     #[\Override]
     public function apply(\DOMDocument $domDocument): void
     {
-        $this->expandEntityReferences($domDocument);
         $this->removeElementsWhere($domDocument, $this->isUnsafeElement(...));
         $this->unwrapElementsWithUnsafeLinks($domDocument);
         $this->removeUnsafeAttributes($domDocument);

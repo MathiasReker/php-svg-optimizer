@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Processor\Trait;
 
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
  * @internal
@@ -21,7 +20,12 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  */
 trait TextWhitespaceTrait
 {
-    private const string BLANK_TEXT_QUERY = "//text()[normalize-space() = ''][string-length() > 0]";
+    private const string BLANK_TEXT_QUERY = '//text()[normalize-space() = ""][string-length() > 0][not(ancestor::*['
+        . 'local-name() = "foreignObject" or (namespace-uri() != "" and namespace-uri() != "http://www.w3.org/2000/svg")'
+        . '])]';
+
+    private const string TEXT_ELEMENT_QUERY
+        = '//*[local-name() = "text" and (namespace-uri() = "http://www.w3.org/2000/svg" or namespace-uri() = "")]';
 
     private const string TEXT_QUERY = './/text()';
 
@@ -36,19 +40,30 @@ trait TextWhitespaceTrait
 
     private const string COLLAPSIBLE_WHITESPACE_REGEX = '/[\n\r]*[\t ][\t\n\r ]*/';
 
-    private const string WHITE_SPACE_PROPERTY = 'white-space';
+    private const array WHITE_SPACE_SOURCES = ['white-space', '@import', '\\'];
+
+    private const string STYLESHEET_INSTRUCTION = 'xml-stylesheet';
 
     /**
      * @param \DOMDocument $domDocument the parsed document
      */
     private function removeBlankTextNodes(\DOMDocument $domDocument): void
     {
-        foreach ($this->blankTextNodes($domDocument) as $domText) {
-            if ($this->rendersAsSpace($domDocument, $domText)) {
-                $domText->data = $this->collapseTextWhitespace($domText);
-            } elseif ($this->isIgnorableBlank($domText)) {
-                $domText->parentNode?->removeChild($domText);
+        $textContent = $this->textContentPositions($domDocument);
+        $blankTextNodes = [];
+        $parents = [];
+
+        foreach ($this->blankTextNodes($domDocument) as $blankTextNode) {
+            $parent = $blankTextNode->parentNode;
+
+            if ($parent instanceof \DOMNode) {
+                $blankTextNodes[spl_object_id($blankTextNode)] = $blankTextNode;
+                $parents[spl_object_id($parent)] = $parent;
             }
+        }
+
+        foreach ($parents as $parent) {
+            $this->removeBlankChildren($parent, $blankTextNodes, $textContent);
         }
 
         foreach ($this->textNodes($domDocument, $domDocument, self::TEXT_QUERY) as $domText) {
@@ -61,13 +76,46 @@ trait TextWhitespaceTrait
     }
 
     /**
+     * @param \DOMNode                          $domNode        the element whose blank children to remove
+     * @param array<int, \DOMText>              $blankTextNodes the blank text nodes, by object id
+     * @param array<int, array{\DOMText, bool}> $textContent    the text nodes in text content, by object id, with
+     *                                                          whether text precedes and follows them
+     */
+    private function removeBlankChildren(\DOMNode $domNode, array $blankTextNodes, array $textContent): void
+    {
+        $followsWhitespace = false;
+
+        foreach (iterator_to_array($domNode->childNodes, false) as $child) {
+            if ($child instanceof \DOMText && \array_key_exists(spl_object_id($child), $blankTextNodes)) {
+                if ($this->rendersAsSpace($child, $textContent)) {
+                    $child->data = $this->collapseTextWhitespace($child);
+                } elseif ($this->isIgnorableBlank($child, $followsWhitespace)) {
+                    $domNode->removeChild($child);
+
+                    continue;
+                }
+            }
+
+            $followsWhitespace = $followsWhitespace || $this->startsWithWhitespace($child);
+        }
+    }
+
+    /**
+     * @param \DOMNode $domNode the node to check
+     */
+    private function startsWithWhitespace(\DOMNode $domNode): bool
+    {
+        return $domNode instanceof \DOMText
+            && !$domNode instanceof \DOMCdataSection
+            && 1 === preg_match(self::LEADING_WHITESPACE_REGEX, $domNode->data);
+    }
+
+    /**
      * @param \DOMDocument $domDocument the parsed document
      */
     private function collapseTextContentWhitespace(\DOMDocument $domDocument): void
     {
-        $markup = (string) $domDocument->saveXML($domDocument->documentElement);
-
-        if (str_contains(mb_strtolower($markup), self::WHITE_SPACE_PROPERTY)) {
+        if ($this->mayStyleWhiteSpace($domDocument)) {
             return;
         }
 
@@ -79,18 +127,43 @@ trait TextWhitespaceTrait
     }
 
     /**
+     * @param \DOMDocument $domDocument the parsed document
+     *
+     * @return bool true if the white-space property may be set, by the document or by a style sheet it links to
+     */
+    private function mayStyleWhiteSpace(\DOMDocument $domDocument): bool
+    {
+        foreach ($domDocument->childNodes as $child) {
+            if ($child instanceof \DOMProcessingInstruction && self::STYLESHEET_INSTRUCTION === mb_strtolower($child->target)) {
+                return true;
+            }
+        }
+
+        $markup = mb_strtolower((string) $domDocument->saveXML($domDocument->documentElement));
+
+        foreach (self::WHITE_SPACE_SOURCES as $source) {
+            if (str_contains($markup, $source)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param \DOMDocument $domDocument the document to serialize
      *
      * @return array{list<\DOMText>, list<string>} the blank text nodes and their whitespace, to restore it
      */
     private function collapseBlankTextNodes(\DOMDocument $domDocument): array
     {
+        $textContent = $this->textContentPositions($domDocument);
         $blankTextNodes = $this->blankTextNodes($domDocument);
         $whitespace = [];
 
         foreach ($blankTextNodes as $blankTextNode) {
             $whitespace[] = $blankTextNode->data;
-            $blankTextNode->data = $this->rendersAsSpace($domDocument, $blankTextNode) ? $this->collapseTextWhitespace($blankTextNode) : '';
+            $blankTextNode->data = $this->rendersAsSpace($blankTextNode, $textContent) ? $this->collapseTextWhitespace($blankTextNode) : '';
         }
 
         return [$blankTextNodes, $whitespace];
@@ -99,7 +172,7 @@ trait TextWhitespaceTrait
     /**
      * @param \DOMDocument $domDocument the document to search
      *
-     * @return list<\DOMText> the text nodes holding only whitespace, without CDATA sections
+     * @return list<\DOMText> the text nodes holding only whitespace outside foreign content, without CDATA sections
      */
     private function blankTextNodes(\DOMDocument $domDocument): array
     {
@@ -107,6 +180,33 @@ trait TextWhitespaceTrait
             $this->textNodes($domDocument, $domDocument, self::BLANK_TEXT_QUERY),
             static fn (\DOMText $domText): bool => !$domText instanceof \DOMCdataSection,
         ));
+    }
+
+    /**
+     * @param \DOMDocument $domDocument the document to search
+     *
+     * @return array<int, array{\DOMText, bool}> each text node in a `<text>` element, by object id, with whether text
+     *                                           both precedes and follows it in its nearest `<text>` element
+     */
+    private function textContentPositions(\DOMDocument $domDocument): array
+    {
+        $positions = [];
+        $domNodeList = (new \DOMXPath($domDocument))->query(self::TEXT_ELEMENT_QUERY, null, false);
+
+        foreach (false === $domNodeList ? [] : $domNodeList as $textElement) {
+            $textNodes = $textElement instanceof \DOMElement ? $this->textNodes($domDocument, $textElement, self::TEXT_QUERY) : [];
+            $filled = array_map(static fn (\DOMText $domText): bool => '' !== trim($domText->data), $textNodes);
+            $remaining = \count(array_filter($filled));
+            $preceding = 0;
+
+            foreach ($textNodes as $index => $textNode) {
+                $remaining -= (int) $filled[$index];
+                $positions[spl_object_id($textNode)] = [$textNode, $preceding > 0 && $remaining > 0];
+                $preceding += (int) $filled[$index];
+            }
+        }
+
+        return $positions;
     }
 
     /**
@@ -131,9 +231,10 @@ trait TextWhitespaceTrait
     }
 
     /**
-     * @param \DOMText $domText a text node holding only whitespace
+     * @param \DOMText $domText           a text node holding only whitespace
+     * @param bool     $followsWhitespace true if a preceding sibling is text starting with whitespace
      */
-    private function isIgnorableBlank(\DOMText $domText): bool
+    private function isIgnorableBlank(\DOMText $domText, bool $followsWhitespace): bool
     {
         $space = $this->xmlSpace($domText);
 
@@ -141,61 +242,19 @@ trait TextWhitespaceTrait
             return self::SPACE_PRESERVE !== $space && $domText->nextSibling instanceof \DOMNode;
         }
 
-        return !$domText->parentNode?->firstChild instanceof \DOMText
-            && ('' !== $space || !$this->followsTextStartingWithWhitespace($domText));
+        return !$domText->parentNode?->firstChild instanceof \DOMText && ('' !== $space || !$followsWhitespace);
     }
 
     /**
-     * @param \DOMText $domText a text node holding only whitespace
+     * @param \DOMText                          $domText     a text node holding only whitespace
+     * @param array<int, array{\DOMText, bool}> $textContent the text nodes in text content, by object id, with whether
+     *                                                       text precedes and follows them
      */
-    private function followsTextStartingWithWhitespace(\DOMText $domText): bool
+    private function rendersAsSpace(\DOMText $domText, array $textContent): bool
     {
-        for ($node = $domText->previousSibling; $node instanceof \DOMNode; $node = $node->previousSibling) {
-            if ($node instanceof \DOMText
-                && !$node instanceof \DOMCdataSection
-                && 1 === preg_match(self::LEADING_WHITESPACE_REGEX, $node->data)
-            ) {
-                return true;
-            }
-        }
+        $position = $textContent[spl_object_id($domText)] ?? null;
 
-        return false;
-    }
-
-    /**
-     * @param \DOMDocument $domDocument the document containing the node
-     * @param \DOMText     $domText     a text node holding only whitespace
-     */
-    private function rendersAsSpace(\DOMDocument $domDocument, \DOMText $domText): bool
-    {
-        for ($node = $domText->parentNode; $node instanceof \DOMElement; $node = $node->parentNode) {
-            if (SvgTag::Text->value === $node->localName && \in_array($node->namespaceURI, [null, SvgNamespace::Svg->value], true)) {
-                return $this->preservesSpace($domText) || $this->isBetweenText($domDocument, $domText, $node);
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param \DOMDocument $domDocument the document containing the node
-     * @param \DOMText     $domText     a text node holding only whitespace
-     * @param \DOMElement  $domElement  the `<text>` element containing the node
-     */
-    private function isBetweenText(\DOMDocument $domDocument, \DOMText $domText, \DOMElement $domElement): bool
-    {
-        $characters = '';
-        $preceding = '';
-
-        foreach ($this->textNodes($domDocument, $domElement, self::TEXT_QUERY) as $node) {
-            if ($node === $domText) {
-                $preceding = $characters;
-            }
-
-            $characters .= trim($node->data);
-        }
-
-        return '' !== $preceding && $characters !== $preceding;
+        return null !== $position && ($position[1] || $this->preservesSpace($domText));
     }
 
     /**

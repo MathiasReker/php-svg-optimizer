@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AttributeNodeTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
@@ -24,6 +25,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 final readonly class RemoveUnnecessaryWhitespace implements PassInterface
 {
     use AsciiCaseTrait;
+    use AttributeNodeTrait;
     use ElementTrait;
 
     private const string WHITESPACE_REGEX = '/\s+/';
@@ -86,7 +88,7 @@ final readonly class RemoveUnnecessaryWhitespace implements PassInterface
                 : $this->minifyOutsideStrings($domAttr->value, static fn (string $part): string => $part);
 
             if ($value !== $domAttr->value) {
-                $domElement->setAttributeNS($domAttr->namespaceURI, $domAttr->nodeName, $value);
+                $this->setAttributeNodeValue($domAttr, $value);
             }
         }
     }

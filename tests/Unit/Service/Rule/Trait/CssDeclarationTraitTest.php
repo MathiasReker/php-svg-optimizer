@@ -13,9 +13,16 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule\Trait;
 
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ClassAttributeTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssStyleElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\RegexFailureTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
@@ -26,6 +33,13 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(ConvertCssClassesToAttributes::class)]
 #[CoversClass(ConvertInlineStylesToAttributes::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(ClassAttributeTrait::class)]
+#[CoversTrait(CssDeclarationTrait::class)]
+#[CoversTrait(CssStyleElementTrait::class)]
+#[CoversTrait(DocumentScriptTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
 final class CssDeclarationTraitTest extends TestCase
 {
     use CssDeclarationTrait;

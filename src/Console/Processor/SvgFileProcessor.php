@@ -64,7 +64,7 @@ final readonly class SvgFileProcessor
      */
     private function processDirectory(string $directory): void
     {
-        $paths = (new Finder())
+        $paths = (new Finder(\DIRECTORY_SEPARATOR))
             ->in($directory)
             ->files()
             ->withExtension(SvgTag::Svg->value)

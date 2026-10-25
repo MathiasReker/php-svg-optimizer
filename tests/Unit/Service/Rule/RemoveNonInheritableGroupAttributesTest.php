@@ -13,14 +13,20 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonInheritableGroupAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PresentationAttributeCleanupTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\SvgElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +37,10 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StringProvider::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(PresentationAttributeCleanupTrait::class)]
+#[CoversTrait(SvgElementTrait::class)]
+#[UsesClass(ExecutionOrder::class)]
 final class RemoveNonInheritableGroupAttributesTest extends TestCase
 {
     /**
@@ -183,5 +193,27 @@ final class RemoveNonInheritableGroupAttributesTest extends TestCase
         $svgOptimizer->addPass(new RemoveNonInheritableGroupAttributes());
 
         return $svgOptimizer->optimize()->getContent();
+    }
+
+    #[Test]
+    public function handlesADeepTreeInLinearTime(): void
+    {
+        $small = $this->secondsForDeepTree(60);
+        $large = $this->secondsForDeepTree(240);
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    private function secondsForDeepTree(int $depth): float
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" stroke="none">' . str_repeat('<g x="1">' . str_repeat('<rect width="1" height="1" fill="none"/>', 20), $depth) . str_repeat('</g>', $depth) . '</svg>');
+
+        $start = hrtime(true);
+        (new RemoveNonInheritableGroupAttributes())->apply($domDocument);
+
+        self::assertStringNotContainsString(' x="', (string) $domDocument->saveXML());
+
+        return (hrtime(true) - $start) / 1e9;
     }
 }
