@@ -173,4 +173,4 @@ else
     mutation_badges
 fi
 
-"$php" bin/svg-optimizer --with-all-rules --quiet process "$artifacts"
+"$php" bin/svg-optimizer --quiet "$artifacts"

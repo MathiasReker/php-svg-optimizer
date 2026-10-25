@@ -773,10 +773,9 @@ final class SvgOptimizerTest extends TestCase
     }
 
     /**
-     * @throws FileNotFoundException
      * @throws InvalidSvgException
-     * @throws IOException
      * @throws RiskyRulesNotAllowedException
+     * @throws IOException
      */
     #[Test]
     public function optimizeFileMeasuresTheInputAfterTheResultIsSavedOverIt(): void
@@ -794,9 +793,8 @@ final class SvgOptimizerTest extends TestCase
 
     /**
      * @throws InvalidSvgException
-     * @throws IOException
      * @throws RiskyRulesNotAllowedException
-     * @throws FileNotFoundException
+     * @throws IOException
      */
     #[Test]
     public function optimizeFileThrowsWhenTheFileDoesNotExist(): void

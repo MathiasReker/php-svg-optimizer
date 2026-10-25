@@ -89,6 +89,7 @@
         "benchmark": "@php dev/scripts/benchmark.php",
         "build:badges": "bash dev/scripts/build-badges.sh",
         "build:badges-without-mutation": "bash dev/scripts/build-badges.sh --skip-mutation",
+        "build:schema": "@php dev/scripts/build-schema.php",
         "check": [
             "@check:composer-validate",
             "@check:composer-normalize",

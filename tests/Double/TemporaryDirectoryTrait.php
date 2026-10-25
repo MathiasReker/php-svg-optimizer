@@ -35,6 +35,21 @@ trait TemporaryDirectoryTrait
         return $directory;
     }
 
+    /**
+     * @param string $directory the directory to list
+     *
+     * @return list<string> the names of the entries of the directory, sorted
+     */
+    protected function listDirectory(string $directory): array
+    {
+        $entries = scandir($directory);
+        $names = array_values(array_diff(false === $entries ? [] : $entries, ['.', '..']));
+
+        sort($names);
+
+        return $names;
+    }
+
     #[After]
     protected function removeTemporaryDirectories(): void
     {

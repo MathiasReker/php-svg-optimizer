@@ -23,13 +23,16 @@ final readonly class SvgFile
 {
     private const int DIRECTORY_PERMISSION = 0o755;
 
+    private const int FILE_PERMISSION = 0o644;
+
+    private const int PERMISSION_MASK = 0o777;
+
     /**
      * @param string $path the file to read
      *
      * @return string the content of the file
      *
-     * @throws FileNotFoundException If the file does not exist
-     * @throws IOException           If the path is not usable or the file cannot be read
+     * @throws IOException If the file does not exist, the path is not usable or the file cannot be read
      */
     public static function read(string $path): string
     {
@@ -64,6 +67,58 @@ final readonly class SvgFile
      */
     public static function write(string $path, string $content): void
     {
+        self::prepareOutput($path);
+
+        if (false === self::withoutWarnings(static fn (): false|int => file_put_contents($path, $content))) {
+            throw new IOException(\sprintf('Failed to write optimized content to the output file: %s', $path));
+        }
+    }
+
+    /**
+     * @param string $path    the file to replace, or create, with a complete copy of the content or nothing at all
+     * @param string $content the content to write
+     *
+     * @throws IOException If the path is not usable or the file cannot be replaced
+     */
+    public static function writeAtomically(string $path, string $content): void
+    {
+        self::prepareOutput($path);
+
+        $realPath = realpath($path);
+        $target = is_link($path) && false !== $realPath ? $realPath : $path;
+
+        if ((file_exists($target) && !is_writable($target)) || !self::replaceThroughTemporaryFile($target, $content)) {
+            throw new IOException(\sprintf('Failed to write optimized content to the output file: %s', $path));
+        }
+    }
+
+    /**
+     * @param string $target  the file to replace
+     * @param string $content the content to write
+     *
+     * @return bool true if the target now holds the content
+     */
+    private static function replaceThroughTemporaryFile(string $target, string $content): bool
+    {
+        $temporary = self::withoutWarnings(static fn (): false|string => tempnam(\dirname($target), '.svg-optimizer-'));
+
+        $replaced = false !== $temporary
+            && false !== self::withoutWarnings(static fn (): false|int => file_put_contents($temporary, $content))
+            && self::withoutWarnings(static fn (): bool => chmod($temporary, file_exists($target) ? fileperms($target) & self::PERMISSION_MASK : self::FILE_PERMISSION))
+            && self::withoutWarnings(static fn (): bool => rename($temporary, $target));
+
+        self::withoutWarnings(static fn (): bool => false !== $temporary && file_exists($temporary) && unlink($temporary));
+
+        return $replaced;
+    }
+
+    /**
+     * @param string $path the file to write, whose missing directories are created
+     *
+     * @throws IOException If the path is not usable, is a directory, or its directory cannot be created
+     */
+    private static function prepareOutput(string $path): void
+    {
         self::assertUsablePath($path, 'Output');
 
         if (is_dir($path)) {
@@ -72,10 +127,6 @@ final readonly class SvgFile
 
         if (!self::ensureDirectoryExists(\dirname($path))) {
             throw new IOException(\sprintf('Failed to create directory for output file: %s', $path));
-        }
-
-        if (false === self::withoutWarnings(static fn (): false|int => file_put_contents($path, $content))) {
-            throw new IOException(\sprintf('Failed to write optimized content to the output file: %s', $path));
         }
     }
 

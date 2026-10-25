@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer;
 
-use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
 use MathiasReker\PhpSvgOptimizer\Exception\InvalidSvgException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
@@ -94,8 +93,7 @@ final class SvgOptimizer
     /**
      * @param string $path the SVG file to optimize
      *
-     * @throws FileNotFoundException         If the file does not exist
-     * @throws IOException                   If the file cannot be read
+     * @throws IOException                   If the file does not exist or cannot be read
      * @throws InvalidSvgException           If the file is not a well-formed SVG document
      * @throws RiskyRulesNotAllowedException If withRules() selects a risky rule and risky rules are not allowed
      */

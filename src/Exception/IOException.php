@@ -16,6 +16,6 @@ namespace MathiasReker\PhpSvgOptimizer\Exception;
  *
  * @no-named-arguments
  */
-final class IOException extends \RuntimeException implements ExceptionInterface
+class IOException extends \RuntimeException implements ExceptionInterface
 {
 }

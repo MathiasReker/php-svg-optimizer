@@ -16,6 +16,6 @@ namespace MathiasReker\PhpSvgOptimizer\Exception;
  *
  * @no-named-arguments
  */
-final class FileNotFoundException extends \RuntimeException implements ExceptionInterface
+final class FileNotFoundException extends IOException
 {
 }

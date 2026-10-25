@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Exception;
 
 use MathiasReker\PhpSvgOptimizer\Exception\FileNotFoundException;
+use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -26,5 +27,16 @@ final class FileNotFoundExceptionTest extends TestCase
     public function keepsTheMessage(): void
     {
         self::assertSame('File not found', (new FileNotFoundException('File not found'))->getMessage());
+    }
+
+    /**
+     * @throws FileNotFoundException
+     */
+    #[Test]
+    public function isCaughtAsAnIoException(): void
+    {
+        $this->expectException(IOException::class);
+
+        throw new FileNotFoundException('File not found');
     }
 }

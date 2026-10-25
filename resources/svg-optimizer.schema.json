@@ -1,0 +1,281 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/resources/svg-optimizer.schema.json",
+    "title": "svg-optimizer configuration",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "The schema of this file, which editors use for completion and validation."
+        },
+        "sets": {
+            "type": "array",
+            "description": "The rule sets to select. \"default\" selects the standards, cleanup, conversion, structure and minification sets. Without sets and rules the default selection is used.",
+            "uniqueItems": true,
+            "items": {
+                "enum": [
+                    "default",
+                    "security",
+                    "standards",
+                    "cleanup",
+                    "conversion",
+                    "structure",
+                    "minification"
+                ]
+            }
+        },
+        "rules": {
+            "type": "object",
+            "description": "true selects a rule, false leaves it out even if a set selects it.",
+            "additionalProperties": false,
+            "properties": {
+                "convertCssClassesToAttributes": {
+                    "type": "boolean",
+                    "description": "Convert style sheet rules that select a single class to presentation attributes.",
+                    "x-risky": false
+                },
+                "convertEllipsesToCircles": {
+                    "type": "boolean",
+                    "description": "Convert ellipses with equal radii to circles.",
+                    "x-risky": false
+                },
+                "convertInlineStylesToAttributes": {
+                    "type": "boolean",
+                    "description": "Convert inline styles to presentation attributes.",
+                    "x-risky": false
+                },
+                "convertOneStopGradientsToColors": {
+                    "type": "boolean",
+                    "description": "Replace gradients with a single stop by the color of that stop. Risky: only runs when allowRisky is true.",
+                    "x-risky": true
+                },
+                "convertShapesToPaths": {
+                    "type": "boolean",
+                    "description": "Convert rect, line, polyline and polygon elements to paths.",
+                    "x-risky": false
+                },
+                "fixAttributeNames": {
+                    "type": "boolean",
+                    "description": "Fix the letter case of attribute names. Risky: only runs when allowRisky is true.",
+                    "x-risky": true
+                },
+                "flattenGroups": {
+                    "type": "boolean",
+                    "description": "Flatten nested groups.",
+                    "x-risky": false
+                },
+                "mergeDuplicateGradients": {
+                    "type": "boolean",
+                    "description": "Merge identical gradients into one. Risky: only runs when allowRisky is true.",
+                    "x-risky": true
+                },
+                "mergeStyleSheets": {
+                    "type": "boolean",
+                    "description": "Merge style elements into one.",
+                    "x-risky": false
+                },
+                "migrateToSvg2": {
+                    "type": "boolean",
+                    "description": "Migrate SVG 1.1 and SVG Tiny markup to SVG 2, including deprecated attributes and enable-background.",
+                    "x-risky": false
+                },
+                "minifyAttributeWhitespace": {
+                    "type": "boolean",
+                    "description": "Remove unnecessary whitespace from attribute values.",
+                    "x-risky": false
+                },
+                "minifyColors": {
+                    "type": "boolean",
+                    "description": "Write each color in its shortest form: a name, #rgb or #rrggbb.",
+                    "x-risky": false
+                },
+                "minifyNumericValues": {
+                    "type": "boolean",
+                    "description": "Shorten the notation of numeric attribute values and number lists.",
+                    "x-risky": false
+                },
+                "minifyPathData": {
+                    "type": "boolean",
+                    "description": "Minify path data without changing coordinates.",
+                    "x-risky": false
+                },
+                "minifyStyleSheets": {
+                    "type": "boolean",
+                    "description": "Remove comments and whitespace from style elements.",
+                    "x-risky": false
+                },
+                "minifyTransforms": {
+                    "type": "boolean",
+                    "description": "Minify transform lists.",
+                    "x-risky": false
+                },
+                "moveCommonAttributesToGroups": {
+                    "type": "boolean",
+                    "description": "Move attributes shared by all children of a group onto the group.",
+                    "x-risky": false
+                },
+                "moveGroupTransformsToChildren": {
+                    "type": "boolean",
+                    "description": "Move the transform of a group onto its children.",
+                    "x-risky": false
+                },
+                "prefixIdsAndClasses": {
+                    "type": "boolean",
+                    "description": "Prefix ids and class names so they do not conflict with other SVG documents on the same page. Risky: only runs when allowRisky is true.",
+                    "x-risky": true
+                },
+                "removeAriaAttributes": {
+                    "type": "boolean",
+                    "description": "Remove role and aria-* attributes.",
+                    "x-risky": false
+                },
+                "removeComments": {
+                    "type": "boolean",
+                    "description": "Remove comments.",
+                    "x-risky": false
+                },
+                "removeDataAttributes": {
+                    "type": "boolean",
+                    "description": "Remove data-* attributes. Risky: only runs when allowRisky is true.",
+                    "x-risky": true
+                },
+                "removeDefaultAttributes": {
+                    "type": "boolean",
+                    "description": "Remove attributes set to their default value, default type attributes on style and script elements and xml:space=\"default\" where it has no effect.",
+                    "x-risky": false
+                },
+                "removeDescriptions": {
+                    "type": "boolean",
+                    "description": "Remove desc elements.",
+                    "x-risky": false
+                },
+                "removeDuplicateElements": {
+                    "type": "boolean",
+                    "description": "Remove duplicate elements.",
+                    "x-risky": false
+                },
+                "removeEditorMarkup": {
+                    "type": "boolean",
+                    "description": "Remove the elements, attributes and namespace declarations that editors add in their own namespaces.",
+                    "x-risky": false
+                },
+                "removeEmptyAttributes": {
+                    "type": "boolean",
+                    "description": "Remove empty attributes.",
+                    "x-risky": false
+                },
+                "removeEmptyElements": {
+                    "type": "boolean",
+                    "description": "Remove empty containers and empty text elements.",
+                    "x-risky": false
+                },
+                "removeForeignContent": {
+                    "type": "boolean",
+                    "description": "Remove foreign, embedding and HTML breakout elements and non-canonical names.",
+                    "x-risky": false
+                },
+                "removeHiddenElements": {
+                    "type": "boolean",
+                    "description": "Remove elements that cannot render anything, including shapes with a zero size.",
+                    "x-risky": false
+                },
+                "removeIneffectiveAttributes": {
+                    "type": "boolean",
+                    "description": "Remove attributes that have no effect: useless strokes and fills, group attributes that are neither inherited nor apply to groups, and text attributes on elements without text.",
+                    "x-risky": false
+                },
+                "removeIneffectiveDefinitions": {
+                    "type": "boolean",
+                    "description": "Remove definitions without an id.",
+                    "x-risky": false
+                },
+                "removeInvisibleCharacters": {
+                    "type": "boolean",
+                    "description": "Remove invisible characters.",
+                    "x-risky": false
+                },
+                "removeMetadata": {
+                    "type": "boolean",
+                    "description": "Remove metadata elements.",
+                    "x-risky": false
+                },
+                "removeNonStandardAttributes": {
+                    "type": "boolean",
+                    "description": "Remove attributes that are not part of the SVG specification.",
+                    "x-risky": false
+                },
+                "removeNonStandardElements": {
+                    "type": "boolean",
+                    "description": "Remove elements that are not part of the SVG specification.",
+                    "x-risky": false
+                },
+                "removeScripts": {
+                    "type": "boolean",
+                    "description": "Remove scripts, event handlers and animations that rewrite links or event handlers.",
+                    "x-risky": false
+                },
+                "removeTitles": {
+                    "type": "boolean",
+                    "description": "Remove title elements.",
+                    "x-risky": false
+                },
+                "removeUnsafeMarkup": {
+                    "type": "boolean",
+                    "description": "Remove processing instructions and unsafe comments.",
+                    "x-risky": false
+                },
+                "removeUnsafeStyles": {
+                    "type": "boolean",
+                    "description": "Remove unsafe statements and declarations from style sheets and style attributes.",
+                    "x-risky": false
+                },
+                "removeUnsafeUrls": {
+                    "type": "boolean",
+                    "description": "Remove attributes with URLs that can run script or load external content.",
+                    "x-risky": false
+                },
+                "removeUnusedDefinitions": {
+                    "type": "boolean",
+                    "description": "Remove definitions that are not referenced. Risky: only runs when allowRisky is true.",
+                    "x-risky": true
+                },
+                "removeUnusedIds": {
+                    "type": "boolean",
+                    "description": "Remove ids that are not referenced. Risky: only runs when allowRisky is true.",
+                    "x-risky": true
+                },
+                "removeUnusedNamespaces": {
+                    "type": "boolean",
+                    "description": "Remove unused namespace declarations.",
+                    "x-risky": false
+                },
+                "removeUseBombs": {
+                    "type": "boolean",
+                    "description": "Remove use elements that form cycles or render too many instances.",
+                    "x-risky": false
+                },
+                "removeWidthHeightAttributes": {
+                    "type": "boolean",
+                    "description": "Remove the width and height of the root element when it has a viewBox. Risky: only runs when allowRisky is true.",
+                    "x-risky": true
+                },
+                "sortAttributes": {
+                    "type": "boolean",
+                    "description": "Sort attributes.",
+                    "x-risky": false
+                },
+                "sortDefinitions": {
+                    "type": "boolean",
+                    "description": "Group the children of defs elements by element name.",
+                    "x-risky": false
+                }
+            }
+        },
+        "allowRisky": {
+            "type": "boolean",
+            "description": "Allow the risky rules that sets or rules select. They may change how the SVG renders or is used.",
+            "default": false
+        }
+    }
+}

@@ -32,8 +32,8 @@ composer require mathiasreker/php-svg-optimizer --ansi
 
 echo ">"
 type_line "# Optimize every SVG in a directory with one command"
-type_line "vendor/bin/svg-optimizer --with-all-rules process svg"
-vendor/bin/svg-optimizer --with-all-rules --ansi process svg
+type_line "vendor/bin/svg-optimizer svg"
+vendor/bin/svg-optimizer --ansi svg
 
 echo ">"
 type_line "# Done! Smaller, cleaner, safer SVGs."

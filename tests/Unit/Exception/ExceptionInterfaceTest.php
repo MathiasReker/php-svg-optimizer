@@ -99,7 +99,7 @@ final class ExceptionInterfaceTest extends TestCase
      */
     public static function provideExtendsItsParentCases(): iterable
     {
-        yield 'file not found' => [FileNotFoundException::class, \RuntimeException::class];
+        yield 'file not found' => [FileNotFoundException::class, IOException::class];
 
         yield 'io' => [IOException::class, \RuntimeException::class];
 

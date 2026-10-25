@@ -26,6 +26,14 @@ parameters:
       path: src/Rule.php
     - identifier: symplify.requireExceptionNamespace
       path: src/Xml/ParseException.php
+    - identifier: ergebnis.final
+      path: src/Exception/IOException.php
+    - identifier: symplify.explicitAbstractPrefixName
+      path: tests/Unit/Console/Output/AbstractStreamTest.php
+    - identifier: ergebnis.noExtends
+      path: src/Exception/FileNotFoundException.php
+    - identifier: symplify.forbiddenExtendOfNonAbstractClass
+      path: src/Exception/FileNotFoundException.php
   type_coverage:
     return: 100
     param: 100
@@ -38,7 +46,7 @@ parameters:
         - LogicException
         - InvalidArgumentException
         - Exception
-        - MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream
+        - MathiasReker\PhpSvgOptimizer\Console\Output\AbstractStream
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
     - vendor/odan/phpstan-rules/rules.neon

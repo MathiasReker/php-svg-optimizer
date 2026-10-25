@@ -12,42 +12,38 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer;
 
-use MathiasReker\PhpSvgOptimizer\Console\Command\CommandDispatcher;
+use MathiasReker\PhpSvgOptimizer\Console\Application;
+use MathiasReker\PhpSvgOptimizer\Console\Output\StderrStream;
+use MathiasReker\PhpSvgOptimizer\Console\Output\StdoutStream;
 
-if (\function_exists('ini_set')) {
-    ini_set('memory_limit', '-1');
-}
-
-if (\function_exists('error_reporting')) {
-    error_reporting(\E_ALL);
-}
-
-$autoloadCandidates = [
-    __DIR__ . '/../vendor/autoload.php',
-    \is_string($GLOBALS['_composer_autoload_path'] ?? null) ? $GLOBALS['_composer_autoload_path'] : '',
-    __DIR__ . '/../../../../vendor/autoload.php',
-];
-
-$autoloadLoaded = false;
-foreach ($autoloadCandidates as $autoloadCandidate) {
-    $real = realpath($autoloadCandidate);
-    if (false !== $real && is_file($real)) {
-        include_once $real;
-        $autoloadLoaded = true;
-        break;
-    }
-}
-
-if (\PHP_SAPI !== 'cli') {
+if ('cli' !== \PHP_SAPI) {
     echo 'This command can only be run in a CLI environment.', \PHP_EOL;
 
     exit(1);
 }
 
-if (!$autoloadLoaded) {
+error_reporting(\E_ALL);
+
+$autoloadCandidates = [
+    \is_string($GLOBALS['_composer_autoload_path'] ?? null) ? $GLOBALS['_composer_autoload_path'] : '',
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+];
+
+foreach ($autoloadCandidates as $autoloadCandidate) {
+    if ('' !== $autoloadCandidate && is_file($autoloadCandidate)) {
+        require_once $autoloadCandidate;
+
+        break;
+    }
+}
+
+if (!class_exists(Application::class)) {
     fwrite(\STDERR, 'Unable to find the Composer autoloader. Run "composer install" first.' . \PHP_EOL);
 
     exit(1);
 }
 
-exit(CommandDispatcher::fromArgs($argv)->run());
+$arguments = $_SERVER['argv'] ?? [];
+
+exit((new Application(new StdoutStream(), new StderrStream()))->run(array_values(array_filter(\array_slice(\is_array($arguments) ? $arguments : [], 1), \is_string(...))))->value);

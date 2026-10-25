@@ -61,7 +61,7 @@ return (new PhpCsFixer\Config())
         'new_expression_parentheses' => true,
         'no_useless_printf' => true,
         'class_keyword' => true,
-        'final_class' => true,
+        'final_internal_class' => true,
         'final_public_method_for_abstract_class' => true,
         'no_redundant_readonly_property' => true,
         'phpdoc_tag_no_named_arguments' => ['fix_internal' => false],

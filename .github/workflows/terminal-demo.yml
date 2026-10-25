@@ -37,10 +37,6 @@ jobs:
           sudo apt install -y asciinema
           asciinema --version
 
-      - name: Make the script executable
-        run: |
-          chmod +x ./dev/scripts/record-demo.sh
-
       - name: Record the script execution
         run: |
           asciinema rec --command="./dev/scripts/record-demo.sh" --quiet --overwrite demo.cast
