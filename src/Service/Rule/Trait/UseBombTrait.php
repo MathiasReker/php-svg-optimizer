@@ -43,7 +43,7 @@ trait UseBombTrait
         $this->useInstances($domDocument->documentElement, $this->elementsById($domDocument), $instances, $unsafe);
 
         foreach ($unsafe as $domElement) {
-            $domElement->parentNode?->removeChild($domElement);
+            $domElement->remove();
         }
     }
 

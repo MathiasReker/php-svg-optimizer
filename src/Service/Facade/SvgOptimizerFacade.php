@@ -107,7 +107,6 @@ final readonly class SvgOptimizerFacade
      * @param bool $removeNonStandardTags               Whether to remove non-standard tags that are not part of the official SVG specification
      * @param bool $removeTitleAndDesc                  Whether to remove the <title> and <desc> elements
      * @param bool $removeUnnecessaryWhitespace         Whether to remove unnecessary whitespace
-     * @param bool $removeUnsafeElements                Whether to remove unsafe elements
      * @param bool $removeUnusedMasks                   Whether to remove unused masks
      * @param bool $removeUnusedNamespaces              Whether to remove unused namespaces
      * @param bool $removeWidthHeightAttributes         Whether to remove width and height attributes
@@ -137,6 +136,12 @@ final readonly class SvgOptimizerFacade
      * @param bool $removeUnusedTextAttributes          Whether to remove text attributes from elements without text
      * @param bool $removeUselessStrokeAndFill          Whether to remove stroke and fill attributes that have no effect
      * @param bool $sortDefsChildren                    Whether to group the children of defs elements by tag name
+     * @param bool $removeScripts                       Whether to remove scripts, event handlers and animations that rewrite links or event handlers
+     * @param bool $removeUnsafeUrls                    Whether to remove attributes with URLs that can run script or load external content
+     * @param bool $removeForeignContent                Whether to remove foreign, embedding and HTML breakout elements and non-canonical names
+     * @param bool $sanitizeStyleSheets                 Whether to remove unsafe statements and declarations from style sheets and style attributes
+     * @param bool $removeUseBombs                      Whether to remove use elements that form cycles or render too many instances
+     * @param bool $removeUnsafeMarkup                  Whether to remove processing instructions and unsafe comments
      *
      * @return $this The SvgOptimizerFacade instance
      */
@@ -167,7 +172,6 @@ final readonly class SvgOptimizerFacade
         bool $removeNonStandardTags = false,
         bool $removeTitleAndDesc = false,
         bool $removeUnnecessaryWhitespace = false,
-        bool $removeUnsafeElements = false,
         bool $removeUnusedMasks = false,
         bool $removeUnusedNamespaces = false,
         bool $removeWidthHeightAttributes = false,
@@ -197,6 +201,12 @@ final readonly class SvgOptimizerFacade
         bool $removeUnusedTextAttributes = false,
         bool $removeUselessStrokeAndFill = false,
         bool $sortDefsChildren = false,
+        bool $removeScripts = false,
+        bool $removeUnsafeUrls = false,
+        bool $removeForeignContent = false,
+        bool $sanitizeStyleSheets = false,
+        bool $removeUseBombs = false,
+        bool $removeUnsafeMarkup = false,
     ): self {
         $rules = [
             Rule::ConvertColorsToHex->value => $convertColorsToHex,
@@ -231,6 +241,7 @@ final readonly class SvgOptimizerFacade
             Rule::RemoveEmptyGroups->value => $removeEmptyGroups,
             Rule::RemoveEmptyTextElements->value => $removeEmptyTextElements,
             Rule::RemoveEnableBackgroundAttribute->value => $removeEnableBackgroundAttribute,
+            Rule::RemoveForeignContent->value => $removeForeignContent,
             Rule::RemoveHiddenElements->value => $removeHiddenElements,
             Rule::RemoveInkscapeFootprints->value => $removeInkscapeFootprints,
             Rule::RemoveInvisibleCharacters->value => $removeInvisibleCharacters,
@@ -238,20 +249,24 @@ final readonly class SvgOptimizerFacade
             Rule::RemoveNonInheritableGroupAttributes->value => $removeNonInheritableGroupAttributes,
             Rule::RemoveNonStandardAttributes->value => $removeNonStandardAttributes,
             Rule::RemoveNonStandardTags->value => $removeNonStandardTags,
+            Rule::RemoveScripts->value => $removeScripts,
             Rule::RemoveStyleTypeAttributes->value => $removeStyleTypeAttributes,
             Rule::RemoveTitleAndDesc->value => $removeTitleAndDesc,
             Rule::RemoveUnnecessaryWhitespace->value => $removeUnnecessaryWhitespace,
-            Rule::RemoveUnsafeElements->value => $removeUnsafeElements,
+            Rule::RemoveUnsafeMarkup->value => $removeUnsafeMarkup,
+            Rule::RemoveUnsafeUrls->value => $removeUnsafeUrls,
             Rule::RemoveUnusedDefinitions->value => $removeUnusedDefinitions,
             Rule::RemoveUnusedIds->value => $removeUnusedIds,
             Rule::RemoveUnusedMasks->value => $removeUnusedMasks,
             Rule::RemoveUnusedNamespaces->value => $removeUnusedNamespaces,
             Rule::RemoveUnusedTextAttributes->value => $removeUnusedTextAttributes,
+            Rule::RemoveUseBombs->value => $removeUseBombs,
             Rule::RemoveUselessDefs->value => $removeUselessDefs,
             Rule::RemoveUselessStrokeAndFill->value => $removeUselessStrokeAndFill,
             Rule::RemoveWidthHeightAttributes->value => $removeWidthHeightAttributes,
             Rule::RemoveXmlSpaceDefault->value => $removeXmlSpaceDefault,
             Rule::RemoveZeroSizeShapes->value => $removeZeroSizeShapes,
+            Rule::SanitizeStyleSheets->value => $sanitizeStyleSheets,
             Rule::ScopeSvgStyles->value => $scopeSvgStyles,
             Rule::SortAttributes->value => $sortAttributes,
             Rule::SortDefsChildren->value => $sortDefsChildren,

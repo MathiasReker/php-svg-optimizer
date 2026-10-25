@@ -19,6 +19,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
+ *
+ * @no-named-arguments
  */
 #[CoversClass(Rule::class)]
 final class RuleTest extends TestCase
@@ -84,7 +86,12 @@ final class RuleTest extends TestCase
             Rule::RemoveStyleTypeAttributes->name => 'removeStyleTypeAttributes',
             Rule::RemoveTitleAndDesc->name => 'removeTitleAndDesc',
             Rule::RemoveUnnecessaryWhitespace->name => 'removeUnnecessaryWhitespace',
-            Rule::RemoveUnsafeElements->name => 'removeUnsafeElements',
+            Rule::RemoveUnsafeMarkup->name => 'removeUnsafeMarkup',
+            Rule::RemoveUnsafeUrls->name => 'removeUnsafeUrls',
+            Rule::RemoveUseBombs->name => 'removeUseBombs',
+            Rule::RemoveScripts->name => 'removeScripts',
+            Rule::RemoveForeignContent->name => 'removeForeignContent',
+            Rule::SanitizeStyleSheets->name => 'sanitizeStyleSheets',
             Rule::RemoveUnusedIds->name => 'removeUnusedIds',
             Rule::RemoveUnusedMasks->name => 'removeUnusedMasks',
             Rule::RemoveUnusedNamespaces->name => 'removeUnusedNamespaces',
@@ -187,7 +194,8 @@ final class RuleTest extends TestCase
 
         self::assertSame(
             [
-                'RemoveUnsafeElements', 'RemoveDoctype', 'RemoveComments', 'RemoveMetadata', 'RemoveInkscapeFootprints',
+                'RemoveUnsafeMarkup', 'RemoveScripts', 'RemoveForeignContent', 'RemoveUnsafeUrls', 'SanitizeStyleSheets',
+                'RemoveUseBombs', 'RemoveDoctype', 'RemoveComments', 'RemoveMetadata', 'RemoveInkscapeFootprints',
                 'FixAttributeNames', 'MigrateToSvg2', 'RemoveNonStandardTags', 'RemoveDeprecatedAttributes',
                 'RemoveTitleAndDesc', 'RemoveNonStandardAttributes', 'RemoveDataAttributes', 'RemoveAriaAndRole',
                 'RemoveInvisibleCharacters', 'RemoveEnableBackgroundAttribute', 'RemoveStyleTypeAttributes',
@@ -214,7 +222,7 @@ final class RuleTest extends TestCase
     {
         $priorities = array_map(static fn (Rule $rule): int => $rule->priority(), Rule::cases());
 
-        self::assertSame(min($priorities), Rule::RemoveUnsafeElements->priority());
+        self::assertSame(min($priorities), Rule::RemoveUnsafeMarkup->priority());
         self::assertSame(max($priorities), Rule::SortAttributes->priority());
     }
 
@@ -230,6 +238,12 @@ final class RuleTest extends TestCase
      */
     public static function provideRuleRunsBeforeCases(): iterable
     {
+        yield 'dangerous animations are removed before unsafe links are unwrapped' => [Rule::RemoveScripts, Rule::RemoveForeignContent];
+
+        yield 'unsafe links are unwrapped before unsafe URLs are removed' => [Rule::RemoveForeignContent, Rule::RemoveUnsafeUrls];
+
+        yield 'use bombs are counted after all other unsafe content is removed' => [Rule::SanitizeStyleSheets, Rule::RemoveUseBombs];
+
         yield 'attribute names are fixed before unknown attributes are removed' => [Rule::FixAttributeNames, Rule::RemoveNonStandardAttributes];
 
         yield 'xlink:title becomes a title before titles are removed' => [Rule::RemoveDeprecatedAttributes, Rule::RemoveTitleAndDesc];

@@ -54,22 +54,27 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyContainers;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyGroups;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveForeignContent;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardTags;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveScripts;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveStyleTypeAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeMarkup;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeUrls;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedMasks;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUseBombs;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessDefs;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveXmlSpaceDefault;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveZeroSizeShapes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\SanitizeStyleSheets;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
@@ -132,7 +137,12 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RemoveMetadata::class)]
 #[CoversClass(RemoveTitleAndDesc::class)]
 #[CoversClass(RemoveUnnecessaryWhitespace::class)]
-#[CoversClass(RemoveUnsafeElements::class)]
+#[CoversClass(RemoveForeignContent::class)]
+#[CoversClass(RemoveScripts::class)]
+#[CoversClass(RemoveUnsafeMarkup::class)]
+#[CoversClass(RemoveUnsafeUrls::class)]
+#[CoversClass(RemoveUseBombs::class)]
+#[CoversClass(SanitizeStyleSheets::class)]
 #[CoversClass(RemoveUnusedIds::class)]
 #[CoversClass(RemoveUnusedMasks::class)]
 #[CoversClass(RemoveUnusedNamespaces::class)]

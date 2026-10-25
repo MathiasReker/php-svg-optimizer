@@ -131,6 +131,7 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
     "removeEmptyGroups": true,
     "removeEmptyTextElements": true,
     "removeEnableBackgroundAttribute": false,
+    "removeForeignContent": false,
     "removeHiddenElements": true,
     "removeInkscapeFootprints": true,
     "removeInvisibleCharacters": true,
@@ -138,20 +139,24 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
     "removeNonInheritableGroupAttributes": true,
     "removeNonStandardAttributes": false,
     "removeNonStandardTags": false,
+    "removeScripts": false,
     "removeStyleTypeAttributes": true,
     "removeTitleAndDesc": true,
     "removeUnnecessaryWhitespace": true,
-    "removeUnsafeElements": false,
+    "removeUnsafeMarkup": false,
+    "removeUnsafeUrls": false,
     "removeUnusedDefinitions": false,
     "removeUnusedIds": false,
     "removeUnusedMasks": true,
     "removeUnusedNamespaces": true,
     "removeUnusedTextAttributes": true,
+    "removeUseBombs": false,
     "removeUselessDefs": true,
     "removeUselessStrokeAndFill": true,
     "removeWidthHeightAttributes": false,
     "removeXmlSpaceDefault": true,
     "removeZeroSizeShapes": true,
+    "sanitizeStyleSheets": false,
     "scopeSvgStyles": false,
     "sortAttributes": true,
     "sortDefsChildren": true
@@ -234,6 +239,7 @@ try {
             removeEmptyGroups: true,
             removeEmptyTextElements: true,
             removeEnableBackgroundAttribute: false,
+            removeForeignContent: false,
             removeHiddenElements: true,
             removeInkscapeFootprints: true,
             removeInvisibleCharacters: true,
@@ -241,20 +247,24 @@ try {
             removeNonInheritableGroupAttributes: true,
             removeNonStandardAttributes: false,
             removeNonStandardTags: false,
+            removeScripts: false,
             removeStyleTypeAttributes: true,
             removeTitleAndDesc: true,
             removeUnnecessaryWhitespace: true,
-            removeUnsafeElements: false,
+            removeUnsafeMarkup: false,
+            removeUnsafeUrls: false,
             removeUnusedDefinitions: false,
             removeUnusedIds: false,
             removeUnusedMasks: true,
             removeUnusedNamespaces: true,
             removeUnusedTextAttributes: true,
+            removeUseBombs: false,
             removeUselessDefs: true,
             removeUselessStrokeAndFill: true,
             removeWidthHeightAttributes: false,
             removeXmlSpaceDefault: true,
             removeZeroSizeShapes: true,
+            sanitizeStyleSheets: false,
             scopeSvgStyles: false,
             sortAttributes: true,
             sortDefsChildren: true,
@@ -401,9 +411,13 @@ When accepting SVG uploads from users or other untrusted sources, it is **critic
 Cross-Site Scripting (XSS) attacks. Malicious SVGs can contain scripts, event handlers, or external references that can
 execute code in the user's browser.
 
-The `php-svg-optimizer` provides a powerful set of rules to mitigate these risks. The most important rule is
-`removeUnsafeElements`, which strips out known dangerous tags and attributes. For a stricter policy, you can combine it
-with `removeNonStandardTags` and `removeNonStandardAttributes`.
+The `php-svg-optimizer` provides a powerful set of rules to mitigate these risks. Six security rules each remove one
+kind of unsafe content: `removeScripts` (scripts and event handlers), `removeUnsafeUrls` (links and URLs that run
+script or load external content), `removeForeignContent` (HTML, embedded documents and names that an HTML parser reads
+differently), `sanitizeStyleSheets` (unsafe CSS), `removeUseBombs` (`<use>` cycles and explosions) and
+`removeUnsafeMarkup` (processing instructions and unsafe comments). Enable all six to sanitize untrusted SVGs; each rule
+also works on its own. For a stricter policy, you can combine them with `removeNonStandardTags` and
+`removeNonStandardAttributes`.
 
 Parsing is hardened for every rule set: external entities and DTDs are never loaded, and a document whose internal
 entities would expand to more than 512 KiB, or more than five times the size of the document if that is larger, is
@@ -421,9 +435,14 @@ use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 try {
     $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
         ->withRules(
+            removeForeignContent: true,
             removeNonStandardAttributes: true,
             removeNonStandardTags: true,
-            removeUnsafeElements: true,
+            removeScripts: true,
+            removeUnsafeMarkup: true,
+            removeUnsafeUrls: true,
+            removeUseBombs: true,
+            sanitizeStyleSheets: true,
         )
         ->optimize()
         ->saveToFile('path/to/output.svg');
@@ -475,8 +494,9 @@ improving consistency, modernizing SVG output, or increasing security.
 
 Rules that are not marked risky are lossless: the optimized SVG renders the same in current browsers, keeps every id,
 link and animation that can be reached from inside or outside the document (sprite sheets keep working), and no number
-is rounded. A few rules change the SVG on purpose, and say so in their description: the security rule
-`removeUnsafeElements` removes unsafe content, also when it is visible; `removeNonStandardAttributes` removes event
+is rounded. A few rules change the SVG on purpose, and say so in their description: the security rules
+`removeScripts`, `removeUnsafeUrls`, `removeForeignContent`, `sanitizeStyleSheets`, `removeUseBombs` and
+`removeUnsafeMarkup` remove unsafe content, also when it is visible; `removeNonStandardAttributes` removes event
 handler attributes such as `onclick`, so interactive SVGs lose their scripts; `fixAttributeNames` activates misspelled
 attributes that browsers ignore; and `removeTitleAndDesc` and `removeAriaAndRole` remove accessibility information.
 
@@ -946,6 +966,27 @@ $svgOptimizer->withRules(removeEnableBackgroundAttribute: true)->allowRisky();
 
 ---
 
+### `removeForeignContent`
+
+Removes content that does not belong in a sanitized SVG, or that an HTML parser reads differently when the SVG is
+inlined in HTML: elements from other namespaces (such as XHTML or MathML), `<foreignObject>`, `<iframe>`, `<object>`,
+`<embed>` and `<link>`, HTML elements that break out of SVG in an HTML parser (such as `<p>`, `<div>`, `<img>`,
+`<table>`, and `<font>` with a `color`, `face` or `size` attribute), and elements and attributes whose name matches a
+known name in a different letter case or namespace (such as `<STYLE>`, `<foreignobject>`, `attributename`, `HREF` or an
+`xlink:href` in the wrong namespace), which are inert in XML but become the real thing when an HTML parser reads the
+inlined SVG. It also removes XML Events attributes (such as `ev:event`), and unwraps `<a>`, `<use>`, `<tref>`,
+`<image>`, gradients and patterns whose `href` or `xlink:href` holds an unsafe URL (as defined by `removeUnsafeUrls`),
+keeping their children.
+
+**Visible content it removes on purpose:** every `<foreignObject>` with HTML content (diagram tools such as draw.io
+use it for text labels), embedded documents, and images and links that load external resources.
+
+```php
+$svgOptimizer->withRules(removeForeignContent: true);
+```
+
+---
+
 ### `removeHiddenElements`
 
 Removes elements that cannot render anything: elements with `display="none"`, elements with `opacity="0"`, and
@@ -1045,6 +1086,23 @@ $svgOptimizer->withRules(removeNonStandardTags: true);
 
 ---
 
+### `removeScripts`
+
+Removes script: `<script>` elements, event handler attributes (every attribute whose name starts with `on`, such as
+`onclick` or `onload`, in any letter case and with any prefix), the SVG Tiny `<handler>` and `<listener>` elements,
+and the `name` attribute, which can clobber the DOM of the page the SVG is inlined in. It also removes animations whose
+`attributeName` targets an event handler, `name` or a link (`href` or `xlink:href`), because animating a link can turn
+it into a `javascript:` URL; the animation is removed with its children. XML Events attributes are removed by
+`removeForeignContent`, and animation values that set an unsafe URL by `removeUnsafeUrls`.
+
+**Visible content it removes on purpose:** interactive SVGs lose their scripts, and animations of links are removed.
+
+```php
+$svgOptimizer->withRules(removeScripts: true);
+```
+
+---
+
 ### `removeStyleTypeAttributes`
 
 Removes the `type` attribute of `<style>` when it is `text/css` and of `<script>` when it is a JavaScript MIME type, as
@@ -1085,6 +1143,39 @@ $svgOptimizer->withRules(removeUnnecessaryWhitespace: true);
 
 ---
 
+### `removeUnsafeMarkup`
+
+Removes every processing instruction (such as `<?xml-stylesheet ?>`, which can load a style sheet or an XSLT
+transformation, or `<?php ?>`), and the comments that would end early or turn into markup when the SVG is inlined in
+HTML: comments that start with `>` or `->`, or contain `<` followed by a letter, a digit, `_`, `/`, `!` or `?`. Other
+comments are kept.
+
+```php
+$svgOptimizer->withRules(removeUnsafeMarkup: true);
+```
+
+---
+
+### `removeUnsafeUrls`
+
+Removes attributes with a URL that can run script, load a resource from elsewhere or embed a document: a
+`javascript:`, `vbscript:`, `data:` (other than a base64 PNG, GIF, JPEG, WebP, AVIF or SVG image), `http:`, `https:`,
+`file:` or other unsafe protocol, or a network-path reference (`//host` or `\\host`). It checks `href`, `xlink:href`,
+`src`, the candidates of `srcset` and the HTML URL attributes (such as `action`, `formaction`, `poster` and `data`);
+the `url()` values of `fill`, `stroke`, `filter`, `clip-path`, `mask`, the marker properties, `cursor`, `style` and
+similar attributes; and the animation values `values`, `from`, `to`, `by`, `begin` and `end`. It also removes `data:`
+links on elements other than `<image>` and `<feImage>`. URLs are checked after decoding entities, CSS escapes and
+comments, and ignoring whitespace, control and invisible characters and full-width letters, so obfuscated URLs are
+caught. The element keeps its other attributes; `removeForeignContent` unwraps links with an unsafe URL instead.
+
+**Visible content it removes on purpose:** images, fills and links that load external resources.
+
+```php
+$svgOptimizer->withRules(removeUnsafeUrls: true);
+```
+
+---
+
 ### `removeUnusedNamespaces`
 
 Removes XML namespace declarations that are never referenced within the document. This cleans up the root element,
@@ -1092,6 +1183,22 @@ reduces verbosity, and improves readability.
 
 ```php
 $svgOptimizer->withRules(removeUnusedNamespaces: true);
+```
+
+---
+
+### `removeUseBombs`
+
+Removes `<use>` elements that reference themselves or an ancestor, form a cycle with other `<use>` elements, or whose
+target would render 1,000 or more nested `<use>` instances, which can freeze a browser. Sprite sheets with hundreds of
+`<use>` elements and deep chains of references under the limit are kept, and references to other files are not
+followed.
+
+**Visible content it removes on purpose:** a `<use>` element over the limit is removed, also when a browser would
+render it.
+
+```php
+$svgOptimizer->withRules(removeUseBombs: true);
 ```
 
 ---
@@ -1157,30 +1264,6 @@ zero width or height, and paths, polylines and polygons without any data. Shapes
 
 ```php
 $svgOptimizer->withRules(removeZeroSizeShapes: true);
-```
-
----
-
-### `removeUnsafeElements`
-
-Sanitizes SVG content by removing elements and attributes that can pose security risks. This includes scripting
-capabilities, external resource references, and interactive event handlers. The rule is intended for use with untrusted
-SVG input and helps prevent script execution, data exfiltration, and other attack vectors when embedding SVGs in web
-applications. It also removes processing instructions, comments that could break out when the SVG is inlined in HTML,
-elements from non-SVG namespaces (such as XHTML or MathML), animations that rewrite `href` or event handlers, SVG Tiny
-event handlers, and `<use>` elements that reference themselves or form a cycle, or whose target would render 1,000
-or more nested `<use>` instances. Elements and attributes whose names match a known SVG name in a different letter case
-(such as `<STYLE>`, `<foreignobject>`, `attributename` or `HREF`), which are inert in XML but become the real thing when
-an HTML parser reads the inlined SVG, are removed as well.
-
-**Visible content it removes on purpose:** this is the only rule that is not risky but can change how an SVG looks,
-because security comes first. It removes every `<foreignObject>` with HTML content (diagram tools such as draw.io
-use it for text labels), images, fonts and links that load external resources, and the unsafe statements and
-declarations of a style sheet (the whole `<style>` only when it cannot be parsed with confidence, is not `text/css`, or
-contains markup). Do not enable it for trusted SVGs that rely on these features.
-
-```php
-$svgOptimizer->withRules(removeUnsafeElements: true);
 ```
 
 ---
@@ -1258,6 +1341,22 @@ are left untouched.
 
 ```php
 $svgOptimizer->withRules(removeUnusedTextAttributes: true);
+```
+
+---
+
+### `sanitizeStyleSheets`
+
+Removes unsafe CSS from `<style>` elements and `style` attributes: `@import`, `expression()`, `behavior`,
+`-moz-binding`, `-o-link`, `javascript:`, and `url()` or `image-set()` with an unsafe URL (as defined by
+`removeUnsafeUrls`), also when written with escapes, comments or entities. In a `<style>` element only the unsafe
+statements and declarations are removed; the whole element is removed when it cannot be parsed with confidence, is not
+`text/css`, contains markup, or nothing else is left. An unsafe `style` attribute is removed as a whole.
+
+**Visible content it removes on purpose:** the styles that are removed no longer apply.
+
+```php
+$svgOptimizer->withRules(sanitizeStyleSheets: true);
 ```
 
 ---
@@ -1351,6 +1450,7 @@ $svgOptimizer->withRules(
     removeEmptyGroups: true,
     removeEmptyTextElements: true,
     removeEnableBackgroundAttribute: false,
+    removeForeignContent: true,
     removeHiddenElements: true,
     removeInkscapeFootprints: true,
     removeInvisibleCharacters: true,
@@ -1358,20 +1458,24 @@ $svgOptimizer->withRules(
     removeNonInheritableGroupAttributes: true,
     removeNonStandardAttributes: true,
     removeNonStandardTags: true,
+    removeScripts: true,
     removeStyleTypeAttributes: true,
     removeTitleAndDesc: true,
     removeUnnecessaryWhitespace: true,
-    removeUnsafeElements: true,
+    removeUnsafeMarkup: true,
+    removeUnsafeUrls: true,
     removeUnusedDefinitions: false,
     removeUnusedIds: false,
     removeUnusedMasks: true,
     removeUnusedNamespaces: true,
     removeUnusedTextAttributes: true,
+    removeUseBombs: true,
     removeUselessDefs: true,
     removeUselessStrokeAndFill: true,
     removeWidthHeightAttributes: false,
     removeXmlSpaceDefault: true,
     removeZeroSizeShapes: true,
+    sanitizeStyleSheets: true,
     scopeSvgStyles: false,
     sortAttributes: true,
     sortDefsChildren: true,

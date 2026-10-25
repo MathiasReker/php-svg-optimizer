@@ -84,7 +84,7 @@ trait CanonicalNameTrait
      */
     private function isNonCanonicalElement(\DOMElement $domElement): bool
     {
-        $localName = (string) $domElement->localName;
+        $localName = $domElement->localName ?? '';
         $folded = mb_strtolower($localName);
 
         return $localName !== (self::SVG_TAG_ADJUSTMENTS[$folded] ?? $folded)
@@ -123,7 +123,7 @@ trait CanonicalNameTrait
         }
 
         return match ($domAttr->namespaceURI) {
-            self::FOREIGN_ATTRIBUTE_NAMESPACES[$folded] => $domAttr->localName !== mb_strtolower((string) $domAttr->localName),
+            self::FOREIGN_ATTRIBUTE_NAMESPACES[$folded] => $domAttr->localName !== $this->asciiLowercase($domAttr->localName ?? ''),
             null => $domAttr->nodeName !== $folded,
             default => true,
         };
@@ -140,7 +140,7 @@ trait CanonicalNameTrait
         $values = [];
 
         foreach ($domElement->attributes as $domAttr) {
-            if (null === $domAttr->namespaceURI && $foldedName === mb_strtolower($domAttr->nodeName)) {
+            if (null === $domAttr->namespaceURI && $foldedName === $this->asciiLowercase($domAttr->nodeName)) {
                 $values[] = $domAttr->value;
             }
         }

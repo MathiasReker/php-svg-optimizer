@@ -43,6 +43,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyContainers;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyGroups;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveForeignContent;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveHiddenElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
@@ -50,20 +51,24 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonInheritableGroupAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardTags;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveScripts;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveStyleTypeAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeMarkup;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeUrls;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedDefinitions;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedMasks;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedTextAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUseBombs;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessDefs;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessStrokeAndFill;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveXmlSpaceDefault;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveZeroSizeShapes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\SanitizeStyleSheets;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortDefsChildren;
@@ -139,6 +144,8 @@ enum Rule: string
 
     case RemoveEmptyContainers = RemoveEmptyContainers::class;
 
+    case RemoveForeignContent = RemoveForeignContent::class;
+
     case RemoveHiddenElements = RemoveHiddenElements::class;
 
     case RemoveInkscapeFootprints = RemoveInkscapeFootprints::class;
@@ -153,13 +160,17 @@ enum Rule: string
 
     case RemoveNonStandardTags = RemoveNonStandardTags::class;
 
+    case RemoveScripts = RemoveScripts::class;
+
     case RemoveStyleTypeAttributes = RemoveStyleTypeAttributes::class;
 
     case RemoveTitleAndDesc = RemoveTitleAndDesc::class;
 
     case RemoveUnnecessaryWhitespace = RemoveUnnecessaryWhitespace::class;
 
-    case RemoveUnsafeElements = RemoveUnsafeElements::class;
+    case RemoveUnsafeMarkup = RemoveUnsafeMarkup::class;
+
+    case RemoveUnsafeUrls = RemoveUnsafeUrls::class;
 
     case RemoveUnusedDefinitions = RemoveUnusedDefinitions::class;
 
@@ -171,6 +182,8 @@ enum Rule: string
 
     case RemoveUnusedTextAttributes = RemoveUnusedTextAttributes::class;
 
+    case RemoveUseBombs = RemoveUseBombs::class;
+
     case RemoveUselessDefs = RemoveUselessDefs::class;
 
     case RemoveUselessStrokeAndFill = RemoveUselessStrokeAndFill::class;
@@ -180,6 +193,8 @@ enum Rule: string
     case RemoveXmlSpaceDefault = RemoveXmlSpaceDefault::class;
 
     case RemoveZeroSizeShapes = RemoveZeroSizeShapes::class;
+
+    case SanitizeStyleSheets = SanitizeStyleSheets::class;
 
     case ScopeSvgStyles = ScopeSvgStyles::class;
 
@@ -193,7 +208,12 @@ enum Rule: string
     }
 
     private const array EXECUTION_ORDER = [
-        self::RemoveUnsafeElements,
+        self::RemoveUnsafeMarkup,
+        self::RemoveScripts,
+        self::RemoveForeignContent,
+        self::RemoveUnsafeUrls,
+        self::SanitizeStyleSheets,
+        self::RemoveUseBombs,
         self::RemoveDoctype,
         self::RemoveComments,
         self::RemoveMetadata,

@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
+use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
@@ -19,9 +20,15 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveForeignContent;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveScripts;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeMarkup;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeUrls;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUseBombs;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\SanitizeStyleSheets;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
+use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -29,15 +36,22 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
+ *
+ * @no-named-arguments
  */
-#[CoversClass(RemoveUnsafeElements::class)]
+#[CoversClass(RemoveForeignContent::class)]
+#[CoversClass(RemoveScripts::class)]
+#[CoversClass(RemoveUnsafeMarkup::class)]
+#[CoversClass(RemoveUnsafeUrls::class)]
+#[CoversClass(RemoveUseBombs::class)]
+#[CoversClass(SanitizeStyleSheets::class)]
 #[CoversClass(SvgOptimizer::class)]
 #[CoversClass(StringProvider::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(SvgAttribute::class)]
 #[CoversClass(SvgTag::class)]
-final class RemoveUnsafeElementsTest extends TestCase
+final class SecurityRulesTest extends TestCase
 {
     /**
      * @throws XmlProcessingException
@@ -49,7 +63,7 @@ final class RemoveUnsafeElementsTest extends TestCase
     public function optimize(string $content, string $expectedSvg): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveUnsafeElements());
+        $this->addSecurityRules($svgOptimizer);
 
         $actual = $svgOptimizer
             ->allowRisky()
@@ -2655,7 +2669,7 @@ final class RemoveUnsafeElementsTest extends TestCase
         $svgOptimizer = new SvgOptimizer(new StringProvider(
             '<svg xmlns="http://www.w3.org/2000/svg"><a href="java&#x200B;script:alert(1)"><text>x</text></a></svg>'
         ));
-        $svgOptimizer->addRule(new RemoveUnsafeElements());
+        $this->addSecurityRules($svgOptimizer);
         $svgOptimizer->addRule(new RemoveInvisibleCharacters());
 
         self::assertSame(
@@ -2691,43 +2705,14 @@ final class RemoveUnsafeElementsTest extends TestCase
         $svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><style>rect{fill:red}</style><a xlink:href="#a"><rect onload="x"/></a><a href="\\\evil.com"><text>x</text></a><set attributeName="onclick" to="x"/><!-- <b> --></svg>';
 
         $once = new SvgOptimizer(new StringProvider($svg));
-        $once->addRule(new RemoveUnsafeElements());
+        $this->addSecurityRules($once);
 
         $first = $once->optimize()->getContent();
 
         $twice = new SvgOptimizer(new StringProvider($first));
-        $twice->addRule(new RemoveUnsafeElements());
+        $this->addSecurityRules($twice);
 
         self::assertSame($first, $twice->optimize()->getContent());
-    }
-
-    #[Test]
-    public function ruleIsMarkedAsRisky(): void
-    {
-        self::assertFalse(RemoveUnsafeElements::isRisky());
-    }
-
-    #[Test]
-    public function ruleSkipsTheSizeCheck(): void
-    {
-        self::assertFalse(RemoveUnsafeElements::shouldCheckSize());
-    }
-
-    /**
-     * @throws \ReflectionException
-     */
-    #[Test]
-    public function removeIfDangerousSkipsNonDomElementNodes(): void
-    {
-        $domDocument = new \DOMDocument();
-        $domText = $domDocument->createTextNode('sample');
-
-        $removeUnsafeElements = new RemoveUnsafeElements();
-        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'removeIfDangerous');
-
-        $reflectionMethod->invoke($removeUnsafeElements, $domText);
-
-        self::assertSame('sample', $domText->textContent);
     }
 
     /**
@@ -2736,10 +2721,10 @@ final class RemoveUnsafeElementsTest extends TestCase
     #[Test]
     public function normalizeValueDecodesTheMaximumValidUnicodeCodepointHexEscape(): void
     {
-        $removeUnsafeElements = new RemoveUnsafeElements();
-        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'normalizeValue');
+        $removeUnsafeUrls = new RemoveUnsafeUrls();
+        $reflectionMethod = new \ReflectionMethod($removeUnsafeUrls, 'normalizeValue');
 
-        $result = $reflectionMethod->invoke($removeUnsafeElements, 'a\10ffffb');
+        $result = $reflectionMethod->invoke($removeUnsafeUrls, 'a\10ffffb');
 
         self::assertSame('a' . mb_chr(0x10_FF_FF, 'UTF-8') . 'b', $result);
     }
@@ -2750,10 +2735,10 @@ final class RemoveUnsafeElementsTest extends TestCase
     #[Test]
     public function normalizeValueRejectsOneAboveTheMaximumValidUnicodeCodepointHexEscape(): void
     {
-        $removeUnsafeElements = new RemoveUnsafeElements();
-        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'normalizeValue');
+        $removeUnsafeUrls = new RemoveUnsafeUrls();
+        $reflectionMethod = new \ReflectionMethod($removeUnsafeUrls, 'normalizeValue');
 
-        $result = $reflectionMethod->invoke($removeUnsafeElements, 'a\110000b');
+        $result = $reflectionMethod->invoke($removeUnsafeUrls, 'a\110000b');
 
         self::assertSame('ab', $result);
     }
@@ -2764,10 +2749,10 @@ final class RemoveUnsafeElementsTest extends TestCase
     #[Test]
     public function normalizeValueRemovesSurrogateAndNullHexEscapes(): void
     {
-        $removeUnsafeElements = new RemoveUnsafeElements();
-        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'normalizeValue');
+        $removeUnsafeUrls = new RemoveUnsafeUrls();
+        $reflectionMethod = new \ReflectionMethod($removeUnsafeUrls, 'normalizeValue');
 
-        $result = $reflectionMethod->invoke($removeUnsafeElements, 'w\d800x\dfffy\000000z');
+        $result = $reflectionMethod->invoke($removeUnsafeUrls, 'w\d800x\dfffy\000000z');
 
         self::assertSame('wxyz', $result);
     }
@@ -2778,10 +2763,10 @@ final class RemoveUnsafeElementsTest extends TestCase
     #[Test]
     public function normalizeValueDecodesHexEscapesAroundTheSurrogates(): void
     {
-        $removeUnsafeElements = new RemoveUnsafeElements();
-        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'normalizeValue');
+        $removeUnsafeUrls = new RemoveUnsafeUrls();
+        $reflectionMethod = new \ReflectionMethod($removeUnsafeUrls, 'normalizeValue');
 
-        $result = $reflectionMethod->invoke($removeUnsafeElements, 'w\d7ffx\e000y');
+        $result = $reflectionMethod->invoke($removeUnsafeUrls, 'w\d7ffx\e000y');
 
         self::assertSame('w' . mb_chr(0xD7_FF, 'UTF-8') . 'x' . mb_chr(0xE0_00, 'UTF-8') . 'y', $result);
     }
@@ -2792,10 +2777,10 @@ final class RemoveUnsafeElementsTest extends TestCase
     #[Test]
     public function normalizeValueDecodesHexEscapesAsMultiByteUtf8(): void
     {
-        $removeUnsafeElements = new RemoveUnsafeElements();
-        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'normalizeValue');
+        $removeUnsafeUrls = new RemoveUnsafeUrls();
+        $reflectionMethod = new \ReflectionMethod($removeUnsafeUrls, 'normalizeValue');
 
-        $result = $reflectionMethod->invoke($removeUnsafeElements, 'a\1f600z');
+        $result = $reflectionMethod->invoke($removeUnsafeUrls, 'a\1f600z');
 
         self::assertSame('a' . mb_chr(0x1_F6_00, 'UTF-8') . 'z', $result);
     }
@@ -2804,17 +2789,17 @@ final class RemoveUnsafeElementsTest extends TestCase
      * @throws \ReflectionException
      */
     #[Test]
-    public function unwrapNodeDoesNothingWhenElementHasNoParent(): void
+    public function unwrapDoesNothingWhenElementHasNoParent(): void
     {
         $domDocument = new \DOMDocument();
         $domElement = $domDocument->createElement('a');
 
         self::assertNull($domElement->parentNode);
 
-        $removeUnsafeElements = new RemoveUnsafeElements();
-        $reflectionMethod = new \ReflectionMethod($removeUnsafeElements, 'unwrapNode');
+        $removeForeignContent = new RemoveForeignContent();
+        $reflectionMethod = new \ReflectionMethod($removeForeignContent, 'unwrap');
 
-        $reflectionMethod->invoke($removeUnsafeElements, $domElement);
+        $reflectionMethod->invoke($removeForeignContent, $domElement);
 
         self::assertNull($domElement->parentNode);
     }
@@ -2830,13 +2815,36 @@ final class RemoveUnsafeElementsTest extends TestCase
             $domDocument->loadXML('<!DOCTYPE svg [<!ENTITY m "<z:a/>">]><svg xmlns="http://www.w3.org/2000/svg"><g>&m;</g></svg>');
             libxml_clear_errors();
 
-            (new RemoveUnsafeElements())->optimize($domDocument);
+            $this->applySecurityRules($domDocument);
 
             self::assertSame([], libxml_get_errors());
             self::assertTrue(libxml_use_internal_errors(true));
         } finally {
             libxml_clear_errors();
             libxml_use_internal_errors($previous);
+        }
+    }
+
+    #[DataProvider('provideEachRuleExpandsEntityReferencesOnItsOwnCases')]
+    #[Test]
+    public function eachRuleExpandsEntityReferencesOnItsOwn(SvgOptimizerRuleInterface $svgOptimizerRule): void
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->substituteEntities = false;
+        $domDocument->loadXML('<!DOCTYPE svg [<!ENTITY e "x">]><svg xmlns="http://www.w3.org/2000/svg"><text>&e;</text></svg>');
+
+        $svgOptimizerRule->optimize($domDocument);
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>', $domDocument->saveXML($domDocument->documentElement));
+    }
+
+    /**
+     * @return iterable<string, array{SvgOptimizerRuleInterface}>
+     */
+    public static function provideEachRuleExpandsEntityReferencesOnItsOwnCases(): iterable
+    {
+        foreach (self::securityRules() as $svgOptimizerRule) {
+            yield $svgOptimizerRule::class => [$svgOptimizerRule];
         }
     }
 
@@ -2847,7 +2855,7 @@ final class RemoveUnsafeElementsTest extends TestCase
         $domDocument->substituteEntities = false;
         $domDocument->loadXML('<!DOCTYPE svg [<!ENTITY a "&b;"><!ENTITY b "x">]><svg xmlns="http://www.w3.org/2000/svg"><text>&a;</text></svg>');
 
-        (new RemoveUnsafeElements())->optimize($domDocument);
+        $this->applySecurityRules($domDocument);
 
         self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>', $domDocument->saveXML($domDocument->documentElement));
     }
@@ -2955,8 +2963,8 @@ final class RemoveUnsafeElementsTest extends TestCase
     {
         $domDocument = new \DOMDocument();
 
-        $removeUnsafeElements = new RemoveUnsafeElements();
-        (new \ReflectionMethod($removeUnsafeElements, 'removeUseBombs'))->invoke($removeUnsafeElements, $domDocument);
+        $removeUseBombs = new RemoveUseBombs();
+        (new \ReflectionMethod($removeUseBombs, 'removeUseBombs'))->invoke($removeUseBombs, $domDocument);
 
         self::assertNull($domDocument->documentElement);
     }
@@ -3012,7 +3020,7 @@ final class RemoveUnsafeElementsTest extends TestCase
         $domDocument->loadXML($svg);
 
         $start = hrtime(true);
-        (new RemoveUnsafeElements())->optimize($domDocument);
+        $this->applySecurityRules($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }
@@ -3025,7 +3033,7 @@ final class RemoveUnsafeElementsTest extends TestCase
     private function sanitize(string $svg): string
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($svg));
-        $svgOptimizer->addRule(new RemoveUnsafeElements());
+        $this->addSecurityRules($svgOptimizer);
 
         return $svgOptimizer->optimize()->getContent();
     }
@@ -3103,5 +3111,35 @@ final class RemoveUnsafeElementsTest extends TestCase
         return str_starts_with($attributeName, 'on')
             || (\in_array($attributeName, ['href', 'xlink:href', 'src', 'style', 'to', 'values', 'from', 'by'], true) && (str_contains($value, 'javascript:') || str_contains($value, 'https:')))
             || ($isAnimation && 'attributename' === $attributeName && (str_starts_with($value, 'on') || str_contains($value, 'href')));
+    }
+
+    #[Test]
+    public function securityRulesRunInTheirExecutionOrder(): void
+    {
+        $priorities = array_map(static fn (SvgOptimizerRuleInterface $svgOptimizerRule): int => Rule::from($svgOptimizerRule::class)->priority(), self::securityRules());
+
+        self::assertSame(range(0, 5), $priorities);
+    }
+
+    /**
+     * @return list<SvgOptimizerRuleInterface> the security rules in their execution order
+     */
+    private static function securityRules(): array
+    {
+        return [new RemoveUnsafeMarkup(), new RemoveScripts(), new RemoveForeignContent(), new RemoveUnsafeUrls(), new SanitizeStyleSheets(), new RemoveUseBombs()];
+    }
+
+    private function addSecurityRules(SvgOptimizer $svgOptimizer): void
+    {
+        foreach (self::securityRules() as $svgOptimizerRule) {
+            $svgOptimizer->addRule($svgOptimizerRule);
+        }
+    }
+
+    private function applySecurityRules(\DOMDocument $domDocument): void
+    {
+        foreach (self::securityRules() as $svgOptimizerRule) {
+            $svgOptimizerRule->optimize($domDocument);
+        }
     }
 }

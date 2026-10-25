@@ -16,7 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeMarkup;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -25,6 +25,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
+ *
+ * @no-named-arguments
  */
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(SvgOptimizer::class)]
@@ -79,7 +81,7 @@ final class ProcessingInstructionTest extends TestCase
     public function sanitizerStillRemovesStylesheetInstructions(): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider('<?xml-stylesheet href="https://evil.test/a.css"?><svg xmlns="http://www.w3.org/2000/svg"/>'));
-        $svgOptimizer->addRule(new RemoveUnsafeElements());
+        $svgOptimizer->addRule(new RemoveUnsafeMarkup());
 
         self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"/>', $svgOptimizer->optimize()->getContent());
     }

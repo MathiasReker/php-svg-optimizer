@@ -26,7 +26,7 @@ trait TagMatcherTrait
      */
     private function isTagIn(\DOMElement $domElement, array $tags): bool
     {
-        $localName = $domElement->localName ?? $domElement->tagName;
+        $localName = $domElement->tagName;
         $separator = mb_strrpos($localName, ':');
 
         if (false !== $separator) {
