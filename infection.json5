@@ -1,5 +1,6 @@
 {
     "$schema": "vendor/infection/infection/resources/schema.json",
+    "timeout": 120,
     "source": {
         "directories": [
             "src"
