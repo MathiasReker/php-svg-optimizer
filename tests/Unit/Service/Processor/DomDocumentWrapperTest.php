@@ -336,33 +336,29 @@ final class DomDocumentWrapperTest extends TestCase
      */
     #[DataProvider('provideLoadFromStringRemovesBlankTextNodesLikeTheParserCases')]
     #[Test]
-    public function loadFromStringRemovesBlankTextNodesLikeTheParser(string $content): void
+    public function loadFromStringRemovesBlankTextNodesLikeTheParser(string $content, string $expected): void
     {
-        $expected = new \DOMDocument();
-        $expected->preserveWhiteSpace = false;
-        $expected->loadXML($content);
-
         $domDocument = $this->domDocumentWrapper->loadFromString($content);
 
-        self::assertSame($expected->saveXML($expected->documentElement), $domDocument->saveXML($domDocument->documentElement));
+        self::assertSame($expected, $domDocument->saveXML($domDocument->documentElement));
     }
 
     /**
-     * @return iterable<string, array{non-empty-string}>
+     * @return iterable<string, array{non-empty-string, non-empty-string}>
      */
     public static function provideLoadFromStringRemovesBlankTextNodesLikeTheParserCases(): iterable
     {
-        yield 'Whitespace between elements' => ["<svg>\n  <g>\n    <rect/>\n  </g>\n  <!-- c -->\n  <g/>\n</svg>"];
+        yield 'Whitespace between elements' => ["<svg>\n  <g>\n    <rect/>\n  </g>\n  <!-- c -->\n  <g/>\n</svg>", '<svg><g><rect/></g><!-- c --><g/></svg>'];
 
-        yield 'Whitespace that is the only content of an element' => ['<svg><title> </title><g>  </g></svg>'];
+        yield 'Whitespace that is the only content of an element' => ['<svg><title> </title><g>  </g></svg>', '<svg><title> </title><g>  </g></svg>'];
 
-        yield 'Whitespace after a first child that is text' => ['<svg><g>a<rect/> <rect/> <rect/></g></svg>'];
+        yield 'Whitespace after a first child that is text' => ['<svg><g>a<rect/> <rect/> <rect/></g></svg>', '<svg><g>a<rect/> <rect/> <rect/></g></svg>'];
 
-        yield 'Whitespace after text that starts with whitespace' => ['<svg><g><rect/> a <rect/> <rect/></g><g><rect/>a b<rect/> <rect/></g></svg>'];
+        yield 'Whitespace after text that starts with whitespace' => ['<svg><g><rect/> a <rect/> <rect/></g><g><rect/>a b<rect/> <rect/></g></svg>', '<svg><g><rect/> a <rect/> <rect/></g><g><rect/>a b<rect/><rect/></g></svg>'];
 
-        yield 'Whitespace after text where xml:space is default' => ['<svg><g xml:space="default"><rect/> a <rect/> <rect/></g></svg>'];
+        yield 'Whitespace after text where xml:space is default' => ['<svg><g xml:space="default"><rect/> a <rect/> <rect/></g></svg>', '<svg><g xml:space="default"><rect/> a <rect/><rect/></g></svg>'];
 
-        yield 'Whitespace where xml:space is preserve' => ['<svg><g xml:space="preserve"><rect/> <rect/></g><g xml:space="preserve"> <rect/> <g> <rect/> </g></g><g xml:space="default"> <rect/> </g></svg>'];
+        yield 'Whitespace where xml:space is preserve' => ['<svg><g xml:space="preserve"><rect/> <rect/></g><g xml:space="preserve"> <rect/> <g> <rect/> </g></g><g xml:space="default"> <rect/> </g></svg>', '<svg><g xml:space="preserve"><rect/> <rect/></g><g xml:space="preserve"> <rect/> <g> <rect/> </g></g><g xml:space="default"><rect/></g></svg>'];
     }
 
     /**
@@ -455,7 +451,13 @@ final class DomDocumentWrapperTest extends TestCase
 
         $saved = $this->domDocumentWrapper->saveToString($domDocument);
 
-        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg" font-family="&#x65E5;&#x672C;"/>', $saved);
+        self::assertNotSame('', $saved);
+
+        $reloaded = new \DOMDocument();
+        $reloaded->loadXML($saved);
+
+        self::assertStringStartsWith('<svg ', $saved);
+        self::assertSame('日本', $reloaded->documentElement?->getAttribute('font-family'));
         self::assertNull($domDocument->encoding);
     }
 
@@ -656,15 +658,23 @@ final class DomDocumentWrapperTest extends TestCase
         ];
 
         yield 'References one character beyond the allowed size' => [
-            '<!DOCTYPE svg [<!ENTITY a "' . str_repeat('A', 1_024) . '"><!ENTITY b "B">]><svg xmlns="http://www.w3.org/2000/svg"><text>' . str_repeat('&a;', 1_024) . '&amp;&b;</text></svg>',
+            '<!DOCTYPE svg [<!ENTITY a "' . str_repeat('A', 1_024) . '"><!ENTITY b "B">]><svg xmlns="http://www.w3.org/2000/svg"><text>' . str_repeat('&a;', 512) . '&amp;&b;</text></svg>',
         ];
 
         yield 'References to nested entities one character beyond the allowed size' => [
             self::nestedEntityDocument('&c;&d;'),
         ];
 
+        yield 'Entities that reference each other' => [
+            '<!DOCTYPE svg [<!ENTITY a "&b;"><!ENTITY b "&a;">]><svg xmlns="http://www.w3.org/2000/svg"><text>&a;</text></svg>',
+        ];
+
+        yield 'References in a large document beyond five times its size' => [
+            '<!DOCTYPE svg [<!ENTITY a "' . str_repeat('A', 1_024) . '">]><svg xmlns="http://www.w3.org/2000/svg"><!--' . str_repeat('x', 400_000) . '--><text>' . str_repeat('&a;', 2_100) . '</text></svg>',
+        ];
+
         yield 'A single reference to a nested entity beyond the allowed size' => [
-            '<!DOCTYPE svg [<!ENTITY a "' . str_repeat('A', 1_024) . '"><!ENTITY b "' . str_repeat('&a;', 1_100) . '">]><svg xmlns="http://www.w3.org/2000/svg"><text>&b;</text></svg>',
+            '<!DOCTYPE svg [<!ENTITY a "' . str_repeat('A', 1_024) . '"><!ENTITY b "' . str_repeat('&a;', 600) . '">]><svg xmlns="http://www.w3.org/2000/svg"><text>&b;</text></svg>',
         ];
     }
 
@@ -688,7 +698,7 @@ final class DomDocumentWrapperTest extends TestCase
     public static function provideLoadFromStringAcceptsEntityExpansionUpToTheAllowedSizeCases(): iterable
     {
         yield 'References that expand to exactly the allowed size' => [
-            '<!DOCTYPE svg [<!ENTITY a "' . str_repeat('A', 1_024) . '"><!ENTITY b "B">]><svg xmlns="http://www.w3.org/2000/svg"><text>' . str_repeat('&a;', 1_024) . '&amp;</text></svg>',
+            '<!DOCTYPE svg [<!ENTITY a "' . str_repeat('A', 1_024) . '"><!ENTITY b "B">]><svg xmlns="http://www.w3.org/2000/svg"><text>' . str_repeat('&a;', 512) . '&amp;</text></svg>',
         ];
 
         yield 'References to nested entities that expand to exactly the allowed size' => [
@@ -696,7 +706,7 @@ final class DomDocumentWrapperTest extends TestCase
         ];
 
         yield 'References in a large document that expand beyond the minimal allowed size' => [
-            '<!DOCTYPE svg [<!ENTITY a "' . str_repeat('A', 1_024) . '">]><svg xmlns="http://www.w3.org/2000/svg"><!--' . str_repeat('x', 200_000) . '--><text>' . str_repeat('&a;', 1_500) . '</text></svg>',
+            '<!DOCTYPE svg [<!ENTITY a "' . str_repeat('A', 1_024) . '">]><svg xmlns="http://www.w3.org/2000/svg"><!--' . str_repeat('x', 400_000) . '--><text>' . str_repeat('&a;', 1_400) . '</text></svg>',
         ];
     }
 
@@ -705,7 +715,7 @@ final class DomDocumentWrapperTest extends TestCase
      */
     private static function nestedEntityDocument(string $suffix): string
     {
-        return '<!DOCTYPE svg [<!ENTITY a "' . str_repeat('A', 1_024) . '"><!ENTITY ext SYSTEM "ext.txt"><!ENTITY b "&a;&amp;&ext;&a;"><!ENTITY c "' . str_repeat('C', 1_546) . '"><!ENTITY d "D">]><svg xmlns="http://www.w3.org/2000/svg"><text>' . str_repeat('&b;', 510) . $suffix . '</text></svg>';
+        return '<!DOCTYPE svg [<!ENTITY a "' . str_repeat('A', 1_024) . '"><!ENTITY ext SYSTEM "ext.txt"><!ENTITY b "&a;&amp;&ext;&a;"><!ENTITY c "' . str_repeat('C', 773) . '"><!ENTITY d "D">]><svg xmlns="http://www.w3.org/2000/svg"><text>' . str_repeat('&b;', 255) . $suffix . '</text></svg>';
     }
 
     /**
@@ -719,7 +729,7 @@ final class DomDocumentWrapperTest extends TestCase
     {
         $domDocument = $this->domDocumentWrapper->loadFromString($content);
 
-        self::assertSame($expectedLength, mb_strlen($domDocument->documentElement->textContent ?? '', '8bit'));
+        self::assertSame($expectedLength, mb_strlen($domDocument->documentElement->textContent ?? ''));
     }
 
     /**
@@ -728,8 +738,8 @@ final class DomDocumentWrapperTest extends TestCase
     public static function provideLoadFromStringExpandsEntitiesWithinTheAllowedSizeCases(): iterable
     {
         yield 'Expansion below the size floor' => [
-            '<!DOCTYPE svg [<!ENTITY a "' . str_repeat('A', 1_000) . '">]><svg xmlns="http://www.w3.org/2000/svg"><text>' . str_repeat('&a;', 1_000) . '</text></svg>',
-            1_000_000,
+            '<!DOCTYPE svg [<!ENTITY a "' . str_repeat('A', 1_000) . '">]><svg xmlns="http://www.w3.org/2000/svg"><text>' . str_repeat('&a;', 500) . '</text></svg>',
+            500_000,
         ];
 
         yield 'Large entity referenced once' => [

@@ -735,8 +735,8 @@ final class SvgOptimizerTest extends TestCase
         $metrics = $svgOptimizer->optimize()->getMetaData();
 
         self::assertSame($svg, $svgOptimizer->getContent());
-        self::assertSame(mb_strlen($svg, '8bit') + 3, $metrics->getOriginalSize());
-        self::assertSame(mb_strlen($svg, '8bit'), $metrics->getOptimizedSize());
+        self::assertSame(68, $metrics->getOriginalSize());
+        self::assertSame(65, $metrics->getOptimizedSize());
         self::assertSame(3, $metrics->getSavedBytes());
     }
 

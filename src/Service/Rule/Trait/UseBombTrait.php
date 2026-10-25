@@ -77,7 +77,7 @@ trait UseBombTrait
      */
     private function useInstances(\DOMElement $domElement, array $ids, \SplObjectStorage $instances, \SplObjectStorage $unsafe): int
     {
-        if ($instances->contains($domElement)) {
+        if ($instances->offsetExists($domElement)) {
             return $instances[$domElement];
         }
 
@@ -129,12 +129,12 @@ trait UseBombTrait
             return 0;
         }
 
-        $targetInstances = $instances->contains($target) && -1 === $instances[$target]
+        $targetInstances = $instances->offsetExists($target) && -1 === $instances[$target]
             ? self::MAX_USE_INSTANCES
             : $this->useInstances($target, $ids, $instances, $unsafe);
 
         if ($targetInstances >= self::MAX_USE_INSTANCES) {
-            $unsafe->attach($domElement);
+            $unsafe->offsetSet($domElement);
 
             return 0;
         }

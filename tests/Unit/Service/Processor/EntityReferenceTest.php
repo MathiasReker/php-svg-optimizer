@@ -47,8 +47,9 @@ final class EntityReferenceTest extends TestCase
     {
         $actual = (new SvgOptimizer(new StringProvider($content)))->optimize()->getContent();
 
-        self::assertSame($expected, $actual);
-        self::assertTrue((new \DOMDocument())->loadXML($expected), 'The output must be well-formed without the DOCTYPE.');
+        self::assertNotSame('', $actual);
+        self::assertSame($this->normalizeNamespaceDeclarations($expected), $this->normalizeNamespaceDeclarations($actual));
+        self::assertTrue((new \DOMDocument())->loadXML($actual), 'The output must be well-formed without the DOCTYPE.');
     }
 
     /**
@@ -160,6 +161,19 @@ final class EntityReferenceTest extends TestCase
             '<!DOCTYPE svg [<!ENTITY ns_x "urn:&#38;quot;x">]><svg xmlns="http://www.w3.org/2000/svg" xmlns:x="&ns_x;"><x:a/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x=\'urn:"x\'><x:a/></svg>',
         ];
+    }
+
+    /**
+     * @return string the markup with every namespace declaration written in double quotes with the same escaping, as
+     *                libxml versions serialize namespace declarations differently
+     */
+    private function normalizeNamespaceDeclarations(string $markup): string
+    {
+        return (string) preg_replace_callback(
+            '/\sxmlns(:[^\s=]+)?=(["\'])(.*?)\2/s',
+            static fn (array $match): string => ' xmlns' . $match[1] . '="' . htmlspecialchars(html_entity_decode($match[3], \ENT_QUOTES | \ENT_XML1), \ENT_QUOTES | \ENT_XML1) . '"',
+            $markup,
+        );
     }
 
     /**

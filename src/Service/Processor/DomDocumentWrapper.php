@@ -40,9 +40,11 @@ final readonly class DomDocumentWrapper
 
     private const string ENTITY_EXPANSION_FAILURE = 'Entity expansion exceeds the allowed size.';
 
-    private const int MAX_ENTITY_EXPANSION_FLOOR = 1_048_576;
+    private const string LIBXML_ENTITY_LIMIT_REGEX = '/\bentity (?:reference loop|amplification)/i';
 
-    private const int MAX_ENTITY_AMPLIFICATION = 10;
+    private const int MAX_ENTITY_EXPANSION_FLOOR = 524_288;
+
+    private const int MAX_ENTITY_AMPLIFICATION = 5;
 
     private const string CHILDLESS_XHTML_ELEMENT_QUERY = '//*[namespace-uri() = "http://www.w3.org/1999/xhtml"][not(node())]';
 
@@ -346,6 +348,7 @@ final readonly class DomDocumentWrapper
 
         try {
             $loaded = $loader($domDocument);
+            $failure = $this->loadFailure();
         } catch (\ValueError $valueError) {
             throw new XmlProcessingException(self::LOAD_FAILURE, 0, $valueError);
         } finally {
@@ -354,12 +357,27 @@ final readonly class DomDocumentWrapper
         }
 
         if (!$loaded) {
-            throw new XmlProcessingException(self::LOAD_FAILURE);
+            throw new XmlProcessingException($failure);
         }
 
         $domDocument->encoding ??= SvgDefaults::XML_ENCODING;
 
         return $domDocument;
+    }
+
+    /**
+     * @return string the message for a failed load, which reports an exceeded entity expansion limit when libxml
+     *                stopped expanding entities itself
+     */
+    private function loadFailure(): string
+    {
+        foreach (libxml_get_errors() as $libXMLError) {
+            if (1 === preg_match(self::LIBXML_ENTITY_LIMIT_REGEX, $libXMLError->message)) {
+                return self::ENTITY_EXPANSION_FAILURE;
+            }
+        }
+
+        return self::LOAD_FAILURE;
     }
 
     private function createDomDocument(): \DOMDocument

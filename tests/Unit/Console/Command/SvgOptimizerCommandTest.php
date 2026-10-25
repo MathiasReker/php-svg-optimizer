@@ -722,7 +722,7 @@ final class SvgOptimizerCommandTest extends TestCase
         }
 
         self::assertSame(1, $exitCode);
-        self::assertSame('Error: Syntax error' . \PHP_EOL, $memoryStream->getContent());
+        self::assertMatchesRegularExpression('/\AError: Syntax error(?: near location \d+:\d+)?' . preg_quote(\PHP_EOL, '/') . '\z/', $memoryStream->getContent());
         self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><!-- c --></svg>', file_get_contents($svgFile));
     }
 

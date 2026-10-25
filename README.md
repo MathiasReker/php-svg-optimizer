@@ -405,6 +405,10 @@ The `php-svg-optimizer` provides a powerful set of rules to mitigate these risks
 `removeUnsafeElements`, which strips out known dangerous tags and attributes. For a stricter policy, you can combine it
 with `removeNonStandardTags` and `removeNonStandardAttributes`.
 
+Parsing is hardened for every rule set: external entities and DTDs are never loaded, and a document whose internal
+entities would expand to more than 512 KiB, or more than five times the size of the document if that is larger, is
+rejected with an `XmlProcessingException` ("Entity expansion exceeds the allowed size.") on every libxml version.
+
 ```php
 <?php
 
@@ -524,8 +528,9 @@ $svgOptimizer->withRules(convertEllipseToCircle: true);
 
 ### `convertEmptyTagsToSelfClosing`
 
-Converts elements without child nodes into self-closing tags. This simplifies the markup structure and reduces
-unnecessary characters, resulting in cleaner and more compact SVG output without affecting rendering.
+Converts elements without child nodes into self-closing tags. The serializer already writes every empty element as a
+self-closing tag, so this rule no longer changes the output; it is kept so existing configurations keep working.
+Markup-like text inside comments and processing instructions is never rewritten.
 
 ```php
 $svgOptimizer->withRules(convertEmptyTagsToSelfClosing: true);
@@ -843,8 +848,9 @@ $svgOptimizer->withRules(removeDeprecatedAttributes: true);
 
 ### `removeDoctype`
 
-Removes the `<!DOCTYPE>` declaration from the SVG document. This is typically unnecessary for inline SVGs or SVGs
-embedded in HTML and slightly reduces file size.
+Removes the `<!DOCTYPE>` declaration from the SVG document. The serializer never writes the `<!DOCTYPE>` declaration,
+so this rule no longer changes the output; it is kept so existing configurations keep working. Entities declared in the
+internal subset are resolved before the declaration is dropped.
 
 ```php
 $svgOptimizer->withRules(removeDoctype: true);
