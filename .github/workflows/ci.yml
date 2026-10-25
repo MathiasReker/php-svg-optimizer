@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         operating-system: [ 'ubuntu-latest' ]
-        php-versions: [ '8.3', '8.4', "8.5" ]
+        php-versions: [ '8.3', '8.4', '8.5', '8.6' ]
     name: PHP ${{ matrix.php-versions }} Test on ${{ matrix.operating-system }}
     steps:
       - name: Checkout Code
@@ -38,12 +38,18 @@ jobs:
         run: composer self-update
 
       - name: Install Composer Dependencies
-        run: composer install --optimize-autoloader
+        run: |
+          if [[ "${{ matrix.php-versions }}" == "8.6" ]]; then
+            composer install --optimize-autoloader --ignore-platform-req=php+
+          else
+            composer install --optimize-autoloader
+          fi
 
       - name: Validate Composer Configuration
         run: composer analyze:validate
 
       - name: Check platform requirements for packages
+        if: matrix.php-versions != '8.6'
         run: composer analyze:check
 
       - name: Check PSR-4 autoloading
