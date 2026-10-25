@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DefinitionElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
@@ -22,6 +23,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  */
 final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterface
 {
+    use DefinitionElementTrait;
     use ElementTrait;
 
     private const array NON_RENDERING_TAGS = [
@@ -55,26 +57,26 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
             return;
         }
 
-        $elements = iterator_to_array($domDocument->getElementsByTagName('*'), false);
+        foreach (iterator_to_array($domDocument->getElementsByTagName('*'), false) as $domElement) {
+            $parent = $domElement->parentNode;
 
-        foreach ($elements as $element) {
-            if ($this->isRedundant($element)) {
-                $element->parentNode?->removeChild($element);
+            if ($parent instanceof \DOMElement && $this->isRedundant($domElement, $parent)) {
+                $parent->removeChild($domElement);
             }
         }
     }
 
     /**
      * @param \DOMElement $domElement the element to check
+     * @param \DOMElement $parent     the parent of the element
      *
      * @throws \JsonException
      */
-    private function isRedundant(\DOMElement $domElement): bool
+    private function isRedundant(\DOMElement $domElement, \DOMElement $parent): bool
     {
-        $parent = $domElement->parentNode;
         $previous = $domElement->previousElementSibling;
 
-        if (!$parent instanceof \DOMElement || !$previous instanceof \DOMElement) {
+        if (!$previous instanceof \DOMElement) {
             return false;
         }
 
@@ -91,12 +93,8 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
      */
     private function isNonRendering(\DOMElement $domElement, \DOMElement $parent): bool
     {
-        if (\in_array($domElement->localName, self::NON_RENDERING_TAGS, true)) {
-            return true;
-        }
-
-        return SvgTag::Defs->value === $parent->localName
-            && SvgTag::Script->value !== $domElement->localName;
+        return (\in_array($domElement->localName, self::NON_RENDERING_TAGS, true) || SvgTag::Defs->value === $parent->localName)
+            && !$this->hasEffectiveElementInSubtree($domElement);
     }
 
     /**
@@ -124,6 +122,7 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
 
         return json_encode(
             [
+                'namespace' => $domElement->namespaceURI,
                 'tag' => $domElement->tagName,
                 'attrs' => $attrs,
                 'children' => $children,

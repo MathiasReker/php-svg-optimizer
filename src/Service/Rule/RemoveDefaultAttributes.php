@@ -34,8 +34,6 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
 
     private const string XPATH_ALL_ATTRIBUTES = '//@*';
 
-    private const string XPATH_ANIMATED_ATTRIBUTES = '//@attributeName';
-
     #[\Override]
     public static function isRisky(): bool
     {
@@ -59,38 +57,24 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
         }
 
         $domXPath = new \DOMXPath($domDocument);
-        $animatedAttributes = $this->findAnimatedAttributes($domXPath);
+        $animatedAttributes = $this->animatedAttributeNames($domDocument);
 
         /** @var \DOMNodeList<\DOMAttr> $attributes */
         $attributes = $domXPath->query(self::XPATH_ALL_ATTRIBUTES);
 
         foreach ($attributes as $attribute) {
-            if (!$this->isDefaultValue($attribute) || \in_array($attribute->name, $animatedAttributes, true)) {
+            if (!$this->isDefaultValue($attribute) || \array_key_exists($attribute->name, $animatedAttributes)) {
                 continue;
             }
 
             $element = $attribute->ownerElement;
-            if ($element instanceof \DOMElement && $this->inheritsDefault($element, $attribute->name)) {
+            if ($element instanceof \DOMElement
+                && !$this->styleDeclares($element, 'all|' . $attribute->name)
+                && $this->inheritsDefault($element, $attribute->name)
+            ) {
                 $element->removeAttribute($attribute->name);
             }
         }
-    }
-
-    /**
-     * @return list<string> the names of all attributes targeted by animation elements
-     */
-    private function findAnimatedAttributes(\DOMXPath $domXPath): array
-    {
-        $names = [];
-
-        /** @var \DOMNodeList<\DOMAttr> $attributes */
-        $attributes = $domXPath->query(self::XPATH_ANIMATED_ATTRIBUTES);
-
-        foreach ($attributes as $attribute) {
-            $names[] = trim($attribute->value);
-        }
-
-        return $names;
     }
 
     private function isDefaultValue(\DOMAttr $domAttr): bool
@@ -114,7 +98,7 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
                 return true;
             }
 
-            if ($this->styleDeclares($parent, $name)) {
+            if ($this->styleDeclares($parent, 'all|' . $name)) {
                 return false;
             }
 
@@ -130,15 +114,6 @@ final readonly class RemoveDefaultAttributes implements SvgOptimizerRuleInterfac
 
     private function isReferenceable(\DOMElement $domElement): bool
     {
-        return $domElement->hasAttribute(SvgAttribute::Id->value)
-            && $domElement->parentNode instanceof \DOMElement;
-    }
-
-    private function styleDeclares(\DOMElement $domElement, string $name): bool
-    {
-        $style = $domElement->getAttribute(SvgAttribute::Style->value);
-
-        return '' !== $style
-            && 1 === preg_match('/(?:^|;)\s*' . preg_quote($name, '/') . '\s*:/i', $style);
+        return $this->hasId($domElement) && $domElement->parentNode instanceof \DOMElement;
     }
 }

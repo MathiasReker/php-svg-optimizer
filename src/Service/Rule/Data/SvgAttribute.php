@@ -251,6 +251,7 @@ enum SvgAttribute: string implements SvgDataInterface
     case Min = 'min';
     case Multiple = 'multiple';
     case Name = 'name';
+    case Nonce = 'nonce';
     case Noshade = 'noshade';
     case Novalidate = 'novalidate';
     case Nowrap = 'nowrap';
@@ -258,6 +259,7 @@ enum SvgAttribute: string implements SvgDataInterface
     case Open = 'open';
     case Optimum = 'optimum';
     case Overflow = 'overflow';
+    case Part = 'part';
     case Pattern = 'pattern';
     case Placeholder = 'placeholder';
     case Poster = 'poster';
@@ -278,6 +280,7 @@ enum SvgAttribute: string implements SvgDataInterface
     case ShapeRendering = 'shape-rendering';
     case Size = 'size';
     case Sizes = 'sizes';
+    case Slot = 'slot';
     case Span = 'span';
     case Spellcheck = 'spellcheck';
     case Src = 'src';
@@ -368,6 +371,11 @@ enum SvgAttribute: string implements SvgDataInterface
     case AriaValuemin = 'aria-valuemin';
     case AriaValuenow = 'aria-valuenow';
     case AriaValuetext = 'aria-valuetext';
+    case AriaBraillelabel = 'aria-braillelabel';
+    case AriaBrailleroledescription = 'aria-brailleroledescription';
+    case AriaColindextext = 'aria-colindextext';
+    case AriaDescription = 'aria-description';
+    case AriaRowindextext = 'aria-rowindextext';
     case OnAbort = 'onabort';
     case OnAfterPrint = 'onafterprint';
     case OnBeforePrint = 'onbeforeprint';
@@ -576,6 +584,67 @@ enum SvgAttribute: string implements SvgDataInterface
             self::SolidColor,
             self::BackgroundColor,
             self::BorderColor,
+        ];
+    }
+
+    /**
+     * @return list<string> the inherited presentation attributes
+     */
+    public static function inherited(): array
+    {
+        /** @var list<string>|null $cache */
+        static $cache = null;
+
+        return $cache ??= self::valuesFromCases(self::inheritedCases());
+    }
+
+    /**
+     * @return list<SvgAttribute>
+     */
+    public static function inheritedCases(): array
+    {
+        return [
+            self::ClipRule,
+            self::Color,
+            self::ColorInterpolation,
+            self::ColorInterpolationFilters,
+            self::ColorRendering,
+            self::Cursor,
+            self::Direction,
+            self::Fill,
+            self::FillOpacity,
+            self::FillRule,
+            self::FontFamily,
+            self::FontSize,
+            self::FontSizeAdjust,
+            self::FontStretch,
+            self::FontStyle,
+            self::FontVariant,
+            self::FontWeight,
+            self::GlyphOrientationHorizontal,
+            self::GlyphOrientationVertical,
+            self::ImageRendering,
+            self::Kerning,
+            self::LetterSpacing,
+            self::MarkerEnd,
+            self::MarkerMid,
+            self::MarkerStart,
+            self::PaintOrder,
+            self::PointerEvents,
+            self::ShapeRendering,
+            self::Stroke,
+            self::StrokeDasharray,
+            self::StrokeDashoffset,
+            self::StrokeLinecap,
+            self::StrokeLinejoin,
+            self::StrokeMiterlimit,
+            self::StrokeOpacity,
+            self::StrokeWidth,
+            self::TextAnchor,
+            self::TextRendering,
+            self::Visibility,
+            self::WordSpacing,
+            self::WritingMode,
         ];
     }
 

@@ -21,6 +21,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 trait IdRenameTrait
 {
     private const string ID_REFERENCE_QUERY = './/@*[local-name()="href" or local-name()="begin" or local-name()="end"'
+        . ' or local-name()="to" or local-name()="from" or local-name()="values"'
         . ' or local-name()="aria-labelledby" or local-name()="aria-describedby" or local-name()="aria-controls"'
         . ' or local-name()="aria-owns" or local-name()="aria-flowto" or local-name()="aria-activedescendant"'
         . ' or local-name()="aria-details" or local-name()="aria-errormessage"]';
@@ -28,6 +29,8 @@ trait IdRenameTrait
     private const string TIMING_REFERENCE_REGEX = '/((?:^|;)\s*)([\w\-]+)(?=\.)/';
 
     private const string ID_LIST_SEPARATOR_REGEX = '/\s+/';
+
+    private const string SMIL_FRAGMENT_REGEX = '/((?:^|;)\s*)#([^;\s]+)(?=\s*(?:;|$))/';
 
     /**
      * @param array<string, string> $idReplacements
@@ -37,17 +40,18 @@ trait IdRenameTrait
         \DOMElement $domElement,
         array $idReplacements,
     ): void {
-        $attributes = [] === $idReplacements ? false : $domXPath->query(self::ID_REFERENCE_QUERY, $domElement);
+        $attributes = [] === $idReplacements ? false : $domXPath->query(self::ID_REFERENCE_QUERY, $domElement, false);
 
         foreach (false === $attributes ? [] : $attributes as $attribute) {
             if ($attribute instanceof \DOMAttr) {
-                $attribute->value = match ((string) $attribute->localName) {
+                $attribute->textContent = match ($attribute->localName) {
                     SvgAttribute::Href->value => $this->replaceFragmentId($attribute->value, $idReplacements),
-                    SvgAttribute::Begin->value, SvgAttribute::End->value => (string) preg_replace_callback(
+                    SvgAttribute::To->value, SvgAttribute::From->value, SvgAttribute::Values->value => $this->replaceAnimatedFragmentIds($attribute, $idReplacements),
+                    SvgAttribute::Begin->value, SvgAttribute::End->value => preg_replace_callback(
                         self::TIMING_REFERENCE_REGEX,
                         static fn (array $match): string => $match[1] . ($idReplacements[$match[2]] ?? $match[2]),
                         $attribute->value,
-                    ),
+                    ) ?? $attribute->value,
                     default => implode(' ', array_map(
                         static fn (string $id): string => $idReplacements[$id] ?? $id,
                         $this->idList($attribute->value),
@@ -63,9 +67,31 @@ trait IdRenameTrait
      */
     private function replaceFragmentId(string $href, array $idReplacements): string
     {
-        $id = mb_substr($href, 1);
+        $fragment = trim($href);
+        $id = mb_substr($fragment, 1);
 
-        return str_starts_with($href, '#') && \array_key_exists($id, $idReplacements) ? '#' . $idReplacements[$id] : $href;
+        return str_starts_with($fragment, '#') && \array_key_exists($id, $idReplacements) ? '#' . $idReplacements[$id] : $href;
+    }
+
+    /**
+     * @param \DOMAttr              $domAttr        a `to`, `from` or `values` attribute
+     * @param array<string, string> $idReplacements
+     *
+     * @return string the value with the ids replaced if the attribute animates a link, otherwise the value unchanged
+     */
+    private function replaceAnimatedFragmentIds(\DOMAttr $domAttr, array $idReplacements): string
+    {
+        $animatedAttribute = $domAttr->ownerElement?->getAttribute(SvgAttribute::AttributeName->value) ?? '';
+
+        if (SvgAttribute::Href->value !== $animatedAttribute && !str_ends_with($animatedAttribute, ':' . SvgAttribute::Href->value)) {
+            return $domAttr->value;
+        }
+
+        return preg_replace_callback(
+            self::SMIL_FRAGMENT_REGEX,
+            static fn (array $match): string => $match[1] . '#' . ($idReplacements[$match[2]] ?? $match[2]),
+            $domAttr->value,
+        ) ?? $domAttr->value;
     }
 
     /**

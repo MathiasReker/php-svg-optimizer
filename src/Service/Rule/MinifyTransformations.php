@@ -14,8 +14,8 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TransformListTrait;
 
 /**
  * @internal
@@ -24,29 +24,14 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
  */
 final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
 {
-    use NumberFormatterTrait;
-    use NumberListTrait;
+    use ElementTrait;
+    use TransformListTrait;
 
     private const array TRANSFORM_ATTRIBUTES = [
         SvgAttribute::Transform,
         SvgAttribute::GradientTransform,
         SvgAttribute::PatternTransform,
     ];
-
-    private const array ARGUMENT_COUNTS = [
-        'matrix' => [6],
-        'translate' => [1, 2],
-        'scale' => [1, 2],
-        'rotate' => [1, 3],
-        'skewX' => [1],
-        'skewY' => [1],
-    ];
-
-    private const string TRANSFORM_ITEM = '[a-zA-Z]++\s*+\([^()]*+\)';
-
-    private const string TRANSFORM_LIST_REGEX = '/^\s*+' . self::TRANSFORM_ITEM . '(?:\s*+,?+\s*+' . self::TRANSFORM_ITEM . ')*+\s*+$/';
-
-    private const string TRANSFORM_ITEM_REGEX = '/([a-zA-Z]+)\s*\(([^()]*)\)/';
 
     private const string ONE = '1';
 
@@ -70,6 +55,10 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
+        if ($this->mayMatchAttributes($domDocument)) {
+            return;
+        }
+
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
             foreach (self::TRANSFORM_ATTRIBUTES as $svgAttribute) {
                 if ($domNodeList->hasAttribute($svgAttribute->value)) {
@@ -92,7 +81,7 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
             return;
         }
 
-        $minified = implode('', array_map(fn (array $item): string => $this->minifyItem($item[0], $item[1]), $items));
+        $minified = implode('', array_map(fn (array $item): string => $this->minifyItem($item[0], array_map($this->minifyNumber(...), $item[1])), $items));
 
         if ('' === $minified && !$this->canBeInherited($domElement, $name)) {
             $domElement->removeAttribute($name);
@@ -120,35 +109,6 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
         return SvgAttribute::Transform->value !== $name
             && ($domElement->hasAttribute(SvgAttribute::Href->value)
                 || $domElement->hasAttributeNS(SvgNamespace::Xlink->value, SvgAttribute::Href->value));
-    }
-
-    /**
-     * @param string $value the attribute value
-     *
-     * @return list<array{string, list<string>}> the transforms as [function, arguments], or an empty list if the value
-     *                                           is not a valid transform list
-     */
-    private function parseTransformList(string $value): array
-    {
-        if (1 !== preg_match(self::TRANSFORM_LIST_REGEX, $value)) {
-            return [];
-        }
-
-        preg_match_all(self::TRANSFORM_ITEM_REGEX, $value, $matches, \PREG_SET_ORDER);
-
-        $items = [];
-
-        foreach ($matches as [, $function, $argumentList]) {
-            $arguments = array_map($this->minifyNumber(...), $this->parseNumberList($argumentList));
-
-            if (!\in_array(\count($arguments), self::ARGUMENT_COUNTS[$function] ?? [], true)) {
-                return [];
-            }
-
-            $items[] = [$function, $arguments];
-        }
-
-        return $items;
     }
 
     /**
@@ -208,7 +168,7 @@ final readonly class MinifyTransformations implements SvgOptimizerRuleInterface
     private function minifyScale(array $arguments): string
     {
         if (2 === \count($arguments) && $arguments[0] === $arguments[1]) {
-            $arguments = [$arguments[0]];
+            array_pop($arguments);
         }
 
         return [self::ONE] === $arguments ? '' : $this->writeItem('scale', $arguments);

@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
-use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\XmlContentTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
  * @internal
@@ -22,9 +22,24 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\XmlContentTrait;
  */
 final readonly class RemoveInvisibleCharacters implements SvgOptimizerRuleInterface
 {
-    use XmlContentTrait;
+    use ElementTrait;
 
-    private const string INVISIBLE_CHARACTERS_REGEX = '/&#x(?:200B|200C|200D|2028|2029|AD|0A|0D|09|D);/u';
+    private const string INVISIBLE_CHARACTERS_REGEX = '/[\x{AD}\x{200B}-\x{200D}\x{2028}\x{2029}]/u';
+
+    private const string XPATH_TEXT_NODES = '//text()';
+
+    private const array TEXT_CONTENT_TAGS = [
+        SvgTag::Desc->value,
+        SvgTag::ForeignObject->value,
+        SvgTag::Metadata->value,
+        SvgTag::Script->value,
+        SvgTag::Style->value,
+        SvgTag::Text->value,
+        SvgTag::TextPath->value,
+        SvgTag::Title->value,
+        SvgTag::Tref->value,
+        SvgTag::Tspan->value,
+    ];
 
     #[\Override]
     public static function isRisky(): bool
@@ -40,22 +55,44 @@ final readonly class RemoveInvisibleCharacters implements SvgOptimizerRuleInterf
 
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
-     *
-     * @throws XmlProcessingException if the XML content cannot be processed
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->processXmlContent($domDocument, $this->removeInvisibleCharacters(...));
+        /** @var \DOMNodeList<\DOMText> $domNodeList */
+        $domNodeList = (new \DOMXPath($domDocument))->query(self::XPATH_TEXT_NODES, null, false);
+
+        $keepsElementsNonEmpty = $this->hasSiblingSensitiveStyle($domDocument);
+
+        foreach ($domNodeList as $domText) {
+            $data = preg_replace(self::INVISIBLE_CHARACTERS_REGEX, '', $domText->data) ?? $domText->data;
+
+            if ($this->isTextContent($domText) || ('' === $data && $keepsElementsNonEmpty)) {
+                continue;
+            }
+
+            $domText->data = $data;
+
+            if ('' === $data) {
+                $domText->remove();
+            }
+        }
     }
 
     /**
-     * @param string $content the raw SVG content
+     * @param \DOMText $domText the text node to check
      *
-     * @return string the cleaned SVG content
+     * @return bool true if the text renders, is read out or is processed, as inside a `<text>`, a `<title>`, a
+     *              `<style>` or an element outside the SVG namespace
      */
-    private function removeInvisibleCharacters(string $content): string
+    private function isTextContent(\DOMText $domText): bool
     {
-        return preg_replace(self::INVISIBLE_CHARACTERS_REGEX, '', $content) ?? $content;
+        for ($node = $domText->parentNode; $node instanceof \DOMElement; $node = $node->parentNode) {
+            if (!$this->isSvgElement($node) || \in_array($node->localName, self::TEXT_CONTENT_TAGS, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

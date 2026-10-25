@@ -18,7 +18,15 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
  */
 trait CssDeclarationTrait
 {
+    use AsciiCaseTrait;
+
     private const string CSS_ALL_PROPERTIES = 'all';
+
+    private const string CSS_IMPORTANT_MARKER = '!';
+
+    private const string CSS_PLAIN_RULE_REGEX = '/([^{}]+)\{([^}]+)}/';
+
+    private const string CSS_COMMENT_START = '/*';
 
     private const array CSS_SHORTHAND_PROPERTIES = ['font', 'marker', 'mask', 'overflow'];
 
@@ -32,6 +40,34 @@ trait CssDeclarationTrait
     private function isSplittableCssDeclarationBlock(string $block): bool
     {
         return 1 === preg_match('/^(?:' . self::CSS_PROTECTED_TOKEN . '|[^"\'()\\\])*$/s', $block);
+    }
+
+    /**
+     * @param string $css the CSS content of a `<style>` element
+     *
+     * @return bool true if the CSS consists of plain rules only, without comments, at-rules or nesting, and with
+     *              declaration blocks that can be split safely
+     */
+    private function isPlainCssRuleList(string $css): bool
+    {
+        preg_match_all(self::CSS_PLAIN_RULE_REGEX, $css, $matches);
+
+        return !str_contains($css, self::CSS_COMMENT_START)
+            && '' === trim((string) preg_replace(self::CSS_PLAIN_RULE_REGEX, '', $css))
+            && [] === array_filter($matches[2], fn (string $declarations): bool => !$this->isSplittableCssDeclarationBlock($declarations));
+    }
+
+    /**
+     * @param string $selectors a selector list
+     *
+     * @return list<string> the trimmed selectors, split at the commas outside strings and parentheses, such as those of
+     *                      `:is(a, b)`; the whole list if it cannot be split safely
+     */
+    private function splitSelectorList(string $selectors): array
+    {
+        $parts = preg_split('/(?:' . self::CSS_PROTECTED_TOKEN . ')(*SKIP)(*FAIL)|,/s', $selectors);
+
+        return array_map(trim(...), false === $parts ? [$selectors] : $parts);
     }
 
     /**
@@ -83,7 +119,28 @@ trait CssDeclarationTrait
      */
     private function declaresProperty(string $css, string $property): bool
     {
-        $properties = [preg_quote($property, '/'), self::CSS_ALL_PROPERTIES];
+        return $this->declaresAnyProperty($css, [preg_quote($property, '/'), ...$this->relatedPropertyPatterns($property)]);
+    }
+
+    /**
+     * @param string $css      the CSS to search
+     * @param string $property a lowercase property name
+     *
+     * @return bool true if the CSS may declare `all`, a shorthand that sets the property, or a longhand that it sets
+     */
+    private function declaresRelatedProperty(string $css, string $property): bool
+    {
+        return $this->declaresAnyProperty($css, $this->relatedPropertyPatterns($property));
+    }
+
+    /**
+     * @param string $property a lowercase property name
+     *
+     * @return non-empty-list<string> the patterns of `all` and of the shorthands and longhands of the property
+     */
+    private function relatedPropertyPatterns(string $property): array
+    {
+        $properties = [self::CSS_ALL_PROPERTIES];
 
         foreach (self::CSS_SHORTHAND_PROPERTIES as $shorthand) {
             if (str_starts_with($property, $shorthand . '-')) {
@@ -95,6 +152,127 @@ trait CssDeclarationTrait
             $properties[] = $property . '-[a-z-]+';
         }
 
-        return 1 === preg_match('/[{;\s](?:-[a-z]+-)?(?:' . implode('|', $properties) . ')\s*:/i', $css);
+        return $properties;
+    }
+
+    /**
+     * @param string                 $css      the CSS to search
+     * @param non-empty-list<string> $patterns the property name patterns
+     */
+    private function declaresAnyProperty(string $css, array $patterns): bool
+    {
+        return 1 === preg_match('/[{;\s](?:-[a-z]+-)?(?:' . implode('|', $patterns) . ')\s*:/i', $css);
+    }
+
+    /**
+     * @param string $block      a declaration block that passes isSplittableCssDeclarationBlock()
+     * @param string $otherCss   the CSS that stays CSS
+     * @param string $relatedCss the CSS whose shorthands, longhands and `all` may override a converted declaration
+     *
+     * @return array<string, true> the lowercase properties of the block that have to stay CSS, as they are declared
+     *                             more than once, important, set or selected by the other CSS, or overridden by a
+     *                             related property
+     */
+    private function pinnedCssProperties(string $block, string $otherCss, string $relatedCss): array
+    {
+        return $this->repeatedOrImportantProperties($block)
+            + $this->propertiesOverriddenByCss($this->cssPropertyNames($block), $otherCss, $relatedCss);
+    }
+
+    /**
+     * @param string $block a declaration block that passes isSplittableCssDeclarationBlock()
+     *
+     * @return array<string, true> the lowercase properties of the block that are declared more than once or important
+     */
+    private function repeatedOrImportantProperties(string $block): array
+    {
+        $properties = $this->cssPropertyNames($block);
+        $counts = array_count_values($properties);
+        $pinned = [];
+
+        foreach ($this->parseCssDeclarations($block) as $index => [, $value]) {
+            if ($counts[$properties[$index]] > 1 || str_contains($value, self::CSS_IMPORTANT_MARKER)) {
+                $pinned[$properties[$index]] = true;
+            }
+        }
+
+        return $pinned;
+    }
+
+    /**
+     * @param list<string> $properties lowercase property names
+     * @param string       $otherCss   the CSS that stays CSS
+     * @param string       $relatedCss the CSS whose shorthands, longhands and `all` may override a converted declaration
+     *
+     * @return array<string, true> the properties that the other CSS sets or selects, or that a related property overrides
+     */
+    private function propertiesOverriddenByCss(array $properties, string $otherCss, string $relatedCss): array
+    {
+        $pinned = [];
+
+        foreach ($properties as $property) {
+            if ($this->isAffectedByOtherCss($otherCss, $property) || $this->declaresRelatedProperty($relatedCss, $property)) {
+                $pinned[$property] = true;
+            }
+        }
+
+        return $pinned;
+    }
+
+    /**
+     * @param string $block a declaration block that passes isSplittableCssDeclarationBlock()
+     *
+     * @return list<string> the lowercase property name of each declaration with a colon
+     */
+    private function cssPropertyNames(string $block): array
+    {
+        return array_map(
+            fn (array $declaration): string => $this->asciiLowercase($declaration[0]),
+            $this->parseCssDeclarations($block),
+        );
+    }
+
+    /**
+     * @param string $block A declaration block that passes isSplittableCssDeclarationBlock()
+     *
+     * @return list<array{string, string}> the property name and value of each declaration, both trimmed; declarations
+     *                                     without a colon are left out
+     */
+    private function parseCssDeclarations(string $block): array
+    {
+        $declarations = [];
+
+        foreach ($this->splitCssDeclarations($block) as $declaration) {
+            if (str_contains($declaration, ':')) {
+                [$property, $value] = explode(':', $declaration, 2);
+                $declarations[] = [trim($property), trim($value)];
+            }
+        }
+
+        return $declarations;
+    }
+
+    /**
+     * @param string            $block    a declaration block that passes isSplittableCssDeclarationBlock()
+     * @param list<\DOMElement> $elements the elements that the declarations would become attributes of
+     *
+     * @return array<string, true> the lowercase properties that an element already sets as an attribute with another
+     *                             value, which the declaration may not override if its value is invalid
+     */
+    private function differentlySetProperties(string $block, array $elements): array
+    {
+        $properties = [];
+
+        foreach ($this->parseCssDeclarations($block) as [$property, $value]) {
+            $property = $this->asciiLowercase($property);
+
+            foreach ($elements as $element) {
+                if ($element->hasAttribute($property) && $element->getAttribute($property) !== $value) {
+                    $properties[$property] = true;
+                }
+            }
+        }
+
+        return $properties;
     }
 }

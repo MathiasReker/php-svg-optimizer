@@ -61,6 +61,7 @@ final class XmlContentTraitTest extends TestCase
         } catch (XmlProcessingException $xmlProcessingException) {
             self::assertSame('Failed to process the XML content.', $xmlProcessingException->getMessage());
             self::assertSame($runtimeException, $xmlProcessingException->getPrevious());
+            self::assertSame(0, $xmlProcessingException->getCode());
         }
     }
 

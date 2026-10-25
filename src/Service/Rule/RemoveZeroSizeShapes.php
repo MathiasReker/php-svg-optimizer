@@ -62,23 +62,25 @@ final readonly class RemoveZeroSizeShapes implements SvgOptimizerRuleInterface
         }
 
         foreach (iterator_to_array($domDocument->getElementsByTagName('*'), false) as $domElement) {
-            if ($this->isRemovable($domElement) && $this->isZeroSize($domElement)) {
-                $domElement->parentNode?->removeChild($domElement);
+            $parent = $domElement->parentNode;
+
+            if ($parent instanceof \DOMElement && $this->isRemovable($domElement, $parent) && $this->isZeroSize($domElement)) {
+                $parent->removeChild($domElement);
             }
         }
     }
 
     /**
      * @param \DOMElement $domElement the element to check
+     * @param \DOMElement $parent     the parent of the element
      */
-    private function isRemovable(\DOMElement $domElement): bool
+    private function isRemovable(\DOMElement $domElement, \DOMElement $parent): bool
     {
-        $parent = $domElement->parentNode;
-
-        return !$this->hasId($domElement)
+        return $this->isSvgElement($domElement)
+            && !$this->isUserExposed($domElement)
             && !$this->hasElementChildren($domElement)
             && !$domElement->hasAttribute(SvgAttribute::Style->value)
-            && (!$parent instanceof \DOMElement || SvgTag::Switch->value !== $parent->localName);
+            && SvgTag::Switch->value !== $parent->localName;
     }
 
     /**

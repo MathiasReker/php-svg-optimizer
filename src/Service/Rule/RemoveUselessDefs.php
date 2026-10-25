@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DefinitionElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
@@ -22,15 +23,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  */
 final readonly class RemoveUselessDefs implements SvgOptimizerRuleInterface
 {
+    use DefinitionElementTrait;
     use ElementTrait;
-
-    private const array REFERENCE_ONLY_TAGS = [
-        'clipPath', 'filter', 'linearGradient', 'marker', 'mask', 'pattern', 'radialGradient', 'symbol',
-    ];
-
-    private const array DEFS_EFFECTIVE_TAGS = [
-        'color-profile', 'discard', 'font', 'font-face', 'script', 'style',
-    ];
 
     #[\Override]
     public static function isRisky(): bool
@@ -54,9 +48,9 @@ final readonly class RemoveUselessDefs implements SvgOptimizerRuleInterface
             return;
         }
 
-        foreach (iterator_to_array($domDocument->getElementsByTagName('*'), false) as $domElement) {
+        foreach ($this->elementsInDocument($domDocument) as $domElement) {
             if ($this->isUselessDefinition($domElement)) {
-                $domElement->parentNode?->removeChild($domElement);
+                $domElement->remove();
             }
         }
 
@@ -68,39 +62,13 @@ final readonly class RemoveUselessDefs implements SvgOptimizerRuleInterface
      */
     private function isUselessDefinition(\DOMElement $domElement): bool
     {
-        $localName = (string) $domElement->localName;
+        $localName = $domElement->localName ?? '';
         $parent = $domElement->parentNode;
         $isDefsChild = $parent instanceof \DOMElement && SvgTag::Defs->value === $parent->localName;
 
-        $isCandidate = \in_array($localName, self::REFERENCE_ONLY_TAGS, true)
+        $isCandidate = ($this->isReferenceOnlyTag($localName) && $this->isSvgElement($domElement))
             || ($isDefsChild && !$this->isEffectiveTag($localName));
 
-        return $isCandidate && !$this->hasIdInSubtree($domElement) && !$this->hasEffectiveDescendant($domElement);
-    }
-
-    /**
-     * @param \DOMElement $domElement the element to check
-     */
-    private function hasEffectiveDescendant(\DOMElement $domElement): bool
-    {
-        foreach ($domElement->getElementsByTagName('*') as $domNodeList) {
-            if ($this->isEffectiveTag((string) $domNodeList->localName)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param string $localName the local name of an element
-     *
-     * @return bool true if the element has an effect inside `<defs>`, such as a style sheet or an animation that may
-     *              target an element elsewhere
-     */
-    private function isEffectiveTag(string $localName): bool
-    {
-        return \in_array($localName, self::DEFS_EFFECTIVE_TAGS, true)
-            || \in_array(mb_strtolower($localName), SvgTag::animation(), true);
+        return $isCandidate && !$this->hasIdInSubtree($domElement) && !$this->hasEffectiveElementInSubtree($domElement);
     }
 }

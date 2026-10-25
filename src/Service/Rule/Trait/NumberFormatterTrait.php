@@ -18,9 +18,9 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
  */
 trait NumberFormatterTrait
 {
-    private const string NUMBER_PATTERN = '[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?';
+    private const string NUMBER_PATTERN = '[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?';
 
-    private const string NUMBER_PARTS_REGEX = '/^([+-]?)(?=\.?\d)(\d*)(?:\.(\d*))?(?:[eE]([+-]?)(\d+))?$/';
+    private const string NUMBER_PARTS_REGEX = '/^([+-]?)(?=\.?\d)(\d*)(?:\.(\d+))?(?:[eE]([+-]?)(\d+))?$/';
 
     private const string PLAIN_NUMBER_REGEX = '/^\s*' . self::NUMBER_PATTERN . '\s*$/';
 
@@ -58,6 +58,16 @@ trait NumberFormatterTrait
     private function isZeroNumber(string $number): bool
     {
         return self::ZERO === $this->minifyNumber($number);
+    }
+
+    /**
+     * @param string $number a number literal
+     *
+     * @return bool true if the literal is greater than zero
+     */
+    private function isPositiveNumber(string $number): bool
+    {
+        return !str_starts_with($number, '-') && !$this->isZeroNumber($number);
     }
 
     /**

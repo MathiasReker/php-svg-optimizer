@@ -399,7 +399,7 @@ final class RemoveInkscapeFootprintsTest extends TestCase
 
         yield 'Keeps editor elements containing other elements' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/"><i:wrapper i:id="1"><linearGradient id="g"/></i:wrapper><rect fill="url(#g)" width="1"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><i:wrapper xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/"><linearGradient id="g"/></i:wrapper><rect fill="url(#g)" width="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/"><i:wrapper><linearGradient id="g"/></i:wrapper><rect fill="url(#g)" width="1"/></svg>',
         ];
 
         yield 'Keeps editor elements containing deeply nested other elements' => [
@@ -451,6 +451,146 @@ final class RemoveInkscapeFootprintsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:serif="http://www.serif.com/" xml:space="preserve"><use xlink:href="#a" xml:lang="en" serif:id="b"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"><use xlink:href="#a" xml:lang="en"/></svg>',
         ];
+
+        yield 'Removes editor attributes bound to a custom prefix' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:ik="http://www.inkscape.org/namespaces/inkscape"><rect ik:label="x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes an editor namespace declared on a nested element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" inkscape:label="x"><rect/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><rect/></g></svg>',
+        ];
+
+        yield 'Keeps an editor element that holds SVG content' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><inkscape:foo><rect/></inkscape:foo></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><inkscape:foo><rect/></inkscape:foo></svg>',
+        ];
+
+        yield 'Removes editor attributes deep in nested groups' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><g><g><g><rect inkscape:label="x"/></g></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><rect/></g></g></g></svg>',
+        ];
+
+        yield 'Keeps a foreignObject that requires a non-editor extension' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><switch><foreignObject requiredExtensions="http://example.com/ext"><x:a xmlns:x="urn:x"/></foreignObject></switch></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><switch><foreignObject requiredExtensions="http://example.com/ext"><x:a xmlns:x="urn:x"/></foreignObject></switch></svg>',
+        ];
+
+        yield 'Handles an empty document' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"/>',
+        ];
+
+        yield 'Handles a root with only text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">text</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">text</svg>',
+        ];
+
+        yield 'Handles a 60 levels deep structure' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">' . str_repeat('<g>', 60) . '<rect inkscape:label="x"/>' . str_repeat('</g>', 60) . '</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' . str_repeat('<g>', 60) . '<rect/>' . str_repeat('</g>', 60) . '</svg>',
+        ];
+
+        yield 'Handles a very long attribute value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect id="' . str_repeat('a', 10_000) . '" inkscape:label="x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="' . str_repeat('a', 10_000) . '"/></svg>',
+        ];
+
+        yield 'Handles right-to-left, emoji, combining and astral text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text inkscape:label="x">שלום 😀 é 𝒜</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><text>שלום 😀 é 𝒜</text></svg>',
+        ];
+
+        yield 'Handles values padded with tabs, newlines and no-break spaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect inkscape:label="x" fill="&#9; red&#10;&#xA0;"/></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><rect fill=\"&#9; red&#10;\u{a0}\"/></svg>",
+        ];
+
+        yield 'Handles comments between every node' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><!--1--><g><!--2--><!--3--><rect inkscape:label="x"/><!--4--></g><!--5--></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><!--1--><g><!--2--><!--3--><rect/><!--4--></g><!--5--></svg>',
+        ];
+
+        yield 'Leaves a document with an external style sheet untouched' => [
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><?foo bar?><rect inkscape:label="x"/></svg>',
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><?foo bar?><rect inkscape:label="x"/></svg>',
+        ];
+
+        yield 'Leaves a document with a linked style sheet untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><h:link xmlns:h="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/><rect inkscape:label="x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><h:link xmlns:h="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/><rect inkscape:label="x"/></svg>',
+        ];
+
+        yield 'Leaves a document with an imported style sheet untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><style>@import url(a.css);</style><rect inkscape:label="x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><style>@import url(a.css);</style><rect inkscape:label="x"/></svg>',
+        ];
+
+        yield 'Handles processing instructions' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><?foo bar?><rect inkscape:label="x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><?foo bar?><rect/></svg>',
+        ];
+
+        yield 'Keeps editor attributes that a style sheet selects' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><style>rect[*|label]{fill:red}</style><rect inkscape:label="x" inkscape:groupmode="layer"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><style>rect[*|label]{fill:red}</style><rect inkscape:label="x"/></svg>',
+        ];
+
+        yield 'Keeps editor elements when a style sheet depends on the siblings of an element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"><style>rect:first-child{fill:red}</style><g><sodipodi:namedview sodipodi:docname="a"/><rect/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"><style>rect:first-child{fill:red}</style><g><sodipodi:namedview/><rect/></g></svg>',
+        ];
+
+        yield 'Keeps an Illustrator foreignObject when a style sheet depends on the siblings of an element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g:first-child{fill:red}</style><switch><foreignObject requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"/><g/></switch></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g:first-child{fill:red}</style><switch><foreignObject requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"/><g/></switch></svg>',
+        ];
+
+        yield 'Handles CDATA sections' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text inkscape:label="x"><![CDATA[a<b&c]]></text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><text>a&lt;b&amp;c</text></svg>',
+        ];
+
+        yield 'Handles a child that resets the default namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><g><x xmlns=""><rect inkscape:label="x"/></x></g><rect inkscape:label="x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g><x xmlns=""><rect/></x></g><rect/></svg>',
+        ];
+
+        yield 'Handles a prefix redeclared to another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:s="http://www.w3.org/2000/svg"><s:g><s:rect inkscape:label="x"/></s:g><g xmlns:s="urn:other"><s:rect inkscape:label="x"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:s="http://www.w3.org/2000/svg"><s:g><s:rect/></s:g><g xmlns:s="urn:other"><s:rect/></g></svg>',
+        ];
+
+        yield 'Handles entities and character references in values and text' => [
+            '<!DOCTYPE svg [<!ENTITY e "v&#x41;">]><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text inkscape:label="x" class="&e;">&e;&#x42;&#66;</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><text class="vA">vABB</text></svg>',
+        ];
+
+        yield 'Handles an attribute in no namespace next to the same local name in another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:o="urn:o"><use href="#a" xlink:href="#b" o:href="#c" inkscape:label="x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:o="urn:o"><use href="#a" xlink:href="#b" o:href="#c"/></svg>',
+        ];
+
+        yield 'Handles repeated elements where only a later one matches' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect/><rect fill="red"/><rect inkscape:label="x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect/><rect fill="red"/><rect/></svg>',
+        ];
+
+        yield 'Removes an unused editor declaration whose prefix is bound to a used editor namespace elsewhere' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:i="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"><style>[*|role]{fill:red}</style><rect i:role="x"/><g xmlns:i="http://www.inkscape.org/namespaces/inkscape"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[*|role]{fill:red}</style><rect xmlns:i="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" i:role="x"/><g/></svg>',
+        ];
+
+        yield 'Keeps another declaration of the prefix of an unused editor namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:i="http://www.inkscape.org/namespaces/inkscape"><g xmlns:i="urn:other"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns:i="urn:other"/></svg>',
+        ];
+
+        yield 'Handles mixed-case element names' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><Rect inkscape:label="x"/><RECT inkscape:label="x"/><Script>x</Script><SCRIPT>x</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">x</s:script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><Rect/><RECT/><Script>x</Script><SCRIPT>x</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">x</s:script></svg>',
+        ];
     }
 
     private const array EDITOR_NAMESPACE_URIS = [
@@ -481,5 +621,45 @@ final class RemoveInkscapeFootprintsTest extends TestCase
     public function shouldCheckSizeReturnsFalse(): void
     {
         self::assertFalse(RemoveInkscapeFootprints::shouldCheckSize());
+    }
+
+    #[Test]
+    public function handlesManyNamespaceDeclarationsInLinearTime(): void
+    {
+        $small = $this->secondsToOptimize(2_000);
+        $large = $this->secondsToOptimize(16_000);
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    #[Test]
+    public function handlesManyRepeatedEditorNamespaceDeclarationsInLinearTime(): void
+    {
+        $small = $this->secondsToOptimizeRepeatedDeclarations(1_000);
+        $large = $this->secondsToOptimizeRepeatedDeclarations(4_000);
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    private function secondsToOptimizeRepeatedDeclarations(int $count): float
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg">' . str_repeat('<g xmlns:i="http://www.inkscape.org/namespaces/inkscape"/>', $count) . '</svg>');
+
+        $start = hrtime(true);
+        (new RemoveInkscapeFootprints())->optimize($domDocument);
+
+        return (hrtime(true) - $start) / 1e9;
+    }
+
+    private function secondsToOptimize(int $count): float
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><rect inkscape:label="x"/><inkscape:x/></svg>');
+
+        $start = hrtime(true);
+        (new RemoveInkscapeFootprints())->optimize($domDocument);
+
+        return (hrtime(true) - $start) / 1e9;
     }
 }

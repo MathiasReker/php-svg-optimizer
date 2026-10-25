@@ -54,6 +54,16 @@ final class MinifyNumericValuesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Leaves the document untouched when a style sheet selects attribute values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[width="400px"]{fill:red}</style><rect width="400px"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[width="400px"]{fill:red}</style><rect width="400px"/></svg>',
+        ];
+
+        yield 'Keeps a number with a trailing decimal point, which browsers reject' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="200." height="1.e2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="200." height="1.e2"/></svg>',
+        ];
+
         yield 'Shortens lengths and drops px' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect x="+10.0" y="0.50" width="01.50px" height="2PX" stroke-width="1.0px"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><rect x="10" y=".5" width="1.5" height="2PX" stroke-width="1"/></svg>',
@@ -158,6 +168,81 @@ final class MinifyNumericValuesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><g opacity="."/><rect x="1e"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><g opacity="."/><rect x="1e"/></svg>',
         ];
+
+        yield 'Keeps attributes of elements in other namespaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10.0" height="10"><canvas xmlns="http://www.w3.org/1999/xhtml" width="0.50" height="010"/></foreignObject><x:rect xmlns:x="urn:x" x="1.0"/><rect x="1.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10"><canvas xmlns="http://www.w3.org/1999/xhtml" width="0.50" height="010"></canvas></foreignObject><x:rect xmlns:x="urn:x" x="1.0"/><rect x="1"/></svg>',
+        ];
+
+        yield 'Shortens attributes of SVG elements inside foreign objects' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10"><svg xmlns="http://www.w3.org/2000/svg" x="1.0"><rect width="2.50px"/></svg></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10"><svg xmlns="http://www.w3.org/2000/svg" x="1"><rect width="2.5"/></svg></foreignObject></svg>',
+        ];
+
+        yield 'Shortens attributes in a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect x="1.50" width="10.0px"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect x="1.5" width="10"/></svg:svg>',
+        ];
+
+        yield 'Shortens attributes in a document without a namespace' => [
+            '<svg><rect x="1.50" width="10.0px"/></svg>',
+            '<svg><rect x="1.5" width="10"/></svg>',
+        ];
+
+        yield 'Never rounds huge and tiny values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="123456789012345678901234567890.000" y="0.00000000000000000001" width="1E-07" height="0.1234567890123456789"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="123456789012345678901234567890" y=".00000000000000000001" width="1e-7" height=".1234567890123456789"/></svg>',
+        ];
+
+        yield 'Keeps malformed signs and decimal points' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="--1" y="+-1" width="1.5.5" height=".5.5" rx="1e+" ry="1 e2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="--1" y="+-1" width="1.5.5" height=".5.5" rx="1e+" ry="1 e2"/></svg>',
+        ];
+
+        yield 'Keeps numbers in attributes that are not numeric' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" version="1.0"><a href="1.0"><text id="n1.0" class="1.0" font-family="1.0" x="1.0">1.0</text></a><animate attributeName="x" from="1.0" to="2.0" values="1.0;2.0" keyTimes="0;1.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" version="1.0"><a href="1.0"><text id="n1.0" class="1.0" font-family="1.0" x="1">1.0</text></a><animate attributeName="x" from="1.0" to="2.0" values="1.0;2.0" keyTimes="0;1.0"/></svg>',
+        ];
+
+        yield 'Keeps style attributes and style elements' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{stroke-width:1.0px}</style><rect style="stroke-width:1.0px" stroke-width="1.0px"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{stroke-width:1.0px}</style><rect style="stroke-width:1.0px" stroke-width="1"/></svg>',
+        ];
+
+        yield 'Shortens values written with character references' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="1&#46;50" y="&#x31;.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="1"/></svg>',
+        ];
+
+        yield 'Keeps non-ASCII digits' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="１.0" y="1.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="１.0" y="1"/></svg>',
+        ];
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideOptimizeIsIdempotentCases')]
+    #[Test]
+    public function optimizeIsIdempotent(string $optimized): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
+        $svgOptimizer->addRule(new MinifyNumericValues());
+
+        self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideOptimizeIsIdempotentCases(): iterable
+    {
+        foreach (self::provideOptimizeCases() as $name => [, $expected]) {
+            yield $name => [$expected];
+        }
     }
 
     #[Test]

@@ -49,6 +49,10 @@ final class RemoveEmptyTextElementsTest extends TestCase
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
+
+        $repeated = new SvgOptimizer(new StringProvider($actual));
+        $repeated->addRule(new RemoveEmptyTextElements());
+        self::assertSame($actual, $repeated->optimize()->getContent());
     }
 
     /**
@@ -56,6 +60,116 @@ final class RemoveEmptyTextElementsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Removes a text whose only child is a comment' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text><!--c--></text><text><?pi c?></text><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'Removes empty texts before and after a comment' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text/><!--c--><tspan/><!--d--><tref/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><!--c--><!--d--></svg>',
+        ];
+
+        yield 'Keeps an empty text that a switch may render' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><switch><text/><rect width="5" height="5"/></switch></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><switch><text/><rect width="5" height="5"/></switch></svg>',
+        ];
+
+        yield 'Keeps an empty text with an id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text id="t"/><animate href="#t" attributeName="x" to="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text id="t"/><animate href="#t" attributeName="x" to="1"/></svg>',
+        ];
+
+        yield 'Keeps an empty text with a role' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text role="img" aria-label="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text role="img" aria-label="a"/></svg>',
+        ];
+
+        yield 'Keeps an empty text that can take focus' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text tabindex="0"/><text/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text tabindex="0"/></svg>',
+        ];
+
+        yield 'leaves an empty document alone' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'keeps a text with only a non-breaking space' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>&#xA0;</text></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>\u{A0}</text></svg>",
+        ];
+
+        yield 'keeps a text with only an entity' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>&amp;</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>&amp;</text></svg>',
+        ];
+
+        yield 'keeps a text with character data' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text><![CDATA[x]]></text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+        ];
+
+        yield 'removes an empty text deep inside groups' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g><text><tspan><tspan/></tspan></text></g></g></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g/></g></g></g></svg>',
+        ];
+
+        yield 'keeps an empty mixed-case text element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><Text/><TSPAN/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><Text/><TSPAN/></svg>',
+        ];
+
+        yield 'keeps a tref that references through a custom xlink prefix' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="http://www.w3.org/1999/xlink"><text>a<tref x:href="#t"/></text><text id="t">b</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="http://www.w3.org/1999/xlink"><text>a<tref x:href="#t"/></text><text id="t">b</text></svg>',
+        ];
+
+        yield 'keeps a tref that references through a plain href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>a<tref href="#t"/></text><text id="t">b</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>a<tref href="#t"/></text><text id="t">b</text></svg>',
+        ];
+
+        yield 'removes a tref with an empty reference' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><text>a<tref xlink:href=""/></text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><text>a</text></svg>',
+        ];
+
+        yield 'keeps empty text elements in another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:text xmlns:x="urn:x"/><metadata><text xmlns="urn:y"/></metadata></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:text xmlns:x="urn:x"/><metadata><text xmlns="urn:y"/></metadata></svg>',
+        ];
+
+        yield 'removes empty prefixed svg text elements' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:text><svg:tspan/></svg:text></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'keeps empty text elements when an external style sheet is linked' => [
+            '<?xml-stylesheet href="style.css"?><svg xmlns="http://www.w3.org/2000/svg"><text/></svg>',
+            '<?xml-stylesheet href="style.css"?><svg xmlns="http://www.w3.org/2000/svg"><text/></svg>',
+        ];
+
+        yield 'keeps empty text elements when an XHTML link loads a style sheet' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:h="http://www.w3.org/1999/xhtml"><h:link rel="stylesheet" href="data:text/css,text%2Brect%7Bfill:red%7D"/><text/><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:h="http://www.w3.org/1999/xhtml"><h:link rel="stylesheet" href="data:text/css,text%2Brect%7Bfill:red%7D"/><text/><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'keeps empty text elements when a style sheet is imported' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(a.css);</style><text/><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(a.css);</style><text/><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'keeps a text that only holds an animation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text><set attributeName="x" to="1"/></text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text><set attributeName="x" to="1"/></text></svg>',
+        ];
+
+        yield 'removes a later empty tspan after a kept one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text><tspan>a</tspan><tspan/></text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text><tspan>a</tspan></text></svg>',
+        ];
+
         yield 'Keeps a whitespace-only tspan, whose space renders between the surrounding text' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><text>a<tspan> </tspan>b</text></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><text>a<tspan> </tspan>b</text></svg>',
@@ -198,5 +312,11 @@ final class RemoveEmptyTextElementsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><rect width="2" height="2"/></svg>
                 XML,
         ];
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsTrue(): void
+    {
+        self::assertTrue(RemoveEmptyTextElements::shouldCheckSize());
     }
 }

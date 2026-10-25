@@ -22,7 +22,19 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  */
 trait IdReferenceTrait
 {
-    private const string FRAGMENT_REFERENCE_REGEX = '/#((?:\\\.|[^\s#,;\'"()\[\]{}<>\\\])+)/';
+    use DocumentScriptTrait;
+
+    private const string FRAGMENT_REFERENCE_REGEX = '/#((?:\\\[0-9a-fA-F]{1,6}[ \t\n\r\f]?|\\\.|[^\s#,;\'"()\[\]{}<>\\\])+)/';
+
+    private const string CSS_ESCAPE_REGEX = '/\\\(?:([0-9a-fA-F]{1,6})[ \t\n\r\f]?|(.))/s';
+
+    private const string REPLACEMENT_CHARACTER = "\u{FFFD}";
+
+    private const int MAX_CODE_POINT = 0x10_FF_FF;
+
+    private const int SURROGATE_CODE_POINTS = 0xD8_00;
+
+    private const int SURROGATE_MASK = 0x1F_F8_00;
 
     private const string ID_PART_REGEX = '/[^\w-]?[\w-]*/';
 
@@ -70,13 +82,16 @@ trait IdReferenceTrait
      */
     private function isReferencedElement(\DOMElement $domElement, array $referencedIds): bool
     {
-        $ids = [
-            $domElement->getAttribute(SvgAttribute::Id->value) => true,
-            $domElement->getAttributeNS(SvgNamespace::Xml->value, SvgAttribute::Id->value) => true,
-        ];
-        unset($ids['']);
+        foreach ([
+            $domElement->getAttribute(SvgAttribute::Id->value),
+            $domElement->getAttributeNS(SvgNamespace::Xml->value, SvgAttribute::Id->value),
+        ] as $id) {
+            if ('' !== $id && \array_key_exists($id, $referencedIds)) {
+                return true;
+            }
+        }
 
-        return [] !== array_intersect_key($ids, $referencedIds);
+        return false;
     }
 
     /**
@@ -88,11 +103,13 @@ trait IdReferenceTrait
      */
     private function hasReferencedElement(\DOMElement $domElement, array $referencedIds, array $ignoredTags): bool
     {
-        foreach ([$domElement, ...$domElement->getElementsByTagName('*')] as $element) {
-            if (!\in_array($element->localName, $ignoredTags, true)
-                && $this->isReferencedElement($element, $referencedIds)
-            ) {
-                return true;
+        foreach ([[$domElement], $domElement->getElementsByTagName('*')] as $elements) {
+            foreach ($elements as $element) {
+                if (!\in_array($element->localName, $ignoredTags, true)
+                    && $this->isReferencedElement($element, $referencedIds)
+                ) {
+                    return true;
+                }
             }
         }
 
@@ -100,16 +117,17 @@ trait IdReferenceTrait
     }
 
     /**
-     * @param \DOMDocument $domDocument the DOM document to scan
-     * @param list<string> $definitions the elements that only render when referenced
-     * @param list<string> $alwaysLive  the elements whose content counts as referenced, such as sprite symbols
+     * @param \DOMDocument        $domDocument the DOM document to scan
+     * @param list<string>        $definitions the elements that only render when referenced
+     * @param list<string>        $alwaysLive  the elements whose content counts as referenced, such as sprite symbols
+     * @param array<string, true> $seeds       the ids that count as referenced from outside the document
      *
-     * @return array<string, true> the referenced ids
+     * @return array<string, true> the referenced ids, and the ids referenced from within the elements they identify
      */
-    private function collectLiveReferencedIds(\DOMDocument $domDocument, array $definitions, array $alwaysLive): array
+    private function collectLiveReferencedIds(\DOMDocument $domDocument, array $definitions, array $alwaysLive, array $seeds): array
     {
         $elementsById = [];
-        $live = [];
+        $live = $seeds;
 
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
             $elementsById[$domNodeList->getAttribute('id')] ??= $domNodeList;
@@ -133,27 +151,36 @@ trait IdReferenceTrait
      */
     private function followReferences(array $live, array $elementsById): array
     {
-        $pending = array_map(strval(...), array_keys($live));
+        $pending = $live;
 
         while ([] !== $pending) {
-            $id = array_pop($pending);
+            $id = array_key_last($pending);
+            unset($pending[$id]);
 
-            if (!\array_key_exists($id, $elementsById)) {
-                continue;
-            }
-
-            foreach ($elementsById[$id]->getElementsByTagName('*') as $descendant) {
-                $references = array_diff_key($this->elementReferences($descendant), $live);
+            if (\array_key_exists($id, $elementsById)) {
+                $references = array_diff_key($this->subtreeReferences($elementsById[$id]), $live);
                 $live += $references;
-                array_push($pending, ...array_map(strval(...), array_keys($references)));
+                $pending += $references;
             }
-
-            $references = array_diff_key($this->elementReferences($elementsById[$id]), $live);
-            $live += $references;
-            array_push($pending, ...array_map(strval(...), array_keys($references)));
         }
 
         return $live;
+    }
+
+    /**
+     * @param \DOMElement $domElement the root of the subtree to scan
+     *
+     * @return array<string, true> the ids referenced by the element and its descendants
+     */
+    private function subtreeReferences(\DOMElement $domElement): array
+    {
+        $referencedIds = $this->elementReferences($domElement);
+
+        foreach ($domElement->getElementsByTagName('*') as $domNodeList) {
+            $referencedIds += $this->elementReferences($domNodeList);
+        }
+
+        return $referencedIds;
     }
 
     /**
@@ -233,7 +260,7 @@ trait IdReferenceTrait
         preg_match_all(self::EXACT_ID_ATTRIBUTE_SELECTOR_REGEX, $css, $matches);
 
         foreach ($matches['id'] as $id) {
-            $referencedIds[trim($id, '"\'')] = true;
+            $referencedIds[$this->cssUnescape(trim($id, '"\''))] = true;
         }
 
         return $referencedIds;
@@ -258,9 +285,7 @@ trait IdReferenceTrait
      */
     private function fragmentReferences(string $text): array
     {
-        if (false === preg_match_all(self::FRAGMENT_REFERENCE_REGEX, $text, $matches)) {
-            return [];
-        }
+        preg_match_all(self::FRAGMENT_REFERENCE_REGEX, $text, $matches);
 
         $referencedIds = [];
 
@@ -285,10 +310,52 @@ trait IdReferenceTrait
 
         foreach ($parts[0] as $part) {
             $prefix .= $part;
-            $candidates[$prefix] = true;
-            $candidates[stripslashes($prefix)] = true;
+            $candidates[] = $prefix;
+            $candidates[] = stripslashes($prefix);
+            $candidates[] = $this->cssUnescape($prefix);
         }
 
-        return $candidates;
+        return array_fill_keys($candidates, true);
+    }
+
+    /**
+     * @param string $value a CSS identifier that may contain escapes, such as `\31 23`
+     *
+     * @return string the identifier with its escapes decoded, such as `123`
+     */
+    private function cssUnescape(string $value): string
+    {
+        return preg_replace_callback(
+            self::CSS_ESCAPE_REGEX,
+            static function (array $match): string {
+                if ('' === $match[1]) {
+                    return $match[2];
+                }
+
+                $codePoint = (int) hexdec($match[1]);
+
+                return 0 === $codePoint || $codePoint > self::MAX_CODE_POINT || self::SURROGATE_CODE_POINTS === ($codePoint & self::SURROGATE_MASK)
+                    ? self::REPLACEMENT_CHARACTER
+                    : mb_chr($codePoint);
+            },
+            $value,
+        ) ?? $value;
+    }
+
+    /**
+     * @param \DOMDocument $domDocument the document to check
+     *
+     * @return bool true if the document has a script, or a style sheet with an attribute selector that may match ids
+     *              other than its value
+     */
+    private function mayTargetAnyId(\DOMDocument $domDocument): bool
+    {
+        foreach ($this->elementsNamed($domDocument, SvgTag::Style->value) as $domElement) {
+            if ($this->hasInexactIdAttributeSelector($domElement->textContent)) {
+                return true;
+            }
+        }
+
+        return $this->hasScriptOrEventHandler($domDocument);
     }
 }

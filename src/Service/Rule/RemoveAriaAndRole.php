@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
  * @internal
@@ -21,6 +22,12 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
  */
 final readonly class RemoveAriaAndRole implements SvgOptimizerRuleInterface
 {
+    use ElementTrait;
+
+    private const string ATTRIBUTE_SELECTOR_REGEX = '/\[\s*(?:[\w*-]*\|)?\s*(role|aria-[\w-]*)(?![\w-])/i';
+
+    private const string ARIA_PREFIX = 'aria-';
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -39,17 +46,34 @@ final readonly class RemoveAriaAndRole implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $domNodeList = $domDocument->getElementsByTagName('*');
+        if ($this->hasExternalStyleSheet($domDocument)) {
+            return;
+        }
 
-        foreach ($domNodeList as $domElement) {
-            /** @var list<\DOMAttr> $attributes */
-            $attributes = iterator_to_array($domElement->attributes, false);
-            foreach ($attributes as $attribute) {
-                if (0 === strcasecmp($attribute->name, SvgAttribute::Role->value)
-                    || 0 === strcasecmp(mb_substr($attribute->name, 0, 5), 'aria-')) {
-                    $domElement->removeAttribute($attribute->name);
+        $selected = $this->selectedAttributeNames($domDocument);
+
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            foreach (array_keys(iterator_to_array($domNodeList->attributes, true)) as $attributeName) {
+                $name = mb_strtolower($attributeName);
+
+                if ((SvgAttribute::Role->value === $name || str_starts_with($name, self::ARIA_PREFIX))
+                    && !\array_key_exists($name, $selected)
+                ) {
+                    $domNodeList->removeAttribute($attributeName);
                 }
             }
         }
+    }
+
+    /**
+     * @param \DOMDocument $domDocument the DOM document to read
+     *
+     * @return array<string, true> the lowercase role and ARIA attribute names used in attribute selectors of style sheets
+     */
+    private function selectedAttributeNames(\DOMDocument $domDocument): array
+    {
+        preg_match_all(self::ATTRIBUTE_SELECTOR_REGEX, $this->styleSheetText($domDocument), $matches);
+
+        return array_fill_keys(array_map(strtolower(...), $matches[1]), true);
     }
 }

@@ -12,9 +12,11 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DefinitionElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\FragmentTargetTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
 
 /**
@@ -24,7 +26,10 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
  */
 final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
 {
+    use DefinitionElementTrait;
+    use DocumentScriptTrait;
     use ElementTrait;
+    use FragmentTargetTrait;
     use IdReferenceTrait;
 
     #[\Override]
@@ -45,7 +50,11 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $referencedIds = $this->collectReferencedIds($domDocument);
+        if ($this->hasScriptOrEventHandler($domDocument) || $this->hasSiblingSensitiveStyle($domDocument)) {
+            return;
+        }
+
+        $referencedIds = $this->collectReferencedIds($domDocument) + $this->collectFragmentTargets($domDocument);
 
         $this->removeUnusedMasks($domDocument, $referencedIds);
         $this->removeEmptyDefs($domDocument);
@@ -57,13 +66,11 @@ final readonly class RemoveUnusedMasks implements SvgOptimizerRuleInterface
      */
     private function removeUnusedMasks(\DOMDocument $domDocument, array $referencedIds): void
     {
-        $masks = iterator_to_array($domDocument->getElementsByTagName(SvgTag::Mask->value), false);
-
-        foreach ($masks as $mask) {
-            $maskId = $mask->getAttribute(SvgAttribute::Id->value);
-
-            if ('' === $maskId || !\array_key_exists($maskId, $referencedIds)) {
-                $mask->parentNode?->removeChild($mask);
+        foreach ($this->elementsNamed($domDocument, SvgTag::Mask->value) as $domElement) {
+            if ($this->isSvgElement($domElement)
+                && !$this->isReferencedElement($domElement, $referencedIds)
+                && !$this->hasEffectiveElementInSubtree($domElement)) {
+                $domElement->remove();
             }
         }
     }

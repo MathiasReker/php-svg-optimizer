@@ -14,24 +14,18 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
  * @internal
  */
 final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRuleInterface
 {
-    use AsciiCaseTrait;
     use CssDeclarationTrait;
-
-    private const string PROPERTY_NAME_REGEX = '/^[a-z_-][a-z0-9_-]*$/i';
+    use ElementTrait;
 
     private const string STYLED_ELEMENTS_QUERY = '//*[@style]';
-
-    private const string STYLE_SHEET_QUERY = '//*[local-name()="style"] | //processing-instruction("xml-stylesheet")';
-
-    private const string IMPORTANT_MARKER = '!';
 
     #[\Override]
     public static function isRisky(): bool
@@ -51,20 +45,19 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $domXPath = new \DOMXPath($domDocument);
-
-        /** @var \DOMNodeList<\DOMNode> $styleSheets */
-        $styleSheets = $domXPath->query(self::STYLE_SHEET_QUERY);
-
-        if ($styleSheets->length > 0) {
+        if ($this->hasStyleElement($domDocument)) {
             return;
         }
+
+        $domXPath = new \DOMXPath($domDocument);
 
         /** @var \DOMNodeList<\DOMElement> $domNodeList */
         $domNodeList = $domXPath->query(self::STYLED_ELEMENTS_QUERY);
 
         foreach ($domNodeList as $domElement) {
-            $this->convertStyles($domElement);
+            if ($this->isSvgElement($domElement)) {
+                $this->convertStyles($domElement);
+            }
         }
     }
 
@@ -75,7 +68,7 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
     {
         $style = $domElement->getAttribute(SvgAttribute::Style->value);
 
-        if (!str_contains($style, ':')) {
+        if (!str_contains($style, ':') || str_contains($style, self::CSS_COMMENT_START)) {
             return;
         }
 
@@ -83,7 +76,7 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
             return;
         }
 
-        $remaining = $this->processDeclarations($domElement, $this->splitCssDeclarations($style));
+        $remaining = $this->processDeclarations($domElement, $style);
 
         if ([] === $remaining) {
             $domElement->removeAttribute(SvgAttribute::Style->value);
@@ -93,23 +86,34 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
     }
 
     /**
-     * @param list<string> $declarations
+     * @param string $style a style attribute value that can be split safely
      *
-     * @return list<string>
+     * @return array<int, array{string, string}> the property name and value of each declaration with both, as written
      */
-    private function processDeclarations(\DOMElement $domElement, array $declarations): array
+    private function parseDeclarations(string $style): array
     {
+        return array_filter(
+            $this->parseCssDeclarations($style),
+            static fn (array $declaration): bool => '' !== $declaration[0] && '' !== $declaration[1],
+        );
+    }
+
+    /**
+     * @param string $style a style attribute value that can be split safely
+     *
+     * @return list<string> the declarations that stay in the style attribute
+     */
+    private function processDeclarations(\DOMElement $domElement, string $style): array
+    {
+        $pinned = $this->pinnedCssProperties($style, '', ';' . implode(':;', $this->cssPropertyNames($style)) . ':')
+            + $this->differentlySetProperties($style, [$domElement]);
         $remaining = [];
 
-        foreach ($declarations as $declaration) {
-            [$prop, $value] = $this->parseDeclaration($declaration);
+        foreach ($this->parseDeclarations($style) as [$prop, $value]) {
+            $propLower = $this->asciiLowercase($prop);
 
-            if ('' === $prop) {
-                continue;
-            }
-
-            if ($this->isConvertibleProperty($prop) && !str_contains($value, self::IMPORTANT_MARKER)) {
-                $domElement->setAttribute($prop, $value);
+            if (!\array_key_exists($propLower, $pinned) && $this->isConvertibleProperty($propLower)) {
+                $domElement->setAttribute($propLower, $value);
 
                 continue;
             }
@@ -121,54 +125,12 @@ final readonly class ConvertInlineStylesToAttributes implements SvgOptimizerRule
     }
 
     /**
-     * @return array{string, string}
-     */
-    private function parseDeclaration(string $declaration): array
-    {
-        if (!str_contains($declaration, ':')) {
-            return ['', ''];
-        }
-
-        [$prop, $value] = explode(':', $declaration, 2);
-
-        $prop = $this->asciiLowercase(trim($prop));
-        $value = trim($value);
-
-        if ('' === $prop || '' === $value) {
-            return ['', ''];
-        }
-
-        return [$prop, $value];
-    }
-
-    /**
      * @param string $prop the property name to check
      *
      * @return bool true if the property is convertible, false otherwise
      */
     private function isConvertibleProperty(string $prop): bool
     {
-        return $this->isValidPropertyName($prop) && \array_key_exists($prop, $this->getConvertibleLookup());
-    }
-
-    /**
-     * @return array<string, int> a map for quick property lookup
-     */
-    private function getConvertibleLookup(): array
-    {
-        /** @var array<string, int>|null $lookup */
-        static $lookup = null;
-
-        return $lookup ??= array_flip(SvgInlineStyleProperty::values());
-    }
-
-    /**
-     * @param string $prop the property name to validate
-     *
-     * @return bool true if the property name is valid
-     */
-    private function isValidPropertyName(string $prop): bool
-    {
-        return 1 === preg_match(self::PROPERTY_NAME_REGEX, $prop);
+        return null !== SvgInlineStyleProperty::tryFrom($prop);
     }
 }

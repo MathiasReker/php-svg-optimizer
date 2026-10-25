@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EmptyElementRemovalTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
@@ -25,6 +26,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
  */
 final readonly class RemoveEmptyContainers implements SvgOptimizerRuleInterface
 {
+    use AsciiCaseTrait;
     use ElementTrait;
     use EmptyElementRemovalTrait;
     use TagMatcherTrait;
@@ -55,11 +57,12 @@ final readonly class RemoveEmptyContainers implements SvgOptimizerRuleInterface
      */
     private function isRemovable(\DOMElement $domElement): bool
     {
-        return $this->isTagIn($domElement, $this->containerTags())
-            && !$this->hasId($domElement)
+        return $this->isSvgElement($domElement)
+            && $this->isTagIn($domElement, $this->containerTags())
+            && !$this->isUserExposed($domElement)
             && $this->isEmptyElement($domElement)
             && !$domElement->hasAttribute(SvgAttribute::Filter->value)
-            && !str_contains(mb_strtolower($domElement->getAttribute(SvgAttribute::Style->value)), SvgAttribute::Filter->value);
+            && !str_contains($this->asciiLowercase($domElement->getAttribute(SvgAttribute::Style->value)), SvgAttribute::Filter->value);
     }
 
     /**

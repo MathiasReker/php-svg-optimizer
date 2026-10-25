@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 
 /**
  * @internal
@@ -21,7 +20,39 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  */
 trait ParentValueTrait
 {
-    private const string INHERIT_VALUE = 'inherit';
+    use ElementTrait;
+    use NamedColorTrait;
+    use NumberFormatterTrait;
+
+    private const string CURRENT_COLOR = 'currentcolor';
+
+    private const array KEYWORD_VALUES = [
+        SvgAttribute::ClipRule->value => ['evenodd', 'nonzero'],
+        SvgAttribute::Fill->value => ['none'],
+        SvgAttribute::FillRule->value => ['evenodd', 'nonzero'],
+        SvgAttribute::Stroke->value => ['none'],
+        SvgAttribute::StrokeLinecap->value => ['butt', 'round', 'square'],
+        SvgAttribute::StrokeLinejoin->value => ['bevel', 'miter', 'round'],
+        SvgAttribute::TextAnchor->value => ['end', 'middle', 'start'],
+        SvgAttribute::Visibility->value => ['collapse', 'hidden', 'visible'],
+    ];
+
+    private const array NON_NEGATIVE_NUMBER_ATTRIBUTES = [
+        SvgAttribute::FillOpacity->value,
+        SvgAttribute::StrokeOpacity->value,
+        SvgAttribute::StrokeWidth->value,
+    ];
+
+    private const array PAINT_ATTRIBUTES = [
+        SvgAttribute::Fill->value,
+        SvgAttribute::Stroke->value,
+    ];
+
+    private const string HEX_COLOR_REGEX = '/^#(?:[\da-fA-F]{3,4}|[\da-fA-F]{6}|[\da-fA-F]{8})$/';
+
+    private const string PAINT_URL_REGEX = '/^url\(#[\w.-]+\)$/';
+
+    private const string NUMBER_VALUE_REGEX = '/^' . self::NUMBER_PATTERN . '$/';
 
     private const array PARENT_RELATIVE_ATTRIBUTES = [
         SvgAttribute::FontSize->value,
@@ -29,7 +60,7 @@ trait ParentValueTrait
         SvgAttribute::FontWeight->value,
     ];
 
-    private const string FONT_RELATIVE_UNIT_REGEX = '/[\d.](?:em|ex|ch)\b/i';
+    private const string FONT_RELATIVE_UNIT_REGEX = '/[\d.]r?(?:em|ex|ch|cap|ic|lh)\b/i';
 
     private const string FONT_SHORTHAND_PROPERTIES = 'font|all';
 
@@ -48,17 +79,17 @@ trait ParentValueTrait
      */
     private function usesInheritValue(\DOMElement $domElement): bool
     {
-        if (str_contains(mb_strtolower($domElement->getAttribute(SvgAttribute::Style->value)), self::INHERIT_VALUE)) {
+        if ($this->mayUseParentValue($domElement->getAttribute(SvgAttribute::Style->value))) {
             return true;
         }
 
         foreach ($domElement->getElementsByTagName('*') as $domNodeList) {
-            if (!\in_array(mb_strtolower((string) $domNodeList->localName), SvgTag::animation(), true)) {
+            if (!$this->isAnimationElement($domNodeList)) {
                 continue;
             }
 
             foreach ([SvgAttribute::By, SvgAttribute::From, SvgAttribute::To, SvgAttribute::Values] as $svgAttribute) {
-                if (str_contains(mb_strtolower($domNodeList->getAttribute($svgAttribute->value)), self::INHERIT_VALUE)) {
+                if ($this->mayUseParentValue($domNodeList->getAttribute($svgAttribute->value))) {
                     return true;
                 }
             }
@@ -129,16 +160,61 @@ trait ParentValueTrait
     }
 
     /**
-     * @param \DOMElement $domElement the element to check
-     * @param string      $properties the property names as regular expression alternatives
+     * @param \DOMElement $parent the parent element
+     * @param \DOMElement $child  the child element
      *
-     * @return bool true if the inline style of the element declares one of the properties, also with a vendor prefix
+     * @return bool true if the child overrides an inherited attribute of the parent with a value that the browser may
+     *              reject, which then falls back to the value of the parent
      */
-    private function styleDeclares(\DOMElement $domElement, string $properties): bool
+    private function mayFallBackToParentValue(\DOMElement $parent, \DOMElement $child): bool
     {
-        return 1 === preg_match(
-            '/(?<![\w-])(?:-[a-z]+-)?(?:' . $properties . ')\s*:/i',
-            $domElement->getAttribute(SvgAttribute::Style->value),
-        );
+        /** @var \DOMAttr $attribute */
+        foreach ($parent->attributes as $attribute) {
+            $ownValue = $child->getAttribute($attribute->nodeName);
+
+            if (\in_array($attribute->nodeName, SvgAttribute::inherited(), true)
+                && $child->hasAttribute($attribute->nodeName)
+                && $ownValue !== $attribute->value
+                && !$this->isInheritKeyword($ownValue)
+                && !$this->isKnownValidValue($attribute->nodeName, $ownValue)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string $attributeName the presentation attribute
+     * @param string $value         the attribute value
+     *
+     * @return bool true if the browser is known to accept the value, so that the element never falls back to the
+     *              value of its parent
+     */
+    private function isKnownValidValue(string $attributeName, string $value): bool
+    {
+        if (\in_array($value, self::KEYWORD_VALUES[$attributeName] ?? [], true)) {
+            return true;
+        }
+
+        return match (true) {
+            \in_array($attributeName, self::NON_NEGATIVE_NUMBER_ATTRIBUTES, true) => 1 === preg_match(self::NUMBER_VALUE_REGEX, $value) && !str_starts_with($value, '-'),
+            \in_array($attributeName, self::PAINT_ATTRIBUTES, true) => $this->isColorValue($value)
+                || self::CURRENT_COLOR === $this->asciiLowercase($value)
+                || 1 === preg_match(self::PAINT_URL_REGEX, $value),
+            SvgAttribute::Color->value === $attributeName => $this->isColorValue($value),
+            default => false,
+        };
+    }
+
+    /**
+     * @param string $value the attribute value
+     *
+     * @return bool true if the value is a hex color or a color name
+     */
+    private function isColorValue(string $value): bool
+    {
+        return 1 === preg_match(self::HEX_COLOR_REGEX, $value) || $this->isNamedColor($value);
     }
 }

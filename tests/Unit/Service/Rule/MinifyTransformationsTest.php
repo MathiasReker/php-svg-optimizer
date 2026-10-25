@@ -50,10 +50,25 @@ final class MinifyTransformationsTest extends TestCase
     }
 
     /**
-     * @return iterable<array{string, string}>
+     * @return iterable<string, array{string, string}>
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Leaves the document untouched when a style sheet selects attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[transform]{fill:red}</style><rect transform="translate(0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[transform]{fill:red}</style><rect transform="translate(0)"/></svg>',
+        ];
+
+        yield 'Leaves the document untouched with an external style sheet' => [
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg"><rect transform="translate(0)"/></svg>',
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg"><rect transform="translate(0)"/></svg>',
+        ];
+
+        yield 'Keeps a transform with a trailing decimal point' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect transform="translate(200.)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect transform="translate(200.)"/></svg>',
+        ];
+
         yield 'Removes Identity Transforms' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -730,6 +745,56 @@ final class MinifyTransformationsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><g data-transform="translate(5, 0)" transform-origin="0 0" class="scale(1)"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><g data-transform="translate(5, 0)" transform-origin="0 0" class="scale(1)"/></svg>',
         ];
+
+        yield 'Minifies transforms in a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:g transform="translate(10.0, 0)"/><svg:g transform="scale(1)"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:g transform="translate(10)"/><svg:g/></svg:svg>',
+        ];
+
+        yield 'Keeps transforms in style attributes and animations' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="transform:translate(0px)" transform="translate(1.0)"><animateTransform attributeName="transform" type="translate" from="0.0" to="10.0"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="transform:translate(0px)" transform="translate(1)"><animateTransform attributeName="transform" type="translate" from="0.0" to="10.0"/></g></svg>',
+        ];
+
+        yield 'Keeps rotate with one or three arguments only' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(10.0)"/><g transform="rotate(10.0 1.0 2.0)"/><g transform="rotate(10 1 2 3)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="rotate(10)"/><g transform="rotate(10 1 2)"/><g transform="rotate(10 1 2 3)"/></svg>',
+        ];
+
+        yield 'Minifies transforms with newlines and tabs between arguments' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="matrix(2&#10;0&#9;0 2 0 0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"/></svg>',
+        ];
+
+        yield 'Keeps transforms with non-ASCII digits' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(１0)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(１0)"/></svg>',
+        ];
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideOptimizeIsIdempotentCases')]
+    #[Test]
+    public function optimizeIsIdempotent(string $optimized): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
+        $svgOptimizer->addRule(new MinifyTransformations());
+
+        self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideOptimizeIsIdempotentCases(): iterable
+    {
+        foreach (self::provideOptimizeCases() as $name => [, $expected]) {
+            yield $name => [$expected];
+        }
     }
 
     #[Test]

@@ -54,6 +54,18 @@ final class SvgTagTest extends TestCase
     }
 
     #[Test]
+    public function animationReturnsTheAnimationTags(): void
+    {
+        self::assertSame(['animate', 'set', 'animatecolor', 'animatemotion', 'animatetransform'], SvgTag::animation());
+    }
+
+    #[Test]
+    public function dataUriReturnsTheTagsThatMayEmbedADataUri(): void
+    {
+        self::assertSame(['image', 'feImage'], SvgTag::dataUri());
+    }
+
+    #[Test]
     public function valuesReturnsAllTagValues(): void
     {
         $values = SvgTag::values();

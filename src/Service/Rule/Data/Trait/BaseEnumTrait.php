@@ -17,12 +17,12 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data\Trait;
 trait BaseEnumTrait
 {
     /**
-     * @param list<\BackedEnum> $cases
+     * @param list<self> $cases
      *
      * @return list<string>
      */
     private static function valuesFromCases(array $cases): array
     {
-        return array_map(static fn (\BackedEnum $backedEnum): string => (string) $backedEnum->value, $cases);
+        return array_map(static fn (self $case): string => $case->value, $cases);
     }
 }

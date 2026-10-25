@@ -33,6 +33,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class RemoveMetadataTest extends TestCase
 {
+    #[Test]
+    public function ruleIsMarkedAsNotRisky(): void
+    {
+        self::assertFalse(RemoveMetadata::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(RemoveMetadata::shouldCheckSize());
+    }
+
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -54,6 +66,26 @@ final class RemoveMetadataTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps metadata that a switch may render' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><switch><metadata/><rect width="5" height="5"/></switch></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><switch><metadata/><rect width="5" height="5"/></switch></svg>',
+        ];
+
+        yield 'Keeps metadata when a style sheet depends on siblings' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect+rect{fill:red}</style><rect/><metadata/><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect+rect{fill:red}</style><rect/><metadata/><rect/></svg>',
+        ];
+
+        yield 'Keeps metadata in foreign content' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><metadata xmlns="http://www.w3.org/1999/xhtml">m</metadata></foreignObject><metadata/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><metadata xmlns="http://www.w3.org/1999/xhtml">m</metadata></foreignObject></svg>',
+        ];
+
+        yield 'Keeps metadata that contains an animation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r"/><metadata><set href="#r" attributeName="x" to="1"/></metadata></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r"/><metadata><set href="#r" attributeName="x" to="1"/></metadata></svg>',
+        ];
+
         yield 'Removes single <metadata> tag' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -251,6 +283,101 @@ final class RemoveMetadataTest extends TestCase
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="purple"/></svg>
                 XML,
+        ];
+
+        yield 'Removes nested metadata elements' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><metadata><metadata/></metadata><g><metadata>m</metadata></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g/></svg>',
+        ];
+
+        yield 'Removes metadata in a document with a prefixed SVG namespace' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:metadata>m</svg:metadata><svg:rect/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect/></svg:svg>',
+        ];
+
+        yield 'Handles an empty document' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"/>',
+        ];
+
+        yield 'Handles a root with only text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">text</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">text</svg>',
+        ];
+
+        yield 'Handles a 60 levels deep structure' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">' . str_repeat('<g>', 60) . '<rect /><metadata>m</metadata>' . str_repeat('</g>', 60) . '</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">' . str_repeat('<g>', 60) . '<rect/>' . str_repeat('</g>', 60) . '</svg>',
+        ];
+
+        yield 'Handles a very long attribute value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect id="' . str_repeat('a', 10_000) . '" /><metadata>m</metadata></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect id="' . str_repeat('a', 10_000) . '"/></svg>',
+        ];
+
+        yield 'Handles right-to-left, emoji, combining and astral text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text >שלום 😀 é 𝒜</text><metadata>m</metadata></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text>שלום 😀 é 𝒜</text></svg>',
+        ];
+
+        yield 'Handles values padded with tabs, newlines and no-break spaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect  fill="&#9; red&#10;&#xA0;"/><metadata>m</metadata></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\"><rect fill=\"&#9; red&#10;\u{a0}\"/></svg>",
+        ];
+
+        yield 'Handles comments between every node' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><!--1--><g><!--2--><metadata>m</metadata><!--3--><rect /><!--4--></g><!--5--></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><!--1--><g><!--2--><!--3--><rect/><!--4--></g><!--5--></svg>',
+        ];
+
+        yield 'Leaves the document untouched with an external style sheet' => [
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><?foo bar?><rect /><metadata>m</metadata></svg>',
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><?foo bar?><rect/><metadata>m</metadata></svg>',
+        ];
+
+        yield 'Handles CDATA sections' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text ><![CDATA[a<b&c]]></text><metadata>m</metadata></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text>a&lt;b&amp;c</text></svg>',
+        ];
+
+        yield 'Keeps elements in an element reset to no namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><g><x xmlns=""><rect /><metadata>m</metadata></x></g><rect /></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><g><x xmlns=""><rect/><metadata>m</metadata></x></g><rect/></svg>',
+        ];
+
+        yield 'Handles a prefix redeclared to another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:s="http://www.w3.org/2000/svg"><s:g><s:rect /></s:g><g xmlns:s="urn:other"><s:rect /></g><metadata>m</metadata></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:s="http://www.w3.org/2000/svg"><s:g><s:rect/></s:g><g xmlns:s="urn:other"><s:rect/></g></svg>',
+        ];
+
+        yield 'Handles entities and character references in values and text' => [
+            '<!DOCTYPE svg [<!ENTITY e "v&#x41;">]><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text  class="&e;">&e;&#x42;&#66;</text><metadata>m</metadata></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text class="vA">vABB</text></svg>',
+        ];
+
+        yield 'Handles an attribute in no namespace next to the same local name in another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:o="urn:o"><use href="#a" xlink:href="#b" o:href="#c" /><metadata>m</metadata></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:o="urn:o"><use href="#a" xlink:href="#b" o:href="#c"/></svg>',
+        ];
+
+        yield 'Handles repeated elements where only a later one matches' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect/><rect fill="red"/><rect /><metadata>m</metadata></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect/><rect fill="red"/><rect/></svg>',
+        ];
+
+        yield 'Handles mixed-case element names' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><Rect /><RECT /><Script>x</Script><SCRIPT>x</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">x</s:script><metadata>m</metadata></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><Rect/><RECT/><Script>x</Script><SCRIPT>x</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">x</s:script></svg>',
+        ];
+
+        yield 'Keeps metadata elements written in another case and removes a prefixed one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><METADATA>a</METADATA><Metadata>b</Metadata><s:metadata xmlns:s="http://www.w3.org/2000/svg">c</s:metadata><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><METADATA>a</METADATA><Metadata>b</Metadata><rect/></svg>',
+        ];
+
+        yield 'Keeps metadata with a descendant that can be referenced by id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><metadata id="m"><g><rect id="r"/></g></metadata><metadata id="n"><g/></metadata><metadata><g xml:id="x"/></metadata><use href="#r"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><metadata id="m"><g><rect id="r"/></g></metadata><metadata><g xml:id="x"/></metadata><use href="#r"/></svg>',
         ];
     }
 }

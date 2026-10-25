@@ -14,6 +14,9 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
 
 /**
  * @internal
@@ -22,6 +25,12 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  */
 final readonly class RemoveWidthHeightAttributes implements SvgOptimizerRuleInterface
 {
+    use AsciiCaseTrait;
+    use NumberFormatterTrait;
+    use NumberListTrait;
+
+    private const int VIEW_BOX_LENGTH = 4;
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -42,10 +51,13 @@ final readonly class RemoveWidthHeightAttributes implements SvgOptimizerRuleInte
     {
         $svg = $domDocument->documentElement;
 
-        if ($svg instanceof \DOMElement && str_contains(mb_strtolower($svg->nodeName), SvgTag::Svg->value)) {
+        if ($svg instanceof \DOMElement
+            && str_contains($this->asciiLowercase($svg->nodeName), SvgTag::Svg->value)
+            && $this->hasValidViewBox($svg)
+        ) {
             $remove = [];
             foreach ($svg->attributes as $attr) {
-                if (\in_array(mb_strtolower($attr->nodeName), [
+                if (\in_array($this->asciiLowercase($attr->nodeName), [
                     SvgAttribute::Width->value,
                     SvgAttribute::Height->value,
                 ], true)) {
@@ -57,5 +69,17 @@ final readonly class RemoveWidthHeightAttributes implements SvgOptimizerRuleInte
                 $svg->removeAttribute($attrName);
             }
         }
+    }
+
+    /**
+     * @param \DOMElement $domElement the root element
+     *
+     * @return bool true if the element has a `viewBox` with a positive width and height, which then sizes the image
+     */
+    private function hasValidViewBox(\DOMElement $domElement): bool
+    {
+        $values = $this->parseNumberList($domElement->getAttribute(SvgAttribute::ViewBox->value));
+
+        return self::VIEW_BOX_LENGTH === \count($values) && $this->isPositiveNumber($values[2]) && $this->isPositiveNumber($values[3]);
     }
 }

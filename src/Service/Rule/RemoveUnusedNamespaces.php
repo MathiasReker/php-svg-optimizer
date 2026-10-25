@@ -12,9 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
-use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\XmlContentTrait;
 
 /**
  * @internal
@@ -23,11 +21,9 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\XmlContentTrait;
  */
 final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
 {
-    use XmlContentTrait;
-
     private const string NAMESPACE_REGEX = '/xmlns:([a-zA-Z0-9\-]+)="([^"]+)"/';
 
-    private const string ELEMENT_TEMPLATE_REGEX = '/%s:[a-zA-Z0-9\-]+/';
+    private const string PREFIXED_NAME_REGEX = '/([\w.\-]+):(?=[a-zA-Z0-9\-])/';
 
     #[\Override]
     public static function isRisky(): bool
@@ -43,35 +39,17 @@ final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
 
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
-     *
-     * @throws XmlProcessingException if the XML content cannot be processed
      */
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $this->processXmlContent($domDocument, fn (): string => $this->cleanNamespaces($domDocument));
-    }
-
-    /**
-     * @param \DOMDocument $domDocument the DOM document to clean
-     *
-     * @return string the SVG content with unused namespaces removed
-     *
-     * @throws XmlProcessingException if the XML content cannot be processed
-     */
-    private function cleanNamespaces(\DOMDocument $domDocument): string
-    {
-        $content = $this->processXmlContent($domDocument, static fn (string $content): string => $content);
-
-        $namespaceCounts = $this->countNamespaceElementsWithRegex($content);
+        $namespaceCounts = $this->countNamespaceElementsWithRegex((string) $domDocument->saveXML());
 
         foreach ($namespaceCounts as $namespaceKey => $count) {
             if (0 === $count) {
                 $this->removeNamespaceFromSvgTags($domDocument, $namespaceKey);
             }
         }
-
-        return $this->processXmlContent($domDocument, static fn (string $content): string => $content);
     }
 
     /**
@@ -84,11 +62,12 @@ final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
         $namespaceCounts = [];
 
         preg_match_all(self::NAMESPACE_REGEX, $content, $matches);
+        preg_match_all(self::PREFIXED_NAME_REGEX, $content, $prefixedNames);
+
+        $usages = array_count_values($prefixedNames[1]);
 
         foreach ($matches[1] as $prefix) {
-            $namespaceKey = \sprintf('%s:%s', SvgAttribute::Xmlns->value, $prefix);
-            preg_match_all(\sprintf(self::ELEMENT_TEMPLATE_REGEX, $prefix), $content, $elementMatches);
-            $namespaceCounts[$namespaceKey] = \count($elementMatches[0]);
+            $namespaceCounts[\sprintf('%s:%s', SvgAttribute::Xmlns->value, $prefix)] = $usages[$prefix] ?? 0;
         }
 
         return $namespaceCounts;

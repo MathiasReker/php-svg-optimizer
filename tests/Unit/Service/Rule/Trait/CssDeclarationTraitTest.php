@@ -95,6 +95,158 @@ final class CssDeclarationTraitTest extends TestCase
         yield 'trailing backslash' => ['a:b\\'];
     }
 
+    #[DataProvider('provideFindsRelatedPropertiesCases')]
+    #[Test]
+    public function findsRelatedProperties(string $css, string $property, bool $related, bool $declared): void
+    {
+        self::assertSame($related, $this->declaresRelatedProperty($css, $property));
+        self::assertSame($declared, $this->declaresProperty($css, $property));
+    }
+
+    /**
+     * @return iterable<string, array{string, string, bool, bool}>
+     */
+    public static function provideFindsRelatedPropertiesCases(): iterable
+    {
+        yield 'the property itself' => [';fill:red', 'fill', false, true];
+
+        yield 'all' => [';ALL : initial', 'fill', true, true];
+
+        yield 'shorthand of a longhand' => [';marker:url(#m)', 'marker-start', true, true];
+
+        yield 'longhand of a shorthand' => ['{overflow-x:hidden}', 'overflow', true, true];
+
+        yield 'prefixed longhand of a shorthand' => [' -webkit-mask-image:none', 'mask', true, true];
+
+        yield 'property sharing a prefix' => [';fill-opacity:1', 'fill', false, false];
+
+        yield 'property inside a value' => [';font-family:all', 'fill', false, false];
+    }
+
+    /**
+     * @param list<array{string, string}> $expected
+     */
+    #[DataProvider('provideParsesDeclarationsCases')]
+    #[Test]
+    public function parsesDeclarations(string $block, array $expected): void
+    {
+        self::assertSame($expected, $this->parseCssDeclarations($block));
+    }
+
+    /**
+     * @return iterable<string, array{string, list<array{string, string}>}>
+     */
+    public static function provideParsesDeclarationsCases(): iterable
+    {
+        yield 'trims names and values' => [' Fill : red ;stroke:url(data:a;b)', [['Fill', 'red'], ['stroke', 'url(data:a;b)']]];
+
+        yield 'leaves out declarations without a colon' => ['fill;stroke:', [['stroke', '']]];
+
+        yield 'keeps colons in values' => ['a:b:c', [['a', 'b:c']]];
+
+        yield 'empty block' => ['', []];
+    }
+
+    #[Test]
+    public function quotesThePropertyNameInItsPattern(): void
+    {
+        self::assertFalse($this->declaresProperty(';fxll:red', 'f.ll'));
+        self::assertTrue($this->declaresProperty(';f.ll:red', 'f.ll'));
+    }
+
+    #[Test]
+    public function relatesOnlyTheLonghandsOfAShorthand(): void
+    {
+        self::assertFalse($this->declaresRelatedProperty(';marker:url(#m)', 'markers'));
+        self::assertTrue($this->declaresRelatedProperty(';marker:url(#m)', 'marker-end'));
+    }
+
+    #[Test]
+    public function pinsEveryRepeatedOrImportantProperty(): void
+    {
+        self::assertSame(
+            ['fill' => true, 'stroke' => true],
+            $this->repeatedOrImportantProperties('fill:red;Fill:blue;stroke:red!important;opacity:1'),
+        );
+    }
+
+    #[Test]
+    public function pinsEveryPropertyOverriddenByOtherCss(): void
+    {
+        self::assertSame(
+            ['fill' => true, 'stroke' => true, 'marker-end' => true],
+            $this->propertiesOverriddenByCss(['fill', 'stroke', 'opacity', 'marker-end'], ';fill:red;[stroke]{}', ';marker:none'),
+        );
+    }
+
+    #[Test]
+    public function pinsEveryPropertyOfABlock(): void
+    {
+        self::assertSame(
+            ['fill' => true, 'stroke' => true],
+            $this->pinnedCssProperties('fill:red;fill:blue;stroke:red;opacity:1', ';stroke:blue', ''),
+        );
+    }
+
+    #[Test]
+    public function findsEveryDifferentlySetProperty(): void
+    {
+        $domDocument = new \DOMDocument();
+        $domElement = $domDocument->createElement('rect');
+        $domElement->setAttribute('fill', 'red');
+        $domElement->setAttribute('opacity', '1');
+
+        $second = $domDocument->createElement('rect');
+        $second->setAttribute('stroke', 'red');
+
+        self::assertSame(
+            ['fill' => true, 'stroke' => true],
+            $this->differentlySetProperties('FILL:blue;stroke:blue;opacity:1', [$domElement, $second]),
+        );
+    }
+
+    #[Test]
+    public function splitsSelectorListsOutsideParentheses(): void
+    {
+        self::assertSame(['a', ':is(b, c)', 'd'], $this->splitSelectorList(' a ,:is(b, c),d'));
+    }
+
+    #[RunInSeparateProcess]
+    #[Test]
+    public function keepsTheWholeSelectorListWhenItCannotBeSplit(): void
+    {
+        self::assertSame(['a, b'], $this->withFailingRegularExpressions(fn (): array => $this->splitSelectorList(' a, b ')));
+    }
+
+    #[DataProvider('provideFindsAttributeSelectorsCases')]
+    #[Test]
+    public function findsAttributeSelectors(string $css, string $attributeName, bool $expected): void
+    {
+        self::assertSame($expected, $this->hasAttributeSelector($css, $attributeName));
+    }
+
+    /**
+     * @return iterable<string, array{string, string, bool}>
+     */
+    public static function provideFindsAttributeSelectorsCases(): iterable
+    {
+        yield 'attribute selector' => ['[ fill]{}', 'fill', true];
+
+        yield 'namespaced attribute selector' => ['[svg|FILL=red]{}', 'fill', true];
+
+        yield 'property without a selector' => ['a{fill:red}', 'fill', false];
+
+        yield 'longer attribute name' => ['[fill-opacity]{}', 'fill', false];
+
+        yield 'other attribute' => ['[stroke]{}', 'fill', false];
+
+        yield 'quoted attribute name' => ['[f.ll]{}', 'f.ll', true];
+
+        yield 'regular expression characters' => ['[fxll]{}', 'f.ll', false];
+
+        yield 'name before the bracket' => ['fill[x]{}', 'fill', false];
+    }
+
     #[RunInSeparateProcess]
     #[Test]
     public function splitsIntoNoDeclarationsWhenTheBlockCannotBeMatched(): void

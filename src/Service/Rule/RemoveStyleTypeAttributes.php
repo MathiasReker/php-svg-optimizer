@@ -29,6 +29,8 @@ final readonly class RemoveStyleTypeAttributes implements SvgOptimizerRuleInterf
 
     private const string ASCII_WHITESPACE = " \t\n\f\r";
 
+    private const string LANGUAGE_ATTRIBUTE = 'language';
+
     private const array STYLE_TYPES = [
         'text/css',
     ];
@@ -79,15 +81,17 @@ final readonly class RemoveStyleTypeAttributes implements SvgOptimizerRuleInterf
         );
 
         /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domXPath->query($query);
+        $domNodeList = $domXPath->query($query, null, false);
 
         foreach ($domNodeList as $domElement) {
-            if (!\in_array($domElement->namespaceURI, [null, SvgNamespace::Svg->value, self::XHTML_NAMESPACE], true)) {
+            if (!$this->isCandidate($domElement)) {
                 continue;
             }
 
-            $defaultTypes = SvgTag::Style->value === $domElement->localName ? self::STYLE_TYPES : self::SCRIPT_TYPES;
-            $type = trim($domElement->getAttribute(SvgAttribute::Type->value), self::ASCII_WHITESPACE);
+            $isStyle = SvgTag::Style->value === $domElement->localName;
+            $defaultTypes = $isStyle ? self::STYLE_TYPES : self::SCRIPT_TYPES;
+            $type = $domElement->getAttribute(SvgAttribute::Type->value);
+            $type = $isStyle ? $type : trim($type, self::ASCII_WHITESPACE);
 
             if ($this->isDefaultType($type, $defaultTypes)) {
                 $domElement->removeAttribute(SvgAttribute::Type->value);
@@ -96,7 +100,19 @@ final readonly class RemoveStyleTypeAttributes implements SvgOptimizerRuleInterf
     }
 
     /**
-     * @param string       $type         the trimmed type attribute value
+     * @param \DOMElement $domElement the `<style>` or `<script>` element
+     *
+     * @return bool true if the element is in the SVG or XHTML namespace and has no `language` attribute, which would
+     *              decide the script language without a type
+     */
+    private function isCandidate(\DOMElement $domElement): bool
+    {
+        return \in_array($domElement->namespaceURI, [null, SvgNamespace::Svg->value, self::XHTML_NAMESPACE], true)
+            && !$domElement->hasAttribute(self::LANGUAGE_ATTRIBUTE);
+    }
+
+    /**
+     * @param string       $type         the type attribute value, trimmed for a script
      * @param list<string> $defaultTypes the default types of the element
      *
      * @return bool true if the type is one of the default types

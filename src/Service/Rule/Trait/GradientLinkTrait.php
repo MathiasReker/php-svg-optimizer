@@ -68,15 +68,16 @@ trait GradientLinkTrait
     }
 
     /**
-     * @param list<\DOMElement> $chain the gradient and the gradients it links to
+     * @param list<\DOMElement> $chain     the gradient and the gradients it links to
+     * @param string            $attribute the name of an attribute that a gradient inherits from the gradient it links to
      *
-     * @return string the gradient units, inherited from a linked gradient when not set, or '' for the default
+     * @return string the trimmed attribute value, inherited from a linked gradient when not set, or '' for the default
      */
-    private function gradientUnits(array $chain): string
+    private function linkedGradientAttribute(array $chain, string $attribute): string
     {
         foreach ($chain as $gradient) {
-            if ($gradient->hasAttribute(SvgAttribute::GradientUnits->value)) {
-                return trim($gradient->getAttribute(SvgAttribute::GradientUnits->value));
+            if ($gradient->hasAttribute($attribute)) {
+                return trim($gradient->getAttribute($attribute));
             }
         }
 
@@ -106,6 +107,22 @@ trait GradientLinkTrait
         unset($gradients['']);
 
         return array_intersect_key($gradients, array_filter($idCounts, static fn (int $count): bool => 1 === $count));
+    }
+
+    /**
+     * @param \DOMElement $domElement the parent element
+     *
+     * @return list<\DOMElement> the child elements
+     */
+    private function childElements(\DOMElement $domElement): array
+    {
+        $children = [];
+
+        for ($child = $domElement->firstElementChild; $child instanceof \DOMElement; $child = $child->nextElementSibling) {
+            $children[] = $child;
+        }
+
+        return $children;
     }
 
     /**

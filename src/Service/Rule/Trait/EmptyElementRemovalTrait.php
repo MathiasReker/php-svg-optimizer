@@ -22,13 +22,15 @@ trait EmptyElementRemovalTrait
 {
     use ElementTrait;
 
+    private const string FILTER_CSS_REGEX = '/filter|\\\/i';
+
     /**
      * @param \DOMDocument                $domDocument the document to clean
      * @param callable(\DOMElement): bool $isRemovable returns true for elements to remove
      */
     private function removeElementsBottomUp(\DOMDocument $domDocument, callable $isRemovable): void
     {
-        if ($this->hasSiblingSensitiveStyle($domDocument)) {
+        if ($this->hasSiblingSensitiveStyle($domDocument) || 1 === preg_match(self::FILTER_CSS_REGEX, $this->styleSheetText($domDocument))) {
             return;
         }
 

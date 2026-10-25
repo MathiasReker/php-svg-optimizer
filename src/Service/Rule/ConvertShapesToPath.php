@@ -13,7 +13,9 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
@@ -27,6 +29,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RenameElementTrait;
  */
 final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
 {
+    use DocumentScriptTrait;
     use ElementTrait;
     use NumberFormatterTrait;
     use NumberListTrait;
@@ -39,6 +42,8 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
         'polyline' => ['points'],
         'polygon' => ['points'],
     ];
+
+    private const array PATH_REFERENCING_TAGS = [SvgTag::TextPath->value, SvgTag::Mpath->value];
 
     #[\Override]
     public static function isRisky(): bool
@@ -58,19 +63,78 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        if ($this->hasStyleElement($domDocument) || [] !== $this->elementsNamed($domDocument, SvgTag::Marker->value)) {
+        if ($this->hasStyleElement($domDocument) || $this->hasScriptOrEventHandler($domDocument) || [] !== $this->elementsNamed($domDocument, SvgTag::Marker->value)) {
             return;
         }
 
-        $animationTargetIds = $this->animationTargetIds($domDocument);
+        $referencedIds = $this->animationTargetIds($domDocument) + $this->pathReferenceIds($domDocument);
 
         foreach (self::GEOMETRY_ATTRIBUTES as $tag => $attributes) {
             foreach ($this->elementsNamed($domDocument, $tag) as $domElement) {
-                if (!\array_key_exists($domElement->getAttribute(SvgAttribute::Id->value), $animationTargetIds)) {
+                if (!$this->isReferenced($domElement, $referencedIds)) {
                     $this->convert($domDocument, $domElement, $tag, $attributes);
                 }
             }
         }
+    }
+
+    /**
+     * @param \DOMDocument $domDocument the document to scan
+     *
+     * @return array<string, true> the ids referenced by a `<textPath>` or `<mpath>`, which may treat a path differently
+     */
+    private function pathReferenceIds(\DOMDocument $domDocument): array
+    {
+        $ids = [];
+
+        foreach (self::PATH_REFERENCING_TAGS as $tag) {
+            foreach ($this->elementsNamed($domDocument, $tag) as $domElement) {
+                $ids += $this->hrefTargetIds($domElement);
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @param \DOMElement $domElement the referencing element
+     *
+     * @return array<string, true> the ids its `href` and `xlink:href` point to
+     */
+    private function hrefTargetIds(\DOMElement $domElement): array
+    {
+        $ids = [];
+
+        foreach ([
+            $domElement->getAttribute(SvgAttribute::Href->value),
+            $domElement->getAttributeNS(SvgNamespace::Xlink->value, SvgAttribute::Href->value),
+        ] as $href) {
+            $href = trim($href);
+
+            if (str_starts_with($href, '#')) {
+                $ids[mb_substr($href, 1)] = true;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @param \DOMElement         $domElement    the shape element
+     * @param array<string, true> $referencedIds the ids that must keep their element
+     */
+    private function isReferenced(\DOMElement $domElement, array $referencedIds): bool
+    {
+        foreach ([
+            $domElement->getAttribute(SvgAttribute::Id->value),
+            $domElement->getAttributeNS(SvgNamespace::Xml->value, SvgAttribute::Id->value),
+        ] as $id) {
+            if ('' !== $id && ($referencedIds[$id] ?? false)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -80,7 +144,10 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
      */
     private function convert(\DOMDocument $domDocument, \DOMElement $domElement, string $tag, array $attributes): void
     {
-        if ($this->hasElementChildren($domElement) || $domElement->hasAttribute(SvgAttribute::Style->value)) {
+        if (!$this->isSvgElement($domElement)
+            || $this->hasElementChildren($domElement)
+            || $domElement->hasAttribute(SvgAttribute::Style->value)
+        ) {
             return;
         }
 
@@ -115,7 +182,7 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
 
         $values = $this->numbers($domElement, self::GEOMETRY_ATTRIBUTES['rect']);
 
-        if ([] === $values || !$this->isPositive($values[2]) || !$this->isPositive($values[3])) {
+        if ([] === $values || !$this->isPositiveNumber($values[2]) || !$this->isPositiveNumber($values[3])) {
             return [];
         }
 
@@ -154,17 +221,7 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
             return [];
         }
 
-        $segments = [];
-
-        foreach (array_chunk($coordinates, 2) as $index => $pair) {
-            $segments[] = [0 === $index ? 'M' : 'L', $pair];
-        }
-
-        if ($close) {
-            $segments[] = ['z', []];
-        }
-
-        return $segments;
+        return $close ? [['M', $coordinates], ['z', []]] : [['M', $coordinates]];
     }
 
     /**
@@ -188,13 +245,5 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
         }
 
         return $values;
-    }
-
-    /**
-     * @param string $value a minified number
-     */
-    private function isPositive(string $value): bool
-    {
-        return !str_starts_with($value, '-') && !$this->isZeroNumber($value);
     }
 }

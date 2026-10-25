@@ -22,9 +22,11 @@ final readonly class ConvertEmptyTagsToSelfClosing implements SvgOptimizerRuleIn
 {
     use XmlContentTrait;
 
-    private const string EMPTY_TAG_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)(?<!\/)><\/\1>/';
+    private const string NON_MARKUP_PATTERN = '(?:<!--.*?-->|<\?.*?\?>)(*SKIP)(*FAIL)|';
 
-    private const string SELF_CLOSING_SPACE_REGEX = '/<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)\s+\/>/';
+    private const string EMPTY_TAG_REGEX = '/' . self::NON_MARKUP_PATTERN . '<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)(?<!\/)><\/\1>/s';
+
+    private const string SELF_CLOSING_SPACE_REGEX = '/' . self::NON_MARKUP_PATTERN . '<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)\s+\/>/s';
 
     #[\Override]
     public static function isRisky(): bool

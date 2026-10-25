@@ -23,6 +23,8 @@ trait PathDataParserTrait
         'a' => 'nnnffnn', 'z' => '',
     ];
 
+    private const array PATH_MOVETO_COMMANDS = ['M', 'm'];
+
     private const string PATH_ASCII_REGEX = '/^[\x00-\x7F]*$/';
 
     private const string PATH_COMMAND_REGEX = '/([MmLlHhVvCcSsQqTtAaZz])([^MmLlHhVvCcSsQqTtAaZz]*)/';
@@ -46,7 +48,7 @@ trait PathDataParserTrait
             || false === preg_match_all(self::PATH_COMMAND_REGEX, $data, $commands, \PREG_SET_ORDER)
             || implode('', array_column($commands, 0)) !== $data
             || [] === $commands
-            || 'm' !== mb_strtolower($commands[0][1])
+            || !\in_array($commands[0][1], self::PATH_MOVETO_COMMANDS, true)
         ) {
             return [];
         }

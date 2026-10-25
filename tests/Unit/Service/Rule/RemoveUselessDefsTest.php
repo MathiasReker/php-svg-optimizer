@@ -148,6 +148,51 @@ final class RemoveUselessDefsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><style>linearGradient + rect{fill:red}</style><linearGradient/><rect/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><style>linearGradient + rect{fill:red}</style><linearGradient/><rect/></svg>',
         ];
+
+        yield 'Keeps elements of other namespaces named like definitions' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><metadata><x:mask xmlns:x="urn:x"/><filter xmlns="urn:y"/></metadata><mask/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><metadata><x:mask xmlns:x="urn:x"/><filter xmlns="urn:y"/></metadata></svg>',
+        ];
+
+        yield 'Removes definitions without an id in a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:defs><svg:linearGradient/></svg:defs><svg:pattern id="p"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:pattern id="p"/></svg:svg>',
+        ];
+
+        yield 'Removes definitions in nested SVG content of a foreignObject' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><svg><marker/></svg></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><svg/></foreignObject></svg>',
+        ];
+
+        yield 'Leaves an empty document unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'Keeps a definition whose id is written with a character reference' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><g id="&#97;"/></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><g id="a"/></defs></svg>',
+        ];
+
+        yield 'Keeps every style in defs and removes the rest' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><style>rect{fill:red}</style><path d="M0 0"/><style>circle{fill:red}</style></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><style>rect{fill:red}</style><style>circle{fill:red}</style></defs></svg>',
+        ];
+
+        yield 'Keeps mixed-case elements that are not definitions' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><LinearGradient/><clippath/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><LinearGradient/><clippath/></svg>',
+        ];
+
+        yield 'Removes a later definition without an id after keeping an earlier one with an id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient id="g"/><linearGradient/><radialGradient/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient id="g"/></svg>',
+        ];
+
+        yield 'Keeps a deeply nested descendant with an xml:id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><g><g><g><rect xml:id="a"/></g></g></g></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><g><g><g><rect xml:id="a"/></g></g></g></defs></svg>',
+        ];
     }
 
     #[Test]

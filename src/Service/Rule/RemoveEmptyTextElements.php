@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
@@ -54,32 +55,45 @@ final readonly class RemoveEmptyTextElements implements SvgOptimizerRuleInterfac
      */
     private function removeEmptyTextRecursive(\DOMElement $domElement): void
     {
-        foreach (array_reverse(iterator_to_array($domElement->childNodes, true)) as $domNode) {
+        foreach (iterator_to_array($domElement->childNodes, true) as $domNode) {
             if (!$domNode instanceof \DOMElement) {
                 continue;
             }
 
             $this->removeEmptyTextRecursive($domNode);
-            $this->removeIfEmpty($domNode);
+
+            if ($this->isRemovable($domElement, $domNode)) {
+                $domElement->removeChild($domNode);
+            }
         }
     }
 
     /**
-     * @param \DOMElement $domElement the element to check and potentially remove
+     * @param \DOMElement $parent     the parent of the element
+     * @param \DOMElement $domElement the element to check
      */
-    private function removeIfEmpty(\DOMElement $domElement): void
+    private function isRemovable(\DOMElement $parent, \DOMElement $domElement): bool
     {
-        $tag = $domElement->tagName;
-
-        if (($tag === SvgTag::Text->value || $tag === SvgTag::Tspan->value) && $this->hasNoContent($domElement)) {
-            $domElement->parentNode?->removeChild($domElement);
-
-            return;
+        if (!$this->isSvgElement($domElement)
+            || $this->isUserExposed($domElement)
+            || SvgTag::Switch->value === $parent->localName
+        ) {
+            return false;
         }
 
-        if ($tag === SvgTag::Tref->value && '' === $domElement->getAttribute(SvgAttribute::XlinkHref->value)) {
-            $domElement->parentNode?->removeChild($domElement);
-        }
+        $tag = $domElement->localName;
+
+        return (($tag === SvgTag::Text->value || $tag === SvgTag::Tspan->value) && $this->hasNoContent($domElement))
+            || ($tag === SvgTag::Tref->value && !$this->hasReference($domElement));
+    }
+
+    /**
+     * @param \DOMElement $domElement the `<tref>` element to check
+     */
+    private function hasReference(\DOMElement $domElement): bool
+    {
+        return '' !== $domElement->getAttributeNS(SvgNamespace::Xlink->value, SvgAttribute::Href->value)
+            || '' !== $domElement->getAttribute(SvgAttribute::Href->value);
     }
 
     /**

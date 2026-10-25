@@ -13,6 +13,9 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgElementAttributes;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
  * @internal
@@ -21,6 +24,10 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
  */
 final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
 {
+    use ElementTrait;
+
+    private const string EVENT_HANDLER_PREFIX = 'on';
+
     #[\Override]
     public static function isRisky(): bool
     {
@@ -44,7 +51,9 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
         $lookup = $this->getLookupTable();
 
         foreach ($domNodeList as $domElement) {
-            $this->normalizeAttributes($domElement, $lookup);
+            if (!$this->isForeignContent($domElement)) {
+                $this->normalizeAttributes($domElement, $lookup);
+            }
         }
     }
 
@@ -53,19 +62,9 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
      */
     private function getLookupTable(): array
     {
-        /** @var array<string, string>|null $lookup */
-        static $lookup = null;
+        $names = SvgAttribute::values();
 
-        if (null !== $lookup) {
-            return $lookup;
-        }
-
-        $lookup = [];
-        foreach (SvgAttribute::cases() as $case) {
-            $lookup[$this->normalizeName($case->value)] = $case->value;
-        }
-
-        return $lookup;
+        return array_combine(array_map($this->normalizeName(...), $names), $names);
     }
 
     /**
@@ -79,6 +78,19 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
     }
 
     /**
+     * @param \DOMElement $domElement the element of the attribute
+     * @param \DOMAttr    $domAttr    the attribute to check
+     *
+     * @return bool true if the attribute is in no namespace or the XLink namespace, and is not already a name that the
+     *              element defines, such as `playbackorder` beside the SVG Tiny `playbackOrder`
+     */
+    private function mayRename(\DOMElement $domElement, \DOMAttr $domAttr): bool
+    {
+        return \in_array($domAttr->namespaceURI, [null, SvgNamespace::Xlink->value], true)
+            && !\array_key_exists($domAttr->name, SvgElementAttributes::forElement((string) $domElement->localName));
+    }
+
+    /**
      * @param \DOMElement           $domElement the element of the attribute
      * @param \DOMAttr              $domAttr    the attribute to rename
      * @param array<string, string> $lookup     the normalization lookup table
@@ -88,6 +100,13 @@ final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
     private function canonicalName(\DOMElement $domElement, \DOMAttr $domAttr, array $lookup): string
     {
         $canonicalName = $lookup[$this->normalizeName($domAttr->name)] ?? $domAttr->name;
+
+        if ($canonicalName === $domAttr->name
+            || str_starts_with($canonicalName, self::EVENT_HANDLER_PREFIX)
+            || !$this->mayRename($domElement, $domAttr)
+        ) {
+            return '';
+        }
 
         $exists = null === $domAttr->namespaceURI
             ? $domElement->hasAttribute($canonicalName)

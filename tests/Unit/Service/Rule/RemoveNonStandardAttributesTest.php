@@ -212,6 +212,141 @@ final class RemoveNonStandardAttributesTest extends TestCase
             '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"><rect/></svg>',
             '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"><rect/></svg>',
         ];
+
+        yield 'Keeps the attributes of a discard element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="r"/><discard id="d" href="#r" xlink:href="#r" begin="1s" systemLanguage="en" bogus="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="r"/><discard id="d" href="#r" xlink:href="#r" begin="1s" systemLanguage="en"/></svg>',
+        ];
+
+        yield 'Removes unknown attributes in a document with a prefixed SVG namespace' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect width="1" bogus="1"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect width="1"/></svg:svg>',
+        ];
+
+        yield 'Removes attribute names written in another case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect WIDTH="1" Width="2" width="3"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="3"/></svg>',
+        ];
+
+        yield 'Keeps an XLink attribute bound to a custom prefix' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:f="http://www.w3.org/1999/xlink"><use f:href="#a" f:bogus="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:f="http://www.w3.org/1999/xlink"><use f:href="#a"/></svg>',
+        ];
+
+        yield 'Keeps inherit and currentColor presentation attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="inherit" stroke="currentColor"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="inherit" stroke="currentColor"/></svg>',
+        ];
+
+        yield 'Keeps animation attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect><animate attributeName="x" from="0" to="1" dur="1s" begin="0s" repeatCount="indefinite" fill="freeze"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect><animate attributeName="x" from="0" to="1" dur="1s" begin="0s" repeatCount="indefinite" fill="freeze"/></rect></svg>',
+        ];
+
+        yield 'Removes an unknown attribute only after a known one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="1" foo="2" y="3"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="1" y="3"/></svg>',
+        ];
+
+        yield 'Handles an empty document' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"/>',
+        ];
+
+        yield 'Handles a root with only text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">text</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">text</svg>',
+        ];
+
+        yield 'Handles a 60 levels deep structure' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">' . str_repeat('<g>', 60) . '<rect bogus="1"/>' . str_repeat('</g>', 60) . '</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">' . str_repeat('<g>', 60) . '<rect/>' . str_repeat('</g>', 60) . '</svg>',
+        ];
+
+        yield 'Handles a very long attribute value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect id="' . str_repeat('a', 10_000) . '" bogus="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect id="' . str_repeat('a', 10_000) . '"/></svg>',
+        ];
+
+        yield 'Handles right-to-left, emoji, combining and astral text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text bogus="1">שלום 😀 é 𝒜</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text>שלום 😀 é 𝒜</text></svg>',
+        ];
+
+        yield 'Handles values padded with tabs, newlines and no-break spaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect bogus="1" fill="&#9; red&#10;&#xA0;"/></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\"><rect fill=\"&#9; red&#10;\u{a0}\"/></svg>",
+        ];
+
+        yield 'Handles comments between every node' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><!--1--><g><!--2--><!--3--><rect bogus="1"/><!--4--></g><!--5--></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><!--1--><g><!--2--><!--3--><rect/><!--4--></g><!--5--></svg>',
+        ];
+
+        yield 'Leaves a document with an external style sheet untouched' => [
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><?foo bar?><rect bogus="1"/></svg>',
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><?foo bar?><rect bogus="1"/></svg>',
+        ];
+
+        yield 'Leaves a document with a linked style sheet untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><h:link xmlns:h="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/><rect bogus="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><h:link xmlns:h="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/><rect bogus="1"/></svg>',
+        ];
+
+        yield 'Leaves a document with an imported style sheet untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(a.css);</style><rect bogus="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(a.css);</style><rect bogus="1"/></svg>',
+        ];
+
+        yield 'Handles processing instructions' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><?foo bar?><rect bogus="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><?foo bar?><rect/></svg>',
+        ];
+
+        yield 'Keeps attributes that a style sheet selects' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><style>[foo]{fill:red} [*|bar]{fill:blue}</style><rect foo="1" x:bar="2" baz="3" x:baz="4"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><style>[foo]{fill:red} [*|bar]{fill:blue}</style><rect foo="1" x:bar="2"/></svg>',
+        ];
+
+        yield 'Keeps SVG 2 and HTML global attributes that apply to SVG elements' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style nonce="n">rect{fill:red}</style><rect part="icon" slot="s" aria-description="d" aria-braillelabel="b" aria-brailleroledescription="r" aria-colindextext="c" aria-rowindextext="w"/><foo nonce="n" part="p" slot="s" aria-description="d"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style nonce="n">rect{fill:red}</style><rect part="icon" slot="s" aria-description="d" aria-braillelabel="b" aria-brailleroledescription="r" aria-colindextext="c" aria-rowindextext="w"/><foo nonce="n" part="p" slot="s" aria-description="d"/></svg>',
+        ];
+
+        yield 'Handles CDATA sections' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text bogus="1"><![CDATA[a<b&c]]></text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text>a&lt;b&amp;c</text></svg>',
+        ];
+
+        yield 'Handles a child that resets the default namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><g><x xmlns=""><rect bogus="1"/></x></g><rect bogus="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><g><x xmlns=""><rect bogus="1"/></x></g><rect/></svg>',
+        ];
+
+        yield 'Handles a prefix redeclared to another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:s="http://www.w3.org/2000/svg"><s:g><s:rect bogus="1"/></s:g><g xmlns:s="urn:other"><s:rect bogus="1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:s="http://www.w3.org/2000/svg"><s:g><s:rect/></s:g><g xmlns:s="urn:other"><s:rect bogus="1"/></g></svg>',
+        ];
+
+        yield 'Handles entities and character references in values and text' => [
+            '<!DOCTYPE svg [<!ENTITY e "v&#x41;">]><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text bogus="1" class="&e;">&e;&#x42;&#66;</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text class="vA">vABB</text></svg>',
+        ];
+
+        yield 'Handles an attribute in no namespace next to the same local name in another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:o="urn:o"><use href="#a" xlink:href="#b" o:href="#c" bogus="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:o="urn:o"><use href="#a" xlink:href="#b"/></svg>',
+        ];
+
+        yield 'Handles repeated elements where only a later one matches' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect/><rect fill="red"/><rect bogus="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect/><rect fill="red"/><rect/></svg>',
+        ];
+
+        yield 'Handles mixed-case element names' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><Rect bogus="1"/><RECT bogus="1"/><Script>x</Script><SCRIPT>x</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">x</s:script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><Rect/><RECT/><Script>x</Script><SCRIPT>x</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">x</s:script></svg>',
+        ];
     }
 
     #[Test]
@@ -224,5 +359,45 @@ final class RemoveNonStandardAttributesTest extends TestCase
     public function shouldCheckSizeReturnsFalse(): void
     {
         self::assertFalse(RemoveNonStandardAttributes::shouldCheckSize());
+    }
+
+    #[Test]
+    public function handlesManyElementsWithAttributesInLinearTime(): void
+    {
+        $small = $this->secondsToOptimize(5_000);
+        $large = $this->secondsToOptimize(20_000);
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    #[Test]
+    public function handlesManyNamespaceDeclarationsInLinearTime(): void
+    {
+        $small = $this->secondsToOptimizeNamespaces(2_000);
+        $large = $this->secondsToOptimizeNamespaces(16_000);
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    private function secondsToOptimizeNamespaces(int $count): float
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><rect foo="x"/></svg>');
+
+        $start = hrtime(true);
+        (new RemoveNonStandardAttributes())->optimize($domDocument);
+
+        return (hrtime(true) - $start) / 1e9;
+    }
+
+    private function secondsToOptimize(int $count): float
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><defs>' . implode('', array_map(static fn (int $i): string => '<linearGradient id="g' . $i . '"><stop offset="0" stop-color="#' . $i . '"/></linearGradient>', range(1, $count))) . '</defs>' . implode('', array_map(static fn (int $i): string => '<rect fill="url(#g' . $i . ')"/>', range(1, $count))) . '</svg>');
+
+        $start = hrtime(true);
+        (new RemoveNonStandardAttributes())->optimize($domDocument);
+
+        return (hrtime(true) - $start) / 1e9;
     }
 }

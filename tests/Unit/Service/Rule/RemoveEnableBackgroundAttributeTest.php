@@ -65,14 +65,14 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
                 XML,
         ];
 
-        yield 'Keeps enable-background for svg with different dimensions' => [
+        yield 'Removes enable-background from an svg with different dimensions' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background="new 0 0 200 100">
                     <rect x="10" y="10" width="30" height="30"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background="new 0 0 200 100"><rect x="10" y="10" width="30" height="30"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><rect x="10" y="10" width="30" height="30"/></svg>
                 XML,
         ];
 
@@ -89,7 +89,7 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
                 XML,
         ];
 
-        yield 'Keeps enable-background for pattern with different dimensions' => [
+        yield 'Removes enable-background from a pattern' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
                     <pattern xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background="new 0 0 200 100">
@@ -98,7 +98,7 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><pattern xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background="new 0 0 200 100"><rect x="10" y="10" width="30" height="30"/></pattern></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><pattern xmlns="http://www.w3.org/2000/svg" width="100" height="50"><rect x="10" y="10" width="30" height="30"/></pattern></svg>
                 XML,
         ];
 
@@ -126,25 +126,25 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
                 XML,
         ];
 
-        yield 'Keeps enable-background if no filter and dimensions don’t match' => [
+        yield 'Removes enable-background whose dimensions differ from the element' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background="new 0 0 200 100">
                     <rect x="10" y="10" width="30" height="30"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background="new 0 0 200 100"><rect x="10" y="10" width="30" height="30"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><rect x="10" y="10" width="30" height="30"/></svg>
                 XML,
         ];
 
-        yield 'Keeps enable-background when value does not match regex' => [
+        yield 'Removes an invalid enable-background' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background="invalid value">
                     <rect x="10" y="10" width="30" height="30"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background="invalid value"><rect x="10" y="10" width="30" height="30"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><rect x="10" y="10" width="30" height="30"/></svg>
                 XML,
         ];
 
@@ -166,7 +166,7 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" style="fill:red;"><rect x="10" y="10" width="30" height="30"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" style="fill:red"><rect x="10" y="10" width="30" height="30"/></svg>
                 XML,
         ];
 
@@ -208,9 +208,69 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"/>',
         ];
 
-        yield 'Keeps other enable-background values untouched' => [
+        yield 'Removes a last enable-background declaration without a semicolon' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" style="fill:red;ENABLE-BACKGROUND : new 0 0 10 10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" style="fill:red"/>',
+        ];
+
+        yield 'Keeps custom properties whose name ends in enable-background' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" style="--x-enable-background:1;fill:var(--x-enable-background)"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" style="--x-enable-background:1;fill:var(--x-enable-background)"/>',
+        ];
+
+        yield 'Keeps enable-background inside a string' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" style="font-family:\'a;enable-background:x;\';fill:red"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" style="font-family:\'a;enable-background:x;\';fill:red"/>',
+        ];
+
+        yield 'Keeps a style with an unclosed string untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" style="enable-background:new;font-family:\'a"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" style="enable-background:new;font-family:\'a"/>',
+        ];
+
+        yield 'Removes enable-background from a later element after skipping an earlier style' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" style="fill:red"><g style="enable-background:new"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" style="fill:red"><g/></svg>',
+        ];
+
+        yield 'Removes enable-background in a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="10" height="5" enable-background="new 0 0 10 5"><svg:g style="enable-background:new;fill:red"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="10" height="5"><svg:g style="fill:red"/></svg:svg>',
+        ];
+
+        yield 'Keeps a namespaced enable-background attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x" width="10" height="5" x:enable-background="new 0 0 10 5"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x" width="10" height="5" x:enable-background="new 0 0 10 5"/>',
+        ];
+
+        yield 'Leaves an empty document unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'Keeps an enable-background attribute that a style sheet selects' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new" style="enable-background:new"><style>[enable-background]{fill:red}</style></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new"><style>[enable-background]{fill:red}</style></svg>',
+        ];
+
+        yield 'Keeps a style attribute that a style sheet selects' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new" style="enable-background:new"><style>[style]{fill:red}</style></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" style="enable-background:new"><style>[style]{fill:red}</style></svg>',
+        ];
+
+        yield 'Leaves the document untouched with an external style sheet' => [
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg" enable-background="new" style="enable-background:new"/>',
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg" enable-background="new" style="enable-background:new"/>',
+        ];
+
+        yield 'Keeps enable-background in foreign content' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><div xmlns="http://www.w3.org/1999/xhtml" enable-background="new" style="enable-background:new">a</div></foreignObject><rect enable-background="new"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><div xmlns="http://www.w3.org/1999/xhtml" enable-background="new" style="enable-background:new">a</div></foreignObject><rect/></svg>',
+        ];
+
+        yield 'Removes the accumulate value of enable-background' => [
             '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background=" accumulate "/>',
-            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background=" accumulate "/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"/>',
         ];
     }
 

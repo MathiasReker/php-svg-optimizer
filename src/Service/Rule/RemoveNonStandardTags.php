@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DefinitionElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
@@ -22,6 +23,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  */
 final readonly class RemoveNonStandardTags implements SvgOptimizerRuleInterface
 {
+    use DefinitionElementTrait;
     use ElementTrait;
 
     #[\Override]
@@ -42,30 +44,43 @@ final readonly class RemoveNonStandardTags implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $domNodeList = $domDocument->getElementsByTagName('*');
+        if ($this->hasSiblingSensitiveStyle($domDocument)) {
+            return;
+        }
 
         $allowed = $this->getAllowedTagLookup();
+        $documentNamespace = $domDocument->documentElement?->namespaceURI;
 
-        $elements = iterator_to_array($domNodeList, false);
+        foreach (iterator_to_array($domDocument->getElementsByTagName('*'), false) as $domElement) {
+            $parent = $domElement->parentNode;
 
-        foreach ($elements as $element) {
-            $normalized = $this->normalizeName($element->tagName);
-            $parent = $element->parentNode;
-
-            if (\array_key_exists($normalized, $allowed) || $this->isForeignContent($element) || !$parent instanceof \DOMNode) {
-                continue;
+            if ($domElement->isConnected
+                && $parent instanceof \DOMElement
+                && !\array_key_exists($this->normalizeName($domElement->tagName), $allowed)
+                && $domElement->namespaceURI === $documentNamespace
+                && $this->isRemovable($domElement, $parent)
+            ) {
+                $parent->removeChild($domElement);
             }
-
-            while (null !== $element->firstChild) {
-                $parent->insertBefore($element->firstChild, $element);
-            }
-
-            $parent->removeChild($element);
         }
     }
 
     /**
-     * @return array<string, true> a map where keys are normalized tag names
+     * @param \DOMElement $domElement the unknown element
+     * @param \DOMElement $parent     the parent of the element
+     *
+     * @return bool true if neither the element nor its content renders, can be referenced, or has an effect elsewhere
+     */
+    private function isRemovable(\DOMElement $domElement, \DOMElement $parent): bool
+    {
+        return SvgTag::Switch->value !== $parent->localName
+            && !$this->isForeignContent($domElement)
+            && !$this->hasIdInSubtree($domElement)
+            && !$this->hasEffectiveElementInSubtree($domElement);
+    }
+
+    /**
+     * @return array<string, string> the normalized tag names, by themselves
      */
     private function getAllowedTagLookup(): array
     {
@@ -76,7 +91,8 @@ final readonly class RemoveNonStandardTags implements SvgOptimizerRuleInterface
                 continue;
             }
 
-            $lookup[$this->normalizeName($tag->value)] = true;
+            $name = $this->normalizeName($tag->value);
+            $lookup[$name] = $name;
         }
 
         return $lookup;

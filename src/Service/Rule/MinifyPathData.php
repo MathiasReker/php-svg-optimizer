@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PathDataParserTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PathDataSerializerTrait;
@@ -25,6 +26,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PathDataSerializerTrait;
  */
 final readonly class MinifyPathData implements SvgOptimizerRuleInterface
 {
+    use ElementTrait;
     use NumberFormatterTrait;
     use PathDataParserTrait;
     use PathDataSerializerTrait;
@@ -47,6 +49,12 @@ final readonly class MinifyPathData implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
+        if ($this->mayMatchAttributeValues($domDocument)
+            || \array_key_exists(SvgAttribute::D->value, $this->animatedAttributeNames($domDocument))
+        ) {
+            return;
+        }
+
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
             if (SvgTag::Path->value === $domNodeList->localName && $domNodeList->hasAttribute(SvgAttribute::D->value)) {
                 $this->minifyPathData($domNodeList);

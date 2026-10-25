@@ -54,6 +54,16 @@ final class RemoveDuplicateElementsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps duplicate stops that contain animations' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient><stop offset="0"><animate href="#r" attributeName="x" by="1" additive="sum"/></stop><stop offset="0"><animate href="#r" attributeName="x" by="1" additive="sum"/></stop></linearGradient><rect id="r"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient><stop offset="0"><animate href="#r" attributeName="x" by="1" additive="sum"/></stop><stop offset="0"><animate href="#r" attributeName="x" by="1" additive="sum"/></stop></linearGradient><rect id="r"/></svg>',
+        ];
+
+        yield 'Keeps duplicate style sheets in defs' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><style>a{}</style><style>a{}</style></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><style>a{}</style><style>a{}</style></defs></svg>',
+        ];
+
         yield 'Keeps duplicates when a structural pseudo-class may match' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:nth-child(4){fill:red}</style><title>a</title><title>a</title><rect width="5" height="5"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:nth-child(4){fill:red}</style><title>a</title><title>a</title><rect width="5" height="5"/></svg>',
@@ -386,6 +396,56 @@ final class RemoveDuplicateElementsTest extends TestCase
         yield 'Removes adjacent duplicate titles and descriptions' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><title>a</title><title>a</title><desc>b</desc><desc>b</desc></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><title>a</title><desc>b</desc></svg>',
+        ];
+
+        yield 'Keeps duplicate additive animations in defs, whose effects add up' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r" x="0"/><defs><animate href="#r" attributeName="x" by="10" dur="1s" additive="sum"/><animate href="#r" attributeName="x" by="10" dur="1s" additive="sum"/></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r" x="0"/><defs><animate href="#r" attributeName="x" by="10" dur="1s" additive="sum"/><animate href="#r" attributeName="x" by="10" dur="1s" additive="sum"/></defs></svg>',
+        ];
+
+        yield 'Keeps duplicate groups in defs that contain an animation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r"/><defs><g><animateMotion href="#r" path="M0 0H9" additive="sum"/></g><g><animateMotion href="#r" path="M0 0H9" additive="sum"/></g></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r"/><defs><g><animateMotion href="#r" path="M0 0H9" additive="sum"/></g><g><animateMotion href="#r" path="M0 0H9" additive="sum"/></g></defs></svg>',
+        ];
+
+        yield 'Keeps duplicate groups in defs with a deeply nested animation after other descendants' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r"/><defs><g><g><desc>a</desc></g><g><g><set href="#r" attributeName="x" to="1"/></g></g></g><g><g><desc>a</desc></g><g><g><set href="#r" attributeName="x" to="1"/></g></g></g></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r"/><defs><g><g><desc>a</desc></g><g><g><set href="#r" attributeName="x" to="1"/></g></g></g><g><g><desc>a</desc></g><g><g><set href="#r" attributeName="x" to="1"/></g></g></g></defs></svg>',
+        ];
+
+        yield 'Keeps adjacent elements in different namespaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><metadata><a:x xmlns:a="urn:1"/></metadata><metadata><a:x xmlns:a="urn:2"/></metadata></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><metadata><a:x xmlns:a="urn:1"/></metadata><metadata><a:x xmlns:a="urn:2"/></metadata></svg>',
+        ];
+
+        yield 'Removes adjacent duplicates in a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:title>a</svg:title><svg:title>a</svg:title></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:title>a</svg:title></svg:svg>',
+        ];
+
+        yield 'Leaves an empty document unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'Keeps adjacent elements whose names differ in case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><g/><G/></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><g/><G/></defs></svg>',
+        ];
+
+        yield 'Keeps adjacent duplicates in defs when a style sheet uses :nth-child()' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>path:nth-child(2){fill:red}</style><defs><path d="M0 0"/><path d="M0 0"/></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>path:nth-child(2){fill:red}</style><defs><path d="M0 0"/><path d="M0 0"/></defs></svg>',
+        ];
+
+        yield 'Removes duplicates with unicode text after keeping a different earlier pair' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><title>a</title><title>b</title><title>ü</title><title>ü</title></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><title>a</title><title>b</title><title>ü</title></svg>',
+        ];
+
+        yield 'Removes adjacent duplicates whose text is in a CDATA section' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><desc><![CDATA[a<b]]></desc><desc><![CDATA[a<b]]></desc></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><desc>a&lt;b</desc></svg>',
         ];
     }
 

@@ -23,12 +23,13 @@ trait SvgElementTrait
     /**
      * @param \DOMElement $domElement the element to check
      *
-     * @return bool true if the element is in the SVG namespace, or in no namespace as in a document without a namespace
-     *              declaration
+     * @return bool true if the element is in the SVG namespace, or in no namespace in a document whose root element has
+     *              no namespace either
      */
     private function isSvgElement(\DOMElement $domElement): bool
     {
-        return \in_array($domElement->namespaceURI, [null, SvgNamespace::Svg->value], true);
+        return SvgNamespace::Svg->value === $domElement->namespaceURI
+            || (null === $domElement->namespaceURI && null === $domElement->ownerDocument?->documentElement?->namespaceURI);
     }
 
     /**

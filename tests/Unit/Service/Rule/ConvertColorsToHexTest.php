@@ -52,10 +52,15 @@ final class ConvertColorsToHexTest extends TestCase
     }
 
     /**
-     * @return iterable<array{string, string}>
+     * @return iterable<string, array{string, string}>
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Leaves the document untouched when a style sheet selects attribute values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[fill="#FF0000"]{stroke:red}</style><rect fill="#FF0000"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[fill="#FF0000"]{stroke:red}</style><rect fill="#FF0000"/></svg>',
+        ];
+
         yield 'Converts RGB colors to Hex' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -175,6 +180,11 @@ final class ConvertColorsToHexTest extends TestCase
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="rgb(300, 255, -50)"/><circle cx="50" cy="50" r="40" stroke="rgb(0, 300, 0)"/></svg>
                 XML,
+        ];
+
+        yield 'Converts every channel value up to 255, with or without leading zeros' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="rgb(255,250,249)"/><rect fill="rgb(200,199,100)"/><rect fill="rgb(099,09,010)"/><rect fill="rgb(256,0,0)"/><rect fill="rgb(0,260,0)"/><rect fill="rgb(0,0,300)"/><rect fill="rgb(0,0,0255)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="#fffaf9"/><rect fill="#c8c764"/><rect fill="#63090a"/><rect fill="rgb(256,0,0)"/><rect fill="rgb(0,260,0)"/><rect fill="rgb(0,0,300)"/><rect fill="rgb(0,0,0255)"/></svg>',
         ];
 
         yield 'Handles colors with extra spaces and mixed formats' => [
@@ -684,8 +694,68 @@ final class ConvertColorsToHexTest extends TestCase
 
         yield 'Keeps names that only match a named color after non-ASCII case folding' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="dar&#x212A;violet" style="stroke:dar&#x212A;violet"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="dar&#x212A;violet" style="stroke:dar&#x212A;violet"/></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect fill=\"dar\u{212A}violet\" style=\"stroke:dar\u{212A}violet\"/></svg>",
         ];
+
+        yield 'Keeps color attributes of elements in other namespaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="9" height="9"><font xmlns="http://www.w3.org/1999/xhtml" color="rgb(255,0,0)">x</font></foreignObject><x:rect xmlns:x="urn:x" fill="#FFFFFF"/><rect fill="#FFFFFF"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="9" height="9"><font xmlns="http://www.w3.org/1999/xhtml" color="rgb(255,0,0)">x</font></foreignObject><x:rect xmlns:x="urn:x" fill="#FFFFFF"/><rect fill="#fff"/></svg>',
+        ];
+
+        yield 'Keeps custom properties and vendor properties in style attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="--my-fill: white;-webkit-text-fill-color: white;fill: white"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="--my-fill: white;-webkit-text-fill-color: white;fill:#fff"/></svg>',
+        ];
+
+        yield 'Converts colors in a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect fill="#FFFFFF" style="stroke:rgb(255,0,0)"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect fill="#fff" style="stroke:red"/></svg:svg>',
+        ];
+
+        yield 'Keeps colors in style elements and animations' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:#FFFFFF}</style><rect><animate attributeName="fill" fill="freeze" from="#FFFFFF" to="rgb(255,0,0)" values="white;black"/><set attributeName="fill" to="white"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:#FFFFFF}</style><rect><animate attributeName="fill" fill="freeze" from="#FFFFFF" to="rgb(255,0,0)" values="white;black"/><set attributeName="fill" to="white"/></rect></svg>',
+        ];
+
+        yield 'Keeps rgb colors with percentages, spaces or uppercase function names' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="rgb(100%,0%,0%)" stroke="rgb(255 0 0)" color="RGB(255,0,0)" stop-color="rgb(255,0,0,0.5)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="rgb(100%,0%,0%)" stroke="rgb(255 0 0)" color="RGB(255,0,0)" stop-color="rgb(255,0,0,0.5)"/></svg>',
+        ];
+
+        yield 'Keeps ICC colors' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="#FFFFFF icc-color(p, 1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="#FFFFFF icc-color(p, 1)"/></svg>',
+        ];
+
+        yield 'Converts colors written with character references' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="&#x23;FFFFFF"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="#fff"/></svg>',
+        ];
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideOptimizeIsIdempotentCases')]
+    #[Test]
+    public function optimizeIsIdempotent(string $optimized): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
+        $svgOptimizer->addRule(new ConvertColorsToHex());
+
+        self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideOptimizeIsIdempotentCases(): iterable
+    {
+        foreach (self::provideOptimizeCases() as $name => [, $expected]) {
+            yield $name => [$expected];
+        }
     }
 
     #[Test]

@@ -58,6 +58,16 @@ final class ConvertOneStopGradientsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps a gradient of a zero-sized resource library, which other documents may reference' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"><defs><linearGradient id="g"><stop stop-color="red"/></linearGradient></defs><rect width="5" height="5" fill="url(#g)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"><defs><linearGradient id="g"><stop stop-color="red"/></linearGradient></defs><rect width="5" height="5" fill="url(#g)"/></svg>',
+        ];
+
+        yield 'Leaves the document untouched with an event handler' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient id="g"><stop stop-color="red"/></linearGradient><rect fill="url(#g)" width="5" height="5" onclick="f()"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient id="g"><stop stop-color="red"/></linearGradient><rect fill="url(#g)" width="5" height="5" onclick="f()"/></svg>',
+        ];
+
         yield from self::provideConvertedCases();
         yield from self::provideLinkCases();
         yield from self::provideStopSkipCases();
@@ -204,6 +214,36 @@ final class ConvertOneStopGradientsTest extends TestCase
             self::SVG . '<defs><radialGradient id="g"><stop stop-color="red"/></radialGradient></defs><circle r="1" fill="url(#g)"/><ellipse rx="1" ry="2" stroke="url(#g)"/></svg>',
             self::SVG . '<circle r="1" fill="red"/><ellipse rx="1" ry="2" stroke="red"/></svg>',
         ];
+
+        yield 'Converts a gradient with translations and rotations' => [
+            self::SVG . '<defs><linearGradient id="g" gradientTransform=" translate(1, 2),rotate(30) translate (3) "><stop stop-color="red"/></linearGradient></defs><rect fill="url(#g)"/></svg>',
+            self::SVG . '<rect fill="red"/></svg>',
+        ];
+
+        yield 'Skips a gradient with a transform that may be singular' => [
+            self::SVG . '<defs><linearGradient id="g" gradientTransform="rotate(30) scale(0)"><stop stop-color="red"/></linearGradient></defs><rect fill="url(#g)"/></svg>',
+            self::SVG . '<defs><linearGradient id="g" gradientTransform="rotate(30) scale(0)"><stop stop-color="red"/></linearGradient></defs><rect fill="url(#g)"/></svg>',
+        ];
+
+        yield 'Skips a gradient that inherits a transform that may be singular through href' => [
+            self::SVG . '<defs><linearGradient id="a" gradientTransform="matrix(1 1 1 1 0 0)"/><linearGradient id="b" href="#a"><stop stop-color="red"/></linearGradient></defs><rect fill="url(#b)"/></svg>',
+            self::SVG . '<defs><linearGradient id="a" gradientTransform="matrix(1 1 1 1 0 0)"/><linearGradient id="b" href="#a"><stop stop-color="red"/></linearGradient></defs><rect fill="url(#b)"/></svg>',
+        ];
+
+        yield 'Uses the transform of the gradient itself over the linked gradient' => [
+            self::SVG . '<defs><linearGradient id="a" gradientTransform="scale(0)"/><linearGradient id="b" href="#a" gradientTransform="rotate(5)"><stop stop-color="red"/></linearGradient></defs><rect fill="url(#b)"/></svg>',
+            self::SVG . '<defs><linearGradient id="a" gradientTransform="scale(0)"/></defs><rect fill="red"/></svg>',
+        ];
+
+        yield 'Skips a gradient with a style attribute, which may set a transform' => [
+            self::SVG . '<defs><linearGradient id="g" style="transform:scale(0)"><stop stop-color="red"/></linearGradient></defs><rect fill="url(#g)"/></svg>',
+            self::SVG . '<defs><linearGradient id="g" style="transform:scale(0)"><stop stop-color="red"/></linearGradient></defs><rect fill="url(#g)"/></svg>',
+        ];
+
+        yield 'Skips a gradient linking to a gradient with a style attribute' => [
+            self::SVG . '<defs><linearGradient id="a" style="transform:scale(0)"/><linearGradient id="b" href="#a"><stop stop-color="red"/></linearGradient></defs><rect fill="url(#b)"/></svg>',
+            self::SVG . '<defs><linearGradient id="a" style="transform:scale(0)"/><linearGradient id="b" href="#a"><stop stop-color="red"/></linearGradient></defs><rect fill="url(#b)"/></svg>',
+        ];
     }
 
     /**
@@ -311,7 +351,7 @@ final class ConvertOneStopGradientsTest extends TestCase
             'an empty stop color' => '<stop stop-color=""/>',
             'an unknown color keyword' => '<stop stop-color="foo"/>',
             'a color keyword pattern' => '<stop stop-color="re."/>',
-            'a color keyword with a non-ASCII letter' => '<stop stop-color="&#x212A;haki"/>',
+            'a color keyword with a non-ASCII letter' => '<stop stop-color="Khaki"/>',
             'a functional color' => '<stop stop-color="rgb(255,0,0)"/>',
             'a custom property color' => '<stop stop-color="var(--c)"/>',
             'a hex color of invalid length' => '<stop stop-color="#12345"/>',
@@ -392,6 +432,66 @@ final class ConvertOneStopGradientsTest extends TestCase
      */
     private static function provideDocumentSkipCases(): iterable
     {
+        yield 'Skips gradients of other namespaces' => [
+            self::SVG . '<x:linearGradient xmlns:x="urn:x" id="g"><stop stop-color="red"/></x:linearGradient><rect fill="url(#g)"/></svg>',
+            self::SVG . '<x:linearGradient xmlns:x="urn:x" id="g"><stop stop-color="red"/></x:linearGradient><rect fill="url(#g)"/></svg>',
+        ];
+
+        yield 'Skips gradients whose only child is a stop of another namespace' => [
+            self::SVG . '<linearGradient id="g"><x:stop xmlns:x="urn:x" stop-color="red"/></linearGradient><rect fill="url(#g)"/></svg>',
+            self::SVG . '<linearGradient id="g"><x:stop xmlns:x="urn:x" stop-color="red"/></linearGradient><rect fill="url(#g)"/></svg>',
+        ];
+
+        yield 'Converts gradients of a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:linearGradient id="g"><svg:stop stop-color="red"/></svg:linearGradient><svg:rect fill="url(#g)"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect fill="red"/></svg:svg>',
+        ];
+
+        yield 'Follows a link through a custom xlink prefix' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:l="http://www.w3.org/1999/xlink"><linearGradient id="a"><stop stop-color="red"/></linearGradient><linearGradient id="b" l:href="#a"/><rect fill="url(#b)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:l="http://www.w3.org/1999/xlink"><linearGradient id="a"><stop stop-color="red"/></linearGradient><rect fill="red"/></svg>',
+        ];
+
+        yield 'Converts gradients referenced through spaced and quoted url() forms' => [
+            self::SVG . '<linearGradient id="g" gradientUnits="userSpaceOnUse"><stop stop-color="red"/></linearGradient><path fill="url( &quot;#g&quot; )" stroke=" url(\'#g\') "/></svg>',
+            self::SVG . '<path fill="red" stroke="red"/></svg>',
+        ];
+
+        yield 'Converts a gradient with a unicode id' => [
+            self::SVG . '<linearGradient id="ü" gradientUnits="userSpaceOnUse"><stop stop-color="RED"/></linearGradient><path fill="url(#ü)"/></svg>',
+            self::SVG . '<path fill="RED"/></svg>',
+        ];
+
+        yield 'Skips gradients with a duplicated id' => [
+            self::SVG . '<linearGradient id="g"><stop stop-color="red"/></linearGradient><linearGradient id="g"><stop stop-color="blue"/></linearGradient><rect fill="url(#g)"/></svg>',
+            self::SVG . '<linearGradient id="g"><stop stop-color="red"/></linearGradient><linearGradient id="g"><stop stop-color="blue"/></linearGradient><rect fill="url(#g)"/></svg>',
+        ];
+
+        yield 'Skips a gradient referenced by an aria list' => [
+            self::SVG . '<linearGradient id="g"><stop stop-color="red"/></linearGradient><rect fill="url(#g)"/><g aria-describedby="x g"/></svg>',
+            self::SVG . '<linearGradient id="g"><stop stop-color="red"/></linearGradient><rect fill="url(#g)"/><g aria-describedby="x g"/></svg>',
+        ];
+
+        yield 'Skips a gradient referenced by an animation timing' => [
+            self::SVG . '<linearGradient id="g"><stop stop-color="red"/></linearGradient><rect fill="url(#g)"/><animate begin="g.click+1s" attributeName="x"/></svg>',
+            self::SVG . '<linearGradient id="g"><stop stop-color="red"/></linearGradient><rect fill="url(#g)"/><animate begin="g.click+1s" attributeName="x"/></svg>',
+        ];
+
+        yield 'Converts a later gradient after skipping an earlier one' => [
+            self::SVG . '<linearGradient id="a"><stop stop-color="red" stop-opacity=".5"/></linearGradient><linearGradient id="b"><stop stop-color="blue"/></linearGradient><rect fill="url(#a)"/><rect fill="url(#b)"/></svg>',
+            self::SVG . '<linearGradient id="a"><stop stop-color="red" stop-opacity=".5"/></linearGradient><rect fill="url(#a)"/><rect fill="blue"/></svg>',
+        ];
+
+        yield 'Leaves an empty document unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'Skips a gradient referenced through an escaped url()' => [
+            self::SVG . '<linearGradient id="g"><stop stop-color="red"/></linearGradient><rect fill="url(#g)"/><rect stroke="url(#\67) red"/></svg>',
+            self::SVG . '<linearGradient id="g"><stop stop-color="red"/></linearGradient><rect fill="url(#g)"/><rect stroke="url(#\67) red"/></svg>',
+        ];
+
         yield 'Skips documents with a style element' => [
             self::SVG . '<style>rect{opacity:.5}</style><defs><linearGradient id="g"><stop stop-color="red"/></linearGradient></defs><rect fill="url(#g)"/></svg>',
             self::SVG . '<style>rect{opacity:.5}</style><defs><linearGradient id="g"><stop stop-color="red"/></linearGradient></defs><rect fill="url(#g)"/></svg>',

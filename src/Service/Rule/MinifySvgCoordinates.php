@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 
 /**
@@ -23,6 +24,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
  */
 final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
 {
+    use ElementTrait;
     use NumberFormatterTrait;
 
     private const string TOKEN_NUMBER = 'number';
@@ -30,6 +32,8 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     private const string TOKEN_FLAG = 'flag';
 
     private const string TOKEN_TEXT = 'text';
+
+    private const string DECIMAL_POINT = '.';
 
     private const string NUMBER_TOKEN_REGEX = '/\G(?>' . self::NUMBER_PATTERN . ')/';
 
@@ -40,6 +44,8 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     private const string PATH_COMMAND_LETTER_REGEX = '/^[MmLlHhVvCcSsQqTtAaZz]$/';
 
     private const string NON_ASCII_REGEX = '/[^\x00-\x7F]/';
+
+    private const array ARC_COMMANDS = ['a', 'A'];
 
     private const int ARC_ARGUMENT_COUNT = 7;
 
@@ -85,6 +91,10 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
+        if ($this->mayMatchAttributeValues($domDocument)) {
+            return;
+        }
+
         $domXPath = new \DOMXPath($domDocument);
         $domXPath->registerNamespace(SvgNamespace::Svg->prefix(), SvgNamespace::Svg->value);
 
@@ -138,14 +148,14 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
 
         $tokens = $this->tokenize($value, $isPathData);
 
-        if ([] === $tokens) {
+        if ([] === $tokens || \in_array([self::TOKEN_TEXT, self::DECIMAL_POINT], $tokens, true)) {
             return $value;
         }
 
         $minifiedTokens = $this->minifyTokens($tokens);
         $minified = implode('', array_column($minifiedTokens, 1));
 
-        if ($this->mergeTextTokens($this->tokenize($minified, $isPathData)) !== $this->mergeTextTokens($minifiedTokens)) {
+        if ($this->tokenize($minified, $isPathData) !== $minifiedTokens) {
             return $value;
         }
 
@@ -164,8 +174,9 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
         $offset = 0;
         $command = '';
         $argument = 0;
+        $length = mb_strlen($value);
 
-        while ($offset < mb_strlen($value)) {
+        while ($offset < $length) {
             $token = $this->nextToken($value, $offset, $isPathData, $this->expectsArcFlag($command, $argument));
 
             if ([] === $token) {
@@ -178,7 +189,7 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
             if (self::TOKEN_TEXT !== $token[0]) {
                 ++$argument;
             } elseif (1 === preg_match(self::PATH_COMMAND_LETTER_REGEX, $token[1])) {
-                $command = mb_strtolower($token[1]);
+                $command = $token[1];
                 $argument = 0;
             }
         }
@@ -216,12 +227,12 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     }
 
     /**
-     * @param string $command  the lowercase path command in effect
+     * @param string $command  the path command in effect
      * @param int    $argument the number of arguments read since the command letter
      */
     private function expectsArcFlag(string $command, int $argument): bool
     {
-        return 'a' === $command && \in_array($argument % self::ARC_ARGUMENT_COUNT, self::ARC_FLAG_POSITIONS, true);
+        return \in_array($command, self::ARC_COMMANDS, true) && \in_array($argument % self::ARC_ARGUMENT_COUNT, self::ARC_FLAG_POSITIONS, true);
     }
 
     /**
@@ -232,19 +243,21 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     private function minifyTokens(array $tokens): array
     {
         $minified = [];
-        $previous = [self::TOKEN_TEXT, ''];
+        $previousType = self::TOKEN_TEXT;
+        $previousText = '';
 
         foreach ($tokens as [$type, $text]) {
             if (self::TOKEN_NUMBER === $type) {
                 $text = $this->minifyNumber($text);
             }
 
-            if (self::TOKEN_NUMBER === $previous[0] && self::TOKEN_TEXT !== $type && $this->mergesWithNext($previous[1], $text)) {
+            if (self::TOKEN_NUMBER === $previousType && self::TOKEN_TEXT !== $type && $this->mergesWithNext($previousText, $text)) {
                 $minified[] = [self::TOKEN_TEXT, ' '];
             }
 
-            $previous = [$type, $text];
-            $minified[] = $previous;
+            $previousType = $type;
+            $previousText = $text;
+            $minified[] = [$type, $text];
         }
 
         return $minified;
@@ -257,29 +270,5 @@ final readonly class MinifySvgCoordinates implements SvgOptimizerRuleInterface
     private function mergesWithNext(string $number, string $next): bool
     {
         return 1 !== preg_match(self::NUMBER_TOKEN_REGEX, $number . $next, $match) || $match[0] !== $number;
-    }
-
-    /**
-     * @param list<array{string, string}> $tokens the tokens
-     *
-     * @return list<array{string, string}> the tokens with adjacent text tokens joined
-     */
-    private function mergeTextTokens(array $tokens): array
-    {
-        $merged = [];
-
-        foreach ($tokens as $token) {
-            $last = array_key_last($merged);
-
-            if (null !== $last && self::TOKEN_TEXT === $token[0] && self::TOKEN_TEXT === $merged[$last][0]) {
-                $merged[$last][1] .= $token[1];
-
-                continue;
-            }
-
-            $merged[] = $token;
-        }
-
-        return $merged;
     }
 }

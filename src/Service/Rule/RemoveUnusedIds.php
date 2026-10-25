@@ -14,8 +14,9 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DefinitionElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\FragmentTargetTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
 
 /**
@@ -25,16 +26,12 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
  */
 final readonly class RemoveUnusedIds implements SvgOptimizerRuleInterface
 {
+    use DefinitionElementTrait;
     use ElementTrait;
+    use FragmentTargetTrait;
     use IdReferenceTrait;
 
-    private const string EVENT_ATTRIBUTE_PREFIX = 'on';
-
     private const array EXTERNALLY_TARGETED_TAGS = ['symbol', 'view'];
-
-    private const array DEFINITION_TAGS = [
-        'clipPath', 'filter', 'linearGradient', 'marker', 'mask', 'pattern', 'radialGradient', 'symbol',
-    ];
 
     #[\Override]
     public static function isRisky(): bool
@@ -58,11 +55,10 @@ final readonly class RemoveUnusedIds implements SvgOptimizerRuleInterface
             return;
         }
 
-        $referencedIds = $this->collectLiveReferencedIds($domDocument, self::DEFINITION_TAGS, self::EXTERNALLY_TARGETED_TAGS);
+        $referencedIds = $this->collectLiveReferencedIds($domDocument, self::REFERENCE_ONLY_TAGS, self::EXTERNALLY_TARGETED_TAGS, $this->collectFragmentTargets($domDocument));
 
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
-            if ($domNodeList === $domDocument->documentElement
-                || \in_array($domNodeList->localName, self::EXTERNALLY_TARGETED_TAGS, true)) {
+            if ($domNodeList === $domDocument->documentElement) {
                 continue;
             }
 
@@ -74,44 +70,5 @@ final readonly class RemoveUnusedIds implements SvgOptimizerRuleInterface
                 $domNodeList->removeAttributeNS(SvgNamespace::Xml->value, SvgAttribute::Id->value);
             }
         }
-    }
-
-    /**
-     * @param \DOMDocument $domDocument the document to check
-     *
-     * @return bool true if the document has a script, or a style sheet with an attribute selector that may match ids
-     *              other than its value
-     */
-    private function mayTargetAnyId(\DOMDocument $domDocument): bool
-    {
-        foreach ($this->elementsNamed($domDocument, SvgTag::Style->value) as $domElement) {
-            if ($this->hasInexactIdAttributeSelector($domElement->textContent)) {
-                return true;
-            }
-        }
-
-        return $this->isScripted($domDocument);
-    }
-
-    /**
-     * @param \DOMDocument $domDocument the document to check
-     *
-     * @return bool true if the document has a `<script>` or an event attribute
-     */
-    private function isScripted(\DOMDocument $domDocument): bool
-    {
-        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
-            if (SvgTag::Script->value === $domNodeList->localName) {
-                return true;
-            }
-
-            foreach ($domNodeList->attributes as $attribute) {
-                if (str_starts_with(mb_strtolower((string) $attribute->localName), self::EVENT_ATTRIBUTE_PREFIX)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 }

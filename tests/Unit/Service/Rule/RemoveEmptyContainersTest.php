@@ -47,6 +47,10 @@ final class RemoveEmptyContainersTest extends TestCase
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
+
+        $repeated = new SvgOptimizer(new StringProvider($actual));
+        $repeated->addRule(new RemoveEmptyContainers());
+        self::assertSame($actual, $repeated->optimize()->getContent());
     }
 
     /**
@@ -54,6 +58,86 @@ final class RemoveEmptyContainersTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps an empty group exposed to assistive technology' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g role="img" aria-label="Chart"/><g/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g role="img" aria-label="Chart"/></svg>',
+        ];
+
+        yield 'Keeps an empty group that can take focus' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g tabindex="0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g tabindex="0"/></svg>',
+        ];
+
+        yield 'Keeps an empty group with an event handler' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g onclick="f()"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g onclick="f()"/></svg>',
+        ];
+
+        yield 'Removes an empty group with a namespaced role' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><g x:role="img"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"/>',
+        ];
+
+        yield 'Keeps an empty group that a style sheet may filter' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{filter:url(#f)}</style><filter id="f" filterUnits="userSpaceOnUse" width="9" height="9"><feFlood/></filter><g class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{filter:url(#f)}</style><filter id="f" filterUnits="userSpaceOnUse" width="9" height="9"><feFlood/></filter><g class="a"/></svg>',
+        ];
+
+        yield 'leaves an empty document alone' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'removes containers that only hold tabs and newlines' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs>&#9;&#10;&#13;</defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'keeps a container with a non-breaking space' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs>&#xA0;</defs></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><defs>\u{A0}</defs></svg>",
+        ];
+
+        yield 'removes mixed-case container elements' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><DEFS/><clippath/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'removes deeply nested empty containers' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><g><symbol><g><mask/></g></symbol></g></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'keeps empty containers in another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:defs xmlns:x="urn:x"/><metadata><g xmlns="urn:y"/></metadata></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:defs xmlns:x="urn:x"/><metadata><g xmlns="urn:y"/></metadata></svg>',
+        ];
+
+        yield 'removes empty prefixed svg containers' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:defs/><svg:g fill="red"/><svg:rect width="5" height="5"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect width="5" height="5"/></svg:svg>',
+        ];
+
+        yield 'keeps empty containers when an external style sheet is linked' => [
+            '<?xml-stylesheet href="style.css"?><svg xmlns="http://www.w3.org/2000/svg"><g fill="red"/></svg>',
+            '<?xml-stylesheet href="style.css"?><svg xmlns="http://www.w3.org/2000/svg"><g fill="red"/></svg>',
+        ];
+
+        yield 'keeps an empty group with a filter in an uppercase style' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="FILTER:url(#f)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="FILTER:url(#f)"/></svg>',
+        ];
+
+        yield 'keeps an empty container with an xml:id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xml:id="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xml:id="a"/></svg>',
+        ];
+
+        yield 'removes a later empty container after a kept one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g id="a"/><g fill="red"/><mask/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g id="a"/></svg>',
+        ];
+
         yield 'Keeps empty containers when a sibling combinator may match' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>defs~rect{fill:red}</style><defs/><rect width="5" height="5"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><style>defs~rect{fill:red}</style><defs/><rect width="5" height="5"/></svg>',

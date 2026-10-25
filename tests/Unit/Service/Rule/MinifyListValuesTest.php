@@ -54,6 +54,16 @@ final class MinifyListValuesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Leaves the document untouched when a style sheet selects attribute values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[points="0, 0"]{fill:red}</style><polygon points="0, 0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[points="0, 0"]{fill:red}</style><polygon points="0, 0"/></svg>',
+        ];
+
+        yield 'Keeps a list with a trailing decimal point, which browsers reject' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="0 0 400. 400"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="0 0 400. 400"/></svg>',
+        ];
+
         yield 'Shortens viewBox' => [
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0.0, 0.0, 100.0, 50.50"/>',
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50.5"/>',
@@ -188,6 +198,71 @@ final class MinifyListValuesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><g data-points="1.0 2.0" class="1.0 2.0" x:viewBox="0.0 0.0 1.0 1.0"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><g data-points="1.0 2.0" class="1.0 2.0" x:viewBox="0.0 0.0 1.0 1.0"/></svg>',
         ];
+
+        yield 'Keeps lists of elements in other namespaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:polyline xmlns:x="urn:x" points="1.0 2.0"/><foreignObject width="1" height="1"><div xmlns="http://www.w3.org/1999/xhtml" viewBox="0.0 0.0 1.0 1.0"/></foreignObject><polyline points="1.0 2.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:polyline xmlns:x="urn:x" points="1.0 2.0"/><foreignObject width="1" height="1"><div xmlns="http://www.w3.org/1999/xhtml" viewBox="0.0 0.0 1.0 1.0"></div></foreignObject><polyline points="1 2"/></svg>',
+        ];
+
+        yield 'Shortens lists in a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg" viewBox="0.0 0 10.0 10"><svg:text x="1.0 2.0"><svg:tspan dy="0.50 1.0">a</svg:tspan></svg:text></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><svg:text x="1 2"><svg:tspan dy=".5 1">a</svg:tspan></svg:text></svg:svg>',
+        ];
+
+        yield 'Shortens lists in a document without a namespace' => [
+            '<svg viewBox="0.0 0 10.0 10"/>',
+            '<svg viewBox="0 0 10 10"/>',
+        ];
+
+        yield 'Shortens animated viewBox values and padded key times' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><animate attributeName="viewBox" values="0 0 10.0 10;0 0 20.0 20" keyTimes="0; 0.50; 1" keySplines="0.0,0.0,1.0,1.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><animate attributeName="viewBox" values="0 0 10 10;0 0 20 20" keyTimes="0;.5;1" keySplines="0 0 1 1"/></svg>',
+        ];
+
+        yield 'Never rounds huge and tiny list values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0.000 0.00000000000000000001 123456789012345678901234567890.0 1E+02"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 .00000000000000000001 123456789012345678901234567890 1e2"/>',
+        ];
+
+        yield 'Shortens dash arrays separated by commas' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path stroke-dasharray="5.0, 10.0"/><path stroke-dasharray="5.0,"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path stroke-dasharray="5 10"/><path stroke-dasharray="5.0,"/></svg>',
+        ];
+
+        yield 'Keeps lists in style attributes and style elements' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>path{stroke-dasharray:5.0 10.0}</style><path style="stroke-dasharray:5.0 10.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>path{stroke-dasharray:5.0 10.0}</style><path style="stroke-dasharray:5.0 10.0"/></svg>',
+        ];
+
+        yield 'Keeps lists with non-ASCII digits' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 １0.0 10.0"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 １0.0 10.0"/>',
+        ];
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideOptimizeIsIdempotentCases')]
+    #[Test]
+    public function optimizeIsIdempotent(string $optimized): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
+        $svgOptimizer->addRule(new MinifyListValues());
+
+        self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideOptimizeIsIdempotentCases(): iterable
+    {
+        foreach (self::provideOptimizeCases() as $name => [, $expected]) {
+            yield $name => [$expected];
+        }
     }
 
     #[Test]

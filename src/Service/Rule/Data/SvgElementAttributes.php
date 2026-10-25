@@ -18,7 +18,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Data;
  */
 final class SvgElementAttributes
 {
-    private const array CORE = ['id', 'tabindex', 'autofocus', 'lang', 'xml:space', 'class', 'style'];
+    private const array CORE = ['id', 'tabindex', 'autofocus', 'lang', 'xml:space', 'class', 'style', 'nonce', 'part', 'slot'];
 
     private const array LEGACY = ['xml:base', 'xml:lang', 'xml:id', 'externalResourcesRequired'];
 
@@ -161,6 +161,11 @@ final class SvgElementAttributes
         'aria-valuemin',
         'aria-valuenow',
         'aria-valuetext',
+        'aria-braillelabel',
+        'aria-brailleroledescription',
+        'aria-colindextext',
+        'aria-description',
+        'aria-rowindextext',
     ];
 
     private const array GLOBAL_EVENTS = [
@@ -421,6 +426,7 @@ final class SvgElementAttributes
         ],
         'defs' => ['groups' => [...self::BASE, ...self::EVENTS, 'transform', 'conditionalProcessing'], 'attributes' => []],
         'desc' => ['groups' => [...self::BASE, ...self::EVENTS], 'attributes' => []],
+        'discard' => ['groups' => ['core', 'legacy', 'rdfa', 'aria', 'conditionalProcessing', 'xlink'], 'attributes' => ['begin']],
         'ellipse' => ['groups' => self::GRAPHICS, 'attributes' => ['cx', 'cy', 'rx', 'ry', 'pathLength']],
         'embed' => ['groups' => self::HTML, 'attributes' => ['src', 'type', 'width', 'height']],
         'feBlend' => ['groups' => self::FILTER_PRIMITIVE_GROUPS, 'attributes' => ['in', 'in2', 'mode']],

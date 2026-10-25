@@ -15,9 +15,12 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ParentValueTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TransformListTrait;
 
 /**
  * @internal
@@ -26,60 +29,17 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ParentValueTrait;
  */
 final readonly class FlattenGroups implements SvgOptimizerRuleInterface
 {
+    use AsciiCaseTrait;
+    use DocumentScriptTrait;
     use ElementTrait;
     use IdReferenceTrait;
     use ParentValueTrait;
+    use TransformListTrait;
 
     private const string XPATH_GROUP_ELEMENTS = '//svg:g';
 
-    private const string INHERIT_KEYWORD = 'inherit';
-
     private const string XPATH_TRANSFORM_BLOCKING_ELEMENTS = '//svg:g/svg:svg'
         . ' | //*[svg:animateMotion or *[normalize-space(@attributeName) = "transform"]]';
-
-    private const array INHERITED_ATTRIBUTES = [
-        SvgAttribute::ClipRule->value,
-        SvgAttribute::Color->value,
-        SvgAttribute::ColorInterpolation->value,
-        SvgAttribute::ColorInterpolationFilters->value,
-        SvgAttribute::ColorRendering->value,
-        SvgAttribute::Cursor->value,
-        SvgAttribute::Direction->value,
-        SvgAttribute::Fill->value,
-        SvgAttribute::FillOpacity->value,
-        SvgAttribute::FillRule->value,
-        SvgAttribute::FontFamily->value,
-        SvgAttribute::FontSize->value,
-        SvgAttribute::FontSizeAdjust->value,
-        SvgAttribute::FontStretch->value,
-        SvgAttribute::FontStyle->value,
-        SvgAttribute::FontVariant->value,
-        SvgAttribute::FontWeight->value,
-        SvgAttribute::GlyphOrientationHorizontal->value,
-        SvgAttribute::GlyphOrientationVertical->value,
-        SvgAttribute::ImageRendering->value,
-        SvgAttribute::Kerning->value,
-        SvgAttribute::LetterSpacing->value,
-        SvgAttribute::MarkerEnd->value,
-        SvgAttribute::MarkerMid->value,
-        SvgAttribute::MarkerStart->value,
-        SvgAttribute::PaintOrder->value,
-        SvgAttribute::PointerEvents->value,
-        SvgAttribute::ShapeRendering->value,
-        SvgAttribute::Stroke->value,
-        SvgAttribute::StrokeDasharray->value,
-        SvgAttribute::StrokeDashoffset->value,
-        SvgAttribute::StrokeLinecap->value,
-        SvgAttribute::StrokeLinejoin->value,
-        SvgAttribute::StrokeMiterlimit->value,
-        SvgAttribute::StrokeOpacity->value,
-        SvgAttribute::StrokeWidth->value,
-        SvgAttribute::TextAnchor->value,
-        SvgAttribute::TextRendering->value,
-        SvgAttribute::Visibility->value,
-        SvgAttribute::WordSpacing->value,
-        SvgAttribute::WritingMode->value,
-    ];
 
     private const array NON_RENDERED_TAGS = [
         SvgTag::ClipPath->value,
@@ -101,6 +61,11 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         SvgTag::Mask->value,
         SvgTag::Pattern->value,
         SvgTag::RadialGradient->value,
+    ];
+
+    private const array CHILD_SENSITIVE_PARENT_TAGS = [
+        SvgTag::ClipPath->value,
+        SvgTag::Switch->value,
     ];
 
     private const array DESCRIPTIVE_TAGS = [
@@ -126,7 +91,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        if ($this->hasStyleElement($domDocument)) {
+        if ($this->hasStyleElement($domDocument) || $this->hasScriptOrEventHandler($domDocument)) {
             return;
         }
 
@@ -153,10 +118,10 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     }
 
     /**
-     * @param \DOMElement         $domElement                the group element
-     * @param \DOMElement         $parentNode                the parent of the group element
-     * @param list<\DOMElement>   $transformBlockingElements the elements that a group transform cannot move onto
-     * @param array<string, true> $referencedIds             the ids referenced in the document
+     * @param \DOMElement             $domElement                the group element
+     * @param \DOMElement             $parentNode                the parent of the group element
+     * @param array<int, \DOMElement> $transformBlockingElements the elements that a group transform cannot move onto, by object id
+     * @param array<string, true>     $referencedIds             the ids referenced in the document
      */
     private function canFlatten(
         \DOMElement $domElement,
@@ -164,7 +129,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         array $transformBlockingElements,
         array $referencedIds,
     ): bool {
-        if (SvgTag::Switch->value === $parentNode->localName) {
+        if (\in_array($parentNode->localName, self::CHILD_SENSITIVE_PARENT_TAGS, true)) {
             return false;
         }
 
@@ -190,42 +155,66 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
      */
     private function isTransferableAttribute(\DOMAttr $domAttr): bool
     {
-        return SvgAttribute::Transform->value === $domAttr->nodeName
-            || \in_array($domAttr->nodeName, self::INHERITED_ATTRIBUTES, true);
+        if (SvgAttribute::Transform->value === $domAttr->nodeName) {
+            return $this->isEmptyOrValidTransform($domAttr->value);
+        }
+
+        return \in_array($domAttr->nodeName, SvgAttribute::inherited(), true);
     }
 
     /**
-     * @param \DOMElement       $domElement                the group element
-     * @param \DOMElement       $child                     the child element
-     * @param list<\DOMElement> $transformBlockingElements the elements that a group transform cannot move onto
+     * @param \DOMElement             $domElement                the group element
+     * @param \DOMElement             $child                     the child element
+     * @param array<int, \DOMElement> $transformBlockingElements the elements that a group transform cannot move onto, by object id
      */
     private function dependsOnGroup(\DOMElement $domElement, \DOMElement $child, array $transformBlockingElements): bool
     {
-        if (\in_array(mb_strtolower($child->localName ?? ''), [...SvgTag::animation(), ...self::DESCRIPTIVE_TAGS], true)
+        if (\in_array($this->asciiLowercase($child->localName ?? ''), [...SvgTag::animation(), ...self::DESCRIPTIVE_TAGS], true)
             || $this->usesInheritValue($child)
         ) {
             return true;
         }
 
-        if ($domElement->hasAttribute(SvgAttribute::Transform->value) && \in_array($child, $transformBlockingElements, true)) {
+        if ('' !== trim($domElement->getAttribute(SvgAttribute::Transform->value))
+            && (\array_key_exists(spl_object_id($child), $transformBlockingElements) || !$this->acceptsGroupTransform($child))
+        ) {
             return true;
         }
 
-        return $this->dependsOnParentTransform($domElement, $child) || $this->dependsOnParentFont($domElement, $child);
+        return $this->dependsOnParentTransform($domElement, $child)
+            || $this->dependsOnParentFont($domElement, $child)
+            || $this->mayFallBackToParentValue($domElement, $child);
+    }
+
+    /**
+     * @param \DOMElement $domElement the child element
+     *
+     * @return bool true if the group transform can be combined with the transform of the element, or is not applied to it
+     */
+    private function acceptsGroupTransform(\DOMElement $domElement): bool
+    {
+        return \in_array($domElement->localName, self::NON_RENDERED_TAGS, true)
+            || $this->isEmptyOrValidTransform($domElement->getAttribute(SvgAttribute::Transform->value));
     }
 
     /**
      * @param \DOMDocument $domDocument the DOM document to scan
      * @param \DOMXPath    $domXPath    the XPath object with the svg prefix registered
      *
-     * @return list<\DOMElement> the elements that a group transform cannot move onto
+     * @return array<int, \DOMElement> the elements that a group transform cannot move onto, by object id
      */
     private function transformBlockingElements(\DOMDocument $domDocument, \DOMXPath $domXPath): array
     {
         /** @var \DOMNodeList<\DOMElement> $domNodeList */
         $domNodeList = $domXPath->query(self::XPATH_TRANSFORM_BLOCKING_ELEMENTS);
 
-        return [...iterator_to_array($domNodeList, false), ...$this->animationTargets($domDocument)];
+        $elements = [];
+
+        foreach ([...iterator_to_array($domNodeList, false), ...$this->animationTargets($domDocument)] as $element) {
+            $elements[spl_object_id($element)] = $element;
+        }
+
+        return $elements;
     }
 
     /**
@@ -268,7 +257,7 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
     {
         $ownValue = $domElement->getAttribute($domAttr->nodeName);
 
-        if (!$domElement->hasAttribute($domAttr->nodeName) || self::INHERIT_KEYWORD === mb_strtolower(trim($ownValue))) {
+        if (!$domElement->hasAttribute($domAttr->nodeName) || $this->isInheritKeyword($ownValue)) {
             $domElement->setAttribute($domAttr->nodeName, $domAttr->value);
         }
     }
@@ -284,22 +273,6 @@ final readonly class FlattenGroups implements SvgOptimizerRuleInterface
         if ('' !== $newTransform) {
             $domElement->setAttribute(SvgAttribute::Transform->value, $newTransform);
         }
-    }
-
-    /**
-     * @param string $groupTransform the transform of the group
-     * @param string $childTransform the transform of the child
-     *
-     * @return string the combined transform
-     */
-    private function combineTransforms(string $groupTransform, string $childTransform): string
-    {
-        $transforms = array_filter(
-            [trim($groupTransform), trim($childTransform)],
-            static fn (string $transform): bool => '' !== $transform,
-        );
-
-        return implode(' ', $transforms);
     }
 
     /**

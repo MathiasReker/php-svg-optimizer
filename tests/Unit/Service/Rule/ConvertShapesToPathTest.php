@@ -54,6 +54,26 @@ final class ConvertShapesToPathTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps a rect with a trailing decimal point' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="200." height="10"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="200." height="10"/></svg>',
+        ];
+
+        yield 'Leaves the document untouched with an event handler' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" onload="f()"><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" onload="f()"><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'Leaves the document untouched with a script' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>f()</script><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>f()</script><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'Leaves the document untouched with a linked style sheet' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/></foreignObject><rect width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/></foreignObject><rect width="5" height="5"/></svg>',
+        ];
+
         yield 'Keeps shapes targeted by an animation through href' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r" x="10" y="20" width="30" height="40"/><animate href="#r" attributeName="width" to="5"/><rect x="10" y="20" width="30" height="40"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><rect id="r" x="10" y="20" width="30" height="40"/><animate href="#r" attributeName="width" to="5"/><path d="M10 20h30v40h-30z"/></svg>',
@@ -223,6 +243,76 @@ final class ConvertShapesToPathTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><g><rect x="1" y="2" width="30" height="40"/></g><rect x="5" y="6" width="70" height="80"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><g><path d="M1 2h30v40h-30z"/></g><path d="M5 6h70v80h-70z"/></svg>',
         ];
+
+        yield 'Keeps shapes referenced by a text path or a motion path' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="r" x="10" y="10" width="100" height="100"/><text><textPath href="#r">a</textPath></text><line id="l" x2="10"/><animateMotion dur="1s"><mpath xlink:href=" #l "/></animateMotion><rect x="10" y="10" width="100" height="100"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="r" x="10" y="10" width="100" height="100"/><text><textPath href="#r">a</textPath></text><line id="l" x2="10"/><animateMotion dur="1s"><mpath xlink:href=" #l "/></animateMotion><path d="M10 10h100v100h-100z"/></svg>',
+        ];
+
+        yield 'Keeps shapes targeted through xml:id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect xml:id="a" width="50" height="50"/><set href="#a" attributeName="width" to="9"/><rect width="50" height="50"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect xml:id="a" width="50" height="50"/><set href="#a" attributeName="width" to="9"/><path d="M0 0h50v50h-50z"/></svg>',
+        ];
+
+        yield 'Keeps the shapes that both references of a text path point to' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="a" width="5" height="5"/><rect id="b" width="5" height="5"/><text><textPath href="#a" xlink:href="#b">t</textPath><textPath href="#">u</textPath></text><rect width="5" height="5"/><rect id="c" xml:id="d" width="5" height="5"/><rect id="e" xml:id="f" width="5" height="5"/><mpath href="#f"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="a" width="5" height="5"/><rect id="b" width="5" height="5"/><text><textPath href="#a" xlink:href="#b">t</textPath><textPath href="#">u</textPath></text><path d="M0 0h5v5h-5z"/><path id="c" xml:id="d" d="M0 0h5v5h-5z"/><rect id="e" xml:id="f" width="5" height="5"/><mpath href="#f"/></svg>',
+        ];
+
+        yield 'Keeps shapes in other namespaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:rect xmlns:x="urn:x" width="10" height="10"/><rect x="10" y="10" width="100" height="100"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:rect xmlns:x="urn:x" width="10" height="10"/><path d="M10 10h100v100h-100z"/></svg>',
+        ];
+
+        yield 'Keeps shapes when a stylesheet instruction exists' => [
+            '<?xml-stylesheet type="text/css" href="s.css"?><svg xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="100" height="100"/></svg>',
+            '<?xml-stylesheet type="text/css" href="s.css"?><svg xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="100" height="100"/></svg>',
+        ];
+
+        yield 'Converts shapes in a document without a namespace' => [
+            '<svg><rect x="10" y="10" width="100" height="100"/></svg>',
+            '<svg><path d="M10 10h100v100h-100z"/></svg>',
+        ];
+
+        yield 'Converts shapes with a path length and a round line cap' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><line x1="5" y1="5" x2="5" y2="5" stroke-linecap="round" pathLength="10"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" pathLength="10" d="M5 5 5 5"/></svg>',
+        ];
+
+        yield 'Keeps shapes with percentage or auto sizes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="50%" height="10"/><rect width="auto" height="10"/><line x2="1em"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="50%" height="10"/><rect width="auto" height="10"/><line x2="1em"/></svg>',
+        ];
+
+        yield 'Converts shapes holding only text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 100,0 100,100">&#x1F600;</polygon></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0 100 0 100 100z">😀</path></svg>',
+        ];
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideOptimizeIsIdempotentCases')]
+    #[Test]
+    public function optimizeIsIdempotent(string $optimized): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
+        $svgOptimizer->addRule(new ConvertShapesToPath());
+
+        self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideOptimizeIsIdempotentCases(): iterable
+    {
+        foreach (self::provideOptimizeCases() as $name => [, $expected]) {
+            yield $name => [$expected];
+        }
     }
 
     #[Test]

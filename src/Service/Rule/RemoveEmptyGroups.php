@@ -44,7 +44,9 @@ final readonly class RemoveEmptyGroups implements SvgOptimizerRuleInterface
     {
         $this->removeElementsBottomUp(
             $domDocument,
-            fn (\DOMElement $domElement): bool => SvgTag::G->value === $domElement->tagName && $this->isEmptyGroup($domElement),
+            fn (\DOMElement $domElement): bool => SvgTag::G->value === $domElement->localName
+                && $this->isSvgElement($domElement)
+                && $this->isEmptyGroup($domElement),
         );
     }
 

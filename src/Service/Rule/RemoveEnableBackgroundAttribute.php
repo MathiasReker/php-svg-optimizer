@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2AttributeMigrationTrait;
 
 /**
  * @internal
@@ -21,13 +22,9 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
  */
 final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRuleInterface
 {
-    private const string ENABLE_BACKGROUND_REGEX = '/^new\s0\s0\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)\s([-+]?\d*\.?\d+([eE][-+]?\d+)?)$/';
+    use Svg2AttributeMigrationTrait;
 
-    private const string STYLE_REGEX = '/\s*enable-background\s*:\s*[^;]+;\s*/i';
-
-    private const string ENABLE_BACKGROUND_QUERY = '//*[@enable-background]';
-
-    private const string STYLE_QUERY = '//*[@style]';
+    private const array ENABLE_BACKGROUND = [SvgAttribute::EnableBackground->value];
 
     #[\Override]
     public static function isRisky(): bool
@@ -47,47 +44,19 @@ final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRule
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $domXPath = new \DOMXPath($domDocument);
+        $css = $this->styleSheetText($domDocument);
+        $removable = $this->removableAttributes($domDocument, $css, self::ENABLE_BACKGROUND);
+        $migratesStyles = [] !== $this->removableAttributes($domDocument, $css, [SvgAttribute::Style->value]);
 
-        $this->handleEnableBackgroundAttribute($domXPath);
-        $this->handleStyleAttribute($domXPath);
-    }
-
-    /**
-     * @param \DOMXPath $domXPath the XPath object for querying the document
-     */
-    private function handleEnableBackgroundAttribute(\DOMXPath $domXPath): void
-    {
-        /** @var \DOMNodeList<\DOMElement> $elements */
-        $elements = $domXPath->query(self::ENABLE_BACKGROUND_QUERY);
-        foreach ($elements as $element) {
-            $width = $element->getAttribute(SvgAttribute::Width->value);
-            $height = $element->getAttribute(SvgAttribute::Height->value);
-            $value = trim($element->getAttribute(SvgAttribute::EnableBackground->value));
-
-            if (1 === preg_match(self::ENABLE_BACKGROUND_REGEX, $value, $matches)
-                && $matches[1] === $width && $matches[3] === $height) {
-                $element->removeAttribute(SvgAttribute::EnableBackground->value);
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            if ($this->isForeignContent($domNodeList)) {
+                continue;
             }
-        }
-    }
 
-    /**
-     * @param \DOMXPath $domXPath the XPath object for querying the document
-     */
-    private function handleStyleAttribute(\DOMXPath $domXPath): void
-    {
-        /** @var \DOMNodeList<\DOMElement> $elements */
-        $elements = $domXPath->query(self::STYLE_QUERY);
-        foreach ($elements as $element) {
-            $style = $element->getAttribute(SvgAttribute::Style->value);
-            if (str_contains($style, SvgAttribute::EnableBackground->value)) {
-                $cleaned = preg_replace(self::STYLE_REGEX, '', $style) ?? '';
-                if ('' === $cleaned) {
-                    $element->removeAttribute(SvgAttribute::Style->value);
-                } else {
-                    $element->setAttribute(SvgAttribute::Style->value, $cleaned);
-                }
+            $this->removeObsoleteAttributes($domNodeList, $removable);
+
+            if ($migratesStyles) {
+                $this->migrateStyleAttribute($domNodeList, self::ENABLE_BACKGROUND, []);
             }
         }
     }

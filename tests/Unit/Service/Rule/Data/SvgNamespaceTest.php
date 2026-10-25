@@ -31,6 +31,7 @@ final class SvgNamespaceTest extends TestCase
             'http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd',
             'http://www.inkscape.org/namespaces/inkscape',
             'http://www.w3.org/XML/1998/namespace',
+            'http://www.w3.org/2001/xml-events',
         ];
 
         self::assertSame($expected, SvgNamespace::values());
@@ -65,5 +66,11 @@ final class SvgNamespaceTest extends TestCase
     {
         self::assertSame('xml', SvgNamespace::Xml->prefix());
         self::assertContains('http://www.w3.org/XML/1998/namespace', SvgNamespace::values());
+    }
+
+    #[Test]
+    public function prefixReturnsEvForXmlEventsNamespace(): void
+    {
+        self::assertSame('ev', SvgNamespace::XmlEvents->prefix());
     }
 }

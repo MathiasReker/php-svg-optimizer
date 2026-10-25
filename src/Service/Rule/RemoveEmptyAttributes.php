@@ -13,7 +13,6 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
@@ -27,7 +26,12 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
     use CssDeclarationTrait;
     use ElementTrait;
 
-    private const array CONDITIONAL_ATTRIBUTES = [
+    private const array MEANINGFUL_EMPTY_ATTRIBUTES = [
+        SvgAttribute::Autofocus->value,
+        SvgAttribute::Crossorigin->value,
+        SvgAttribute::Download->value,
+        SvgAttribute::Href->value,
+        SvgAttribute::Lang->value,
         SvgAttribute::RequiredExtensions->value,
         SvgAttribute::RequiredFeatures->value,
         SvgAttribute::SystemLanguage->value,
@@ -51,24 +55,54 @@ final readonly class RemoveEmptyAttributes implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        $css = implode(' ', array_map(
-            static fn (\DOMElement $domElement): string => $domElement->textContent,
-            $this->elementsNamed($domDocument, SvgTag::Style->value),
-        ));
+        if ($this->hasExternalStyleSheet($domDocument)) {
+            return;
+        }
+
+        $css = $this->styleSheetText($domDocument);
+
+        $candidates = $this->emptyAttributes($domDocument);
+        $selectedNames = [];
+
+        foreach ($candidates as [, $domAttr]) {
+            $selectedNames[$domAttr->name] ??= $this->hasAttributeSelector($css, $domAttr->name);
+        }
+
+        foreach ($candidates as [$domElement, $domAttr]) {
+            if (!$selectedNames[$domAttr->name]) {
+                $domElement->removeAttributeNode($domAttr);
+            }
+        }
+    }
+
+    /**
+     * @param \DOMDocument $domDocument the DOM document to scan
+     *
+     * @return list<array{\DOMElement, \DOMAttr}> the empty attributes of SVG elements that carry no meaning when empty,
+     *                                            with their elements
+     */
+    private function emptyAttributes(\DOMDocument $domDocument): array
+    {
+        $candidates = [];
 
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
-            if (!$this->isSvgElement($domNodeList)) {
+            if (!$this->isSvgElement($domNodeList) || $this->isAnimationElement($domNodeList)) {
                 continue;
             }
 
-            foreach (iterator_to_array($domNodeList->attributes, false) as $domAttr) {
-                if ('' === trim($domAttr->value)
-                    && !\in_array($domAttr->nodeName, self::CONDITIONAL_ATTRIBUTES, true)
-                    && !$this->hasAttributeSelector($css, $domAttr->name)
-                ) {
-                    $domNodeList->removeAttributeNode($domAttr);
-                }
+            foreach (array_filter(iterator_to_array($domNodeList->attributes, false), $this->isMeaninglessWhenEmpty(...)) as $domAttr) {
+                $candidates[] = [$domNodeList, $domAttr];
             }
         }
+
+        return $candidates;
+    }
+
+    /**
+     * @param \DOMAttr $domAttr the attribute to check
+     */
+    private function isMeaninglessWhenEmpty(\DOMAttr $domAttr): bool
+    {
+        return '' === trim($domAttr->value) && !\in_array($domAttr->localName, self::MEANINGFUL_EMPTY_ATTRIBUTES, true);
     }
 }

@@ -46,6 +46,7 @@ enum SvgTag: string implements SvgDataInterface
     case Clippath = 'clippath';
     case Defs = 'defs';
     case Desc = 'desc';
+    case Discard = 'discard';
     case Ellipse = 'ellipse';
     case FEBlend = 'feBlend';
     case FEColorMatrix = 'feColorMatrix';

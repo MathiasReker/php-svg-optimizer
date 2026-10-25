@@ -41,6 +41,27 @@ final class SvgAttributeTest extends TestCase
     }
 
     #[Test]
+    public function inheritedReturnsTheInheritedPresentationAttributes(): void
+    {
+        $inherited = SvgAttribute::inherited();
+
+        self::assertCount(41, $inherited);
+        self::assertSame('clip-rule', $inherited[0]);
+        self::assertSame('writing-mode', $inherited[40]);
+        self::assertContains('color', $inherited);
+        self::assertContains('fill', $inherited);
+        self::assertNotContains('transform', $inherited);
+        self::assertNotContains('opacity', $inherited);
+        self::assertSame($inherited, SvgAttribute::inherited());
+        self::assertCount(41, SvgAttribute::inheritedCases());
+        self::assertNotSame([], SvgAttribute::colorCases());
+        self::assertNotSame([], SvgAttribute::dangerousExactCases());
+        self::assertNotSame([], SvgAttribute::eventHandlerCases());
+        self::assertNotSame([], SvgAttribute::htmlOnlyCases());
+        self::assertNotSame([], SvgAttribute::dangerousCases());
+    }
+
+    #[Test]
     public function dangerousReturnsCorrectAttributes(): void
     {
         $expected = [
@@ -125,7 +146,7 @@ final class SvgAttributeTest extends TestCase
     {
         $htmlOnly = SvgAttribute::htmlOnly();
 
-        foreach (['src', 'srcset', 'action', 'background', 'poster', 'value', 'name', 'xml:base'] as $attribute) {
+        foreach (['accept', 'src', 'srcset', 'action', 'background', 'poster', 'value', 'name', 'xml:base'] as $attribute) {
             self::assertContains($attribute, $htmlOnly);
         }
 

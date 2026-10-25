@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RenameElementTrait;
@@ -25,6 +26,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RenameElementTrait;
  */
 final readonly class ConvertEllipseToCircle implements SvgOptimizerRuleInterface
 {
+    use DocumentScriptTrait;
     use ElementTrait;
     use NumberFormatterTrait;
     use RenameElementTrait;
@@ -47,16 +49,14 @@ final readonly class ConvertEllipseToCircle implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        if ($this->hasStyleElement($domDocument)) {
+        if ($this->hasStyleElement($domDocument) || $this->hasScriptOrEventHandler($domDocument)) {
             return;
         }
 
-        $animationTargetIds = $this->animationTargetIds($domDocument);
+        $animationTargets = $this->animationTargets($domDocument);
 
         foreach ($this->elementsNamed($domDocument, SvgTag::Ellipse->value) as $domElement) {
-            if ($this->hasEqualRadii($domElement)
-                && !\array_key_exists($domElement->getAttribute(SvgAttribute::Id->value), $animationTargetIds)
-            ) {
+            if ($this->hasEqualRadii($domElement) && !\in_array($domElement, $animationTargets, true)) {
                 $this->convert($domDocument, $domElement);
             }
         }
@@ -70,7 +70,8 @@ final readonly class ConvertEllipseToCircle implements SvgOptimizerRuleInterface
         $rx = $domElement->getAttribute(SvgAttribute::Rx->value);
         $ry = $domElement->getAttribute(SvgAttribute::Ry->value);
 
-        return !$this->hasElementChildren($domElement)
+        return $this->isSvgElement($domElement)
+            && !$this->hasElementChildren($domElement)
             && !$domElement->hasAttribute(SvgAttribute::Style->value)
             && $this->isPlainNumber($rx)
             && $this->isPlainNumber($ry)

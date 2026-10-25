@@ -47,6 +47,10 @@ final class RemoveDefaultAttributesTest extends TestCase
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
+
+        $repeated = new SvgOptimizer(new StringProvider($actual));
+        $repeated->addRule(new RemoveDefaultAttributes());
+        self::assertSame($actual, $repeated->optimize()->getContent());
     }
 
     /**
@@ -54,6 +58,106 @@ final class RemoveDefaultAttributesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps a default attribute that the inline style overrides' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="none" style="stroke:inherit"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="none" style="stroke:inherit"/></svg>',
+        ];
+
+        yield 'leaves an empty document alone' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'keeps a default with a mixed-case attribute name' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect Stroke="none" STROKE-WIDTH="1" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect Stroke="none" STROKE-WIDTH="1" width="5" height="5"/></svg>',
+        ];
+
+        yield 'keeps a default padded with a non-breaking space or a tab' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="none&#xA0;" stroke-width="&#9;1" width="5" height="5"/></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect stroke=\"none\u{A0}\" stroke-width=\"&#9;1\" width=\"5\" height=\"5\"/></svg>",
+        ];
+
+        yield 'removes defaults inside a group reset to no namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""><rect stroke="none" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""><rect width="5" height="5"/></g></svg>',
+        ];
+
+        yield 'removes defaults deep inside groups without a value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g><g><rect stroke-linejoin="miter" width="5" height="5"/></g></g></g></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g><g><rect width="5" height="5"/></g></g></g></g></g></svg>',
+        ];
+
+        yield 'keeps a default when the parent sets the property after a comment in its style' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="/* c */stroke:red"><rect stroke="none" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="/* c */stroke:red"><rect stroke="none" width="5" height="5"/></g></svg>',
+        ];
+
+        yield 'keeps a default when the element resets all properties in its style' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="none" style="all:inherit" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="none" style="all:inherit" width="5" height="5"/></svg>',
+        ];
+
+        yield 'keeps a default when the parent resets all properties in its style' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="all:inherit"><rect stroke="none" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="all:inherit"><rect stroke="none" width="5" height="5"/></g></svg>',
+        ];
+
+        yield 'keeps a default when the parent sets a vendor prefixed property in its style' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="-webkit-stroke-width:3"><rect stroke-width="1" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="-webkit-stroke-width:3"><rect stroke-width="1" width="5" height="5"/></g></svg>',
+        ];
+
+        yield 'removes a default when the parent only sets a custom property with the same name' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="--stroke:red"><rect stroke="none" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g style="--stroke:red"><rect width="5" height="5"/></g></svg>',
+        ];
+
+        yield 'keeps a default inside an element referenced through xml:id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g xml:id="a"><rect stroke="none" width="5" height="5"/></g><use xlink:href="#a" stroke="red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g xml:id="a"><rect stroke="none" width="5" height="5"/></g><use xlink:href="#a" stroke="red"/></svg>',
+        ];
+
+        yield 'keeps defaults when an external style sheet is linked' => [
+            '<?xml-stylesheet href="style.css"?><svg xmlns="http://www.w3.org/2000/svg"><g><rect stroke="none" width="5" height="5"/></g></svg>',
+            '<?xml-stylesheet href="style.css"?><svg xmlns="http://www.w3.org/2000/svg"><g><rect stroke="none" width="5" height="5"/></g></svg>',
+        ];
+
+        yield 'keeps a default with an uppercase or padded value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="NONE" stroke-width=" 1" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke="NONE" stroke-width=" 1" width="5" height="5"/></svg>',
+        ];
+
+        yield 'removes defaults on prefixed svg elements' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect stroke="none" stroke-width="1" width="5" height="5"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect width="5" height="5"/></svg:svg>',
+        ];
+
+        yield 'keeps a namespaced attribute with a default value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><rect x:stroke="none" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><rect x:stroke="none" width="5" height="5"/></svg>',
+        ];
+
+        yield 'keeps a default deep inside a parent that sets another value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g stroke-linecap="round"><g><g><path d="M0 0h5" stroke-linecap="butt"/></g></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g stroke-linecap="round"><g><g><path d="M0 0h5" stroke-linecap="butt"/></g></g></g></svg>',
+        ];
+
+        yield 'removes the default of a later element when an earlier one is kept' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g stroke="red"><rect stroke="none" width="5" height="5"/></g><rect stroke="none" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g stroke="red"><rect stroke="none" width="5" height="5"/></g><rect width="5" height="5"/></svg>',
+        ];
+
+        yield 'keeps the default of an element inside a symbol with an id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><symbol id="s"><g><rect stroke="none" width="5" height="5"/></g></symbol><use xlink:href="#s" stroke="red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><symbol id="s"><g><rect stroke="none" width="5" height="5"/></g></symbol><use xlink:href="#s" stroke="red"/></svg>',
+        ];
+
+        yield 'keeps a default whose attribute is animated with a padded name' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke-width="1" width="5" height="5"><animate attributeName=" stroke-width " to="3" dur="1s"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect stroke-width="1" width="5" height="5"><animate attributeName=" stroke-width " to="3" dur="1s"/></rect></svg>',
+        ];
+
         yield 'Removes Default Stroke Attribute' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">

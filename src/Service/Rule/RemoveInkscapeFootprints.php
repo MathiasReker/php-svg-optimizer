@@ -15,6 +15,8 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
  * @internal
@@ -23,6 +25,9 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  */
 final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterface
 {
+    use CssDeclarationTrait;
+    use ElementTrait;
+
     private const array EDITOR_NAMESPACE_URIS = [
         SvgNamespace::Inkscape->value,
         SvgNamespace::Sodipodi->value,
@@ -43,13 +48,15 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
 
     private const string XPATH_ALL_ELEMENTS = '//*';
 
-    private const string XPATH_ELEMENT_NAMESPACE_NODES = 'namespace::*';
+    private const string NAMESPACE_DECLARATION_REGEX = '/\sxmlns:([^\s=]+)="([^"]*)"/';
 
     private const string XPATH_DESCENDANT_ELEMENTS = './/*';
 
     private const string XPATH_EXTENSION_ELEMENTS = '//*[local-name()="%s"][@%s]';
 
     private const string XMLNS_PREFIX = 'xmlns:';
+
+    private const string XPATH_NAMESPACE_NODES = 'boolean(//*[namespace-uri() = "%1$s"] | //@*[namespace-uri() = "%1$s"])';
 
     private const string EXTENSION_SEPARATOR = ' ';
 
@@ -71,22 +78,30 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
+        if ($this->hasExternalStyleSheet($domDocument)) {
+            return;
+        }
+
         $domXPath = new \DOMXPath($domDocument);
         $namespaceUris = self::EDITOR_NAMESPACE_URIS;
+        $css = $this->styleSheetText($domDocument);
+        $removesElements = !$this->hasSiblingSensitiveStyle($domDocument);
 
-        $this->removeEditorExtensionElements($domXPath);
+        if ($removesElements) {
+            $this->removeEditorExtensionElements($domXPath);
+        }
 
         /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domXPath->query(self::XPATH_ALL_ELEMENTS);
+        $domNodeList = $domXPath->query(self::XPATH_ALL_ELEMENTS, null, false);
 
-        foreach (iterator_to_array($domNodeList, false) as $domElement) {
-            if ($this->isRemovableEditorElement($domXPath, $domElement, $namespaceUris)) {
-                $domElement->parentNode?->removeChild($domElement);
+        foreach ($domNodeList as $domElement) {
+            if ($removesElements && $this->isRemovableEditorElement($domXPath, $domElement, $namespaceUris)) {
+                $domElement->remove();
 
                 continue;
             }
 
-            $this->removeEditorAttributes($domElement, $namespaceUris);
+            $this->removeEditorAttributes($domElement, $namespaceUris, $css);
         }
 
         $this->removeNamespaceDeclarations($domXPath);
@@ -104,9 +119,9 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
         );
 
         /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domXPath->query($query);
+        $domNodeList = $domXPath->query($query, null, false);
 
-        foreach (iterator_to_array($domNodeList, false) as $domElement) {
+        foreach ($domNodeList as $domElement) {
             if (\in_array($domElement->namespaceURI, [null, SvgNamespace::Svg->value], true)
                 && $this->requiresEditorExtension($domElement)
                 && $domElement->parentNode instanceof \DOMElement
@@ -150,7 +165,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
         }
 
         /** @var \DOMNodeList<\DOMElement> $descendants */
-        $descendants = $domXPath->query(self::XPATH_DESCENDANT_ELEMENTS, $domElement);
+        $descendants = $domXPath->query(self::XPATH_DESCENDANT_ELEMENTS, $domElement, false);
 
         foreach ($descendants as $descendant) {
             if (!\in_array($descendant->namespaceURI, $namespaceUris, true)) {
@@ -164,14 +179,17 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
     /**
      * @param \DOMElement  $domElement    the element to clean
      * @param list<string> $namespaceUris the namespace URIs of the attributes to remove
+     * @param string       $css           the style sheets of the document, whose attribute selectors keep an attribute
      */
-    private function removeEditorAttributes(\DOMElement $domElement, array $namespaceUris): void
+    private function removeEditorAttributes(\DOMElement $domElement, array $namespaceUris, string $css): void
     {
         $attributesToRemove = [];
 
         /** @var \DOMAttr $domAttr */
         foreach ($domElement->attributes as $domAttr) {
-            if (\in_array($domAttr->namespaceURI, $namespaceUris, true)) {
+            if (\in_array($domAttr->namespaceURI, $namespaceUris, true)
+                && !$this->hasAttributeSelector($css, (string) $domAttr->localName)
+            ) {
                 $attributesToRemove[] = $domAttr;
             }
         }
@@ -186,24 +204,40 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
      */
     private function removeNamespaceDeclarations(\DOMXPath $domXPath): void
     {
-        /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domXPath->query(self::XPATH_ALL_ELEMENTS);
+        $declarations = $this->editorNamespaceDeclarations($domXPath);
 
-        foreach ($domNodeList as $domElement) {
-            /** @var \DOMNodeList<\DOMNameSpaceNode> $namespaceNodes */
-            $namespaceNodes = $domXPath->query(self::XPATH_ELEMENT_NAMESPACE_NODES, $domElement);
-
-            foreach (iterator_to_array($namespaceNodes, false) as $domNameSpaceNode) {
-                $declaration = self::XMLNS_PREFIX . $domNameSpaceNode->prefix;
-
-                if ('' !== $domNameSpaceNode->prefix
-                    && $this->isEditorNamespace((string) $domNameSpaceNode->nodeValue)
-                    && $domElement->hasAttribute($declaration)
-                ) {
+        foreach ([] === $declarations ? [] : $domXPath->document->getElementsByTagName('*') as $domElement) {
+            foreach ($declarations as $declaration) {
+                if ($domElement->hasAttribute($declaration) && $this->isEditorNamespace($domElement->getAttribute($declaration))) {
                     $domElement->removeAttribute($declaration);
                 }
             }
         }
+    }
+
+    /**
+     * @param \DOMXPath $domXPath the XPath object for querying the document
+     *
+     * @return array<string, string> the namespace declaration attributes that bind a prefix to an editor namespace
+     *                               somewhere, unless an element or attribute still uses the namespace, by themselves
+     */
+    private function editorNamespaceDeclarations(\DOMXPath $domXPath): array
+    {
+        preg_match_all(self::NAMESPACE_DECLARATION_REGEX, (string) $domXPath->document->saveXML(), $matches, \PREG_SET_ORDER);
+
+        $declarations = [];
+        $used = [];
+
+        foreach ($matches as $match) {
+            if ($this->isEditorNamespace($match[2])
+                && !($used[$match[2]] ??= true === $domXPath->evaluate(\sprintf(self::XPATH_NAMESPACE_NODES, $match[2]), null, false))
+            ) {
+                $declaration = self::XMLNS_PREFIX . $match[1];
+                $declarations[$declaration] = $declaration;
+            }
+        }
+
+        return $declarations;
     }
 
     /**

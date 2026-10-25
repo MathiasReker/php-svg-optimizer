@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgElementAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
@@ -24,11 +25,10 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  */
 final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInterface
 {
+    use CssDeclarationTrait;
     use ElementTrait;
 
-    private const string XPATH_ALL_WITH_ATTRIBUTES = '//*[@*]';
-
-    private const string XML_EVENTS_NAMESPACE = 'http://www.w3.org/2001/xml-events';
+    private const string XPATH_ALL_WITH_ATTRIBUTES = '/descendant::*[@*]';
 
     private const string DATA_ATTRIBUTE_REGEX = '/^data-[\-\w.\x{00B7}-\x{FFFF}]+$/u';
 
@@ -50,17 +50,22 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
+        if ($this->hasExternalStyleSheet($domDocument)) {
+            return;
+        }
+
         $domXPath = new \DOMXPath($domDocument);
+        $css = $this->styleSheetText($domDocument);
 
         /** @var \DOMNodeList<\DOMElement> $elements */
-        $elements = $domXPath->query(self::XPATH_ALL_WITH_ATTRIBUTES);
+        $elements = $domXPath->query(self::XPATH_ALL_WITH_ATTRIBUTES, null, false);
 
         foreach ($elements as $element) {
             if ($this->isForeignContent($element)) {
                 continue;
             }
 
-            $this->removeNonStandardAttributesFromElement($element, $this->getAllowedLookupFor($element));
+            $this->removeNonStandardAttributesFromElement($element, $this->getAllowedLookupFor($element), $css);
         }
     }
 
@@ -94,28 +99,23 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
         /** @var array<string, true>|null $lookup */
         static $lookup = null;
 
-        if (null === $lookup) {
-            $lookup = [];
-            foreach (SvgAttribute::cases() as $attr) {
-                $lookup[$attr->value] = true;
-            }
-
-            foreach ([...SvgAttribute::eventHandlers(), ...SvgAttribute::htmlOnly()] as $name) {
-                unset($lookup[$name]);
-            }
-        }
-
-        return $lookup;
+        return $lookup ??= array_diff_key(
+            array_fill_keys(SvgAttribute::values(), true),
+            array_flip([...SvgAttribute::eventHandlers(), ...SvgAttribute::htmlOnly()]),
+        );
     }
 
     /**
      * @param \DOMElement         $domElement the element to process
      * @param array<string, true> $allowed    a lookup map of allowed attribute names
+     * @param string              $css        the style sheets of the document
      */
-    private function removeNonStandardAttributesFromElement(\DOMElement $domElement, array $allowed): void
+    private function removeNonStandardAttributesFromElement(\DOMElement $domElement, array $allowed, string $css): void
     {
         foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
-            if (!$this->isAttributeAllowed($domAttr, $allowed)) {
+            if (!$this->isAttributeAllowed($domAttr, $allowed)
+                && !$this->hasAttributeSelector($css, (string) $domAttr->localName)
+            ) {
                 $domElement->removeAttributeNode($domAttr);
             }
         }
@@ -146,7 +146,7 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
             null => $domAttr->nodeName,
             SvgNamespace::Xlink->value => 'xlink:' . $domAttr->name,
             SvgNamespace::Xml->value => 'xml:' . $domAttr->name,
-            self::XML_EVENTS_NAMESPACE => 'ev:' . $domAttr->name,
+            SvgNamespace::XmlEvents->value => SvgNamespace::XmlEvents->prefix() . ':' . $domAttr->name,
             default => '',
         };
     }

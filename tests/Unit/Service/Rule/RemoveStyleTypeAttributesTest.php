@@ -73,14 +73,44 @@ final class RemoveStyleTypeAttributesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps the type of a script with a language attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><script type="text/javascript" language="vbscript">f()</script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><script type="text/javascript" language="vbscript">f()</script></svg>',
+        ];
+
         yield 'Removes text/css from style' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style type="text/css">rect{fill:red}</style><rect/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}</style><rect/></svg>',
         ];
 
-        yield 'Removes text/css from style ignoring case and surrounding whitespace' => [
-            '<svg xmlns="http://www.w3.org/2000/svg"><style type="  TEXT/Css "/><style type="text/CSS"/></svg>',
+        yield 'Removes text/css from style ignoring case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style type="TEXT/Css"/><style type="text/CSS"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><style/><style/></svg>',
+        ];
+
+        yield 'Keeps a style type padded with whitespace, which is not a CSS style sheet' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style type="  text/css ">rect{fill:red}</style><style type="text/css&#10;"/><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style type="  text/css ">rect{fill:red}</style><style type="text/css&#10;"/><rect/></svg>',
+        ];
+
+        yield 'Removes the type of a later style after keeping an earlier one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style type="text/xsl"/><style type="text/css"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style type="text/xsl"/><style/></svg>',
+        ];
+
+        yield 'Removes text/css from a prefixed style' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:style type="text/css">rect{fill:red}</svg:style></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:style>rect{fill:red}</svg:style></svg:svg>',
+        ];
+
+        yield 'Removes the type of a style whose default namespace is reset' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""><style type="text/css"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""><style/></g></svg>',
+        ];
+
+        yield 'Leaves an empty document unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
         ];
 
         yield 'Keeps style types with parameters' => [
@@ -156,8 +186,8 @@ final class RemoveStyleTypeAttributesTest extends TestCase
         ];
 
         yield 'Removes types on XHTML elements' => [
-            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><style xmlns="http://www.w3.org/1999/xhtml" type="text/css"/><h:script xmlns:h="http://www.w3.org/1999/xhtml" type="text/javascript"/></foreignObject></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><style xmlns="http://www.w3.org/1999/xhtml"/><h:script xmlns:h="http://www.w3.org/1999/xhtml"/></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><style xmlns="http://www.w3.org/1999/xhtml" type="text/css">a{}</style><h:script xmlns:h="http://www.w3.org/1999/xhtml" type="text/javascript">0</h:script></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><style xmlns="http://www.w3.org/1999/xhtml">a{}</style><h:script xmlns:h="http://www.w3.org/1999/xhtml">0</h:script></foreignObject></svg>',
         ];
 
         yield 'Keeps types on elements from other namespaces' => [
@@ -191,5 +221,25 @@ final class RemoveStyleTypeAttributesTest extends TestCase
     public function shouldCheckSizeReturnsFalse(): void
     {
         self::assertFalse(RemoveStyleTypeAttributes::shouldCheckSize());
+    }
+
+    #[Test]
+    public function handlesManyNamespaceDeclarationsInLinearTime(): void
+    {
+        $small = $this->secondsToOptimize(2_000);
+        $large = $this->secondsToOptimize(16_000);
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    private function secondsToOptimize(int $count): float
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><style type="text/css">a{}</style></svg>');
+
+        $start = hrtime(true);
+        (new RemoveStyleTypeAttributes())->optimize($domDocument);
+
+        return (hrtime(true) - $start) / 1e9;
     }
 }

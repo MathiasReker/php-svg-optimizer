@@ -64,9 +64,9 @@ final readonly class RemoveXmlSpaceDefault implements SvgOptimizerRuleInterface
         }
 
         /** @var \DOMNodeList<\DOMElement> $domNodeList */
-        $domNodeList = $domXPath->query(self::XPATH_XML_SPACE_ELEMENTS);
+        $domNodeList = $domXPath->query(self::XPATH_XML_SPACE_ELEMENTS, null, false);
 
-        foreach (iterator_to_array($domNodeList, false) as $domElement) {
+        foreach ($domNodeList as $domElement) {
             if ($this->isRedundantDefault($domXPath, $domElement)) {
                 $domElement->removeAttributeNS(SvgNamespace::Xml->value, self::SPACE_ATTRIBUTE);
             }
@@ -81,14 +81,14 @@ final readonly class RemoveXmlSpaceDefault implements SvgOptimizerRuleInterface
     private function hasDocumentWideStyling(\DOMXPath $domXPath): bool
     {
         /** @var \DOMNodeList<\DOMNode> $instructions */
-        $instructions = $domXPath->query(self::XPATH_STYLESHEET_INSTRUCTIONS);
+        $instructions = $domXPath->query(self::XPATH_STYLESHEET_INSTRUCTIONS, null, false);
 
         if ($instructions->length > 0) {
             return true;
         }
 
         /** @var \DOMNodeList<\DOMElement> $styleElements */
-        $styleElements = $domXPath->query(self::XPATH_STYLE_ELEMENTS);
+        $styleElements = $domXPath->query(self::XPATH_STYLE_ELEMENTS, null, false);
 
         foreach ($styleElements as $styleElement) {
             $css = mb_strtolower($styleElement->textContent);
@@ -114,14 +114,14 @@ final readonly class RemoveXmlSpaceDefault implements SvgOptimizerRuleInterface
         }
 
         /** @var \DOMNodeList<\DOMElement> $styledElements */
-        $styledElements = $domXPath->query(self::XPATH_WHITE_SPACE_STYLING, $domElement);
+        $styledElements = $domXPath->query(self::XPATH_WHITE_SPACE_STYLING, $domElement, false);
 
         if ($styledElements->length > 0) {
             return false;
         }
 
         /** @var \DOMNodeList<\DOMElement> $ancestors */
-        $ancestors = $domXPath->query(self::XPATH_NEAREST_XML_SPACE_ANCESTOR, $domElement);
+        $ancestors = $domXPath->query(self::XPATH_NEAREST_XML_SPACE_ANCESTOR, $domElement, false);
         $ancestor = $ancestors->item(0);
 
         return !$ancestor instanceof \DOMElement || $this->hasDefaultValue($ancestor);

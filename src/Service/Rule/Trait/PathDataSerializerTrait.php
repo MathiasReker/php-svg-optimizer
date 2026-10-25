@@ -22,6 +22,8 @@ trait PathDataSerializerTrait
 
     private const string PATH_CLOSE = 'z';
 
+    private const string PATH_CLOSE_UPPERCASE = 'Z';
+
     /**
      * @param list<array{string, list<string>}> $segments the segments as [command, arguments]
      */
@@ -58,7 +60,7 @@ trait PathDataSerializerTrait
      */
     private function shortenPathSegment(string $command, array $arguments): array
     {
-        if (self::PATH_CLOSE === mb_strtolower($command)) {
+        if (self::PATH_CLOSE_UPPERCASE === $command) {
             return [self::PATH_CLOSE, []];
         }
 

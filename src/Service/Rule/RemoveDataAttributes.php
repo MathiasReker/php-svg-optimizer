@@ -41,11 +41,9 @@ final readonly class RemoveDataAttributes implements SvgOptimizerRuleInterface
         $domNodeList = $domDocument->getElementsByTagName('*');
 
         foreach ($domNodeList as $domElement) {
-            /** @var list<\DOMAttr> $attributes */
-            $attributes = iterator_to_array($domElement->attributes, false);
-            foreach ($attributes as $attribute) {
-                if (0 === strcasecmp(mb_substr($attribute->name, 0, 5), 'data-')) {
-                    $domElement->removeAttribute($attribute->name);
+            foreach (array_keys(iterator_to_array($domElement->attributes, true)) as $name) {
+                if (0 === strncasecmp($name, 'data-', 5)) {
+                    $domElement->removeAttribute($name);
                 }
             }
         }

@@ -54,6 +54,16 @@ final class MinifyPathDataTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Leaves the document untouched when a style sheet selects attribute values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[d="M 0 0 L 1 0"]{fill:red}</style><path d="M 0 0 L 1 0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[d="M 0 0 L 1 0"]{fill:red}</style><path d="M 0 0 L 1 0"/></svg>',
+        ];
+
+        yield 'Leaves path data with a trailing decimal point untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 L 400. 400"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 L 400. 400"/></svg>',
+        ];
+
         yield 'Drops repeated command letters and separators' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 10.50 20.0 L 30 40 L 50 60 Z"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M10.5 20 30 40 50 60z"/></svg>',
@@ -151,7 +161,7 @@ final class MinifyPathDataTest extends TestCase
 
         yield 'Leaves non-ASCII data untouched' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 1 2 L 3 4 é"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 1 2 L 3 4 &#xE9;"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 1 2 L 3 4 é"/></svg>',
         ];
 
         yield 'Leaves already minimal data unchanged' => [
@@ -228,6 +238,76 @@ final class MinifyPathDataTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 1 2 L 3 4"/><path d="L 1 2"/><path d="M 0.0 0"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1 2 3 4"/><path d="L 1 2"/><path d="M0 0"/></svg>',
         ];
+
+        yield 'Minifies path data in a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:path d="M 1.0 2.0 L 3 4"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:path d="M1 2 3 4"/></svg:svg>',
+        ];
+
+        yield 'Writes repeated moveto pairs as implicit linetos' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 10 0 10 10 m 1 1 2 0 2 2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0 10 0 10 10m1 1h2l2 2"/></svg>',
+        ];
+
+        yield 'Accepts arc flags without separators' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0 a 1 1 0 01 1.0 1.0 1 1 0 1 0 2 2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0a1 1 0 0 1 1 1 1 1 0 1 0 2 2"/></svg>',
+        ];
+
+        yield 'Accepts an exponent followed by a sign' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 1e2-1E+02 L 1.5e-1-.5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1e2-1e2 1.5e-1-.5"/></svg>',
+        ];
+
+        yield 'Never rounds huge and tiny values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 123456789012345678901234567890.0 0.00000000000000000001 L 1E-07 0.1234567890123456789"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M123456789012345678901234567890 .00000000000000000001 1e-7.1234567890123456789"/></svg>',
+        ];
+
+        yield 'Leaves path data with an incomplete exponent untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 1e 2 L 3 4"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 1e 2 L 3 4"/></svg>',
+        ];
+
+        yield 'Leaves path data with double signs untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M --1 2 L 3 4"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M --1 2 L 3 4"/></svg>',
+        ];
+
+        yield 'Leaves the document untouched when path data is animated, as interpolation needs matching commands' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 L 1 1"><animate attributeName="d" values="M 0 0 L 1 1;M 0 0 L 2 2"/></path></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 L 1 1"><animate attributeName="d" values="M 0 0 L 1 1;M 0 0 L 2 2"/></path></svg>',
+        ];
+
+        yield 'Writes negative zero relative linetos as h and v' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 l -0 5 l 5 -0.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0v5h5"/></svg>',
+        ];
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideOptimizeIsIdempotentCases')]
+    #[Test]
+    public function optimizeIsIdempotent(string $optimized): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
+        $svgOptimizer->addRule(new MinifyPathData());
+
+        self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideOptimizeIsIdempotentCases(): iterable
+    {
+        foreach (self::provideOptimizeCases() as $name => [, $expected]) {
+            yield $name => [$expected];
+        }
     }
 
     #[Test]

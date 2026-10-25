@@ -33,6 +33,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class RemoveAriaAndRoleTest extends TestCase
 {
+    #[Test]
+    public function ruleIsMarkedAsNotRisky(): void
+    {
+        self::assertFalse(RemoveAriaAndRole::isRisky());
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(RemoveAriaAndRole::shouldCheckSize());
+    }
+
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -447,6 +459,146 @@ final class RemoveAriaAndRoleTest extends TestCase
         yield 'Removes ARIA attributes when attributes have extra quotes' => [
             '<svg aria-label=\'icon\' role="img"><rect aria-hidden="true"/></svg>',
             '<svg><rect/></svg>',
+        ];
+
+        yield 'Keeps a role attribute matched by an attribute selector' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[role=img]{fill:red}</style><rect role="img" aria-label="x" width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[role=img]{fill:red}</style><rect role="img" width="5" height="5"/></svg>',
+        ];
+
+        yield 'Keeps an aria attribute matched by a type and attribute selector in CDATA' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style><![CDATA[rect[ ARIA-HIDDEN="true"]{display:none}]]></style><rect aria-hidden="true" role="img"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect[ ARIA-HIDDEN="true"]{display:none}</style><rect aria-hidden="true"/></svg>',
+        ];
+
+        yield 'Keeps an aria attribute matched by a namespaced attribute selector in a prefixed style element' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:style>[*|aria-label]{fill:red}</svg:style><svg:rect aria-label="a" aria-labelledby="b"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:style>[*|aria-label]{fill:red}</svg:style><svg:rect aria-label="a"/></svg:svg>',
+        ];
+
+        yield 'Removes attributes whose names only start like a selected attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[roles],[aria-x]{fill:red}</style><rect role="img" aria-xy="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[roles],[aria-x]{fill:red}</style><rect/></svg>',
+        ];
+
+        yield 'Removes attributes when a style sheet only mentions them outside attribute selectors' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.role{fill:red}</style><rect class="role" role="img"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.role{fill:red}</style><rect class="role"/></svg>',
+        ];
+
+        yield 'Removes only the later attribute when the first one is selected' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[aria-a]{fill:red}</style><rect aria-a="1" aria-b="2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[aria-a]{fill:red}</style><rect aria-a="1"/></svg>',
+        ];
+
+        yield 'Keeps role and aria attributes bound to another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><rect x:role="a" x:aria-label="b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><rect x:role="a" x:aria-label="b"/></svg>',
+        ];
+
+        yield 'Removes aria attributes with multibyte values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect aria-label="日本 😀"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Handles an empty document' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"/>',
+        ];
+
+        yield 'Handles a root with only text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">text</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">text</svg>',
+        ];
+
+        yield 'Handles a 60 levels deep structure' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">' . str_repeat('<g>', 60) . '<rect aria-label="x" role="img"/>' . str_repeat('</g>', 60) . '</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">' . str_repeat('<g>', 60) . '<rect/>' . str_repeat('</g>', 60) . '</svg>',
+        ];
+
+        yield 'Handles a very long attribute value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect id="' . str_repeat('a', 10_000) . '" aria-label="x" role="img"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect id="' . str_repeat('a', 10_000) . '"/></svg>',
+        ];
+
+        yield 'Handles right-to-left, emoji, combining and astral text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text aria-label="x" role="img">שלום 😀 é 𝒜</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text>שלום 😀 é 𝒜</text></svg>',
+        ];
+
+        yield 'Handles values padded with tabs, newlines and no-break spaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect aria-label="x" role="img" fill="&#9; red&#10;&#xA0;"/></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\"><rect fill=\"&#9; red&#10;\u{a0}\"/></svg>",
+        ];
+
+        yield 'Handles comments between every node' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><!--1--><g><!--2--><!--3--><rect aria-label="x" role="img"/><!--4--></g><!--5--></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><!--1--><g><!--2--><!--3--><rect/><!--4--></g><!--5--></svg>',
+        ];
+
+        yield 'Leaves a document with an external style sheet untouched' => [
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><?foo bar?><rect aria-label="x" role="img"/></svg>',
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><?foo bar?><rect aria-label="x" role="img"/></svg>',
+        ];
+
+        yield 'Leaves a document with a linked style sheet untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><h:link xmlns:h="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/><rect aria-label="x" role="img"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><h:link xmlns:h="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/><rect aria-label="x" role="img"/></svg>',
+        ];
+
+        yield 'Leaves a document with an imported style sheet untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(a.css);</style><rect aria-label="x" role="img"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(a.css);</style><rect aria-label="x" role="img"/></svg>',
+        ];
+
+        yield 'Handles processing instructions' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><?foo bar?><rect aria-label="x" role="img"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><?foo bar?><rect/></svg>',
+        ];
+
+        yield 'Handles CDATA sections' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text aria-label="x" role="img"><![CDATA[a<b&c]]></text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text>a&lt;b&amp;c</text></svg>',
+        ];
+
+        yield 'Handles a child that resets the default namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><g><x xmlns=""><rect aria-label="x" role="img"/></x></g><rect aria-label="x" role="img"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><g><x xmlns=""><rect/></x></g><rect/></svg>',
+        ];
+
+        yield 'Handles a prefix redeclared to another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:s="http://www.w3.org/2000/svg"><s:g><s:rect aria-label="x" role="img"/></s:g><g xmlns:s="urn:other"><s:rect aria-label="x" role="img"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:s="http://www.w3.org/2000/svg"><s:g><s:rect/></s:g><g xmlns:s="urn:other"><s:rect/></g></svg>',
+        ];
+
+        yield 'Handles entities and character references in values and text' => [
+            '<!DOCTYPE svg [<!ENTITY e "v&#x41;">]><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text aria-label="x" role="img" class="&e;">&e;&#x42;&#66;</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text class="vA">vABB</text></svg>',
+        ];
+
+        yield 'Handles an attribute in no namespace next to the same local name in another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:o="urn:o"><use href="#a" xlink:href="#b" o:href="#c" aria-label="x" role="img"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:o="urn:o"><use href="#a" xlink:href="#b" o:href="#c"/></svg>',
+        ];
+
+        yield 'Keeps an attribute that folds to a selected name' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>[aria-key]{fill:red}</style><rect aria-\u{212A}ey=\"x\" aria-label=\"y\"/></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>[aria-key]{fill:red}</style><rect aria-\u{212A}ey=\"x\"/></svg>",
+        ];
+
+        yield 'Keeps role and ARIA attributes in another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:o="urn:o"><rect o:role="x" o:aria-label="y"/><rect role="img" o:role="x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:o="urn:o"><rect o:role="x" o:aria-label="y"/><rect o:role="x"/></svg>',
+        ];
+
+        yield 'Handles repeated elements where only a later one matches' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect/><rect fill="red"/><rect aria-label="x" role="img"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect/><rect fill="red"/><rect/></svg>',
+        ];
+
+        yield 'Handles mixed-case element names' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><Rect aria-label="x" role="img"/><RECT aria-label="x" role="img"/><Script>x</Script><SCRIPT>x</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">x</s:script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><Rect/><RECT/><Script>x</Script><SCRIPT>x</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">x</s:script></svg>',
         ];
     }
 }

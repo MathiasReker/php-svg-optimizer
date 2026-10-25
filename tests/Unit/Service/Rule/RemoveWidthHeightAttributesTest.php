@@ -55,14 +55,84 @@ final class RemoveWidthHeightAttributesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps width and height with a viewBox number ending in a decimal point' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10. 10" width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10. 10" width="10" height="10"/>',
+        ];
+
+        yield 'Keeps width and height with a viewBox of doubled commas' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0,,0,10,10" width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0,,0,10,10" width="10" height="10"/>',
+        ];
+
+        yield 'Keeps width and height with a viewBox of five numbers' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10 10" width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10 10" width="10" height="10"/>',
+        ];
+
+        yield 'Keeps width and height with a viewBox of negative zero width' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 -0.0 10" width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 -0.0 10" width="10" height="10"/>',
+        ];
+
+        yield 'Keeps width and height with a viewBox of zero height in exponent notation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 0e5" width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 0e5" width="10" height="10"/>',
+        ];
+
+        yield 'Removes width and height with a viewBox in exponent notation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1e1 0 +1e1 .5" width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1e1 0 +1e1 .5"/>',
+        ];
+
+        yield 'Keeps width and height without a viewBox' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>',
+        ];
+
+        yield 'Keeps width and height with an empty viewBox' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="" width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="" width="10" height="10"/>',
+        ];
+
+        yield 'Keeps width and height with a viewBox of three numbers' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10" width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10" width="10" height="10"/>',
+        ];
+
+        yield 'Keeps width and height with a viewBox that is not numeric' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 a 10" width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 a 10" width="10" height="10"/>',
+        ];
+
+        yield 'Keeps width and height with a viewBox of zero width' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 10" width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 10" width="10" height="10"/>',
+        ];
+
+        yield 'Keeps width and height with a viewBox of negative height' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 -1" width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 -1" width="10" height="10"/>',
+        ];
+
+        yield 'Keeps width and height with a viewBox in another case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 10 10" width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 10 10" width="10" height="10"/>',
+        ];
+
+        yield 'Removes width and height with a comma separated viewBox' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox=" 0,0, 10 ,10 " width="10" height="10"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox=" 0,0, 10 ,10 "/>',
+        ];
+
         yield 'Removes width and height from root svg' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="200">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="100" height="200">
                     <rect width="100" height="200"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="200"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="100" height="200"/></svg>
                 XML,
         ];
 
@@ -77,34 +147,34 @@ final class RemoveWidthHeightAttributesTest extends TestCase
 
         yield 'Leaves nested svg width/height intact' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="300" height="300">
                     <svg width="100" height="100"><rect width="100" height="100"/></svg>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><svg width="100" height="100"><rect width="100" height="100"/></svg></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><svg width="100" height="100"><rect width="100" height="100"/></svg></svg>
                 XML,
         ];
 
         yield 'Removes only width attribute if height missing' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="400">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="400">
                     <rect width="200" height="50"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="200" height="50"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="200" height="50"/></svg>
                 XML,
         ];
 
         yield 'Removes only height attribute if width missing' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" height="400">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" height="400">
                     <rect width="200" height="50"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="200" height="50"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="200" height="50"/></svg>
                 XML,
         ];
 
@@ -121,134 +191,139 @@ final class RemoveWidthHeightAttributesTest extends TestCase
 
         yield 'Handles uppercase attribute names' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" WIDTH="500" HEIGHT="600">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" WIDTH="500" HEIGHT="600">
                     <rect width="100" height="100"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="100" height="100"/></svg>
                 XML,
         ];
 
         yield 'Handles mixed attribute case' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" Width="120" height="80">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" Width="120" height="80">
                     <rect width="50" height="50"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="50" height="50"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="50" height="50"/></svg>
                 XML,
         ];
 
         yield 'Handles extra whitespace and newlines in attributes' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"  width = " 800 "
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"  width = " 800 "
                      height = "600" >
                     <rect width="100" height="50"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="50"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="100" height="50"/></svg>
                 XML,
         ];
 
         yield 'Ignores width/height on non-root elements' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="200" height="100">
                     <g width="300" height="400"><rect width="50" height="50"/></g>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><g width="300" height="400"><rect width="50" height="50"/></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><g width="300" height="400"><rect width="50" height="50"/></g></svg>
                 XML,
         ];
 
         yield 'Handles svg with namespace prefix' => [
             <<<'XML'
-                <svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="100" height="100">
+                <svg:svg xmlns:svg="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="100" height="100">
                     <svg:rect width="50" height="50"/>
                 </svg:svg>
                 XML,
             <<<'XML'
-                <svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect width="50" height="50"/></svg:svg>
+                <svg:svg xmlns:svg="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><svg:rect width="50" height="50"/></svg:svg>
                 XML,
         ];
 
         yield 'Handles svg with percentage width/height' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="100%" height="100%">
                     <rect width="100" height="100"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="100" height="100"/></svg>
                 XML,
         ];
 
         yield 'Handles svg with zero dimensions' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="0" height="0">
                     <circle r="50"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><circle r="50"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><circle r="50"/></svg>
                 XML,
         ];
 
         yield 'Handles svg with fractional dimensions' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="10.5" height="20.75">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="10.5" height="20.75">
                     <circle r="5"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><circle r="5"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><circle r="5"/></svg>
                 XML,
         ];
 
         yield 'Handles svg with px units' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="800px" height="600px">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="800px" height="600px">
                     <rect width="100" height="50"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="50"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="100" height="50"/></svg>
                 XML,
         ];
 
         yield 'Handles svg with invalid numeric values gracefully' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="abc" height="123x">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="abc" height="123x">
                     <rect width="100" height="50"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="50"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="100" height="50"/></svg>
                 XML,
         ];
 
         yield 'Leaves other root-level attributes untouched' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" id="icon" class="large">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="400" height="300" id="icon" class="large">
                     <path d="M0,0L10,10"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" id="icon" class="large"><path d="M0,0L10,10"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" id="icon" class="large"><path d="M0,0L10,10"/></svg>
                 XML,
+        ];
+
+        yield 'Keeps namespaced width and height attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x" x:width="1" x:height="2" width="3" viewBox="0 0 3 3"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x" x:width="1" x:height="2" viewBox="0 0 3 3"/>',
         ];
 
         yield 'Handles empty width/height attributes safely' => [
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" width="" height="">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="" height="">
                     <rect width="100" height="50"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="50"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="100" height="50"/></svg>
                 XML,
         ];
     }
@@ -257,5 +332,21 @@ final class RemoveWidthHeightAttributesTest extends TestCase
     public function ruleIsMarkedAsRisky(): void
     {
         self::assertTrue(RemoveWidthHeightAttributes::isRisky());
+    }
+
+    #[Test]
+    public function optimizeLeavesADocumentWithoutRootAlone(): void
+    {
+        $domDocument = new \DOMDocument();
+
+        (new RemoveWidthHeightAttributes())->optimize($domDocument);
+
+        self::assertNull($domDocument->documentElement);
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(RemoveWidthHeightAttributes::shouldCheckSize());
     }
 }

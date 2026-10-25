@@ -54,6 +54,16 @@ final class ConvertEllipseToCircleTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Leaves the document untouched with an event handler' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><ellipse rx="5" ry="5" onclick="f()"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><ellipse rx="5" ry="5" onclick="f()"/></svg>',
+        ];
+
+        yield 'Leaves the document untouched with a linked style sheet' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/></foreignObject><ellipse rx="5" ry="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/></foreignObject><ellipse rx="5" ry="5"/></svg>',
+        ];
+
         yield 'Keeps ellipses targeted by an animation through href' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><ellipse id="e" rx="3" ry="3"/><animate href="#e" attributeName="rx" to="5"/><ellipse rx="3" ry="3"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><ellipse id="e" rx="3" ry="3"/><animate href="#e" attributeName="rx" to="5"/><circle r="3"/></svg>',
@@ -108,6 +118,66 @@ final class ConvertEllipseToCircleTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><ellipse rx="1" ry="1"/><ellipse rx="1" ry="2"/><g><ellipse rx="2" ry="2"/></g></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><circle r="1"/><ellipse rx="1" ry="2"/><g><circle r="2"/></g></svg>',
         ];
+
+        yield 'Keeps ellipses in other namespaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:ellipse xmlns:x="urn:x" rx="1" ry="1"/><ellipse rx="1" ry="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:ellipse xmlns:x="urn:x" rx="1" ry="1"/><circle r="1"/></svg>',
+        ];
+
+        yield 'Keeps ellipses targeted through xml:id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><ellipse xml:id="a" rx="5" ry="5"/><set href="#a" attributeName="rx" to="9"/><ellipse rx="5" ry="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><ellipse xml:id="a" rx="5" ry="5"/><set href="#a" attributeName="rx" to="9"/><circle r="5"/></svg>',
+        ];
+
+        yield 'Keeps ellipses when a stylesheet instruction exists' => [
+            '<?xml-stylesheet type="text/css" href="s.css"?><svg xmlns="http://www.w3.org/2000/svg"><ellipse rx="5" ry="5"/></svg>',
+            '<?xml-stylesheet type="text/css" href="s.css"?><svg xmlns="http://www.w3.org/2000/svg"><ellipse rx="5" ry="5"/></svg>',
+        ];
+
+        yield 'Converts ellipses in a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:ellipse cx="1" rx="5" ry="5.0"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:circle cx="1" r="5"/></svg:svg>',
+        ];
+
+        yield 'Keeps ellipses with radii in units or percentages' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><ellipse rx="5px" ry="5px"/><ellipse rx="5%" ry="5%"/><ellipse rx="auto" ry="auto"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><ellipse rx="5px" ry="5px"/><ellipse rx="5%" ry="5%"/><ellipse rx="auto" ry="auto"/></svg>',
+        ];
+
+        yield 'Keeps ellipses with only one radius' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><ellipse rx="5"/><ellipse ry="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><ellipse rx="5"/><ellipse ry="5"/></svg>',
+        ];
+
+        yield 'Keeps ellipses targeted by an animation through a custom xlink prefix' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:l="http://www.w3.org/1999/xlink"><ellipse id="e" rx="5" ry="5"/><set l:href="#e" attributeName="rx" to="9"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:l="http://www.w3.org/1999/xlink"><ellipse id="e" rx="5" ry="5"/><set l:href="#e" attributeName="rx" to="9"/></svg>',
+        ];
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideOptimizeIsIdempotentCases')]
+    #[Test]
+    public function optimizeIsIdempotent(string $optimized): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
+        $svgOptimizer->addRule(new ConvertEllipseToCircle());
+
+        self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideOptimizeIsIdempotentCases(): iterable
+    {
+        foreach (self::provideOptimizeCases() as $name => [, $expected]) {
+            yield $name => [$expected];
+        }
     }
 
     #[Test]

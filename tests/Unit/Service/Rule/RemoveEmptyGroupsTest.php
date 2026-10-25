@@ -47,6 +47,10 @@ final class RemoveEmptyGroupsTest extends TestCase
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
+
+        $repeated = new SvgOptimizer(new StringProvider($actual));
+        $repeated->addRule(new RemoveEmptyGroups());
+        self::assertSame($actual, $repeated->optimize()->getContent());
     }
 
     /**
@@ -54,6 +58,76 @@ final class RemoveEmptyGroupsTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'leaves an empty document alone' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'keeps empty groups when a style sheet may apply a filter' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g{FILTER:url(#f)}</style><filter id="f" filterUnits="userSpaceOnUse" width="9" height="9"><feFlood/></filter><g/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g{FILTER:url(#f)}</style><filter id="f" filterUnits="userSpaceOnUse" width="9" height="9"><feFlood/></filter><g/></svg>',
+        ];
+
+        yield 'keeps empty groups when a style sheet escapes a name' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g{filt\65r:url(#f)}</style><filter id="f" filterUnits="userSpaceOnUse" width="9" height="9"><feFlood/></filter><g/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g{filt\65r:url(#f)}</style><filter id="f" filterUnits="userSpaceOnUse" width="9" height="9"><feFlood/></filter><g/></svg>',
+        ];
+
+        yield 'removes empty groups when the style sheet applies no filter' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g{fill:red}</style><g/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>g{fill:red}</style></svg>',
+        ];
+
+        yield 'keeps a group with a non-breaking space' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g>&#xA0;</g></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><g>\u{A0}</g></svg>",
+        ];
+
+        yield 'keeps a group with an entity' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g>&amp;</g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g>&amp;</g></svg>',
+        ];
+
+        yield 'keeps an empty mixed-case group element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><G/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><G/></svg>',
+        ];
+
+        yield 'keeps an empty group reset to no namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""/></svg>',
+        ];
+
+        yield 'keeps an empty group in another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:g xmlns:x="urn:x"/><metadata><g xmlns="urn:y"/></metadata></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:g xmlns:x="urn:x"/><metadata><g xmlns="urn:y"/></metadata></svg>',
+        ];
+
+        yield 'removes an empty prefixed svg group' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:g/><svg:rect width="5" height="5"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect width="5" height="5"/></svg:svg>',
+        ];
+
+        yield 'keeps empty groups when an external style sheet is linked' => [
+            '<?xml-stylesheet href="style.css"?><svg xmlns="http://www.w3.org/2000/svg"><g/></svg>',
+            '<?xml-stylesheet href="style.css"?><svg xmlns="http://www.w3.org/2000/svg"><g/></svg>',
+        ];
+
+        yield 'removes deeply nested empty groups' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g/></g></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'removes a group with only an empty character data section' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><![CDATA[ ]]></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'keeps an empty group inside a switch' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><switch><g/><rect width="5" height="5"/></switch></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><switch><g/><rect width="5" height="5"/></switch></svg>',
+        ];
+
         yield 'Keeps empty groups when a sibling combinator may match' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>g+rect{fill:red}</style><g></g><rect width="5" height="5"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><style>g+rect{fill:red}</style><g/><rect width="5" height="5"/></svg>',

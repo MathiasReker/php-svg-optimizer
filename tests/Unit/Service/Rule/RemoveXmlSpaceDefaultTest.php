@@ -169,6 +169,31 @@ final class RemoveXmlSpaceDefaultTest extends TestCase
             '<svg><text>a</text></svg>',
         ];
 
+        yield 'Keeps an uppercase value, which is not the default keyword' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text xml:space="preserve"><tspan xml:space="DEFAULT">a</tspan></text><text xml:space="DEFAULT">b</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text xml:space="preserve"><tspan xml:space="DEFAULT">a</tspan></text><text xml:space="DEFAULT">b</text></svg>',
+        ];
+
+        yield 'Keeps a default nested deeply below a preserve' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve"><g><g><text><tspan xml:space="default">a</tspan></text></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve"><g><g><text><tspan xml:space="default">a</tspan></text></g></g></svg>',
+        ];
+
+        yield 'Removes a default below a default that is below a preserve, after keeping the first' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve"><g xml:space="default"><text xml:space="default">a</text></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve"><g xml:space="default"><text>a</text></g></svg>',
+        ];
+
+        yield 'Removes xml:space="default" in a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:text xml:space="default">a</svg:text></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:text>a</svg:text></svg:svg>',
+        ];
+
+        yield 'Keeps xml:space="default" when a white-space presentation attribute is on an ancestor' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g white-space="pre"><text xml:space="default">a</text></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g white-space="pre"><text xml:space="default">a</text></g></svg>',
+        ];
+
         yield 'Keeps documents without xml:space untouched' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><text>a</text></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><text>a</text></svg>',
@@ -185,5 +210,25 @@ final class RemoveXmlSpaceDefaultTest extends TestCase
     public function shouldCheckSizeReturnsFalse(): void
     {
         self::assertFalse(RemoveXmlSpaceDefault::shouldCheckSize());
+    }
+
+    #[Test]
+    public function handlesManyNamespaceDeclarationsInLinearTime(): void
+    {
+        $small = $this->secondsToOptimize(2_000);
+        $large = $this->secondsToOptimize(16_000);
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    private function secondsToOptimize(int $count): float
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><g xml:space="default"><text xml:space="default">a</text></g></svg>');
+
+        $start = hrtime(true);
+        (new RemoveXmlSpaceDefault())->optimize($domDocument);
+
+        return (hrtime(true) - $start) / 1e9;
     }
 }

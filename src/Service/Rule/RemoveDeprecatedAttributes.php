@@ -15,6 +15,8 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2AttributeMigrationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2XlinkMigrationTrait;
 
 /**
  * @internal
@@ -23,41 +25,14 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  */
 final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
 {
-    private const array ATTRIBUTES_TO_REMOVE = [
-        SvgAttribute::BaseProfile->value,
-        SvgAttribute::ContentScriptType->value,
-        SvgAttribute::ContentStyleType->value,
-        SvgAttribute::CurrentView->value,
-        SvgAttribute::ExternalResourcesRequired->value,
-        SvgAttribute::RequiredFeatures->value,
-        SvgAttribute::UseCurrentView->value,
-        SvgAttribute::Version->value,
-        SvgAttribute::ViewTarget->value,
-        SvgAttribute::Viewport->value,
-        SvgAttribute::XlinkArcrole->value,
-        SvgAttribute::XlinkShow->value,
-        SvgAttribute::XlinkType->value,
-        SvgAttribute::XmlBase->value,
-        SvgAttribute::ZoomAndPan->value,
-        SvgAttribute::SuspendRedraw->value,
-        SvgAttribute::UnsuspendRedraw->value,
-        SvgAttribute::UnsuspendRedrawAll->value,
-        SvgAttribute::GlyphOrientationVertical->value,
-        SvgAttribute::GlyphOrientationHorizontal->value,
-    ];
+    use Svg2AttributeMigrationTrait;
+    use Svg2XlinkMigrationTrait;
 
-    private const string XLINK_SHOW_NEW = 'new';
+    private const array DEPRECATED_ATTRIBUTES = [SvgAttribute::GlyphOrientationVertical->value];
 
-    private const string TARGET_BLANK = '_blank';
+    private const string XLINK_TITLE = 'title';
 
-    private const array ATTRIBUTES_TO_REPLACE = [
-        SvgAttribute::XlinkHref->value => SvgAttribute::Href->value,
-        SvgAttribute::XmlLang->value => SvgAttribute::Lang->value,
-    ];
-
-    private const array DEPRECATED_ATTRIBUTES_TAKING_PRECEDENCE = [
-        SvgAttribute::XmlLang->value,
-    ];
+    private const string XML_LANG = 'lang';
 
     #[\Override]
     public static function isRisky(): bool
@@ -78,55 +53,66 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     public function optimize(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
-        $domXPath->registerNamespace(SvgNamespace::Xlink->prefix(), SvgNamespace::Xlink->value);
+        $css = $this->styleSheetText($domDocument);
 
-        $this->convertXlinkShow($domXPath);
-        $this->convertXlinkTitles($domXPath);
-        $this->replaceAttributes($domXPath, self::ATTRIBUTES_TO_REPLACE);
-        $this->removeAttributes($domXPath, self::ATTRIBUTES_TO_REMOVE);
-        $this->removeNamespaceFromSvgTags($domDocument);
+        if ($this->mayMigrateXlink($domDocument, $css)) {
+            $this->convertXlinkTitles($domDocument);
+            $this->migrateXlinkAttributes($domXPath);
+        }
+
+        $removable = $this->removableDroppedAttributes($domDocument, $css, self::DEPRECATED_ATTRIBUTES);
+        $xmlAttributes = [self::XML_LANG, self::SVG2_XML_BASE];
+        $migratesXmlAttributes = $xmlAttributes === $this->removableAttributes($domDocument, $css, $xmlAttributes);
+
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            if ($this->isForeignContent($domNodeList)) {
+                continue;
+            }
+
+            $this->removeObsoleteAttributes($domNodeList, $removable);
+
+            if ($migratesXmlAttributes) {
+                $this->migrateXmlLang($domNodeList);
+                $this->removeXmlBase($domNodeList);
+            }
+        }
+
+        $this->removeUnusedNamespaceDeclarations($domDocument, $domXPath, SvgNamespace::Xlink->value);
     }
 
     /**
-     * @param \DOMXPath $domXPath the XPath object for querying the document
+     * @param \DOMDocument $domDocument the DOM document to modify
      */
-    private function convertXlinkShow(\DOMXPath $domXPath): void
+    private function convertXlinkTitles(\DOMDocument $domDocument): void
     {
-        /** @var \DOMNodeList<\DOMElement> $elements */
-        $elements = $domXPath->query('//*[@' . SvgAttribute::XlinkShow->value . ']');
+        $insertsTitles = !$this->hasSiblingSensitiveStyle($domDocument);
 
-        foreach ($elements as $element) {
-            if (SvgTag::A->value === $element->localName
-                && self::XLINK_SHOW_NEW === trim($element->getAttribute(SvgAttribute::XlinkShow->value))
-                && !$element->hasAttribute(SvgAttribute::Target->value)
-            ) {
-                $element->setAttribute(SvgAttribute::Target->value, self::TARGET_BLANK);
+        foreach (iterator_to_array($domDocument->getElementsByTagName('*'), false) as $domElement) {
+            if ($this->isForeignContent($domElement)) {
+                continue;
+            }
+
+            if (SvgTag::A->value !== $domElement->localName) {
+                $domElement->removeAttributeNS(SvgNamespace::Xlink->value, self::XLINK_TITLE);
+            } elseif ($insertsTitles && !$this->hasTitleChild($domElement)) {
+                $this->convertXlinkTitle($domDocument, $domElement);
             }
         }
     }
 
     /**
-     * @param \DOMXPath $domXPath the XPath object for querying the document
+     * @param \DOMDocument $domDocument the DOM document to modify
+     * @param \DOMElement  $domElement  the link whose `xlink:title` becomes a `<title>` child
      */
-    private function convertXlinkTitles(\DOMXPath $domXPath): void
+    private function convertXlinkTitle(\DOMDocument $domDocument, \DOMElement $domElement): void
     {
-        /** @var \DOMNodeList<\DOMElement> $elements */
-        $elements = $domXPath->query('//*[@' . SvgAttribute::XlinkTitle->value . ']');
+        $title = $domElement->getAttributeNS(SvgNamespace::Xlink->value, self::XLINK_TITLE);
+        $domElement->removeAttributeNS(SvgNamespace::Xlink->value, self::XLINK_TITLE);
 
-        foreach (iterator_to_array($elements, false) as $domElement) {
-            $title = $domElement->getAttribute(SvgAttribute::XlinkTitle->value);
-            $domElement->removeAttribute(SvgAttribute::XlinkTitle->value);
-
-            if ('' === trim($title) || $this->hasTitleChild($domElement)) {
-                continue;
-            }
-
-            $titleElement = $domElement->ownerDocument?->createElementNS($domElement->namespaceURI, SvgTag::Title->value);
-
-            if ($titleElement instanceof \DOMElement) {
-                $titleElement->textContent = $title;
-                $domElement->insertBefore($titleElement, $domElement->firstChild);
-            }
+        if ('' !== trim($title)) {
+            $titleElement = $domDocument->createElementNS($domElement->namespaceURI, SvgTag::Title->value);
+            $titleElement->textContent = $title;
+            $domElement->insertBefore($titleElement, $domElement->firstChild);
         }
     }
 
@@ -145,53 +131,15 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
     }
 
     /**
-     * @param \DOMXPath             $domXPath   the XPath object for querying the document
-     * @param array<string, string> $attributes a map of old attribute names to new attribute names
+     * @param \DOMElement $domElement the element whose `xml:lang` becomes `lang`, which it takes precedence over
      */
-    private function replaceAttributes(\DOMXPath $domXPath, array $attributes): void
+    private function migrateXmlLang(\DOMElement $domElement): void
     {
-        foreach ($attributes as $oldName => $newName) {
-            /** @var \DOMNodeList<\DOMElement> $elements */
-            $elements = $domXPath->query('//*[@' . $oldName . ']');
-
-            foreach ($elements as $element) {
-                if (!$element->hasAttribute($newName) || \in_array($oldName, self::DEPRECATED_ATTRIBUTES_TAKING_PRECEDENCE, true)) {
-                    $element->setAttribute($newName, $element->getAttribute($oldName));
-                }
-
-                $element->removeAttribute($oldName);
-            }
-        }
-    }
-
-    /**
-     * @param \DOMDocument $domDocument the DOM document to modify
-     */
-    private function removeNamespaceFromSvgTags(\DOMDocument $domDocument): void
-    {
-        $domDocument->documentElement?->removeAttribute(SvgAttribute::XmlnsXlink->value);
-    }
-
-    /**
-     * @param \DOMXPath    $domXPath   the XPath object for querying the document
-     * @param list<string> $attributes a list of attribute names to remove
-     */
-    private function removeAttributes(\DOMXPath $domXPath, array $attributes): void
-    {
-        if ([] === $attributes) {
+        if (!$domElement->hasAttributeNS(SvgNamespace::Xml->value, self::XML_LANG)) {
             return;
         }
 
-        $query = implode(' | ', array_map(static fn (string $attr): string => '//*[@' . $attr . ']', $attributes));
-        /** @var \DOMNodeList<\DOMElement> $elements */
-        $elements = $domXPath->query($query);
-
-        foreach ($elements as $element) {
-            foreach ($attributes as $attribute) {
-                if ($element->hasAttribute($attribute)) {
-                    $element->removeAttribute($attribute);
-                }
-            }
-        }
+        $domElement->setAttributeNS(null, SvgAttribute::Lang->value, $domElement->getAttributeNS(SvgNamespace::Xml->value, self::XML_LANG));
+        $domElement->removeAttributeNS(SvgNamespace::Xml->value, self::XML_LANG);
     }
 }

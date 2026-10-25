@@ -14,9 +14,12 @@ namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\FragmentTargetTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\GradientLinkTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NamedColorTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 
 /**
@@ -26,12 +29,17 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
  */
 final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterface
 {
+    use DocumentScriptTrait;
     use ElementTrait;
+    use FragmentTargetTrait;
     use GradientLinkTrait;
     use IdReferenceTrait;
+    use NamedColorTrait;
     use NumberFormatterTrait;
 
     private const string PAINT_REFERENCE_REGEX = '/^\s*url\(\s*([\'"]?)#([^\'")\s]+)\1\s*\)\s*$/i';
+
+    private const string INVERTIBLE_TRANSFORM_REGEX = '/^[ \t\n\r\f,]*(?:(?:translate|rotate)\s*\([^()]*\)[ \t\n\r\f,]*)*$/';
 
     private const string HEX_COLOR_REGEX = '/^#(?:[\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/i';
 
@@ -45,27 +53,7 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
 
     private const array BOX_SHAPES = ['rect', 'circle', 'ellipse'];
 
-    private const array NAMED_COLORS = [
-        'aliceblue', 'antiquewhite', 'aqua', 'aquamarine', 'azure', 'beige', 'bisque', 'black', 'blanchedalmond',
-        'blue', 'blueviolet', 'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate', 'coral', 'cornflowerblue',
-        'cornsilk', 'crimson', 'cyan', 'darkblue', 'darkcyan', 'darkgoldenrod', 'darkgray', 'darkgreen', 'darkgrey',
-        'darkkhaki', 'darkmagenta', 'darkolivegreen', 'darkorange', 'darkorchid', 'darkred', 'darksalmon',
-        'darkseagreen', 'darkslateblue', 'darkslategray', 'darkslategrey', 'darkturquoise', 'darkviolet', 'deeppink',
-        'deepskyblue', 'dimgray', 'dimgrey', 'dodgerblue', 'firebrick', 'floralwhite', 'forestgreen', 'fuchsia',
-        'gainsboro', 'ghostwhite', 'gold', 'goldenrod', 'gray', 'green', 'greenyellow', 'grey', 'honeydew', 'hotpink',
-        'indianred', 'indigo', 'ivory', 'khaki', 'lavender', 'lavenderblush', 'lawngreen', 'lemonchiffon', 'lightblue',
-        'lightcoral', 'lightcyan', 'lightgoldenrodyellow', 'lightgray', 'lightgreen', 'lightgrey', 'lightpink',
-        'lightsalmon', 'lightseagreen', 'lightskyblue', 'lightslategray', 'lightslategrey', 'lightsteelblue',
-        'lightyellow', 'lime', 'limegreen', 'linen', 'magenta', 'maroon', 'mediumaquamarine', 'mediumblue',
-        'mediumorchid', 'mediumpurple', 'mediumseagreen', 'mediumslateblue', 'mediumspringgreen', 'mediumturquoise',
-        'mediumvioletred', 'midnightblue', 'mintcream', 'mistyrose', 'moccasin', 'navajowhite', 'navy', 'oldlace',
-        'olive', 'olivedrab', 'orange', 'orangered', 'orchid', 'palegoldenrod', 'palegreen', 'paleturquoise',
-        'palevioletred', 'papayawhip', 'peachpuff', 'peru', 'pink', 'plum', 'powderblue', 'purple', 'rebeccapurple',
-        'red', 'rosybrown', 'royalblue', 'saddlebrown', 'salmon', 'sandybrown', 'seagreen', 'seashell', 'sienna',
-        'silver', 'skyblue', 'slateblue', 'slategray', 'slategrey', 'snow', 'springgreen', 'steelblue', 'tan', 'teal',
-        'thistle', 'tomato', 'transparent', 'turquoise', 'violet', 'wheat', 'white', 'whitesmoke', 'yellow',
-        'yellowgreen',
-    ];
+    private const string TRANSPARENT = 'transparent';
 
     #[\Override]
     public static function isRisky(): bool
@@ -85,22 +73,25 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
-        if ($this->hasStyleElement($domDocument) || [] !== $this->elementsNamed($domDocument, SvgTag::Script->value)) {
+        if ($this->hasStyleElement($domDocument) || $this->hasScriptOrEventHandler($domDocument)) {
             return;
         }
 
         $gradients = $this->gradientsById($domDocument);
         [$paintReferences, $otherReferences] = $this->collectPaintReferences($domDocument);
+        $otherReferences += $this->collectFragmentTargets($domDocument);
 
         foreach ($paintReferences as $id => $attributes) {
-            if (!\array_key_exists($id, $gradients) || \array_key_exists($id, $otherReferences)) {
+            if (!\array_key_exists($id, $gradients)
+                || \array_key_exists($id, $otherReferences)
+                || !$this->isSvgElement($gradients[$id])) {
                 continue;
             }
 
             $chain = $this->gradientChain($gradients[$id], $gradients);
             $color = $this->resolveStopColor($chain);
 
-            if ('' !== $color && $this->paintsWithoutBoundingBox($chain, $attributes)) {
+            if ('' !== $color && $this->hasInvertibleTransform($chain) && $this->paintsWithoutBoundingBox($chain, $attributes)) {
                 $this->replacePaint($gradients[$id], $attributes, $color);
             }
         }
@@ -157,8 +148,7 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
     private function resolveStopColor(array $chain): string
     {
         foreach ($chain as $gradient) {
-            $children = iterator_to_array($gradient->childNodes, false);
-            $children = array_values(array_filter($children, static fn (\DOMNode $domNode): bool => $domNode instanceof \DOMElement));
+            $children = $this->childElements($gradient);
 
             if ([] !== $children) {
                 return $this->singleStopColor($children);
@@ -177,7 +167,7 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
     {
         $stop = $children[0];
 
-        return 1 === \count($children) && SvgTag::Stop->value === $stop->localName
+        return 1 === \count($children) && SvgTag::Stop->value === $stop->localName && $this->isSvgElement($stop)
             ? $this->stopColor($stop)
             : '';
     }
@@ -205,7 +195,8 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
         $color = trim($domElement->getAttribute(SvgAttribute::StopColor->value));
 
         return 1 === preg_match(self::HEX_COLOR_REGEX, $color)
-            || [] !== preg_grep('/^' . preg_quote($color, '/') . '$/i', self::NAMED_COLORS) ? $color : '';
+            || $this->isNamedColor($color)
+            || self::TRANSPARENT === $this->asciiLowercase($color) ? $color : '';
     }
 
     /**
@@ -217,12 +208,29 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
     }
 
     /**
+     * @param list<\DOMElement> $chain the gradient and the gradients it links to
+     *
+     * @return bool true if the gradient transform can be inverted, as a gradient with a singular transform paints
+     *              nothing, and is not set through a style attribute
+     */
+    private function hasInvertibleTransform(array $chain): bool
+    {
+        foreach ($chain as $gradient) {
+            if ($gradient->hasAttribute(SvgAttribute::Style->value)) {
+                return false;
+            }
+        }
+
+        return 1 === preg_match(self::INVERTIBLE_TRANSFORM_REGEX, $this->linkedGradientAttribute($chain, SvgAttribute::GradientTransform->value));
+    }
+
+    /**
      * @param list<\DOMElement> $chain      the gradient and the gradients it links to
      * @param list<\DOMAttr>    $attributes the paint attributes referencing the gradient
      */
     private function paintsWithoutBoundingBox(array $chain, array $attributes): bool
     {
-        if (self::USER_SPACE_ON_USE === $this->gradientUnits($chain)) {
+        if (self::USER_SPACE_ON_USE === $this->linkedGradientAttribute($chain, SvgAttribute::GradientUnits->value)) {
             return true;
         }
 
@@ -248,6 +256,6 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
             $attribute->value = $color;
         }
 
-        $domElement->parentNode?->removeChild($domElement);
+        $domElement->remove();
     }
 }

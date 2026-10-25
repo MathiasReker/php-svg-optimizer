@@ -49,6 +49,10 @@ final class ConvertEmptyTagsToSelfClosingTest extends TestCase
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
+
+        $repeated = new SvgOptimizer(new StringProvider($actual));
+        $repeated->addRule(new ConvertEmptyTagsToSelfClosing());
+        self::assertSame($actual, $repeated->optimize()->getContent());
     }
 
     /**
@@ -56,6 +60,61 @@ final class ConvertEmptyTagsToSelfClosingTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'leaves an empty document alone' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'handles mixed-case elements and elements reset to no namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><Rect></Rect><g xmlns=""></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><Rect/><g xmlns=""/></svg>',
+        ];
+
+        yield 'keeps elements with a non-breaking space' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>&#xA0;</text></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>\u{A0}</text></svg>",
+        ];
+
+        yield 'handles deep nesting' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g></g></g></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g/></g></g></g></svg>',
+        ];
+
+        yield 'keeps the markup inside text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>&lt;a&gt;&lt;/a&gt;<![CDATA[<b></b> <i />]]></text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>&lt;a&gt;&lt;/a&gt;&lt;b&gt;&lt;/b&gt; &lt;i /&gt;</text></svg>',
+        ];
+
+        yield 'keeps the markup inside comments' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><!--<b></b>\n<i />--><g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><!--<b></b>\n<i />--><g/></svg>',
+        ];
+
+        yield 'keeps the markup inside processing instructions' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><?foo <b></b>\n<i />?><g></g></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><?foo <b></b>\n<i />?><g/></svg>",
+        ];
+
+        yield 'handles prefixed svg elements' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:g></svg:g></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:g/></svg:svg>',
+        ];
+
+        yield 'keeps an attribute value with a greater-than sign' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g aria-label="a&gt;b"></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g aria-label="a&gt;b"/></svg>',
+        ];
+
+        yield 'handles foreign content' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><div xmlns="http://www.w3.org/1999/xhtml"></div></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><div xmlns="http://www.w3.org/1999/xhtml"></div></foreignObject></svg>',
+        ];
+
+        yield 'keeps multibyte text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>&#xE6;&#x65E5;</text><g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>æ日</text><g/></svg>',
+        ];
+
         yield 'Keeps a whitespace-only tspan, whose space renders between the surrounding text' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><text>a<tspan> </tspan>b</text></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><text>a<tspan> </tspan>b</text></svg>',
@@ -125,5 +184,11 @@ final class ConvertEmptyTagsToSelfClosingTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100">Content</rect></svg>
                 XML,
         ];
+    }
+
+    #[Test]
+    public function shouldCheckSizeReturnsFalse(): void
+    {
+        self::assertFalse(ConvertEmptyTagsToSelfClosing::shouldCheckSize());
     }
 }

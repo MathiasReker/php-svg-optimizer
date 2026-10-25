@@ -56,6 +56,11 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Leaves the document untouched with a linked style sheet' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/></foreignObject><rect style="fill:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/></foreignObject><rect style="fill:red"/></svg>',
+        ];
+
         yield 'Converts fill and stroke from style attribute' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
@@ -156,14 +161,14 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
                 XML,
         ];
 
-        yield 'Overwrites existing attributes, which the inline style beats' => [
+        yield 'Keeps a declaration in the style when the element has the attribute with another value, which may be invalid CSS' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
                     <rect fill="#000" style="fill:#f00;stroke:#0f0"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect fill="#f00" stroke="#0f0"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg"><rect fill="#000" style="fill:#f00" stroke="#0f0"/></svg>
                 XML,
         ];
 
@@ -177,9 +182,119 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}</style><rect style="fill:green"/></svg>',
         ];
 
-        yield 'Uses the last of repeated declarations' => [
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;fill:green"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="green"/></svg>',
+        yield 'Keeps repeated declarations, as an invalid later one falls back to the earlier one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;fill:foo(1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red; fill:foo(1)"/></svg>',
+        ];
+
+        yield 'Keeps repeated declarations in any case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;FILL:green;stroke:blue"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red; FILL:green" stroke="blue"/></svg>',
+        ];
+
+        yield 'Keeps a longhand that a later shorthand overrides' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0" style="marker:url(#m);marker-start:none"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0" style="marker:url(#m); marker-start:none"/></svg>',
+        ];
+
+        yield 'Keeps a shorthand when a longhand of it stays inline' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><svg style="overflow-x:hidden;overflow:visible"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><svg style="overflow-x:hidden; overflow:visible"/></svg>',
+        ];
+
+        yield 'Keeps a mask shorthand when a mask longhand stays inline' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="mask-image:url(#a);mask:none;fill:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="mask-image:url(#a); mask:none" fill="red"/></svg>',
+        ];
+
+        yield 'Keeps declarations next to a reset of all properties' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="all:initial;fill:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="all:initial; fill:red"/></svg>',
+        ];
+
+        yield 'Converts a property whose value mentions a shorthand' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="font-family:all;fill:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="font-family:all" fill="red"/></svg>',
+        ];
+
+        yield 'Leaves a style with a comment untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="/*x;*/fill:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="/*x;*/fill:red"/></svg>',
+        ];
+
+        yield 'Leaves styles of elements outside the SVG namespace untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><div xmlns="http://www.w3.org/1999/xhtml" style="opacity:.5;display:none">x</div></foreignObject><rect style="opacity:.5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><div xmlns="http://www.w3.org/1999/xhtml" style="opacity:.5;display:none">x</div></foreignObject><rect opacity=".5"/></svg>',
+        ];
+
+        yield 'Keeps the case of custom property names' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="--Main:red;fill:var(--Main)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="--Main:red" fill="var(--Main)"/></svg>',
+        ];
+
+        yield 'Converts styles in a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect style="fill:red"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect fill="red"/></svg:svg>',
+        ];
+
+        yield 'Keeps inline styles when an XHTML style element exists' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><style xmlns="http://www.w3.org/1999/xhtml">rect{fill:blue}</style></foreignObject><rect style="fill:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><style xmlns="http://www.w3.org/1999/xhtml">rect{fill:blue}</style></foreignObject><rect style="fill:red"/></svg>',
+        ];
+
+        yield 'Keeps an animation of a converted property' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red"><set attributeName="fill" to="blue"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"><set attributeName="fill" to="blue"/></rect></svg>',
+        ];
+
+        yield 'Keeps inherit and currentColor values as written' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:inherit;stroke:currentColor"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="inherit" stroke="currentColor"/></svg>',
+        ];
+
+        yield 'Keeps ampersands and unicode in values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:\'a&amp;b\';fill:url( &quot;#ü&quot; )">x</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:\'a&amp;b\'" fill="url( &quot;#ü&quot; )">x</text></svg>',
+        ];
+
+        yield 'Keeps important declarations in any spelling' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red ! IMPORTANT;stroke:blue"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red ! IMPORTANT" stroke="blue"/></svg>',
+        ];
+
+        yield 'Converts mixed-case property names' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="Fill-Opacity:.5;STROKE-width:2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill-opacity=".5" stroke-width="2"/></svg>',
+        ];
+
+        yield 'Converts styles of deeply nested elements' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g><rect style="fill:red"/></g></g></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g><rect fill="red"/></g></g></g></g></svg>',
+        ];
+
+        yield 'Converts styles in a document with redeclared namespace prefixes' => [
+            '<s:svg xmlns:s="http://www.w3.org/2000/svg"><t:rect xmlns:t="http://www.w3.org/2000/svg" style="fill:red"/></s:svg>',
+            '<s:svg xmlns:s="http://www.w3.org/2000/svg"><t:rect xmlns:t="http://www.w3.org/2000/svg" fill="red"/></s:svg>',
+        ];
+
+        yield 'Leaves styles of elements in another namespace untouched after converting an earlier one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red"/><x:rect xmlns:x="urn:x" style="fill:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/><x:rect xmlns:x="urn:x" style="fill:red"/></svg>',
+        ];
+
+        yield 'Leaves an empty document unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'Keeps inline styles when an xml-stylesheet processing instruction links a style sheet' => [
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red"/></svg>',
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red"/></svg>',
+        ];
+
+        yield 'Converts the style of a later element after skipping an earlier one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red !important"/><rect style="fill:blue"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red !important"/><rect fill="blue"/></svg>',
         ];
 
         yield 'Converts properties with whitespace before the colon' => [
@@ -193,8 +308,8 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
         ];
 
         yield 'Keeps properties that only match after non-ASCII case folding' => [
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="stro&#x212A;e:red"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="stro&#x212A;e:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="stroKe:red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="stroKe:red"/></svg>',
         ];
 
         yield 'Leaves unknown properties when valid SVG props converted' => [
@@ -331,6 +446,16 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
         yield 'Leaves a style with an unclosed string untouched' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:&quot;a;fill:red"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:&quot;a;fill:red"/></svg>',
+        ];
+
+        yield 'Drops a declaration without a property name' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;:blue"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/></svg>',
+        ];
+
+        yield 'Keeps a longhand that the last declaration overrides as a shorthand' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path style="marker-end:url(#a);marker:url(#b)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path style="marker-end:url(#a); marker:url(#b)"/></svg>',
         ];
     }
 

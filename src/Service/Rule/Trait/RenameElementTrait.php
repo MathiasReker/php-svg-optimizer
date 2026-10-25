@@ -34,6 +34,6 @@ trait RenameElementTrait
             $replacement->appendChild($domElement->firstChild);
         }
 
-        $domElement->parentNode?->replaceChild($replacement, $domElement);
+        $domElement->replaceWith($replacement);
     }
 }

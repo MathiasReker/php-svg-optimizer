@@ -54,6 +54,21 @@ final class RemoveUnusedMasksTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps the masks of a resource library, which other documents may reference' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="m"><rect/></mask></defs></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="m"><rect/></mask></defs></svg>',
+        ];
+
+        yield 'Leaves the document untouched when a style sheet depends on siblings' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:nth-child(3){fill:red}</style><mask id="m"/><rect/><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:nth-child(3){fill:red}</style><mask id="m"/><rect/><rect/></svg>',
+        ];
+
+        yield 'Leaves the document untouched with an external style sheet' => [
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg"><mask id="m"/></svg>',
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg"><mask id="m"/></svg>',
+        ];
+
         yield 'Removes unused mask element' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
@@ -89,10 +104,11 @@ final class RemoveUnusedMasksTest extends TestCase
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg">
                     <defs><mask id="unused"></mask></defs>
+                    <rect width="1" height="1"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>
                 XML,
         ];
 
@@ -161,10 +177,11 @@ final class RemoveUnusedMasksTest extends TestCase
                         <!-- comment -->
                         <mask id="unused"><rect/></mask>
                     </defs>
+                    <rect width="1" height="1"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>
                 XML,
         ];
 
@@ -241,10 +258,11 @@ final class RemoveUnusedMasksTest extends TestCase
                         <mask id="a"><rect/></mask>
                         <mask id="b"><rect/></mask>
                     </defs>
+                    <rect width="1" height="1"/>
                 </svg>
                 XML,
             <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
+                <svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>
                 XML,
         ];
 
@@ -345,9 +363,104 @@ final class RemoveUnusedMasksTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="m"><rect/></mask></defs><rect mask="url(\'#m\')"/></svg>',
         ];
 
+        yield 'Removes a mask whose reference only appears in text content' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><mask id="m"><rect/></mask></defs><text>url(#m)</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>url(#m)</text></svg>',
+        ];
+
         yield 'Removes mask whose id only appears as a prefix of a style reference' => [
-            '<svg xmlns="http://www.w3.org/2000/svg"><style>.x{mask:url(#m1)}</style><defs><mask id="m"><rect/></mask></defs></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><style>.x{mask:url(#m1)}</style></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.x{mask:url(#m1)}</style><defs><mask id="m"><rect/></mask></defs><rect width="1" height="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.x{mask:url(#m1)}</style><rect width="1" height="1"/></svg>',
+        ];
+
+        yield 'Keeps masks in a document with a script, which may apply them' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="m"/><rect id="r"/><script>document.getElementById("r").setAttribute("mask","url(#m)")</script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="m"/><rect id="r"/><script>document.getElementById("r").setAttribute("mask","url(#m)")</script></svg>',
+        ];
+
+        yield 'Keeps masks in a document with an event attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="m"/><rect ONCLICK="void 0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="m"/><rect ONCLICK="void 0"/></svg>',
+        ];
+
+        yield 'Keeps a mask referenced through its xml:id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask xml:id="m"/><mask xml:id="n"/><rect mask="url(#m)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask xml:id="m"/><rect mask="url(#m)"/></svg>',
+        ];
+
+        yield 'Keeps mask elements of other namespaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask xmlns="urn:x"/><mask/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask xmlns="urn:x"/></svg>',
+        ];
+
+        yield 'Keeps a mask referenced through an escaped url()' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{mask:url(#\6d)}</style><mask id="m"/><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{mask:url(#\6d)}</style><mask id="m"/><rect/></svg>',
+        ];
+
+        yield 'Removes unused masks of a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:defs><svg:mask id="m"/></svg:defs><svg:rect mask="url(#m)"/><svg:mask id="n"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:defs><svg:mask id="m"/></svg:defs><svg:rect mask="url(#m)"/></svg:svg>',
+        ];
+
+        yield 'Keeps a mask referenced by an animation' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="m"/><rect><set attributeName="mask" to="url(#m)"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="m"/><rect><set attributeName="mask" to="url(#m)"/></rect></svg>',
+        ];
+
+        yield 'Keeps an unused mask holding a style sheet, which applies to the whole document' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="m"><style>rect{fill:green}</style></mask><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="m"><style>rect{fill:green}</style></mask><rect/></svg>',
+        ];
+
+        yield 'Keeps an unused mask holding an animation of another element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask><g><set href="#r" attributeName="fill" to="green"/></g></mask><rect id="r"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask><g><set href="#r" attributeName="fill" to="green"/></g></mask><rect id="r"/></svg>',
+        ];
+
+        yield 'Removes a later unused mask after keeping an earlier one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="a"/><mask id="b"/><rect mask="url(\'#a\')"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="a"/><rect mask="url(\'#a\')"/></svg>',
+        ];
+
+        yield 'Keeps masks referenced through spaced and quoted url() forms' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="a"/><mask id="b"/><mask id="c"/><rect mask="url( &quot;#a&quot; )"/><rect style="mask:url( \'#b\' )"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="a"/><mask id="b"/><rect mask="url( &quot;#a&quot; )"/><rect style="mask:url( \'#b\' )"/></svg>',
+        ];
+
+        yield 'Keeps a mask with a unicode id that is referenced' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="ü"/><mask id="ö"/><rect mask="url(#ü)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="ü"/><rect mask="url(#ü)"/></svg>',
+        ];
+
+        yield 'Keeps a mask whose id is written with a character reference' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="&#109;"/><rect mask="url(#m)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="m"/><rect mask="url(#m)"/></svg>',
+        ];
+
+        yield 'Keeps every mask with a duplicated id that is referenced' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="m"/><mask id="m"/><rect mask="url(#m)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><mask id="m"/><mask id="m"/><rect mask="url(#m)"/></svg>',
+        ];
+
+        yield 'Keeps a mask referenced from a style element inside a media block' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@media print{rect{mask:url(#m)}}</style><mask id="m"/><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@media print{rect{mask:url(#m)}}</style><mask id="m"/><rect/></svg>',
+        ];
+
+        yield 'Removes a deeply nested unused mask' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><mask id="m"/></g></g></g><rect width="1" height="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g/></g></g><rect width="1" height="1"/></svg>',
+        ];
+
+        yield 'Removes unused masks in a document with redeclared namespace prefixes' => [
+            '<s:svg xmlns:s="http://www.w3.org/2000/svg"><t:mask xmlns:t="http://www.w3.org/2000/svg" id="m"/><s:rect width="1" height="1"/></s:svg>',
+            '<s:svg xmlns:s="http://www.w3.org/2000/svg"><s:rect width="1" height="1"/></s:svg>',
+        ];
+
+        yield 'Leaves an empty document unchanged' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
         ];
 
         yield 'Removes defs with only comments' => [
@@ -372,5 +485,25 @@ final class RemoveUnusedMasksTest extends TestCase
     public function shouldCheckSizeReturnsFalse(): void
     {
         self::assertFalse(RemoveUnusedMasks::shouldCheckSize());
+    }
+
+    #[Test]
+    public function handlesManyNamespaceDeclarationsInLinearTime(): void
+    {
+        $small = $this->secondsToOptimize(2_000);
+        $large = $this->secondsToOptimize(8_000);
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    private function secondsToOptimize(int $count): float
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><mask id="m"/><rect/></svg>');
+
+        $start = hrtime(true);
+        (new RemoveUnusedMasks())->optimize($domDocument);
+
+        return (hrtime(true) - $start) / 1e9;
     }
 }

@@ -61,9 +61,12 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
         $attributes = $this->extractAttributes($domElement);
         $sortedAttributes = $this->sortAttributes($attributes);
 
-        /** @var \DOMAttr $domAttr */
-        foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
-            $domElement->removeAttribute($domAttr->nodeName);
+        if ($sortedAttributes === $attributes) {
+            return;
+        }
+
+        foreach (array_keys($attributes) as $name) {
+            $domElement->removeAttribute($name);
         }
 
         foreach ($sortedAttributes as $name => $value) {

@@ -52,10 +52,20 @@ final class MinifySvgCoordinatesTest extends TestCase
     }
 
     /**
-     * @return iterable<array{string, string}>
+     * @return iterable<string, array{string, string}>
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Leaves a value unchanged when a minified number would join the text before it' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="-+01"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="-+01"/></svg>',
+        ];
+
+        yield 'Leaves the document untouched when a style sheet selects attribute values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[x="0.0"]{fill:red}</style><rect x="0.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[x="0.0"]{fill:red}</style><rect x="0.0"/></svg>',
+        ];
+
         yield 'Optimize Path Coordinates' => [
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
@@ -69,17 +79,17 @@ final class MinifySvgCoordinatesTest extends TestCase
 
         yield 'Keeps a value with a non-ASCII character unchanged' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1.0é" height="5.0"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1.0&#xE9;" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1.0é" height="5"/></svg>',
         ];
 
         yield 'Keeps path data with a non-ASCII character unchanged' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1.0 2.0é L3 4"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1.0 2.0&#xE9; L3 4"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1.0 2.0é L3 4"/></svg>',
         ];
 
         yield 'Keeps points with a non-ASCII character unchanged' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="1.0,2.0 é 3.0,4.0"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="1.0,2.0 &#xE9; 3.0,4.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="1.0,2.0 é 3.0,4.0"/></svg>',
         ];
 
         yield 'Optimize Rect Coordinates' => [
@@ -346,9 +356,9 @@ final class MinifySvgCoordinatesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M.5.5L-.5-.5"/></svg>',
         ];
 
-        yield 'Trailing decimal point is removed' => [
+        yield 'Keeps path data with a trailing decimal point, which browsers reject' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1. 2.L3.,4."/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1 2L3,4"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1. 2.L3.,4."/></svg>',
         ];
 
         yield 'Compact arc flags are not merged into numbers' => [
@@ -400,6 +410,56 @@ final class MinifySvgCoordinatesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path d=""/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><path d=""/></svg>',
         ];
+
+        yield 'Shortens coordinates in a prefixed SVG document' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg" viewBox="0.0 0 10.0 10"><svg:rect x="1.50" width="10.0"/><svg:path d="M1.0 2.0"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><svg:rect x="1.5" width="10"/><svg:path d="M1 2"/></svg:svg>',
+        ];
+
+        yield 'Keeps coordinates of elements in other namespaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:rect xmlns:x="urn:x" x="1.0"/><rect x="1.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><x:rect xmlns:x="urn:x" x="1.0"/><rect x="1"/></svg>',
+        ];
+
+        yield 'Keeps animation values targeting coordinates' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="1.0"><animate attributeName="x" from="1.0" to="2.0"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="1"><animate attributeName="x" from="1.0" to="2.0"/></rect></svg>',
+        ];
+
+        yield 'Shortens a number after a compact arc flag' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0a1 1 0 0 10.5 1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0a1 1 0 0 1.5 1"/></svg>',
+        ];
+
+        yield 'Keeps doubled signs invalid' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="--1" y="+-1.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect x="--1" y="+-1"/></svg>',
+        ];
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideOptimizeIsIdempotentCases')]
+    #[Test]
+    public function optimizeIsIdempotent(string $optimized): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
+        $svgOptimizer->addRule(new MinifySvgCoordinates());
+
+        self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideOptimizeIsIdempotentCases(): iterable
+    {
+        foreach (self::provideOptimizeCases() as $name => [, $expected]) {
+            yield $name => [$expected];
+        }
     }
 
     #[Test]
@@ -412,5 +472,25 @@ final class MinifySvgCoordinatesTest extends TestCase
     public function shouldCheckSizeReturnsFalse(): void
     {
         self::assertFalse(MinifySvgCoordinates::shouldCheckSize());
+    }
+
+    #[Test]
+    public function handlesLongPathDataInLinearTime(): void
+    {
+        $small = $this->secondsToOptimize(5_000);
+        $large = $this->secondsToOptimize(20_000);
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    private function secondsToOptimize(int $count): float
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0' . str_repeat(' L1.50 2.0', $count) . '"/></svg>');
+
+        $start = hrtime(true);
+        (new MinifySvgCoordinates())->optimize($domDocument);
+
+        return (hrtime(true) - $start) / 1e9;
     }
 }

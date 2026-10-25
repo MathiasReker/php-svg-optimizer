@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 
 /**
@@ -21,6 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
  */
 final readonly class MinifyNumericValues implements SvgOptimizerRuleInterface
 {
+    use ElementTrait;
     use NumberFormatterTrait;
 
     private const array LENGTH_ATTRIBUTES = [
@@ -69,7 +71,15 @@ final readonly class MinifyNumericValues implements SvgOptimizerRuleInterface
     #[\Override]
     public function optimize(\DOMDocument $domDocument): void
     {
+        if ($this->mayMatchAttributeValues($domDocument)) {
+            return;
+        }
+
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            if (!$this->isSvgElement($domNodeList)) {
+                continue;
+            }
+
             foreach (iterator_to_array($domNodeList->attributes, false) as $domAttr) {
                 $this->minifyAttribute($domNodeList->localName ?? '', $domAttr);
             }

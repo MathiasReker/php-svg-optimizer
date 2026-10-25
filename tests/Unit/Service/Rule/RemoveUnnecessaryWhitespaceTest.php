@@ -51,6 +51,10 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
+
+        $repeated = new SvgOptimizer(new StringProvider($actual));
+        $repeated->addRule(new RemoveUnnecessaryWhitespace());
+        self::assertSame($actual, $repeated->optimize()->getContent());
     }
 
     /**
@@ -58,6 +62,116 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
      */
     public static function provideOptimizeCases(): iterable
     {
+        yield 'Keeps the whitespace of event handlers' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" onload="var a=1&#10;f()"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" onload="var a=1&#10;f()"/>',
+        ];
+
+        yield 'Keeps the whitespace of ids, targets and animated attribute names' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a id=" g" target=" _blank"/><set attributeName=" fill " to="red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><a id=" g" target=" _blank"/><set attributeName=" fill " to="red"/></svg>',
+        ];
+
+        yield 'Keeps the whitespace of filter primitive names, which are not trimmed' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><filter><feFlood result=" a"/><feBlend in=" a" in2="b " x=" 1"/></filter></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><filter><feFlood result=" a"/><feBlend in=" a" in2="b " x="1"/></filter></svg>',
+        ];
+
+        yield 'Keeps the whitespace of languages, which the lang pseudo-class compares untrimmed' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:lang(en){fill:red}</style><rect lang=" en" width=" 1"/><rect xml:lang="en "/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:lang(en){fill:red}</style><rect lang=" en" width="1"/><rect xml:lang="en "/></svg>',
+        ];
+
+        yield 'Keeps a style with an escape' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:A\ ;  fill:red">t</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family:A\ ;  fill:red">t</text></svg>',
+        ];
+
+        yield 'Leaves the document untouched when a style sheet selects attribute values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[class="a  b"]{fill:red}</style><rect class="a  b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[class="a  b"]{fill:red}</style><rect class="a  b"/></svg>',
+        ];
+
+        yield 'leaves an empty document alone' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'keeps non-breaking spaces in attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect class="&#xA0;a&#xA0;&#xA0;b&#xA0;" width="5" height="5"/></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect class=\"\u{A0}a\u{A0}\u{A0}b\u{A0}\" width=\"5\" height=\"5\"/></svg>",
+        ];
+
+        yield 'collapses the whitespace of a mixed-case attribute, which is not a data attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect DATA-x="  a  " width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect DATA-x="a" width="5" height="5"/></svg>',
+        ];
+
+        yield 'collapses whitespace with entities' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect aria-label="  &amp;   &lt;  " width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect aria-label="&amp; &lt;" width="5" height="5"/></svg>',
+        ];
+
+        yield 'keeps whitespace in an element reset to no namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""><rect class=" a  b " width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""><rect class=" a  b " width="5" height="5"/></g></svg>',
+        ];
+
+        yield 'keeps a style with an escape untouched' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family : \'a  \\\'  b\' ;">t</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text style="font-family : \'a  \\\'  b\' ;">t</text></svg>',
+        ];
+
+        yield 'keeps the whitespace of attributes in foreign content' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><input xmlns="http://www.w3.org/1999/xhtml" value="a   b" title=" l1&#10;l2 "/></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><input xmlns="http://www.w3.org/1999/xhtml" value="a   b" title=" l1&#10;l2 "/></foreignObject></svg>',
+        ];
+
+        yield 'keeps the whitespace of attributes of svg elements inside a foreign object' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><svg><rect class=" a  b " width="5" height="5"/></svg></foreignObject></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><svg><rect class=" a  b " width="5" height="5"/></svg></foreignObject></svg>',
+        ];
+
+        yield 'keeps the whitespace of the character of a glyph' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><font><glyph unicode=" " horiz-adv-x="250"/></font></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><font><glyph unicode=" " horiz-adv-x="250"/></font></svg>',
+        ];
+
+        yield 'keeps the whitespace of links and downloads' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="http://www.w3.org/1999/xlink"><a href="a  b.svg" download=" c  d.svg"><use x:href=" #i "/></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="http://www.w3.org/1999/xlink"><a href="a  b.svg" download=" c  d.svg"><use x:href=" #i "/></a></svg>',
+        ];
+
+        yield 'keeps the whitespace of data attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect data-label="  a  b  " width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect data-label="  a  b  " width="5" height="5"/></svg>',
+        ];
+
+        yield 'keeps the whitespace of quoted strings in attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text font-family="  \'Open  Sans\',  serif ">t</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text font-family="\'Open  Sans\', serif">t</text></svg>',
+        ];
+
+        yield 'collapses whitespace in attributes of a prefixed svg element' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect class="  a   b " width="5" height="5"/></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect class="a b" width="5" height="5"/></svg:svg>',
+        ];
+
+        yield 'collapses whitespace with multibyte characters' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect aria-label="  &#xE6;  &#x65E5;&#x672C;  " width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect aria-label="æ 日本" width="5" height="5"/></svg>',
+        ];
+
+        yield 'collapses whitespace of an attribute after a verbatim one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect data-x=" a " class=" b " width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect data-x=" a " class="b" width="5" height="5"/></svg>',
+        ];
+
+        yield 'collapses whitespace of attributes sharing a local name in different namespaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a"><rect a:class=" b " class=" c " width="5" height="5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a"><rect a:class="b" class="c" width="5" height="5"/></svg>',
+        ];
+
         yield 'Keeps text that looks like an attribute' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><text xml:space="preserve">x="a      b"</text></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><text xml:space="preserve">x="a      b"</text></svg>',
@@ -68,9 +182,9 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><!-- x="a   b" --></svg>',
         ];
 
-        yield 'Keeps escaped characters escaped' => [
+        yield 'Keeps the whitespace of titles, which tooltips show' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:title="  a &amp;  &lt;b&gt;   &quot;c&quot; " title=" x&#10; y"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:title="a &amp; &lt;b&gt; &quot;c&quot;" title="x y"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:title="  a &amp;  &lt;b&gt;   &quot;c&quot; " title=" x&#10; y"/></svg>',
         ];
 
         yield 'Keeps spaces between values in a style declaration' => [
