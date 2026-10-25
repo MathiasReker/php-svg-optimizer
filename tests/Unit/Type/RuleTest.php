@@ -47,11 +47,23 @@ final class RuleTest extends TestCase
             Rule::ConvertShapesToPath->name => 'convertShapesToPath',
             Rule::FixAttributeNames->name => 'fixAttributeNames',
             Rule::FlattenGroups->name => 'flattenGroups',
+            Rule::MergeDuplicateGradients->name => 'mergeDuplicateGradients',
+            Rule::MergeStyles->name => 'mergeStyles',
+            Rule::MigrateToSvg2->name => 'migrateToSvg2',
             Rule::MinifyListValues->name => 'minifyListValues',
             Rule::MinifyNumericValues->name => 'minifyNumericValues',
             Rule::MinifyPathData->name => 'minifyPathData',
+            Rule::MinifyStyles->name => 'minifyStyles',
             Rule::MinifySvgCoordinates->name => 'minifySvgCoordinates',
             Rule::MinifyTransformations->name => 'minifyTransformations',
+            Rule::MoveCommonAttributesToGroup->name => 'moveCommonAttributesToGroup',
+            Rule::MoveGroupAttributesToElements->name => 'moveGroupAttributesToElements',
+            Rule::RemoveHiddenElements->name => 'removeHiddenElements',
+            Rule::RemoveNonInheritableGroupAttributes->name => 'removeNonInheritableGroupAttributes',
+            Rule::RemoveUnusedDefinitions->name => 'removeUnusedDefinitions',
+            Rule::RemoveUnusedTextAttributes->name => 'removeUnusedTextAttributes',
+            Rule::RemoveUselessStrokeAndFill->name => 'removeUselessStrokeAndFill',
+            Rule::SortDefsChildren->name => 'sortDefsChildren',
             Rule::RemoveAriaAndRole->name => 'removeAriaAndRole',
             Rule::RemoveComments->name => 'removeComments',
             Rule::RemoveDataAttributes->name => 'removeDataAttributes',
@@ -176,18 +188,22 @@ final class RuleTest extends TestCase
         self::assertSame(
             [
                 'RemoveUnsafeElements', 'RemoveDoctype', 'RemoveComments', 'RemoveMetadata', 'RemoveInkscapeFootprints',
-                'RemoveNonStandardTags', 'FixAttributeNames', 'RemoveDeprecatedAttributes', 'RemoveTitleAndDesc',
-                'RemoveNonStandardAttributes', 'RemoveDataAttributes', 'RemoveAriaAndRole', 'RemoveInvisibleCharacters',
-                'RemoveEnableBackgroundAttribute', 'RemoveStyleTypeAttributes', 'RemoveXmlSpaceDefault',
-                'RemoveWidthHeightAttributes',
-                'ScopeSvgStyles', 'ConvertCssClassesToAttributes', 'ConvertInlineStylesToAttributes',
-                'RemoveEmptyAttributes', 'RemoveUnusedMasks',
-                'MinifyNumericValues', 'MinifyListValues', 'MinifySvgCoordinates', 'ConvertColorsToHex', 'RemoveUnusedIds',
-                'ConvertOneStopGradients', 'RemoveDefaultAttributes',
-                'RemoveZeroSizeShapes', 'RemoveEmptyTextElements', 'RemoveDuplicateElements', 'FlattenGroups',
-                'RemoveEmptyGroups', 'RemoveEmptyContainers', 'RemoveUselessDefs', 'MinifyTransformations',
+                'FixAttributeNames', 'MigrateToSvg2', 'RemoveNonStandardTags', 'RemoveDeprecatedAttributes',
+                'RemoveTitleAndDesc', 'RemoveNonStandardAttributes', 'RemoveDataAttributes', 'RemoveAriaAndRole',
+                'RemoveInvisibleCharacters', 'RemoveEnableBackgroundAttribute', 'RemoveStyleTypeAttributes',
+                'RemoveXmlSpaceDefault', 'RemoveWidthHeightAttributes',
+                'ScopeSvgStyles', 'MergeStyles', 'MinifyStyles', 'ConvertCssClassesToAttributes',
+                'ConvertInlineStylesToAttributes', 'RemoveEmptyAttributes',
+                'MinifyNumericValues', 'MinifyListValues', 'MinifySvgCoordinates', 'ConvertColorsToHex',
+                'MergeDuplicateGradients', 'RemoveUnusedIds', 'ConvertOneStopGradients', 'RemoveUnusedDefinitions',
+                'RemoveNonInheritableGroupAttributes',
+                'RemoveHiddenElements', 'RemoveZeroSizeShapes', 'RemoveEmptyTextElements', 'RemoveUnusedTextAttributes',
+                'RemoveDuplicateElements', 'RemoveEmptyGroups', 'RemoveEmptyContainers', 'RemoveUnusedMasks',
+                'FlattenGroups', 'MoveGroupAttributesToElements', 'MoveCommonAttributesToGroup',
+                'RemoveUselessStrokeAndFill', 'RemoveDefaultAttributes', 'RemoveUselessDefs', 'MinifyTransformations',
                 'ConvertEllipseToCircle', 'ConvertShapesToPath', 'MinifyPathData',
-                'RemoveUnusedNamespaces', 'RemoveUnnecessaryWhitespace', 'ConvertEmptyTagsToSelfClosing', 'SortAttributes',
+                'RemoveUnusedNamespaces', 'RemoveUnnecessaryWhitespace', 'ConvertEmptyTagsToSelfClosing',
+                'SortDefsChildren', 'SortAttributes',
             ],
             array_map(static fn (Rule $rule): string => $rule->name, $rules),
         );
@@ -232,7 +248,23 @@ final class RuleTest extends TestCase
 
         yield 'empty attributes are removed before gradients are inlined' => [Rule::RemoveEmptyAttributes, Rule::ConvertOneStopGradients];
 
-        yield 'defaults are removed before groups are flattened' => [Rule::RemoveDefaultAttributes, Rule::FlattenGroups];
+        yield 'groups are flattened before defaults are removed, as attributes moved off a group may become defaults' => [Rule::FlattenGroups, Rule::RemoveDefaultAttributes];
+
+        yield 'style elements are merged before class rules are converted' => [Rule::MergeStyles, Rule::ConvertCssClassesToAttributes];
+
+        yield 'style comments are removed before class rules are converted' => [Rule::MinifyStyles, Rule::ConvertCssClassesToAttributes];
+
+        yield 'gradients are inlined before unused definitions are removed' => [Rule::ConvertOneStopGradients, Rule::RemoveUnusedDefinitions];
+
+        yield 'empty groups are removed before attributes are moved to groups' => [Rule::RemoveEmptyContainers, Rule::MoveCommonAttributesToGroup];
+
+        yield 'empty containers are removed before unused masks are removed' => [Rule::RemoveEmptyContainers, Rule::RemoveUnusedMasks];
+
+        yield 'groups are flattened before common attributes are moved to groups' => [Rule::FlattenGroups, Rule::MoveCommonAttributesToGroup];
+
+        yield 'group transforms are moved after groups are flattened' => [Rule::FlattenGroups, Rule::MoveGroupAttributesToElements];
+
+        yield 'attributes are moved to groups before useless strokes and fills are removed' => [Rule::MoveCommonAttributesToGroup, Rule::RemoveUselessStrokeAndFill];
 
         yield 'foreign attributes are removed before groups are flattened' => [Rule::RemoveNonStandardAttributes, Rule::FlattenGroups];
 

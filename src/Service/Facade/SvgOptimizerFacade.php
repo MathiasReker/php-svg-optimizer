@@ -79,50 +79,62 @@ final readonly class SvgOptimizerFacade
     }
 
     /**
-     * @param bool $convertColorsToHex              Whether to convert colors to hexadecimal format
-     * @param bool $convertCssClassesToAttributes   Whether to convert CSS classes to attributes
-     * @param bool $convertEmptyTagsToSelfClosing   Whether to convert empty tags to self-closing tags
-     * @param bool $convertInlineStylesToAttributes Whether to convert inline styles to attributes
-     * @param bool $fixAttributeNames               Whether to fix typos in attribute names
-     * @param bool $flattenGroups                   Whether to flatten nested group elements
-     * @param bool $minifySvgCoordinates            Whether to minify coordinate values within the SVG
-     * @param bool $minifyTransformations           Whether to minify transformation attributes
-     * @param bool $removeAriaAndRole               Whether to remove aria and role attributes
-     * @param bool $removeComments                  Whether to remove XML comments from the SVG
-     * @param bool $removeDataAttributes            Whether to remove data-* attributes from elements
-     * @param bool $removeDefaultAttributes         Whether to remove default attributes from elements
-     * @param bool $removeDeprecatedAttributes      Whether to remove and modernize deprecated attributes
-     * @param bool $removeDoctype                   Whether to remove the DOCTYPE declaration
-     * @param bool $removeDuplicateElements         Whether to remove duplicate elements
-     * @param bool $removeEmptyAttributes           Whether to remove empty attributes from elements
-     * @param bool $removeEmptyGroups               Whether to remove empty groups
-     * @param bool $removeEmptyTextElements         Whether to remove empty text elements
-     * @param bool $removeEnableBackgroundAttribute Whether to remove the enable-background attribute
-     * @param bool $removeInkscapeFootprints        Whether to remove Inkscape-specific footprints
-     * @param bool $removeInvisibleCharacters       Whether to remove invisible characters
-     * @param bool $removeMetadata                  Whether to remove metadata elements from the SVG
-     * @param bool $removeNonStandardAttributes     Whether to remove non-standard attributes that are not widely supported in SVG
-     * @param bool $removeNonStandardTags           Whether to remove non-standard tags that are not part of the official SVG specification
-     * @param bool $removeTitleAndDesc              Whether to remove the <title> and <desc> elements
-     * @param bool $removeUnnecessaryWhitespace     Whether to remove unnecessary whitespace
-     * @param bool $removeUnsafeElements            Whether to remove unsafe elements
-     * @param bool $removeUnusedMasks               Whether to remove unused masks
-     * @param bool $removeUnusedNamespaces          Whether to remove unused namespaces
-     * @param bool $removeWidthHeightAttributes     Whether to remove width and height attributes
-     * @param bool $scopeSvgStyles                  Whether to rewrite IDs and class names in SVG styles to prevent conflicts
-     * @param bool $sortAttributes                  Whether to sort attributes
-     * @param bool $convertEllipseToCircle          Whether to convert ellipses with equal radii to circles
-     * @param bool $convertShapesToPath             Whether to convert rect, line, polyline and polygon elements to paths
-     * @param bool $minifyNumericValues             Whether to shorten the notation of numeric attribute values
-     * @param bool $minifyPathData                  Whether to minify path data without changing coordinates
-     * @param bool $removeEmptyContainers           Whether to remove empty container elements that cannot be referenced
-     * @param bool $removeUselessDefs               Whether to remove definitions without an id
-     * @param bool $removeZeroSizeShapes            Whether to remove shapes with a zero size
-     * @param bool $convertOneStopGradients         Whether to replace gradients with a single stop by its color
-     * @param bool $minifyListValues                Whether to shorten the notation of number lists
-     * @param bool $removeStyleTypeAttributes       Whether to remove default type attributes on style and script elements
-     * @param bool $removeUnusedIds                 Whether to remove ids that are not referenced in the document
-     * @param bool $removeXmlSpaceDefault           Whether to remove xml:space="default" where it has no effect
+     * @param bool $convertColorsToHex                  Whether to convert colors to hexadecimal format
+     * @param bool $convertCssClassesToAttributes       Whether to convert CSS classes to attributes
+     * @param bool $convertEmptyTagsToSelfClosing       Whether to convert empty tags to self-closing tags
+     * @param bool $convertInlineStylesToAttributes     Whether to convert inline styles to attributes
+     * @param bool $fixAttributeNames                   Whether to fix typos in attribute names
+     * @param bool $flattenGroups                       Whether to flatten nested group elements
+     * @param bool $minifySvgCoordinates                Whether to minify coordinate values within the SVG
+     * @param bool $minifyTransformations               Whether to minify transformation attributes
+     * @param bool $removeAriaAndRole                   Whether to remove aria and role attributes
+     * @param bool $removeComments                      Whether to remove XML comments from the SVG
+     * @param bool $removeDataAttributes                Whether to remove data-* attributes from elements
+     * @param bool $removeDefaultAttributes             Whether to remove default attributes from elements
+     * @param bool $removeDeprecatedAttributes          Whether to remove and modernize deprecated attributes
+     * @param bool $removeDoctype                       Whether to remove the DOCTYPE declaration
+     * @param bool $removeDuplicateElements             Whether to remove duplicate elements
+     * @param bool $removeEmptyAttributes               Whether to remove empty attributes from elements
+     * @param bool $removeEmptyGroups                   Whether to remove empty groups
+     * @param bool $removeEmptyTextElements             Whether to remove empty text elements
+     * @param bool $removeEnableBackgroundAttribute     Whether to remove the enable-background attribute
+     * @param bool $removeInkscapeFootprints            Whether to remove Inkscape-specific footprints
+     * @param bool $removeInvisibleCharacters           Whether to remove invisible characters
+     * @param bool $removeMetadata                      Whether to remove metadata elements from the SVG
+     * @param bool $removeNonStandardAttributes         Whether to remove non-standard attributes that are not widely supported in SVG
+     * @param bool $removeNonStandardTags               Whether to remove non-standard tags that are not part of the official SVG specification
+     * @param bool $removeTitleAndDesc                  Whether to remove the <title> and <desc> elements
+     * @param bool $removeUnnecessaryWhitespace         Whether to remove unnecessary whitespace
+     * @param bool $removeUnsafeElements                Whether to remove unsafe elements
+     * @param bool $removeUnusedMasks                   Whether to remove unused masks
+     * @param bool $removeUnusedNamespaces              Whether to remove unused namespaces
+     * @param bool $removeWidthHeightAttributes         Whether to remove width and height attributes
+     * @param bool $scopeSvgStyles                      Whether to rewrite IDs and class names in SVG styles to prevent conflicts
+     * @param bool $sortAttributes                      Whether to sort attributes
+     * @param bool $convertEllipseToCircle              Whether to convert ellipses with equal radii to circles
+     * @param bool $convertShapesToPath                 Whether to convert rect, line, polyline and polygon elements to paths
+     * @param bool $minifyNumericValues                 Whether to shorten the notation of numeric attribute values
+     * @param bool $minifyPathData                      Whether to minify path data without changing coordinates
+     * @param bool $removeEmptyContainers               Whether to remove empty container elements that cannot be referenced
+     * @param bool $removeUselessDefs                   Whether to remove definitions without an id
+     * @param bool $removeZeroSizeShapes                Whether to remove shapes with a zero size
+     * @param bool $convertOneStopGradients             Whether to replace gradients with a single stop by its color
+     * @param bool $minifyListValues                    Whether to shorten the notation of number lists
+     * @param bool $removeStyleTypeAttributes           Whether to remove default type attributes on style and script elements
+     * @param bool $removeUnusedIds                     Whether to remove ids that are not referenced in the document
+     * @param bool $removeXmlSpaceDefault               Whether to remove xml:space="default" where it has no effect
+     * @param bool $mergeDuplicateGradients             Whether to merge identical gradients into one
+     * @param bool $mergeStyles                         Whether to merge style elements into one
+     * @param bool $migrateToSvg2                       Whether to migrate SVG 1.1 and SVG Tiny markup to SVG 2
+     * @param bool $minifyStyles                        Whether to remove comments and whitespace from style elements
+     * @param bool $moveCommonAttributesToGroup         Whether to move attributes shared by all children of a group onto the group
+     * @param bool $moveGroupAttributesToElements       Whether to move the transform of a group onto its children
+     * @param bool $removeHiddenElements                Whether to remove elements that cannot render anything
+     * @param bool $removeNonInheritableGroupAttributes Whether to remove group attributes that are neither inherited nor apply to groups
+     * @param bool $removeUnusedDefinitions             Whether to remove definitions that are not referenced
+     * @param bool $removeUnusedTextAttributes          Whether to remove text attributes from elements without text
+     * @param bool $removeUselessStrokeAndFill          Whether to remove stroke and fill attributes that have no effect
+     * @param bool $sortDefsChildren                    Whether to group the children of defs elements by tag name
      *
      * @return $this The SvgOptimizerFacade instance
      */
@@ -171,6 +183,18 @@ final readonly class SvgOptimizerFacade
         bool $removeStyleTypeAttributes = false,
         bool $removeUnusedIds = false,
         bool $removeXmlSpaceDefault = false,
+        bool $mergeDuplicateGradients = false,
+        bool $mergeStyles = false,
+        bool $migrateToSvg2 = false,
+        bool $minifyStyles = false,
+        bool $moveCommonAttributesToGroup = false,
+        bool $moveGroupAttributesToElements = false,
+        bool $removeHiddenElements = false,
+        bool $removeNonInheritableGroupAttributes = false,
+        bool $removeUnusedDefinitions = false,
+        bool $removeUnusedTextAttributes = false,
+        bool $removeUselessStrokeAndFill = false,
+        bool $sortDefsChildren = false,
     ): self {
         $rules = [
             Rule::ConvertColorsToHex->value => $convertColorsToHex,
@@ -182,11 +206,17 @@ final readonly class SvgOptimizerFacade
             Rule::ConvertShapesToPath->value => $convertShapesToPath,
             Rule::FixAttributeNames->value => $fixAttributeNames,
             Rule::FlattenGroups->value => $flattenGroups,
+            Rule::MergeDuplicateGradients->value => $mergeDuplicateGradients,
+            Rule::MergeStyles->value => $mergeStyles,
+            Rule::MigrateToSvg2->value => $migrateToSvg2,
             Rule::MinifyListValues->value => $minifyListValues,
             Rule::MinifyNumericValues->value => $minifyNumericValues,
             Rule::MinifyPathData->value => $minifyPathData,
+            Rule::MinifyStyles->value => $minifyStyles,
             Rule::MinifySvgCoordinates->value => $minifySvgCoordinates,
             Rule::MinifyTransformations->value => $minifyTransformations,
+            Rule::MoveCommonAttributesToGroup->value => $moveCommonAttributesToGroup,
+            Rule::MoveGroupAttributesToElements->value => $moveGroupAttributesToElements,
             Rule::RemoveAriaAndRole->value => $removeAriaAndRole,
             Rule::RemoveComments->value => $removeComments,
             Rule::RemoveDataAttributes->value => $removeDataAttributes,
@@ -199,24 +229,30 @@ final readonly class SvgOptimizerFacade
             Rule::RemoveEmptyGroups->value => $removeEmptyGroups,
             Rule::RemoveEmptyTextElements->value => $removeEmptyTextElements,
             Rule::RemoveEnableBackgroundAttribute->value => $removeEnableBackgroundAttribute,
+            Rule::RemoveHiddenElements->value => $removeHiddenElements,
             Rule::RemoveInkscapeFootprints->value => $removeInkscapeFootprints,
             Rule::RemoveInvisibleCharacters->value => $removeInvisibleCharacters,
             Rule::RemoveMetadata->value => $removeMetadata,
+            Rule::RemoveNonInheritableGroupAttributes->value => $removeNonInheritableGroupAttributes,
             Rule::RemoveNonStandardAttributes->value => $removeNonStandardAttributes,
             Rule::RemoveNonStandardTags->value => $removeNonStandardTags,
             Rule::RemoveStyleTypeAttributes->value => $removeStyleTypeAttributes,
             Rule::RemoveTitleAndDesc->value => $removeTitleAndDesc,
             Rule::RemoveUnnecessaryWhitespace->value => $removeUnnecessaryWhitespace,
             Rule::RemoveUnsafeElements->value => $removeUnsafeElements,
+            Rule::RemoveUnusedDefinitions->value => $removeUnusedDefinitions,
             Rule::RemoveUnusedIds->value => $removeUnusedIds,
             Rule::RemoveUnusedMasks->value => $removeUnusedMasks,
             Rule::RemoveUnusedNamespaces->value => $removeUnusedNamespaces,
+            Rule::RemoveUnusedTextAttributes->value => $removeUnusedTextAttributes,
             Rule::RemoveUselessDefs->value => $removeUselessDefs,
+            Rule::RemoveUselessStrokeAndFill->value => $removeUselessStrokeAndFill,
             Rule::RemoveWidthHeightAttributes->value => $removeWidthHeightAttributes,
             Rule::RemoveXmlSpaceDefault->value => $removeXmlSpaceDefault,
             Rule::RemoveZeroSizeShapes->value => $removeZeroSizeShapes,
             Rule::ScopeSvgStyles->value => $scopeSvgStyles,
             Rule::SortAttributes->value => $sortAttributes,
+            Rule::SortDefsChildren->value => $sortDefsChildren,
         ];
 
         $this->svgOptimizer->configureRules($rules);

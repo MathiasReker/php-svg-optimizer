@@ -70,6 +70,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveZeroSizeShapes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
+use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -409,7 +410,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     #[Test]
     public function withAllRulesIncludesRiskyRulesWhetherAllowRiskyIsCalledBeforeOrAfter(): void
     {
-        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" data-x="1"><rect width="10" height="10"/></svg>';
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" data-x="1"><rect width="10" height="10"/></svg>';
 
         $allowRiskyFirst = SvgOptimizerFacade::fromString($svg)->allowRisky()->withAllRules()->optimize()->getContent();
         $allowRiskyLast = SvgOptimizerFacade::fromString($svg)->withAllRules()->allowRisky()->optimize()->getContent();
@@ -457,7 +458,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     #[Test]
     public function withAllRulesWithoutAllowRiskyLeavesRiskyRulesOut(): void
     {
-        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" data-x="1"><rect width="10" height="10"/></svg>';
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" data-x="1"><rect width="10" height="10"/></svg>';
 
         $content = SvgOptimizerFacade::fromString($svg)->withAllRules()->allowRisky(false)->optimize()->getContent();
 
@@ -508,7 +509,7 @@ final class SvgOptimizerFacadeTest extends TestCase
     #[Test]
     public function withRulesCanEnableSpecificRiskyRules(): void
     {
-        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"></svg>';
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"></svg>';
         $svgOptimizerFacade = SvgOptimizerFacade::fromString($svg)
             ->withRules(false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)
             ->allowRisky()
@@ -682,6 +683,127 @@ final class SvgOptimizerFacadeTest extends TestCase
         self::assertCount(3, array_filter($flags));
 
         self::assertSame($withAllRules, $withRulesAgain);
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideWithRulesEnablesTheRuleAtItsPositionCases')]
+    #[Test]
+    public function withRulesEnablesTheRuleAtItsPosition(int $position, Rule $rule, string $svg): void
+    {
+        $flags = array_fill(0, $position + 1, false);
+        $flags[$position] = true;
+
+        $svgOptimizer = new SvgOptimizer(new StringProvider($svg));
+        $svgOptimizer->configureRules([$rule->value => true]);
+
+        $expected = $svgOptimizer->allowRisky()->optimize()->getContent();
+        $actual = SvgOptimizerFacade::fromString($svg)
+            ->withRules(...$flags)
+            ->allowRisky()
+            ->optimize()
+            ->getContent();
+
+        self::assertNotSame(SvgOptimizerFacade::fromString($svg)->optimize()->getContent(), $expected);
+        self::assertSame($expected, $actual);
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideWithRulesEnablesTheRuleAtItsPositionCases')]
+    #[Test]
+    public function withRulesLeavesEveryRuleOffByDefault(int $position, Rule $rule, string $svg): void
+    {
+        $withoutRules = SvgOptimizerFacade::fromString($svg)->optimize()->getContent();
+        $withDefaultRules = SvgOptimizerFacade::fromString($svg)->withRules()->optimize()->getContent();
+
+        self::assertSame($withoutRules, $withDefaultRules);
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideWithRulesEnablesTheRuleAtItsPositionCases')]
+    #[Test]
+    public function withRulesEnablesNoOtherRuleForConvertEmptyTagsToSelfClosing(int $position, Rule $rule, string $svg): void
+    {
+        $withoutRules = SvgOptimizerFacade::fromString($svg)->optimize()->getContent();
+        $withConvertEmptyTagsToSelfClosing = SvgOptimizerFacade::fromString($svg)
+            ->withRules(false, false, true)
+            ->allowRisky()
+            ->optimize()
+            ->getContent();
+
+        self::assertSame($withoutRules, $withConvertEmptyTagsToSelfClosing);
+    }
+
+    /**
+     * @return iterable<string, array{int, Rule, string}>
+     */
+    public static function provideWithRulesEnablesTheRuleAtItsPositionCases(): iterable
+    {
+        yield 'convertColorsToHex' => [0, Rule::ConvertColorsToHex, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="rgb(255,0,0)"/></svg>'];
+        yield 'convertCssClassesToAttributes' => [1, Rule::ConvertCssClassesToAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}</style><rect class="a" width="1" height="1"/></svg>'];
+        yield 'convertInlineStylesToAttributes' => [3, Rule::ConvertInlineStylesToAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" style="fill:red"/></svg>'];
+        yield 'fixAttributeNames' => [4, Rule::FixAttributeNames, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" Fill="red"/></svg>'];
+        yield 'flattenGroups' => [5, Rule::FlattenGroups, '<svg xmlns="http://www.w3.org/2000/svg"><g><rect width="1" height="1"/></g></svg>'];
+        yield 'minifySvgCoordinates' => [6, Rule::MinifySvgCoordinates, '<svg xmlns="http://www.w3.org/2000/svg"><rect x="1.50" width="1" height="1"/></svg>'];
+        yield 'minifyTransformations' => [7, Rule::MinifyTransformations, '<svg xmlns="http://www.w3.org/2000/svg"><rect transform="translate(10, 0)" width="1" height="1"/></svg>'];
+        yield 'removeAriaAndRole' => [8, Rule::RemoveAriaAndRole, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" aria-label="x" role="img"/></svg>'];
+        yield 'removeComments' => [9, Rule::RemoveComments, '<svg xmlns="http://www.w3.org/2000/svg"><!-- c --><rect width="1" height="1"/></svg>'];
+        yield 'removeDataAttributes' => [10, Rule::RemoveDataAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" data-x="1"/></svg>'];
+        yield 'removeDefaultAttributes' => [11, Rule::RemoveDefaultAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" stroke-linejoin="miter"/></svg>'];
+        yield 'removeDeprecatedAttributes' => [12, Rule::RemoveDeprecatedAttributes, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1"><rect width="1" height="1"/></svg>'];
+        yield 'removeDuplicateElements' => [14, Rule::RemoveDuplicateElements, '<svg xmlns="http://www.w3.org/2000/svg"><defs><text x="1">a</text><text x="1">a</text></defs></svg>'];
+        yield 'removeEmptyAttributes' => [15, Rule::RemoveEmptyAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill=""/></svg>'];
+        yield 'removeEmptyGroups' => [16, Rule::RemoveEmptyGroups, '<svg xmlns="http://www.w3.org/2000/svg"><g/><rect width="1" height="1"/></svg>'];
+        yield 'removeEmptyTextElements' => [17, Rule::RemoveEmptyTextElements, '<svg xmlns="http://www.w3.org/2000/svg"><text/><rect width="1" height="1"/></svg>'];
+        yield 'removeEnableBackgroundAttribute' => [18, Rule::RemoveEnableBackgroundAttribute, '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 10 10"><rect width="1" height="1"/></svg>'];
+        yield 'removeInkscapeFootprints' => [19, Rule::RemoveInkscapeFootprints, '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect width="1" height="1" inkscape:label="x"/></svg>'];
+        yield 'removeInvisibleCharacters' => [20, Rule::RemoveInvisibleCharacters, '<svg xmlns="http://www.w3.org/2000/svg"><g>a&#x200B;</g></svg>'];
+        yield 'removeMetadata' => [21, Rule::RemoveMetadata, '<svg xmlns="http://www.w3.org/2000/svg"><metadata>m</metadata><rect width="1" height="1"/></svg>'];
+        yield 'removeNonStandardAttributes' => [22, Rule::RemoveNonStandardAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" foo="bar"/></svg>'];
+        yield 'removeNonStandardTags' => [23, Rule::RemoveNonStandardTags, '<svg xmlns="http://www.w3.org/2000/svg"><foo/><rect width="1" height="1"/></svg>'];
+        yield 'removeTitleAndDesc' => [24, Rule::RemoveTitleAndDesc, '<svg xmlns="http://www.w3.org/2000/svg"><title>t</title><rect width="1" height="1"/></svg>'];
+        yield 'removeUnnecessaryWhitespace' => [25, Rule::RemoveUnnecessaryWhitespace, '<svg xmlns="http://www.w3.org/2000/svg"><rect width=" 1" height="1"/></svg>'];
+        yield 'removeUnsafeElements' => [26, Rule::RemoveUnsafeElements, '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><rect width="1" height="1"/></svg>'];
+        yield 'removeUnusedMasks' => [27, Rule::RemoveUnusedMasks, '<svg xmlns="http://www.w3.org/2000/svg"><mask id="m"><rect width="1" height="1"/></mask><rect width="1" height="1"/></svg>'];
+        yield 'removeUnusedNamespaces' => [28, Rule::RemoveUnusedNamespaces, '<svg xmlns="http://www.w3.org/2000/svg" xmlns:foo="http://example.com/foo"><rect width="1" height="1"/></svg>'];
+        yield 'removeWidthHeightAttributes' => [29, Rule::RemoveWidthHeightAttributes, '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><rect width="1" height="1"/></svg>'];
+        yield 'scopeSvgStyles' => [30, Rule::ScopeSvgStyles, '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}</style><rect class="a" width="1" height="1"/></svg>'];
+        yield 'sortAttributes' => [31, Rule::SortAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><rect b="1" a="2"/></svg>'];
+        yield 'convertEllipseToCircle' => [32, Rule::ConvertEllipseToCircle, '<svg xmlns="http://www.w3.org/2000/svg"><ellipse rx="2" ry="2"/></svg>'];
+        yield 'convertShapesToPath' => [33, Rule::ConvertShapesToPath, '<svg xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="5" y2="5" stroke="red"/></svg>'];
+        yield 'minifyNumericValues' => [34, Rule::MinifyNumericValues, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1.50" height="1"/></svg>'];
+        yield 'minifyPathData' => [35, Rule::MinifyPathData, '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 L 10 10"/></svg>'];
+        yield 'removeEmptyContainers' => [36, Rule::RemoveEmptyContainers, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/><defs/></svg>'];
+        yield 'removeUselessDefs' => [37, Rule::RemoveUselessDefs, '<svg xmlns="http://www.w3.org/2000/svg"><defs><rect width="1" height="1"/></defs><rect width="1" height="1"/></svg>'];
+        yield 'removeZeroSizeShapes' => [38, Rule::RemoveZeroSizeShapes, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="0" height="1"/><rect width="1" height="1"/></svg>'];
+        yield 'convertOneStopGradients' => [39, Rule::ConvertOneStopGradients, '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient id="g"><stop stop-color="red"/></linearGradient><rect width="1" height="1" fill="url(#g)"/></svg>'];
+        yield 'minifyListValues' => [40, Rule::MinifyListValues, '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="0, 0, 1, 1, 2, 0"/></svg>'];
+        yield 'removeStyleTypeAttributes' => [41, Rule::RemoveStyleTypeAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><style type="text/css">rect{fill:red}</style><rect width="1" height="1"/></svg>'];
+        yield 'removeUnusedIds' => [42, Rule::RemoveUnusedIds, '<svg xmlns="http://www.w3.org/2000/svg"><rect id="u" width="1" height="1"/></svg>'];
+        yield 'removeXmlSpaceDefault' => [43, Rule::RemoveXmlSpaceDefault, '<svg xmlns="http://www.w3.org/2000/svg"><text xml:space="default">a</text></svg>'];
+        yield 'mergeDuplicateGradients' => [44, Rule::MergeDuplicateGradients, '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient id="a"><stop offset="0" stop-color="red"/><stop offset="1" stop-color="blue"/></linearGradient><linearGradient id="b"><stop offset="0" stop-color="red"/><stop offset="1" stop-color="blue"/></linearGradient><rect width="1" height="1" fill="url(#a)"/><rect width="1" height="1" fill="url(#b)"/></svg>'];
+        yield 'mergeStyles' => [45, Rule::MergeStyles, '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}</style><style>circle{fill:blue}</style><rect width="1" height="1"/></svg>'];
+        yield 'migrateToSvg2' => [46, Rule::MigrateToSvg2, '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#r"/><rect id="r" width="1" height="1"/></svg>'];
+        yield 'minifyStyles' => [47, Rule::MinifyStyles, '<svg xmlns="http://www.w3.org/2000/svg"><style> rect { fill : red ; } </style><rect width="1" height="1"/></svg>'];
+        yield 'moveCommonAttributesToGroup' => [48, Rule::MoveCommonAttributesToGroup, '<svg xmlns="http://www.w3.org/2000/svg"><g><rect fill="red" width="1" height="1"/><circle fill="red" r="1"/></g></svg>'];
+        yield 'moveGroupAttributesToElements' => [49, Rule::MoveGroupAttributesToElements, '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><rect width="1" height="1"/></g></svg>'];
+        yield 'removeHiddenElements' => [50, Rule::RemoveHiddenElements, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" display="none"/><rect width="2" height="2"/></svg>'];
+        yield 'removeNonInheritableGroupAttributes' => [51, Rule::RemoveNonInheritableGroupAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><g x="1"><rect width="1" height="1"/></g></svg>'];
+        yield 'removeUnusedDefinitions' => [52, Rule::RemoveUnusedDefinitions, '<svg xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="a"><stop offset="0"/></linearGradient></defs><rect width="1" height="1"/></svg>'];
+        yield 'removeUnusedTextAttributes' => [53, Rule::RemoveUnusedTextAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" font-size="12"/></svg>'];
+        yield 'removeUselessStrokeAndFill' => [54, Rule::RemoveUselessStrokeAndFill, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" stroke-width="2"/></svg>'];
+        yield 'sortDefsChildren' => [55, Rule::SortDefsChildren, '<svg xmlns="http://www.w3.org/2000/svg"><defs><rect id="a" width="1" height="1"/><circle id="b" r="1"/><rect id="c" width="1" height="1"/></defs><use href="#a"/><use href="#b"/><use href="#c"/></svg>'];
     }
 
     #[\Override]
