@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule\Trait;
 
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Support\SvgDefaults;
 
@@ -29,34 +30,32 @@ trait DangerousAttributeValueTrait
      */
     private function removeDangerousAttributes(\DOMDocument $domDocument): void
     {
-        $verdicts = [];
+        $arrayObject = new \ArrayObject();
 
-        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
-            if ($domNodeList->hasAttributes()) {
-                $verdicts = $this->removeDangerousAttributesOf($domNodeList, $verdicts);
-            }
+        foreach (iterator_to_array($domDocument->getElementsByTagName('*'), false) as $domElement) {
+            $this->removeDangerousAttributesOf($domElement, $arrayObject);
         }
     }
 
     /**
-     * @param \DOMElement         $domElement the element to clean
-     * @param array<string, bool> $verdicts   the verdicts for attributes checked before, by data URI permission, name and value
-     *
-     * @return array<string, bool> the verdicts including those for the attributes of the element
+     * @param \DOMElement                $domElement  the element to clean
+     * @param \ArrayObject<string, bool> $arrayObject the verdicts for attributes checked before, by data URI permission, name and value
      */
-    private function removeDangerousAttributesOf(\DOMElement $domElement, array $verdicts): array
+    private function removeDangerousAttributesOf(\DOMElement $domElement, \ArrayObject $arrayObject): void
     {
         $allowsDataUri = $this->isTagIn($domElement, SvgTag::dataUri());
 
         foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
-            $key = ($allowsDataUri ? '1' : '0') . mb_strtolower($domAttr->name) . "\0" . $domAttr->value;
+            $key = serialize([$allowsDataUri, $domAttr->namespaceURI, $domAttr->nodeName, $domAttr->value]);
 
-            if ($verdicts[$key] ??= $this->isDangerousAttribute($domAttr, $allowsDataUri)) {
+            if (!$arrayObject->offsetExists($key)) {
+                $arrayObject[$key] = $this->isDangerousAttribute($domAttr, $allowsDataUri);
+            }
+
+            if (true === $arrayObject[$key]) {
                 $domElement->removeAttributeNode($domAttr);
             }
         }
-
-        return $verdicts;
     }
 
     /**
@@ -67,7 +66,7 @@ trait DangerousAttributeValueTrait
     private function containsDangerousUrl(array $urls): bool
     {
         foreach ($urls as $url) {
-            if ($this->matchesPattern($this->normalizeValue($url), self::DANGEROUS_PROTOCOLS_REGEX)) {
+            if ($this->matchesPattern($url, self::DANGEROUS_PROTOCOLS_REGEX) || $this->matchesPattern($this->normalizeValue($url), self::DANGEROUS_PROTOCOLS_REGEX)) {
                 return true;
             }
         }
@@ -85,7 +84,14 @@ trait DangerousAttributeValueTrait
     {
         $name = mb_strtolower($domAttr->name);
 
-        if ($this->isDangerousAttributeName($name)) {
+        if (SvgNamespace::XmlEvents->value === $domAttr->namespaceURI
+            || $this->isDangerousAttributeName($name)
+            || $this->isNonCanonicalAttribute($domAttr)
+        ) {
+            return true;
+        }
+
+        if ($this->isUrlAttribute($name) && $this->isDangerousUrl($domAttr->value)) {
             return true;
         }
 
@@ -135,9 +141,13 @@ trait DangerousAttributeValueTrait
         $value = preg_replace(self::C_STYLE_COMMENT_REGEX, '', $value) ?? $value;
 
         $value = preg_replace_callback(
-            self::CSS_HEX_ESCAPE_REGEX,
+            self::CSS_ESCAPE_REGEX,
             static function (array $match): string {
-                $code = (int) hexdec($match[1]);
+                if ('' === $match[1]) {
+                    return $match[2];
+                }
+
+                $code = \intval($match[1], 16);
 
                 return $code > 0x10_FF_FF || ($code >= 0xD8_00 && $code <= 0xDF_FF)
                     ? ''
@@ -148,11 +158,13 @@ trait DangerousAttributeValueTrait
 
         $value = preg_replace(self::CONTROL_CHARS_REGEX, '', $value) ?? $value;
 
+        $value = preg_replace(self::INVISIBLE_CHARS_REGEX, '', $value) ?? $value;
+
         $value = $this->transliterateHomoglyphs($value);
 
         $value = preg_replace(self::WHITESPACE_REGEX, '', $value) ?? $value;
 
-        return mb_strtolower(trim($value), SvgDefaults::XML_ENCODING);
+        return mb_strtolower($value, SvgDefaults::XML_ENCODING);
     }
 
     /**
@@ -198,8 +210,7 @@ trait DangerousAttributeValueTrait
      */
     private function isDangerousAttributeValue(string $name, string $value): bool
     {
-        return $this->isDangerousUrlAttribute($name, $value)
-            || (SvgAttribute::Values->value === $name && $this->isSmilValuesDangerous($value))
+        return (SvgAttribute::Values->value === $name && $this->isSmilValuesDangerous($value))
             || (\in_array($name, SvgAttribute::dangerous(), true) && $this->isUrlAttributeValueDangerous($value))
             || match ($name) {
                 SvgAttribute::Style->value => $this->isStyleAttributeDangerous($value),
@@ -209,18 +220,27 @@ trait DangerousAttributeValueTrait
     }
 
     /**
-     * @param string $name  the attribute name
-     * @param string $value the normalized attribute value
+     * @param string $name the attribute name
      *
-     * @return bool true if the attribute holds a single URL and the URL uses a dangerous protocol
+     * @return bool true if the attribute holds a single URL
      */
-    private function isDangerousUrlAttribute(string $name, string $value): bool
+    private function isUrlAttribute(string $name): bool
     {
-        $isUrlAttribute = \in_array($name, SvgAttribute::dangerousExact(), true)
+        return \in_array($name, SvgAttribute::dangerousExact(), true)
             || \in_array($name, self::URI_ATTRIBUTES, true)
             || SvgAttribute::Src->value === $name;
+    }
 
-        return $isUrlAttribute && $this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX);
+    /**
+     * @param string $url the raw URL
+     *
+     * @return bool true if the URL uses a dangerous protocol or is a network-path reference, as decoded by CSS or by
+     *              the URL parser
+     */
+    private function isDangerousUrl(string $url): bool
+    {
+        return $this->matchesPattern($this->normalizeValue($url), self::DANGEROUS_PROTOCOLS_REGEX)
+            || $this->matchesPattern(preg_replace(self::URL_IGNORED_CHARS_REGEX, '', $url) ?? $url, self::DANGEROUS_PROTOCOLS_REGEX);
     }
 
     /**
@@ -235,7 +255,7 @@ trait DangerousAttributeValueTrait
         $parts = explode(';', $value);
 
         foreach ($parts as $part) {
-            if ($this->matchesPattern(trim($part), self::DANGEROUS_PROTOCOLS_REGEX)) {
+            if ($this->matchesPattern($part, self::DANGEROUS_PROTOCOLS_REGEX)) {
                 return true;
             }
         }
@@ -250,7 +270,7 @@ trait DangerousAttributeValueTrait
      */
     private function isUrlAttributeValueDangerous(string $value): bool
     {
-        if ($this->matchesPattern(trim($value), self::DANGEROUS_PROTOCOLS_REGEX)) {
+        if ($this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX)) {
             return true;
         }
 
@@ -277,7 +297,7 @@ trait DangerousAttributeValueTrait
         }
 
         preg_match_all(self::CSS_IMAGE_SET_REGEX, $value, $imageSets);
-        preg_match_all(self::CSS_QUOTED_STRING_REGEX, implode(' ', $imageSets[1]), $imageSetUrls);
+        preg_match_all(self::CSS_QUOTED_STRING_REGEX, implode(' ', $imageSets[0]), $imageSetUrls);
 
         return $this->containsDangerousUrl($imageSetUrls[2]);
     }
@@ -292,12 +312,7 @@ trait DangerousAttributeValueTrait
         $candidates = explode(',', $value);
 
         foreach ($candidates as $candidate) {
-            $parts = preg_split(self::SRCSET_SPLIT_REGEX, trim($candidate));
-            $url = $parts[0] ?? '';
-
-            $normalized = $this->normalizeValue($url);
-
-            if ($this->matchesPattern($normalized, self::DANGEROUS_PROTOCOLS_REGEX)) {
+            if ($this->matchesPattern($this->normalizeValue($candidate), self::DANGEROUS_PROTOCOLS_REGEX)) {
                 return true;
             }
         }

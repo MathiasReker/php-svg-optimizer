@@ -50,7 +50,7 @@ trait EntityReferenceTrait
      */
     private function expandEntityReferencesIn(\DOMNode $domNode, array $entities): void
     {
-        $children = iterator_to_array($domNode->childNodes, false);
+        $children = [...$domNode->childNodes];
 
         if ($domNode instanceof \DOMElement) {
             array_push($children, ...iterator_to_array($domNode->attributes, false));

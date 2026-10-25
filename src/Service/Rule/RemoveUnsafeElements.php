@@ -15,9 +15,12 @@ use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CanonicalNameTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DangerousAttributeValueTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\EntityReferenceTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\StyleSheetSanitizerTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\UseBombTrait;
 
 /**
  * @internal
@@ -26,9 +29,12 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
  */
 final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 {
+    use CanonicalNameTrait;
     use DangerousAttributeValueTrait;
     use EntityReferenceTrait;
+    use StyleSheetSanitizerTrait;
     use TagMatcherTrait;
+    use UseBombTrait;
 
     private const array DANGEROUS_ATTR_PREFIXES = [
         'on',
@@ -63,13 +69,17 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 
     private const string FONT_TAG = 'font';
 
-    private const string DANGEROUS_PROTOCOLS_REGEX = '~^\s*(?:(?:javascript|livescript|mocha|vbscript|vbs|file|http|https|mailto|ftp|tel|sms|callto|cis|xmpp|blob|jar|mhtml|ms-its|res|view-source|wyciwyg):|data:(?!image/(?:png|gif|jpeg|jpg|webp|avif|svg\+xml);base64,)|//)~ix';
+    private const string FOLDED_ATTRIBUTE_NAME = 'attributename';
+
+    private const array EVENT_LISTENER_TAGS = ['handler', 'listener'];
+
+    private const string DANGEROUS_PROTOCOLS_REGEX = '~^\s*(?:(?:javascript|livescript|mocha|vbscript|vbs|file|http|https|mailto|ftp|tel|sms|callto|cis|xmpp|blob|jar|mhtml|ms-its|res|view-source|wyciwyg):|data:(?!image/(?:png|gif|jpeg|jpg|webp|avif|svg\+xml);base64,)|[/\\\]{2})~ix';
 
     private const string DATA_URI_REGEX = '/^\s*data:/i';
 
     private const string UNSAFE_COMMENT_REGEX = '~^-?>|<[/\w!?]~';
 
-    private const string CSS_IMAGE_SET_REGEX = '/image-set\s*\(((?:[^()]++|\([^()]*+\)?)*+)/i';
+    private const string CSS_IMAGE_SET_REGEX = '/image-set\s*\((?:[^()]++|\([^()]*+\)?)*+/i';
 
     private const string CSS_QUOTED_STRING_REGEX = '/([\'"])(.*?)\1/s';
 
@@ -77,7 +87,11 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 
     private const string URL_FUNCTION_REGEX = '/url\(\s*([\'"]?)([^\'")]*)/i';
 
-    private const string CSS_HEX_ESCAPE_REGEX = '/\\\([0-9a-f]{2,6})/i';
+    private const string CSS_ESCAPE_REGEX = '/\\\(?:([0-9a-f]{1,6})|([^\r\n\f]))/i';
+
+    private const string INVISIBLE_CHARS_REGEX = '/[\p{Cf}\x{2028}\x{2029}]+/u';
+
+    private const string URL_IGNORED_CHARS_REGEX = '/[\x00-\x20\x7F\p{Cf}\x{2028}\x{2029}]+/u';
 
     private const string CONTROL_CHARS_REGEX = '/[\x00-\x1F\x7F]+/u';
 
@@ -85,9 +99,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
 
     private const string C_STYLE_COMMENT_REGEX = '/\/\*.*?\*\//s';
 
-    private const string DANGEROUS_STYLE_REGEX = '/@import|expression/i';
-
-    private const string SRCSET_SPLIT_REGEX = '/\s+/';
+    private const string DANGEROUS_STYLE_REGEX = '/@import|expression|(?<![\w-])behavior\s*:|-o-link|-moz-binding|javascript:/i';
 
     private const string SMIL_VALUES_SAFE_DATA_URI_REGEX = '~data:image/(?:png|gif|jpeg|jpg|webp|avif|svg\+xml);base64,.*?(?=;|$)~i';
 
@@ -121,12 +133,14 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             fn (\DOMNode $domNode): bool => $this->matchesPattern((string) $domNode->nodeValue, self::UNSAFE_COMMENT_REGEX)
         );
         $this->removeElements($domDocument, fn (\DOMElement $domElement): bool => $this->isForeignElement($domElement));
-        $this->removeElements($domDocument, fn (\DOMElement $domElement): bool => $this->isTagIn($domElement, SvgTag::dangerous()));
-        $this->removeElements($domDocument, fn (\DOMElement $domElement): bool => $this->isHrefAnimation($domElement));
+        $this->removeElements($domDocument, fn (\DOMElement $domElement): bool => $this->isNonCanonicalElement($domElement));
+        $this->removeElements($domDocument, fn (\DOMElement $domElement): bool => $this->isTagIn($domElement, [...SvgTag::dangerous(), ...self::EVENT_LISTENER_TAGS]));
+        $this->removeElements($domDocument, fn (\DOMElement $domElement): bool => $this->isDangerousAnimation($domElement));
         $this->removeElements($domDocument, fn (\DOMElement $domElement): bool => $this->isHtmlBreakout($domElement));
         $this->removeConditionallyDangerousTags($domDocument);
         $this->removeDangerousAttributes($domDocument);
         $this->removeStyleWithImport($domDocument);
+        $this->removeUseBombs($domDocument);
     }
 
     /**
@@ -136,7 +150,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
      */
     private function removeNodesByQuery(\DOMDocument $domDocument, string $query, callable $predicate): void
     {
-        $domNodeList = (new \DOMXPath($domDocument))->query($query);
+        $domNodeList = (new \DOMXPath($domDocument))->query($query, null, false);
 
         foreach (false === $domNodeList ? [] : iterator_to_array($domNodeList, false) as $domNode) {
             if ($domNode instanceof \DOMNode && $predicate($domNode)) {
@@ -180,10 +194,27 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     /**
      * @param \DOMElement $domElement the element to check
      */
-    private function isHrefAnimation(\DOMElement $domElement): bool
+    private function isDangerousAnimation(\DOMElement $domElement): bool
     {
         return $this->isTagIn($domElement, [...SvgTag::animation(), ...SvgTag::conditionalDangerous()])
-            && str_contains(mb_strtolower($domElement->getAttribute(SvgAttribute::AttributeName->value)), SvgAttribute::Href->value);
+            && [] !== array_filter(
+                $this->foldedAttributeValues($domElement, self::FOLDED_ATTRIBUTE_NAME),
+                $this->isDangerousAnimatedName(...),
+            );
+    }
+
+    /**
+     * @param string $attributeName the value of an attributeName attribute
+     *
+     * @return bool true if animating the attribute could rewrite a link or an event handler
+     */
+    private function isDangerousAnimatedName(string $attributeName): bool
+    {
+        $attributeName = $this->normalizeValue($attributeName);
+        $separator = mb_strrpos($attributeName, ':');
+        $localName = false === $separator ? $attributeName : mb_substr($attributeName, $separator + 1);
+
+        return str_contains($attributeName, SvgAttribute::Href->value) || $this->isDangerousAttributeName($localName);
     }
 
     /**
@@ -192,7 +223,7 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
     private function removeConditionallyDangerousTags(\DOMDocument $domDocument): void
     {
         foreach (SvgTag::conditionalDangerous() as $tag) {
-            foreach (array_reverse(iterator_to_array($domDocument->getElementsByTagName($tag), false)) as $domElement) {
+            foreach (iterator_to_array($domDocument->getElementsByTagName($tag), false) as $domElement) {
                 $this->removeIfDangerous($domElement);
             }
         }
@@ -207,16 +238,13 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
             return;
         }
 
-        foreach (SvgAttribute::dangerousExact() as $attrName) {
-            if ($domNode->hasAttribute($attrName)) {
-                $value = $this->normalizeValue($domNode->getAttribute($attrName));
+        $dangerous = array_filter(
+            SvgAttribute::dangerousExact(),
+            fn (string $attrName): bool => $domNode->hasAttribute($attrName) && $this->isDangerousUrl($domNode->getAttribute($attrName)),
+        );
 
-                if ($this->matchesPattern($value, self::DANGEROUS_PROTOCOLS_REGEX)) {
-                    $this->unwrapNode($domNode);
-
-                    return;
-                }
-            }
+        if ([] !== $dangerous) {
+            $this->unwrapNode($domNode);
         }
     }
 
@@ -247,9 +275,18 @@ final readonly class RemoveUnsafeElements implements SvgOptimizerRuleInterface
         $domNodeList = $domDocument->getElementsByTagName(SvgTag::Style->value);
 
         foreach (array_reverse(iterator_to_array($domNodeList, false)) as $domElement) {
-            $text = $domElement->textContent ?? '';
-            if ($this->isStyleNodeDangerous($text) && $domElement->parentNode instanceof \DOMNode) {
-                $domElement->parentNode->removeChild($domElement);
+            $text = $domElement->textContent;
+
+            if (!$this->isStyleNodeDangerous($text)) {
+                continue;
+            }
+
+            $sanitized = $this->isCssTextStyle($domElement) ? $this->sanitizeStyleSheet($text) : false;
+
+            if (false === $sanitized || '' === trim($sanitized, self::ASCII_WHITESPACE_CHARACTERS)) {
+                $domElement->parentNode?->removeChild($domElement);
+            } else {
+                $domElement->textContent = $sanitized;
             }
         }
     }

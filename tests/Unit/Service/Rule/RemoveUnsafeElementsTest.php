@@ -13,11 +13,13 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeElements;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -64,7 +66,7 @@ final class RemoveUnsafeElementsTest extends TestCase
     {
         yield 'Removes external image-set() URLs after a url() inside image-set' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect style="background:image-set(url(a.png) 1x, &quot;https://evil.com/t.png&quot; 2x)"/><style>.a{background:image-set(url(a.png) 1x,"https://evil.com/t.png" 2x)}</style></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/><style>.a{}</style></svg>',
         ];
 
         yield 'Removes a javascript: URL split by an escaped surrogate' => [
@@ -289,9 +291,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                     <rect width="10" height="10"/>
                 </svg>
                 XML,
-            <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
-                XML,
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect { }</style><rect width="10" height="10"/></svg>',
         ];
 
         yield 'Removes style element with expression()' => [
@@ -301,9 +301,7 @@ final class RemoveUnsafeElementsTest extends TestCase
                     <rect width="10" height="10"/>
                 </svg>
                 XML,
-            <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
-                XML,
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect { }</style><rect width="10" height="10"/></svg>',
         ];
 
         yield 'Removes style element with entity-encoded javascript url()' => [
@@ -443,9 +441,13 @@ final class RemoveUnsafeElementsTest extends TestCase
                     </style>
                 </svg>
                 XML,
-            <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="128px" height="128px" version="1.1"/>
-                XML,
+            <<<'EOD'
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="128px" height="128px" version="1.1"><style type="text/css">
+                            s {
+                            }
+                        
+                    </style></svg>
+                EOD,
         ];
 
         yield 'Removes fill with http URL in url()' => [
@@ -1152,9 +1154,13 @@ final class RemoveUnsafeElementsTest extends TestCase
                     </style>
                 </svg>
                 XML,
-            <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
-                XML,
+            <<<'EOD'
+                <svg xmlns="http://www.w3.org/2000/svg"><style>
+                        s {
+                            background: "";
+                        }
+                    </style></svg>
+                EOD,
         ];
 
         yield 'Removes SMIL values with data URL' => [
@@ -1388,9 +1394,11 @@ final class RemoveUnsafeElementsTest extends TestCase
                     </style>
                 </svg>
                 XML,
-            <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"/>
-                XML,
+            <<<'EOD'
+                <svg xmlns="http://www.w3.org/2000/svg"><style>
+                        rect { fill: red; }
+                    </style></svg>
+                EOD,
         ];
 
         yield 'Removes unsafe use href reference' => [
@@ -1427,9 +1435,11 @@ final class RemoveUnsafeElementsTest extends TestCase
                     <rect width="10" height="10"/>
                 </svg>
                 XML,
-            <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>
-                XML,
+            <<<'EOD'
+                <svg xmlns="http://www.w3.org/2000/svg"><style>
+                        rect { fill: red; }
+                    </style><rect width="10" height="10"/></svg>
+                EOD,
         ];
 
         yield 'Removes link element referencing external resource' => [
@@ -1778,9 +1788,7 @@ final class RemoveUnsafeElementsTest extends TestCase
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><style>rect { background: -webkit-image-set("https://evil.com/x.png" 1x); }</style><rect style="background-image:image-set('//evil.com/x.png' 1x)"/></svg>
                 XML,
-            <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
-                XML,
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect { }</style><rect/></svg>',
         ];
 
         yield 'Expands custom entity references so HTML named character references cannot rebuild a javascript: URL' => [
@@ -1832,9 +1840,7 @@ final class RemoveUnsafeElementsTest extends TestCase
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:\75rl(https://evil.com/x)}</style><style>@\69mport "https://evil.com/x.css";</style><rect/></svg>
                 XML,
-            <<<'XML'
-                <svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>
-                XML,
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{}</style><rect/></svg>',
         ];
 
         yield 'Removes unclosed external url()' => [
@@ -1956,12 +1962,755 @@ final class RemoveUnsafeElementsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><rect src="safe.png"/></svg>
                 XML,
         ];
+
+        yield 'Removes a javascript: URL split by a zero-width space' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="java&#x200B;script:alert(1)"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+        ];
+
+        yield 'Removes a javascript: URL split by a soft hyphen' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="java&#xAD;script:alert(1)"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+        ];
+
+        yield 'Removes a javascript: URL split by a byte order mark' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="java&#xFEFF;script:alert(1)"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+        ];
+
+        yield 'Removes a javascript: URL split by a word joiner' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="java&#x2060;script:alert(1)"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+        ];
+
+        yield 'Removes an external url() split by a zero-width space' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:url(ht&#x200B;tps://evil.com/x.svg#a)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes a set animation of an event handler attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect><set attributeName="onclick" to="alert(1)"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes an animation of an uppercase, padded and prefixed event handler attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect><animate attributeName=" ev:ONCLICK " values="alert(1)"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes an animateTransform of an event handler attribute written with a character reference' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect><animateTransform attributeName="on&#x6C;oad" to="alert(1)"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Keeps an animation of an attribute that only contains "on"' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect><animate attributeName="font-size" to="2"/><set attributeName="display" to="none"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect><animate attributeName="font-size" to="2"/><set attributeName="display" to="none"/></rect></svg>',
+        ];
+
+        yield 'Removes a network-path reference written with two backslashes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><image href="\\\evil.com/x.png"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'Removes a network-path reference written with a slash and a backslash before hex digits' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><image href="/\abc.com/x.png"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'Removes a network-path reference written with a backslash and a slash' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="\/evil.com"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+        ];
+
+        yield 'Removes a network-path reference with backslashes from a filter image' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><filter><feImage href="\\\evil.com/x.png"/></filter></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><filter><feImage/></filter></svg>',
+        ];
+
+        yield 'Removes a network-path reference with backslashes from a src attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect src="\\\evil.com/x.png"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Keeps a relative URL containing a backslash' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="x\y.html"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="x\y.html"><text>x</text></a></svg>',
+        ];
+
+        yield 'Removes an external url() hidden by CSS escapes of non-hex characters' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:u\rl(https\:\/\/evil.com/x.svg#a)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes a style element with an external url() hidden by a CSS escape' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:u\rl(https://evil.com/x.svg#a)}</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{}</style><rect/></svg>',
+        ];
+
+        yield 'Removes a style element with an @import hidden by a CSS escape' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@imp\ort "x.css";rect{fill:red}</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}</style><rect/></svg>',
+        ];
+
+        yield 'Removes a network-path url() written with CSS-escaped backslashes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:url(\\\\\\\evil.com/x.svg#a)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Keeps a root-relative url() whose leading backslash is escaped' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:url(\\\evil.com/x.svg#a)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:url(\\\evil.com/x.svg#a)"/></svg>',
+        ];
+
+        yield 'Removes a dangerous style element and link in a document with a prefixed SVG namespace' => [
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:style>@import url(x.css);</svg:style><svg:a href="javascript:alert(1)"><svg:text>x</svg:text></svg:a></svg:svg>',
+            '<svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:text>x</svg:text></svg:svg>',
+        ];
+
+        yield 'Removes a javascript: URL bound to a custom XLink prefix' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:f="http://www.w3.org/1999/xlink"><a f:href="javascript:alert(1)"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:f="http://www.w3.org/1999/xlink"><a><text>x</text></a></svg>',
+        ];
+
+        yield 'Escapes CDATA markup in a style element inside desc so it cannot break out when inlined in HTML' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><desc><style><![CDATA[</style><img src=x onerror=alert(1)>]]></style></desc></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><desc><style>&lt;/style&gt;&lt;img src=x onerror=alert(1)&gt;</style></desc></svg>',
+        ];
+
+        yield 'Removes a comment that closes a raw text element inside title' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><title><noscript><!--</noscript><img src=x onerror=alert(1)>--></noscript></title></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><title><noscript/></title></svg>',
+        ];
+
+        yield 'Removes markup expanded from an internal parameter entity' => [
+            '<!DOCTYPE svg [<!ENTITY % p "<!ENTITY x \'&#60;script&#62;alert(1)&#60;/script&#62;\'>"> %p;]><svg xmlns="http://www.w3.org/2000/svg">&x;</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'Removes dangerous content deep in nested groups' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g><g><a href="javascript:alert(1)"><rect onclick="alert(1)"/></a><script>alert(1)</script></g></g></g></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g><g><rect/></g></g></g></g></g></svg>',
+        ];
+
+        yield 'Removes only the later of two links when the first is safe' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="#a"><text>a</text></a><a href="javascript:alert(1)"><text>b</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="#a"><text>a</text></a><text>b</text></svg>',
+        ];
+
+        yield 'Keeps multibyte text and safe attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text fill="currentColor" stroke="inherit">ÆØÅ 日本 😀</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text fill="currentColor" stroke="inherit">ÆØÅ 日本 😀</text></svg>',
+        ];
+
+        yield 'Keeps an empty document' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'Handles an empty document' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"/>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"/>',
+        ];
+
+        yield 'Handles a root with only text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">text</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">text</svg>',
+        ];
+
+        yield 'Handles a 60 levels deep structure' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">' . str_repeat('<g>', 60) . '<rect onclick="x"/><script>x</script>' . str_repeat('</g>', 60) . '</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">' . str_repeat('<g>', 60) . '<rect/>' . str_repeat('</g>', 60) . '</svg>',
+        ];
+
+        yield 'Handles a very long attribute value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect id="' . str_repeat('a', 10_000) . '" onclick="x"/><script>x</script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect id="' . str_repeat('a', 10_000) . '"/></svg>',
+        ];
+
+        yield 'Handles right-to-left, emoji, combining and astral text' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text onclick="x">שלום 😀 é 𝒜</text><script>x</script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text>שלום 😀 é 𝒜</text></svg>',
+        ];
+
+        yield 'Handles values padded with tabs, newlines and no-break spaces' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect onclick="x" fill="&#9; red&#10;&#xA0;"/><script>x</script></svg>',
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\"><rect fill=\"&#9; red&#10;\u{a0}\"/></svg>",
+        ];
+
+        yield 'Handles comments between every node' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><!--1--><g><!--2--><script>x</script><!--3--><rect onclick="x"/><!--4--></g><!--5--></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><!--1--><g><!--2--><!--3--><rect/><!--4--></g><!--5--></svg>',
+        ];
+
+        yield 'Handles processing instructions' => [
+            '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><?foo bar?><rect onclick="x"/><script>x</script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect/></svg>',
+        ];
+
+        yield 'Handles CDATA sections' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text onclick="x"><![CDATA[a<b&c]]></text><script>x</script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text>a&lt;b&amp;c</text></svg>',
+        ];
+
+        yield 'Handles a child that resets the default namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><g><x xmlns=""><rect onclick="x"/><script>x</script></x></g><rect onclick="x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><g><x xmlns=""><rect/></x></g><rect/></svg>',
+        ];
+
+        yield 'Handles a prefix redeclared to another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:s="http://www.w3.org/2000/svg"><s:g><s:rect onclick="x"/></s:g><g xmlns:s="urn:other"><s:rect onclick="x"/></g><script>x</script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:s="http://www.w3.org/2000/svg"><s:g><s:rect/></s:g><g xmlns:s="urn:other"/></svg>',
+        ];
+
+        yield 'Handles entities and character references in values and text' => [
+            '<!DOCTYPE svg [<!ENTITY e "v&#x41;">]><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text onclick="x" class="&e;">&e;&#x42;&#66;</text><script>x</script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><text class="vA">vABB</text></svg>',
+        ];
+
+        yield 'Handles an attribute in no namespace next to the same local name in another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:o="urn:o"><use href="#a" xlink:href="#b" o:href="#c" onclick="x"/><script>x</script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:o="urn:o"><use href="#a" xlink:href="#b" o:href="#c"/></svg>',
+        ];
+
+        yield 'Handles repeated elements where only a later one matches' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect/><rect fill="red"/><rect onclick="x"/><script>x</script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><rect/><rect fill="red"/><rect/></svg>',
+        ];
+
+        yield 'Handles mixed-case element names' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><Rect onclick="x"/><RECT onclick="x"/><Script>x</Script><SCRIPT>x</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">x</s:script><script>x</script></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"/>',
+        ];
+
+        yield 'Removes a handler element with an ev:event attribute' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events"><handler type="application/ecmascript" ev:event="load">alert(1)</handler><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events"><rect/></svg>',
+        ];
+
+        yield 'Removes a prefixed listener element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events"><s:listener xmlns:s="http://www.w3.org/2000/svg" event="click" handler="#h"/><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events"><rect/></svg>',
+        ];
+
+        yield 'Removes XML Events attributes bound to any prefix' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:e="http://www.w3.org/2001/xml-events"><rect e:event="click" e:handler="#h" e:observer="r" id="r"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:e="http://www.w3.org/2001/xml-events"><rect id="r"/></svg>',
+        ];
+
+        yield 'Removes a style attribute with -o-link' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="-o-link:\'javascript:alert(1)\';-o-link-source:current"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes a style attribute with behavior' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="behavior:url(x.htc)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes a style attribute with behavior written with a CSS escape' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="beh\61vior : url(x.htc)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes a style attribute with a bare javascript: value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:javascript:alert(1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes a style element with -moz-binding' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{-moz-binding:url(x.xml#b)}</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{}</style><rect/></svg>',
+        ];
+
+        yield 'Keeps a style element with scroll-behavior' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>svg{scroll-behavior:smooth}</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>svg{scroll-behavior:smooth}</style><rect/></svg>',
+        ];
+
+        yield 'Removes animations targeting event handlers and href in any case or prefix' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a><animate attributeName="OnClick" to="x"/><set attributeName="x:onload" to="x"/><animate attributeName="XLINK:HREF" to="#a"/><set attributeName="foo:Href" to="#a"/><animateMotion attributeName="onend"/><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><a><text>x</text></a></svg>',
+        ];
+
+        yield 'Keeps an animation after a removed one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect><set attributeName="onclick" to="x"/><set attributeName="fill" to="red"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect><set attributeName="fill" to="red"/></rect></svg>',
+        ];
+
+        yield 'Removes mixed-case script elements' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><Script>a</Script><SCRIPT>b</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">c</s:script><SCRIPT xmlns="">d</SCRIPT><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes mixed-case event handler attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect OnClick="a" ONLOAD="b" onMouseOver="c"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes a script in a child that resets the default namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""><script>a</script><rect onclick="b"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""><rect/></g></svg>',
+        ];
+
+        yield 'Removes elements of a prefix redeclared to another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:s="http://www.w3.org/2000/svg"><s:rect/><g xmlns:s="http://www.w3.org/1999/xhtml"><s:img src="x"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:s="http://www.w3.org/2000/svg"><s:rect/><g xmlns:s="http://www.w3.org/1999/xhtml"/></svg>',
+        ];
+
+        yield 'Removes a use element whose XLink href is a javascript: URL next to a safe href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use href="#a" xlink:href="javascript:alert(1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"/>',
+        ];
+
+        yield 'Removes a javascript: URL written with character references, tabs and newlines' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="&#x09;&#106;ava&#x0A;scr&#x0D;ipt&#58;alert(1)"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+        ];
+
+        yield 'Removes a javascript: URL padded with no-break spaces in an animation value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a><animate attributeName="fill" values="red;&#xA0;javascript:alert(1)"/><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><a><animate attributeName="fill"/><text>x</text></a></svg>',
+        ];
+
+        yield 'Removes a javascript: URL from an entity in an attribute value' => [
+            '<!DOCTYPE svg [<!ENTITY j "java&#x73;cript:">]><svg xmlns="http://www.w3.org/2000/svg"><a href="&j;alert(1)"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+        ];
+
+        yield 'Removes a script element from an entity with CDATA' => [
+            '<!DOCTYPE svg [<!ENTITY s "&#60;script&#62;&#60;![CDATA[alert(1)]]&#62;&#60;/script&#62;">]><svg xmlns="http://www.w3.org/2000/svg"><g>&s;</g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g/></svg>',
+        ];
+
+        yield 'Removes processing instructions between every node' => [
+            '<?xml-stylesheet href="x.css"?><svg xmlns="http://www.w3.org/2000/svg"><?a?><g><?b?><rect/><?c?></g><?d?></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><rect/></g></svg>',
+        ];
+
+        yield 'Removes unsafe comments and keeps safe ones between every node' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><!--a--><g><!--<b>--><rect/><!---->--><!--c--></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><!--a--><g><rect/><!---->--&gt;<!--c--></g></svg>',
+        ];
+
+        yield 'Removes a dangerous URL after a safe one in repeated elements' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><image href="a.png"/><image href="b.png"/><image href="javascript:alert(1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><image href="a.png"/><image href="b.png"/></svg>',
+        ];
+
+        yield 'Removes a dangerous URL with right-to-left override and emoji' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="java&#x202E;script:alert(1)"><text>שלום 😀 é 𝒜</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>שלום 😀 é 𝒜</text></svg>',
+        ];
+
+        yield 'Removes a dangerous URL from a very long attribute value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="javascript:' . str_repeat('a', 10_000) . '"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+        ];
+
+        yield 'Keeps a very long safe attribute value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0' . str_repeat('a', 10_000) . '"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0' . str_repeat('a', 10_000) . '"/></svg>',
+        ];
+
+        yield 'Removes a use element that references its own ancestor' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g id="g"><rect/><use href="#g"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g id="g"><rect/></g></svg>',
+        ];
+
+        yield 'Removes a use element that references itself' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><use id="u" href="#u"/><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes the use element that closes a reference cycle' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><g id="a"><use href="#b"/></g><g id="b"><use href="#a"/></g></defs><use href="#a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><g id="a"><use href="#b"/></g><g id="b"/></defs><use href="#a"/></svg>',
+        ];
+
+        yield 'Removes a padded custom-prefixed XLink use cycle through an xml:id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:f="http://www.w3.org/1999/xlink"><g xml:id="x"><use f:href=" #x "/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:f="http://www.w3.org/1999/xlink"><g xml:id="x"/></svg>',
+        ];
+
+        yield 'Keeps use elements that reference missing or external targets' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><use href="#missing"/><use href="sprite.svg#a"/><use/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><use href="#missing"/><use href="sprite.svg#a"/><use/></svg>',
+        ];
+
+        yield 'Resolves a use element by its plain href before its XLink href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="g"><use href="#r" xlink:href="#g"/></g><rect id="r"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="g"><use href="#r" xlink:href="#g"/></g><rect id="r"/></svg>',
+        ];
+
+        yield 'Resolves a duplicate id to its first element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="d"/><g id="d"><use href="#d"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="d"/><g id="d"><use href="#d"/></g></svg>',
+        ];
+
+        yield 'Keeps the rest of a style sheet when removing an @import' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(https://fonts.googleapis.com/css?family=Roboto);.st0{fill:red}</style><rect class="st0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.st0{fill:red}</style><rect class="st0"/></svg>',
+        ];
+
+        yield 'Keeps the other declarations when removing one with a data: URI' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{background-image:url(\'data:image/svg,&lt;svg/&gt;\');fill:red}.st0{fill:blue}</style><rect class="a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}.st0{fill:blue}</style><rect class="a"/></svg>',
+        ];
+
+        yield 'Removes a dangerous @media block and keeps the other rules' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@media screen{.a{fill:url(http://evil.com/x.svg#a)}}.b{fill:red}</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.b{fill:red}</style><rect/></svg>',
+        ];
+
+        yield 'Removes a rule whose selector holds markup and keeps the others' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a[title="&lt;svg"]{fill:red}.b{fill:blue}</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.b{fill:blue}</style><rect/></svg>',
+        ];
+
+        yield 'Keeps a declaration with a semicolon in a string' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{content:"a;b";fill:url(http://evil.com/x.svg#a)}</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{content:"a;b";}</style><rect/></svg>',
+        ];
+
+        yield 'Removes a declaration with -o-link and keeps the others' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{-o-link:\'javascript:alert(1)\';stroke:blue}</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{stroke:blue}</style><rect/></svg>',
+        ];
+
+        yield 'Removes a trailing comment that holds markup' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}/* &lt;script */</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}</style><rect/></svg>',
+        ];
+
+        yield 'Removes an @import after a comment' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>/* fonts */ @import \'x.css\'; .a{fill:red}</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style> .a{fill:red}</style><rect/></svg>',
+        ];
+
+        yield 'Removes a whole style sheet that cannot be tokenized' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(x.css);.a{fill:red</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes a whole style element with a comment child' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(x.css);<!-- c -->.a{fill:red}</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes a whole style element of another type' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style type="text/less">@import url(x.less);.a{fill:red}</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes a whole style element whose remaining statements are only whitespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style> @import url(x.css); </style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Keeps the rest of a style sheet in CDATA when removing an expression()' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style><![CDATA[.a{width:expression(alert(1));fill:red}.b>.c{fill:blue}]]></style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}.b&gt;.c{fill:blue}</style><rect/></svg>',
+        ];
+
+        yield 'Sanitizing a style sheet twice equals sanitizing it once' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(a.css);.a{fill:red;behavior:url(x.htc)}</style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red;}</style><rect/></svg>',
+        ];
+
+        yield 'Removes a STYLE element that an HTML parser would read as style' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><STYLE>@import url(https://evil.example/x.css);</STYLE><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect/></svg>',
+        ];
+
+        yield 'Removes a Style element even when its content is safe' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><Style>rect{fill:red}</Style><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect/></svg>',
+        ];
+
+        yield 'Removes an A element with its content' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><A href="#x"><text>x</text></A><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect/></svg>',
+        ];
+
+        yield 'Removes USE and IMAGE elements written in upper case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><USE href="#r"/><IMAGE href="a.png"/><rect id="r"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect id="r"/></svg>',
+        ];
+
+        yield 'Removes foreignObject written in another case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><FOREIGNOBJECT/><foreignobject/><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect/></svg>',
+        ];
+
+        yield 'Removes animation elements written in another case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect><SET attributeName="fill" to="red"/><ANIMATE attributeName="x" to="1"/><ANIMATETRANSFORM attributeName="transform"/><animatetransform attributeName="transform"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect/></svg>',
+        ];
+
+        yield 'Removes lower-case camelCase elements that HTML adjusts' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><lineargradient id="g"/><clippath id="c"/><fegaussianblur/></defs><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs/><rect/></svg>',
+        ];
+
+        yield 'Removes a prefixed SVG element written in another case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:s="http://www.w3.org/2000/svg"><s:SCRIPT>alert(1)</s:SCRIPT><s:Rect/><rect/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:s="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes a lower-case attributename that animates an event handler' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect><set attributename="onclick" to="alert(1)"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect/></svg>',
+        ];
+
+        yield 'Removes an upper-case ATTRIBUTENAME that animates href' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><set ATTRIBUTENAME="HREF" to="javascript:alert(1)"/><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><text>x</text></a></svg>',
+        ];
+
+        yield 'Removes a lower-case attributename that animates href with values' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><animate attributename="href" values="javascript:alert(1)"/><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><text>x</text></a></svg>',
+        ];
+
+        yield 'Removes a safe animation attribute written in another case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect><set attributename="fill" TO="red" Begin="1s"/></rect></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect><set/></rect></svg>',
+        ];
+
+        yield 'Removes HREF and Href attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use HREF="#r"/><use Href="#r"/><rect id="r"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use/><use/><rect id="r"/></svg>',
+        ];
+
+        yield 'Removes an XLink href written in upper case under another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a XLINK:HREF="javascript:alert(1)" xmlns:XLINK="urn:x"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xmlns:XLINK="urn:x"><text>x</text></a></svg>',
+        ];
+
+        yield 'Removes an xlink:href whose prefix is bound to another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns:xlink="urn:x"><use xlink:href="#r"/></g><rect id="r"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g xmlns:xlink="urn:x"><use/></g><rect id="r"/></svg>',
+        ];
+
+        yield 'Keeps an XLink href written with a canonical prefix in another case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><use XLink:href="#r"/><rect id="r"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><use XLink:href="#r"/><rect id="r"/></svg>',
+        ];
+
+        yield 'Removes upper-case style, src, values, to, from, by and event handler attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect STYLE="fill:red" SRC="a.png" ONLOAD="x"/><animate VALUES="0;1" TO="1" FROM="0" BY="1" attributeName="x"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect/><animate attributeName="x"/></svg>',
+        ];
+
+        yield 'Removes camelCase attributes written in lower case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0 0 1 1"><rect pathlength="1"/><path pathLength="1" d="M0 0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect/><path pathLength="1" d="M0 0"/></svg>',
+        ];
+
+        yield 'Keeps unknown attributes and elements in any case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect Data-X="1" myAttr="2"/><myWidget/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect Data-X="1" myAttr="2"/><myWidget/></svg>',
+        ];
+
+        yield 'Removes an XLink href with a local name in upper case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><use XLink:HREF="#r"/><rect id="r"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><use/><rect id="r"/></svg>',
+        ];
+
+        yield 'Removes a javascript: URL in an XLink href with a prefix in another case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><a XLink:href="javascript:alert(1)"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><a><text>x</text></a></svg>',
+        ];
+
+        yield 'Keeps a lower-case xlink:href with an unbound prefix and removes one in another case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><use xlink:href="#r"/><use XLINK:href="#r"/><rect id="r"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><use xlink:href="#r"/><use/><rect id="r"/></svg>',
+        ];
+
+        yield 'Keeps prefixed attributes that are not XLink or XML attributes in any case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><rect x:Label="a" x:href="#b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><rect x:Label="a" x:href="#b"/></svg>',
+        ];
+
+        yield 'Removes a dangerous XLink href next to a plain href with the same local name' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><feImage xlink:href="javascript:alert(1)" href="#ok"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><feImage href="#ok"/></svg>',
+        ];
+
+        yield 'Removes an animation of an event handler behind a multi-byte prefix' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><set attributeName=\"\u{E9}:onclick\" to=\"alert(1)\"/><set attributeName=\"\u{E9}\u{E9}:x\" to=\"1\"/></svg>",
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><set attributeName=\"\u{E9}\u{E9}:x\" to=\"1\"/></svg>",
+        ];
+
+        yield 'Removes a dangerous style element that comes before a safe one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(x.css);</style><style>a{fill:red}</style></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>a{fill:red}</style></svg>',
+        ];
+
+        yield 'Removes a dangerous style element nested in a style element of another type before the outer one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style type="text/x">a{}<style>@import url(x.css);</style></style></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style type="text/x">a{}</style></svg>',
+        ];
+
+        yield 'Removes names that fold to known names through the Kelvin sign' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><mas\u{212A}/><rect stro\u{212A}e=\"red\"/><rect xlin\u{212A}:href=\"#r\"/><rect id=\"r\"/></svg>",
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/><rect/><rect id="r"/></svg>',
+        ];
+
+        yield 'Removes a style that folds to a dangerous property through the Kelvin sign' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect style=\"-o-lin\u{212A}:x\"/></svg>",
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Removes a prefixed attribute whose local name folds to a URL attribute through the Kelvin sign' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:x=\"urn:x\"><rect x:stro\u{212A}e=\"url(javascript:alert(1))\" x:fill=\"red\"/></svg>",
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x"><rect x:fill="red"/></svg>',
+        ];
+
+        yield 'Keeps an animation whose other attributes look like event handlers' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><set attributeName="fill" to="red" id="online"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><set attributeName="fill" to="red" id="online"/></svg>',
+        ];
+
+        yield 'Removes an animation whose second attributeName in another case targets an event handler' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><set attributeName="fill" ATTRIBUTENAME="onclick"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'Removes a style element whose safe statements join into an import' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>a{fill:red}&amp;#64;import url(x.css)</style></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'Removes a dangerous statement whose block is nested in parentheses' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>a{fill:red}x({})expression(1);</style></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>a{fill:red}</style></svg>',
+        ];
+
+        yield 'Removes a dangerous at-rule that follows whitespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>a{fill:red} @media x{a{background:url("javascript:alert(1)")}}b{fill:blue}</style></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>a{fill:red}b{fill:blue}</style></svg>',
+        ];
+
+        yield 'Removes a dangerous at-rule that follows a comment' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>a{fill:red}/* c */@media x{a{background:url("javascript:alert(1)")}}</style></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>a{fill:red}</style></svg>',
+        ];
+
+        yield 'Keeps every safe declaration around a dangerous one' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>a{fill:red;background:url("javascript:alert(1)");stroke:blue}</style></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>a{fill:red;stroke:blue}</style></svg>',
+        ];
+
+        yield 'Removes a data URI from an element that does not allow one after an image with the same data URI' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><image href="data:image/png;base64,AAAA"/><use href="data:image/png;base64,AAAA"/><image href="data:image/png;base64,AAAA"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><image href="data:image/png;base64,AAAA"/><use/><image href="data:image/png;base64,AAAA"/></svg>',
+        ];
+
+        yield 'Removes an xlink:href bound to another namespace next to a real XLink href with the same value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#a"/><g xmlns:xlink="urn:x"><use xlink:href="#a"/></g><use xlink:href="#a"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#a"/><g xmlns:xlink="urn:x"><use/></g><use xlink:href="#a"/></svg>',
+        ];
+
+        yield 'Removes attributes with the same value but another name' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="javascript:alert(1)" fill="javascript:alert(1)" class="javascript:alert(1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="javascript:alert(1)" class="javascript:alert(1)"/></svg>',
+        ];
+
+        yield 'Removes a dangerous style element with a mismatched closing bracket' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>a{b:c(]}b{fill:blue}@import url(x.css);</style></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"/>',
+        ];
+
+        yield 'Removes a network-path reference split by an invisible character before a CSS escape' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="/&#x200B;\evil.com"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+        ];
+
+        yield 'Keeps a link that references its own element' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><a id="a" href="#a"><text>x</text></a></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><a id="a" href="#a"><text>x</text></a></svg>',
+        ];
+
+        yield 'Removes an attribute with the same name as a safe one but another value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/><rect fill="javascript:alert(1)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/><rect/></svg>',
+        ];
+
+        yield 'Removes a javascript: URL spelled with a full-width capital letter' => [
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><a href=\"j\u{FF21}vascript:alert(1)\"><text>x</text></a></svg>",
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+        ];
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function removesAJavascriptUrlThatRemovingInvisibleCharactersWouldJoin(): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider(
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="java&#x200B;script:alert(1)"><text>x</text></a></svg>'
+        ));
+        $svgOptimizer->addRule(new RemoveUnsafeElements());
+        $svgOptimizer->addRule(new RemoveInvisibleCharacters());
+
+        self::assertSame(
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
+            $svgOptimizer->optimize()->getContent()
+        );
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function allRulesLeaveNoJavascriptUrlSplitByInvisibleCharacters(): void
+    {
+        $content = SvgOptimizerFacade::fromString(
+            '<svg xmlns="http://www.w3.org/2000/svg"><a href="java&#x200B;script:alert(1)"><text>x</text></a><a href="java&#xAD;script:alert(2)"><text>y</text></a></svg>'
+        )->withAllRules()->allowRisky()->optimize()->getContent();
+
+        self::assertStringNotContainsStringIgnoringCase('script:', $content);
+        self::assertStringNotContainsString('href', $content);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function sanitizingTwiceEqualsSanitizingOnce(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><style>rect{fill:red}</style><a xlink:href="#a"><rect onload="x"/></a><a href="\\\evil.com"><text>x</text></a><set attributeName="onclick" to="x"/><!-- <b> --></svg>';
+
+        $once = new SvgOptimizer(new StringProvider($svg));
+        $once->addRule(new RemoveUnsafeElements());
+
+        $first = $once->optimize()->getContent();
+
+        $twice = new SvgOptimizer(new StringProvider($first));
+        $twice->addRule(new RemoveUnsafeElements());
+
+        self::assertSame($first, $twice->optimize()->getContent());
     }
 
     #[Test]
     public function ruleIsMarkedAsRisky(): void
     {
         self::assertFalse(RemoveUnsafeElements::isRisky());
+    }
+
+    #[Test]
+    public function ruleSkipsTheSizeCheck(): void
+    {
+        self::assertFalse(RemoveUnsafeElements::shouldCheckSize());
     }
 
     /**
@@ -2101,5 +2850,258 @@ final class RemoveUnsafeElementsTest extends TestCase
         (new RemoveUnsafeElements())->optimize($domDocument);
 
         self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>', $domDocument->saveXML($domDocument->documentElement));
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function removesUseElementsThatWouldRenderAnExponentialNumberOfInstances(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><rect id="a0" width="1" height="1"/>';
+
+        for ($level = 1; $level <= 9; ++$level) {
+            $attribute = 0 === $level % 2 ? 'xlink:href' : 'href';
+            $svg .= '<g id="a' . $level . '">' . str_repeat('<use ' . $attribute . '="#a' . ($level - 1) . '"/>', 10) . '</g>';
+        }
+
+        $content = $this->sanitize($svg . '</defs><use href="#a9"/></svg>');
+
+        self::assertSame(71, mb_substr_count($content, '<use'));
+        self::assertStringNotContainsString('"#a3"', $content);
+        self::assertStringNotContainsString('"#a7"', $content);
+        self::assertStringContainsString('<use href="#a9"/>', $content);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function keepsASpriteWithHundredsOfUseElements(): void
+    {
+        $content = $this->sanitize(
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><symbol id="s"><path d="M0 0h1"/></symbol></defs>'
+            . str_repeat('<use href="#s"/>', 300) . '</svg>'
+        );
+
+        self::assertSame(300, mb_substr_count($content, '<use href="#s"/>'));
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function keepsADeepChainOfUseElementsUnderTheLimit(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg"><defs><rect id="c0"/>';
+
+        for ($level = 1; $level <= 30; ++$level) {
+            $svg .= '<g id="c' . $level . '"><use href="#c' . ($level - 1) . '"/></g>';
+        }
+
+        $svg .= '</defs><use href="#c30"/></svg>';
+
+        self::assertSame($svg, $this->sanitize($svg));
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function keepsUseElementsJustUnderTheInstanceLimit(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg"><defs><rect id="r"/><g id="g">'
+            . str_repeat('<use href="#r"/>', 999) . '</g><g id="h">' . str_repeat('<use href="#r"/>', 1_000) . '</g></defs>'
+            . '<use href="#g"/><use href="#h"/></svg>';
+
+        $content = $this->sanitize($svg);
+
+        self::assertStringContainsString('<use href="#g"/>', $content);
+        self::assertStringNotContainsString('<use href="#h"/>', $content);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function aRemovedUseElementDoesNotLowerTheInstancesOfItsAncestors(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg"><defs><rect id="r"/><g id="h">'
+            . str_repeat('<use href="#r"/>', 1_000) . '</g><g id="g"><use href="#h"/>' . str_repeat('<use href="#r"/>', 1_000) . '</g></defs>'
+            . '<use href="#g"/></svg>';
+
+        $content = $this->sanitize($svg);
+
+        self::assertStringNotContainsString('<use href="#h"/>', $content);
+        self::assertStringNotContainsString('<use href="#g"/>', $content);
+        self::assertSame(2_000, mb_substr_count($content, '<use href="#r"/>'));
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    #[Test]
+    public function removeUseBombsIgnoresADocumentWithoutRootElement(): void
+    {
+        $domDocument = new \DOMDocument();
+
+        $removeUnsafeElements = new RemoveUnsafeElements();
+        (new \ReflectionMethod($removeUnsafeElements, 'removeUseBombs'))->invoke($removeUnsafeElements, $domDocument);
+
+        self::assertNull($domDocument->documentElement);
+    }
+
+    /**
+     * @param \Closure(int): string $build builds a document with the given number of repeated parts
+     */
+    #[DataProvider('provideSanitizesLargeDocumentsInLinearTimeCases')]
+    #[Test]
+    public function sanitizesLargeDocumentsInLinearTime(\Closure $build): void
+    {
+        $small = $this->secondsToSanitize($build(2_500));
+        $large = $this->secondsToSanitize($build(10_000));
+
+        self::assertLessThan(10 * max($small, 0.05), $large);
+    }
+
+    /**
+     * @return iterable<string, array{\Closure(int): string}>
+     */
+    public static function provideSanitizesLargeDocumentsInLinearTimeCases(): iterable
+    {
+        yield 'many gradients referenced by many shapes' => [
+            static fn (int $count): string => '<svg xmlns="http://www.w3.org/2000/svg"><defs>'
+                . implode('', array_map(static fn (int $i): string => '<linearGradient id="g' . $i . '"><stop offset="0" stop-color="#' . $i . '"/></linearGradient>', range(1, $count)))
+                . '</defs>' . implode('', array_map(static fn (int $i): string => '<rect fill="url(#g' . $i . ')"/>', range(1, $count))) . '</svg>',
+        ];
+
+        yield 'many nested groups' => [
+            static fn (int $count): string => '<svg xmlns="http://www.w3.org/2000/svg">' . str_repeat('<g fill="red"><g><rect width="1" height="1"/><circle r="1"/></g></g>', $count) . '</svg>',
+        ];
+
+        yield 'many attributes on one element' => [
+            static fn (int $count): string => '<svg xmlns="http://www.w3.org/2000/svg"><rect ' . implode(' ', array_map(static fn (int $i): string => 'a' . $i . '="' . $i . '"', range(1, $count))) . '/></svg>',
+        ];
+
+        yield 'many namespace declarations' => [
+            static fn (int $count): string => '<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><rect/></svg>',
+        ];
+
+        yield 'many use elements' => [
+            static fn (int $count): string => '<svg xmlns="http://www.w3.org/2000/svg"><defs><rect id="r"/>'
+                . implode('', array_map(static fn (int $i): string => '<g id="u' . $i . '"><use href="#' . (1 === $i ? 'r' : 'u' . ($i - 1)) . '"/></g>', range(1, $count)))
+                . '</defs></svg>',
+        ];
+    }
+
+    private function secondsToSanitize(string $svg): float
+    {
+        self::assertNotSame('', $svg);
+
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML($svg);
+
+        $start = hrtime(true);
+        (new RemoveUnsafeElements())->optimize($domDocument);
+
+        return (hrtime(true) - $start) / 1e9;
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    private function sanitize(string $svg): string
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($svg));
+        $svgOptimizer->addRule(new RemoveUnsafeElements());
+
+        return $svgOptimizer->optimize()->getContent();
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideLeavesNothingDangerousWhenTheOutputIsParsedAsHtmlCases')]
+    #[Test]
+    public function leavesNothingDangerousWhenTheOutputIsParsedAsHtml(string $svg): void
+    {
+        $sanitized = $this->sanitize($svg);
+        self::assertNotSame('', $sanitized);
+
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML($sanitized);
+
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            $tagName = mb_strtolower($domNodeList->nodeName);
+
+            self::assertNotContains($tagName, ['script', 'foreignobject', 'iframe', 'handler', 'listener']);
+
+            if ('style' === $tagName) {
+                self::assertStringNotContainsStringIgnoringCase('@import', $domNodeList->textContent);
+            }
+
+            foreach ($domNodeList->attributes as $domAttr) {
+                self::assertFalse($this->isDangerousForHtml($tagName, mb_strtolower($domAttr->nodeName), mb_strtolower($domAttr->value)), $domAttr->nodeName);
+            }
+        }
+    }
+
+    /**
+     * @return iterable<array{string}>
+     */
+    public static function provideLeavesNothingDangerousWhenTheOutputIsParsedAsHtmlCases(): iterable
+    {
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><STYLE>@import url(https://evil.example/x.css);</STYLE><rect/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><Style>rect{fill:red}</Style><rect/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><A href="#x"><text>x</text></A><rect/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><USE href="#r"/><IMAGE href="a.png"/><rect id="r"/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><FOREIGNOBJECT/><foreignobject/><rect/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect><SET attributeName="fill" to="red"/><ANIMATE attributeName="x" to="1"/><ANIMATETRANSFORM attributeName="transform"/><animatetransform attributeName="transform"/></rect></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><lineargradient id="g"/><clippath id="c"/><fegaussianblur/></defs><rect/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:s="http://www.w3.org/2000/svg"><s:SCRIPT>alert(1)</s:SCRIPT><s:Rect/><rect/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect><set attributename="onclick" to="alert(1)"/></rect></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><set ATTRIBUTENAME="HREF" to="javascript:alert(1)"/><text>x</text></a></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><animate attributename="href" values="javascript:alert(1)"/><text>x</text></a></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect><set attributename="fill" TO="red" Begin="1s"/></rect></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use HREF="#r"/><use Href="#r"/><rect id="r"/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a XLINK:HREF="javascript:alert(1)" xmlns:XLINK="urn:x"><text>x</text></a></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg"><g xmlns:xlink="urn:x"><use xlink:href="#r"/></g><rect id="r"/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><use XLink:href="#r"/><rect id="r"/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect STYLE="fill:red" SRC="a.png" ONLOAD="x"/><animate VALUES="0;1" TO="1" FROM="0" BY="1" attributeName="x"/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0 0 1 1"><rect pathlength="1"/><path pathLength="1" d="M0 0"/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect Data-X="1" myAttr="2"/><myWidget/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><use XLink:HREF="#r"/><rect id="r"/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><a XLink:href="javascript:alert(1)"><text>x</text></a></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg"><use xlink:href="#r"/><use XLINK:href="#r"/><rect id="r"/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a HREF="javascript:alert(1)"><text>x</text></a></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect ONCLICK="alert(1)" OnMouseOver="alert(2)"/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image SRC="javascript:alert(1)"/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><SCRIPT>alert(1)</SCRIPT><Script>alert(2)</Script></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><ANIMATE attributeName="href" values="javascript:alert(1)"/><text>x</text></a></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect STYLE="background:url(https://evil.example/t)"/></svg>'];
+        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><set attributeName="ONCLICK" to="alert(1)"/><set attributename="xlink:HREF" to="javascript:alert(1)"/><text>x</text></a></svg>'];
+    }
+
+    private function isDangerousForHtml(string $tagName, string $attributeName, string $value): bool
+    {
+        $isAnimation = \in_array($tagName, ['set', 'animate', 'animatetransform', 'animatemotion', 'animatecolor'], true);
+
+        return str_starts_with($attributeName, 'on')
+            || (\in_array($attributeName, ['href', 'xlink:href', 'src', 'style', 'to', 'values', 'from', 'by'], true) && (str_contains($value, 'javascript:') || str_contains($value, 'https:')))
+            || ($isAnimation && 'attributename' === $attributeName && (str_starts_with($value, 'on') || str_contains($value, 'href')));
     }
 }
