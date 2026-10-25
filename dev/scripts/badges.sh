@@ -2,116 +2,175 @@
 
 set -euo pipefail
 
-SKIP_MUTATION="${SKIP_MUTATION:-0}"
+usage() {
+    echo "Usage: $0 [--skip-mutation]"
+}
 
-for ARG in "$@"; do
-    [[ "$ARG" == "--skip-mutation" ]] && SKIP_MUTATION=1
+skip_mutation="${SKIP_MUTATION:-0}"
+
+for argument in "$@"; do
+    case "$argument" in
+        --skip-mutation) skip_mutation=1 ;;
+        -h | --help) usage; exit 0 ;;
+        *) usage >&2; exit 2 ;;
+    esac
 done
 
-mkdir -p dev/artifacts
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
-# --- FILE SIZE BADGE ---
-FILES=(bin src LICENSE)
-SIZE_KB=$(du -sk "${FILES[@]}" 2>/dev/null | awk '{sum+=$1} END {print sum}')
+php="${PHP_BINARY:-php}"
+artifacts=dev/artifacts
+work_dir=$(mktemp -d)
+trap 'rm -rf "$work_dir"' EXIT
 
-curl -s -o dev/artifacts/filesize.svg \
-  "https://img.shields.io/badge/size-${SIZE_KB}KB-brightgreen?style=flat"
+native_path() {
+    if command -v cygpath > /dev/null; then
+        cygpath --mixed "$1"
+    else
+        echo "$1"
+    fi
+}
 
-# --- CODE COVERAGE BADGE ---
-COVERAGE_TEXT=$(./vendor/bin/phpunit --coverage-text) || true
-FRACTION=$(echo "$COVERAGE_TEXT" | grep 'Lines:' | head -1 | awk '{print $3}')
+color_for() {
+    local percent=$1
 
-[[ $FRACTION == .* ]] && FRACTION="0$FRACTION"
+    if (( percent >= 80 )); then
+        echo green
+    elif (( percent >= 50 )); then
+        echo yellow
+    else
+        echo red
+    fi
+}
 
-PERCENT_INT=$(printf "%.0f" "$(echo "$FRACTION * 100" | awk '{printf "%0.0f", $1}')")
+badge() {
+    local file=$1 label=$2 message=$3 color=$4
 
-COLOR="red"
-(( PERCENT_INT >= 80 )) && COLOR="green"
-(( PERCENT_INT >= 50 && PERCENT_INT < 80 )) && COLOR="yellow"
+    curl -fsS --retry 3 -o "$artifacts/$file" \
+        "https://img.shields.io/badge/${label}-${message}-${color}?style=flat"
+    message=${message//%25/%}
+    echo "$file: ${message//%20/ }"
+}
 
-curl -s -o dev/artifacts/coverage.svg \
-  "https://img.shields.io/badge/code_coverage-${PERCENT_INT}%25-${COLOR}?style=flat"
+percent_badge() {
+    local file=$1 label=$2 percent=$3
 
-# --- TYPE COVERAGE BADGE ---
-TYPE_COVERAGE_JSON=$(./vendor/bin/phpstan analyse -c phpstan-type-coverage.neon --no-progress --error-format=json 2>/dev/null) || true
+    badge "$file" "$label" "${percent}%25" "$(color_for "$percent")"
+}
 
-TYPE_TOTAL_FILLED=0
-TYPE_TOTAL_POSSIBLE=0
+package_size_badge() {
+    local package_dir="$work_dir/package" tree size_kib
 
-while IFS= read -r LINE; do
-    [[ -z $LINE ]] && continue
-    TYPE_PCT=$(echo "$LINE" | grep -oE '[0-9]+\.[0-9]+' | head -1)
-    TYPE_TOTAL=$(echo "$LINE" | grep -oE 'out of [0-9]+' | grep -oE '[0-9]+')
-    TYPE_FILLED=$(awk -v p="$TYPE_PCT" -v t="$TYPE_TOTAL" 'BEGIN { printf "%.0f", (p / 100) * t }')
-    TYPE_TOTAL_FILLED=$((TYPE_TOTAL_FILLED + TYPE_FILLED))
-    TYPE_TOTAL_POSSIBLE=$((TYPE_TOTAL_POSSIBLE + TYPE_TOTAL))
-done < <(echo "$TYPE_COVERAGE_JSON" | grep -oE '(Class constant|Param|Property|Return) type coverage is [0-9]+\.[0-9]+ % out of [0-9]+ possible')
+    tree=$(git stash create)
+    mkdir "$package_dir"
+    git archive --format=tar "${tree:-HEAD}" | tar -x -C "$package_dir"
+    size_kib=$(find "$package_dir" -type f -exec cat {} + | wc -c | awk '{ printf "%.0f", $1 / 1024 }')
 
-TYPE_PERCENT_INT=0
-(( TYPE_TOTAL_POSSIBLE > 0 )) && TYPE_PERCENT_INT=$(awk -v f="$TYPE_TOTAL_FILLED" -v t="$TYPE_TOTAL_POSSIBLE" 'BEGIN { printf "%.0f", (f / t) * 100 }')
+    badge package-size.svg size "${size_kib}%20KiB" brightgreen
+}
 
-TYPE_COLOR="red"
-(( TYPE_PERCENT_INT >= 80 )) && TYPE_COLOR="green"
-(( TYPE_PERCENT_INT >= 50 && TYPE_PERCENT_INT < 80 )) && TYPE_COLOR="yellow"
+test_badges() {
+    local clover junit results coverage tests assertions
 
-curl -s -o dev/artifacts/type-coverage.svg \
-  "https://img.shields.io/badge/type_coverage-${TYPE_PERCENT_INT}%25-${TYPE_COLOR}?style=flat"
+    clover=$(native_path "$work_dir/clover.xml")
+    junit=$(native_path "$work_dir/junit.xml")
 
-# --- MUTATION SCORE & MUTATION COVERAGE BADGES ---
-if [[ "$SKIP_MUTATION" == "1" ]]; then
-    echo "Skipping mutation testing (--skip-mutation/SKIP_MUTATION=1); leaving existing mutation-score.svg and mutation-coverage.svg untouched."
+    XDEBUG_MODE=coverage "$php" vendor/bin/phpunit --colors=never --no-progress \
+        --coverage-clover="$clover" --log-junit="$junit"
+
+    results=$("$php" -r '
+        $metrics = simplexml_load_file($argv[1])->project->metrics;
+        $suite = simplexml_load_file($argv[2])->testsuite;
+        printf(
+            "%d %d %d",
+            round(100 * (int) $metrics["coveredstatements"] / max(1, (int) $metrics["statements"])),
+            (int) $suite["tests"],
+            (int) $suite["assertions"],
+        );
+    ' "$clover" "$junit")
+
+    read -r coverage tests assertions <<< "$results"
+
+    percent_badge coverage.svg code_coverage "$coverage"
+    badge tests.svg tests "$tests" blue
+    badge assertions.svg assertions "$assertions" purple
+}
+
+type_coverage_badge() {
+    local config report percent
+
+    config=$(native_path "$work_dir/type-coverage.neon")
+    report=$(native_path "$work_dir/type-coverage.json")
+
+    cat > "$work_dir/type-coverage.neon" <<NEON
+includes:
+    - $(native_path "$PWD/phpstan.neon")
+
+parameters:
+    type_coverage:
+        return: 0
+        param: 0
+        property: 0
+        constant: 0
+        measure: true
+NEON
+
+    "$php" vendor/bin/phpstan analyse -c "$config" --no-progress --error-format=json > "$report" 2> /dev/null || true
+
+    percent=$("$php" -r '
+        $report = json_decode(file_get_contents($argv[1]), true, flags: JSON_THROW_ON_ERROR);
+        $messages = $report["errors"];
+        foreach ($report["files"] as $file) {
+            foreach ($file["messages"] as $message) {
+                $messages[] = $message["message"];
+            }
+        }
+        $filled = $possible = 0;
+        foreach ($messages as $message) {
+            if (preg_match("/type coverage is ([0-9.]+) % out of ([0-9]+) possible/", $message, $match) === 1) {
+                $filled += (float) $match[1] / 100 * (int) $match[2];
+                $possible += (int) $match[2];
+            }
+        }
+        if ($possible === 0) {
+            fwrite(STDERR, "No type coverage found in the PHPStan report.\n");
+            exit(1);
+        }
+        echo round(100 * $filled / $possible);
+    ' "$report")
+
+    percent_badge type-coverage.svg type_coverage "$percent"
+}
+
+mutation_badges() {
+    local summary results score coverage
+
+    summary=$(native_path "$work_dir/infection-summary.json")
+
+    "$php" vendor/bin/infection --threads=max --no-interaction --no-progress \
+        --logger-summary-json="$summary" > /dev/null || true
+
+    results=$("$php" -r '
+        $stats = json_decode(file_get_contents($argv[1]), true, flags: JSON_THROW_ON_ERROR)["stats"];
+        printf("%d %d", round($stats["msi"]), round($stats["mutationCodeCoverage"]));
+    ' "$summary")
+
+    read -r score coverage <<< "$results"
+
+    percent_badge mutation-score.svg mutation_score "$score"
+    percent_badge mutation-coverage.svg mutation_coverage "$coverage"
+}
+
+mkdir -p "$artifacts"
+
+package_size_badge
+test_badges
+type_coverage_badge
+
+if (( skip_mutation )); then
+    echo "Mutation testing skipped; the mutation badges are unchanged."
 else
-    MUTATION_SUMMARY_JSON=$(mktemp)
-    ./vendor/bin/infection --threads=max --no-interaction --no-progress --logger-summary-json="$MUTATION_SUMMARY_JSON" > /dev/null 2>&1 || true
-
-    MUTATION_PERCENT_INT=0
-    if [[ -s $MUTATION_SUMMARY_JSON ]]; then
-        MUTATION_MSI=$(grep -oE '"msi":[0-9.]+' "$MUTATION_SUMMARY_JSON" | grep -oE '[0-9.]+')
-        [[ -n $MUTATION_MSI ]] && MUTATION_PERCENT_INT=$(awk -v m="$MUTATION_MSI" 'BEGIN { printf "%.0f", m }')
-    fi
-
-    MUTATION_COLOR="red"
-    (( MUTATION_PERCENT_INT >= 80 )) && MUTATION_COLOR="green"
-    (( MUTATION_PERCENT_INT >= 50 && MUTATION_PERCENT_INT < 80 )) && MUTATION_COLOR="yellow"
-
-    curl -s -o dev/artifacts/mutation-score.svg \
-      "https://img.shields.io/badge/mutation_score-${MUTATION_PERCENT_INT}%25-${MUTATION_COLOR}?style=flat"
-
-    MUTATION_COVERAGE_PERCENT_INT=0
-    if [[ -s $MUTATION_SUMMARY_JSON ]]; then
-        MUTATION_COVERAGE=$(grep -oE '"mutationCodeCoverage":[0-9.]+' "$MUTATION_SUMMARY_JSON" | grep -oE '[0-9.]+')
-        [[ -n $MUTATION_COVERAGE ]] && MUTATION_COVERAGE_PERCENT_INT=$(awk -v m="$MUTATION_COVERAGE" 'BEGIN { printf "%.0f", m }')
-    fi
-    rm -f "$MUTATION_SUMMARY_JSON"
-
-    MUTATION_COVERAGE_COLOR="red"
-    (( MUTATION_COVERAGE_PERCENT_INT >= 80 )) && MUTATION_COVERAGE_COLOR="green"
-    (( MUTATION_COVERAGE_PERCENT_INT >= 50 && MUTATION_COVERAGE_PERCENT_INT < 80 )) && MUTATION_COVERAGE_COLOR="yellow"
-
-    curl -s -o dev/artifacts/mutation-coverage.svg \
-      "https://img.shields.io/badge/mutation_coverage-${MUTATION_COVERAGE_PERCENT_INT}%25-${MUTATION_COVERAGE_COLOR}?style=flat"
+    mutation_badges
 fi
 
-# --- TESTS & ASSERTIONS ---
-# `|| true` for the same reason as the coverage run above: a failing test must not abort
-# badge generation.
-PHPUNIT_OUTPUT=$(./vendor/bin/phpunit --colors=never 2>&1) || true
-
-if echo "$PHPUNIT_OUTPUT" | grep -q 'OK'; then
-    TESTS=$(echo "$PHPUNIT_OUTPUT" | grep -Eo '[0-9]+ tests?' | awk '{print $1}')
-    ASSERTIONS=$(echo "$PHPUNIT_OUTPUT" | grep -Eo '[0-9]+ assertions?' | awk '{print $1}')
-else
-    TESTS=0
-    ASSERTIONS=0
-fi
-
-# --- TESTS BADGE ---
-curl -s -o dev/artifacts/tests.svg \
-  "https://img.shields.io/badge/tests-${TESTS}-blue?style=flat"
-
-# --- ASSERTIONS BADGE ---
-curl -s -o dev/artifacts/assertions.svg \
-  "https://img.shields.io/badge/assertions-${ASSERTIONS}-purple?style=flat"
-
-# --- OPTIMIZE SVG BADGES ---
-php bin/svg-optimizer -a -q process dev/artifacts
+"$php" bin/svg-optimizer --with-all-rules --quiet process "$artifacts"

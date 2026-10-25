@@ -76,5 +76,11 @@ jobs:
           mv demo.gif "$DEMO_GIF_PATH"
 
           git add "$DEMO_GIF_PATH"
+
+          if git diff --cached --quiet; then
+            echo "demo.gif is unchanged"
+            exit 0
+          fi
+
           git commit -m "build and update demo.gif"
           git push origin develop

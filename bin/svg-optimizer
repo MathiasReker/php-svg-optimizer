@@ -10,19 +10,21 @@
 
 declare(strict_types=1);
 
+namespace MathiasReker\PhpSvgOptimizer;
+
 use MathiasReker\PhpSvgOptimizer\Console\Command\CommandDispatcher;
 
-if (function_exists('ini_set')) {
+if (\function_exists('ini_set')) {
     ini_set('memory_limit', '-1');
 }
 
-if (function_exists('error_reporting')) {
+if (\function_exists('error_reporting')) {
     error_reporting(\E_ALL);
 }
 
 $autoloadCandidates = [
     __DIR__ . '/../vendor/autoload.php',
-    is_string($GLOBALS['_composer_autoload_path'] ?? null) ? $GLOBALS['_composer_autoload_path'] : '',
+    \is_string($GLOBALS['_composer_autoload_path'] ?? null) ? $GLOBALS['_composer_autoload_path'] : '',
     __DIR__ . '/../../../../vendor/autoload.php',
 ];
 
@@ -48,9 +50,4 @@ if (!$autoloadLoaded) {
     exit(1);
 }
 
-/**
- * @see https://github.com/MathiasReker/php-svg-optimizer
- *
- * @var array<int, string> $argv
- */
 exit(CommandDispatcher::fromArgs($argv)->run());

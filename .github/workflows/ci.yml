@@ -1,7 +1,7 @@
 name: CI
 
 permissions:
-  contents: write
+  contents: read
 
 on:
   push:
@@ -9,17 +9,22 @@ on:
       - develop
 
   pull_request:
-    branches:
-      - '*'
 
 jobs:
   run:
     runs-on: ${{ matrix.operating-system }}
     strategy:
+      fail-fast: false
       matrix:
         operating-system: [ 'ubuntu-latest' ]
         php-versions: [ '8.3', '8.4', '8.5', '8.6' ]
+        include:
+          - operating-system: 'windows-latest'
+            php-versions: '8.5'
     name: PHP ${{ matrix.php-versions }} Test on ${{ matrix.operating-system }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
@@ -29,7 +34,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
           extensions: mbstring
-          coverage: xdebug
+          coverage: ${{ (matrix.php-versions == '8.3' && matrix.operating-system == 'ubuntu-latest') && 'xdebug' || 'none' }}
 
       - name: Display PHP Version
         run: php -v
@@ -55,20 +60,17 @@ jobs:
       - name: Check PSR-4 autoloading
         run: composer analyze:autoload
 
-      - name: Check syntax
-        run: |
-          find src tests -name '*.php' -exec php -l {} \;
-
       - name: Run Tests and Generate Coverage Report
-        run: |
-          composer test -- --coverage-clover=coverage.xml
-          cat coverage.xml
+        if: matrix.php-versions == '8.3' && matrix.operating-system == 'ubuntu-latest'
+        run: composer test -- --coverage-clover=coverage.xml
+
+      - name: Run Tests
+        if: matrix.php-versions != '8.3' || matrix.operating-system != 'ubuntu-latest'
+        run: composer test
 
       - name: Check Code Style with PHP CS Fixer
-        run: |
-          if [[ "${{ matrix.php-versions }}" == "8.3" ]]; then
-            composer analyze:php-cs-fixer
-          fi
+        if: matrix.php-versions == '8.3' && matrix.operating-system == 'ubuntu-latest'
+        run: composer analyze:php-cs-fixer
 
       - name: Analyze Code with PHPStan
         run: composer analyze:phpstan

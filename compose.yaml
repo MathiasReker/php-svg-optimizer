@@ -1,0 +1,10 @@
+services:
+  php:
+    build:
+      context: .
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.3}
+    image: php-svg-optimizer-dev:${PHP_VERSION:-8.3}
+    user: ${UID:-1000}:${GID:-1000}
+    volumes:
+      - .:/app

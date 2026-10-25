@@ -1,67 +1,94 @@
-# Contributing to PHP SVG Optimizer
+# Contributing
 
-First off, thank you for taking the time to contribute! 🎉👍
+Thank you for considering a contribution to PHP SVG Optimizer. Bug reports, ideas and pull requests are all welcome.
 
-We welcome contributions, bug reports, and feature suggestions. Open source thrives on collaboration, and we are always
-eager to work with more contributors!
+By participating in this project, you agree to abide by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## Code of Conduct
+## Reporting Bugs and Requesting Features
 
-By participating in this project, you agree to uphold
-our [Code of Conduct](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/CODE_OF_CONDUCT.md).
+- Search the [existing issues](https://github.com/MathiasReker/php-svg-optimizer/issues) first.
+- [Open an issue](https://github.com/MathiasReker/php-svg-optimizer/issues/new/choose) using one of the templates. For
+  a bug, include the smallest SVG that shows it, the rules you enabled, and the expected and actual output.
+- Report security vulnerabilities privately as described in the [Security Policy](SECURITY.md), never in a public issue.
 
-## Reporting Bugs
+## Development Setup
 
-If you encounter a bug, please [open an issue](https://github.com/MathiasReker/php-svg-optimizer/issues/new/choose). A
-good bug report should include:
+Requirements: PHP 8.3 or newer with the `dom`, `libxml` and `mbstring` extensions, and Composer 2.
 
-- **A clear and descriptive title**
-- **Steps to reproduce the issue**
-- **Expected and actual results**
-- **Any relevant logs or screenshots**
+```bash
+git clone https://github.com/MathiasReker/php-svg-optimizer.git
+cd php-svg-optimizer
+composer install
+composer test
+```
 
-## Suggesting Enhancements
+### Docker
 
-We love hearing new ideas! If you have a suggestion for improving the library,
-please [open an issue](https://github.com/MathiasReker/php-svg-optimizer/issues/new/choose) with your proposal.
+The Docker setup provides PHP, Composer and Xdebug, so nothing else needs to be installed. The project directory is
+mounted into the container.
 
-## Your First Code Contribution
+```bash
+docker compose run --rm php composer install
+docker compose run --rm php composer test
+```
 
-If you’re unsure where to start, look for issues tagged with 'good first issue'. These issues are small, manageable
-tasks that are great for newcomers to the project.
+Use another PHP version by setting `PHP_VERSION`:
 
-## Pull Requests
+```bash
+PHP_VERSION=8.5 docker compose run --rm --build php composer test
+```
 
-To submit a pull request:
+The container runs as user and group 1000. If your IDs differ, export them first so files created in the container
+belong to you: `export UID; export GID=$(id -g)`.
 
-1. **Fork the repository** and clone your fork.
-2. **Create a new branch** for your feature, change, or fix.
-3. **Commit your changes** in logical chunks. Follow
-   the [commit message guidelines](https://chris.beams.io/posts/git-commit/).
-4. **Push your branch** to your fork.
-5. **Open a Pull Request** with a clear title and description
-   on [GitHub](https://github.com/MathiasReker/php-svg-optimizer/compare).
+## Making Changes
 
-## Setting Up Your Environment
+1. Fork the repository and create a branch from `develop`.
+2. Make your change with tests. Keep each commit to one logical change and write commit messages in the
+   [Conventional Commits](https://www.conventionalcommits.org/) format, for example
+   `fix(minify-path-data): keep arc flags separated`.
+3. Run the checks below and make sure they pass.
+4. Open a pull request against `develop` and describe what changed and why.
 
-1. **Clone the repository:**
+### Quality Requirements
 
-   ```bash
-   git clone git@github.com:MathiasReker/php-svg-optimizer.git && cd php-svg-optimizer
-   ```
+Every pull request must keep the project at its current standard:
 
-2. **Install the dependencies:**
+- 100 % line coverage and a 100 % mutation score.
+- No PHPStan errors at the maximum level, and 100 % type coverage.
+- Code style fixed with Rector and PHP CS Fixer.
+- No comments other than PHPDoc tags: code explains itself through names.
+- Logic shared by several passes lives in a trait.
 
-   ```bash
-   composer install
-   ```
+```bash
+composer lint:all       # Fix the code style with Rector and PHP CS Fixer
+composer analyze:all    # Static analysis and Composer checks
+composer test           # Test suite
+composer test:coverage  # Test suite with a coverage report (requires Xdebug or PCOV)
+composer test:mutation  # Mutation testing
+composer test:benchmark # Benchmark; --save=<file> and --compare=<file> check that the output is unchanged
+```
 
-3. **Run the tests:**
+### Rule Principles
 
-   ```bash
-    composer test
-   ```
+- A rule that is not risky must be lossless: the optimized document renders exactly like the original in current
+  browsers, keeps every id, link and animation that can be referenced from inside or outside the document, keeps sprite
+  sheets working, and never rounds numbers.
+- A rule that cannot guarantee this is risky, and the README explains why.
+- Every rule is idempotent: running it twice gives the same result as running it once.
+- Every rule produces well-formed XML and behaves the same on every supported PHP and libxml version.
 
-Please ensure that all tests pass before submitting your pull request.
+### Adding a Rule
 
-Thank you for contributing! 🎉
+1. Create a final readonly pass class in `src/Service/Rule` that implements
+   `MathiasReker\PhpSvgOptimizer\Pass\PassInterface`. Implement `RevertIfLargerPassInterface` instead when the pass can
+   make the document larger, so the optimizer reverts it in that case.
+2. Write tests in `tests/Unit/Service/Rule`, covering the edge cases and documents the pass must leave untouched.
+3. Add a case to `src/Type/Rule.php`, map it to its passes in `Rule::passes()`, list it in `Rule::isRisky()` if it is
+   risky, and add each pass to `src/Pass/ExecutionOrder.php` after the passes it depends on.
+4. Register the rule in `src/Service/Facade/SvgOptimizerFacade.php`.
+5. Document the rule in `README.md`.
+
+## License
+
+By contributing, you agree that your contributions are licensed under the [MIT License](LICENSE).

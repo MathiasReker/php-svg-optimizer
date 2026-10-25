@@ -1,7 +1,7 @@
 parameters:
   level: max
   paths:
-    - bin
+    - bin/svg-optimizer
     - src
     - tests
   excludePaths:
@@ -17,13 +17,10 @@ parameters:
       missingCheckedExceptionInThrows: true
       tooWideThrowType: true
     implicitThrows: false
-    # DOMException only signals programming errors (invalid names, hierarchy violations), like a LogicException.
     uncheckedExceptionClasses:
       - DOMException
   ignoreErrors:
-    # Rules share logic through traits by design.
     - identifier: symplify.forbiddenTrait
-    # Interfaces live next to their implementations by design.
     - identifier: symplify.requiredInterfaceContractNamespace
   type_coverage:
     return: 100

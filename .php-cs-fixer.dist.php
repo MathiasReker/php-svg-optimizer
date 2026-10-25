@@ -19,13 +19,13 @@ $header = <<<'EOD'
 $finder = PhpCsFixer\Finder::create()
     ->ignoreDotFiles(false)
     ->ignoreVCSIgnored(true)
-    ->in([__DIR__]);
+    ->in([__DIR__])
+    ->append([__DIR__ . '/bin/svg-optimizer']);
 
 return (new PhpCsFixer\Config())
     ->registerCustomFixers(new PhpCsFixerCustomFixers\Fixers())
     ->setRiskyAllowed(true)
     ->setRules([
-        // Header
         'header_comment' => [
             'header' => $header,
             'comment_type' => 'PHPDoc',
@@ -33,15 +33,12 @@ return (new PhpCsFixer\Config())
             'separate' => 'bottom',
         ],
 
-        // Migration Rules
         '@autoPHPMigration' => true,
         '@autoPHPMigration:risky' => true,
         '@autoPHPUnitMigration:risky' => true,
 
-        // Doctrine Rules
         '@DoctrineAnnotation' => true,
 
-        // In no presets
         'attribute_empty_parentheses' => true,
         'heredoc_closing_marker' => true,
         'multiline_string_to_heredoc' => true,
@@ -76,10 +73,8 @@ return (new PhpCsFixer\Config())
         'simplified_null_return' => true,
         'stringable_for_to_string' => true,
 
-        // PER-CS3.0 Rules
         '@PER-CS3x0:risky' => true,
 
-        // PHP-CS-Fixer Rules
         '@PhpCsFixer' => true,
         '@PhpCsFixer:risky' => true,
         'trailing_comma_in_multiline' => [
@@ -87,18 +82,14 @@ return (new PhpCsFixer\Config())
             'after_heredoc' => true,
         ],
 
-        // Symfony Rules
         '@Symfony' => true,
         '@Symfony:risky' => true,
         'concat_space' => ['spacing' => 'one'],
 
-        // Disable rule causing issues
         'multiline_whitespace_before_semicolons' => true,
 
-        // Somehow not applied by the rulesets
         'declare_strict_types' => true,
 
-        // Custom Fixers
         PhpCsFixerCustomFixers\Fixer\TrimKeyFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\StringableInterfaceFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\PhpdocVarAnnotationToAssertFixer::name() => true,

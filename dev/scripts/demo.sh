@@ -1,33 +1,40 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
+
+for command in composer pv; do
+    if ! command -v "$command" > /dev/null; then
+        echo "$command is required to record the demo." >&2
+        exit 1
+    fi
+done
+
+repository=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+demo_dir=$(mktemp -d)
+trap 'rm -rf "$demo_dir"' EXIT
+
+cd "$demo_dir"
+composer init --quiet --no-interaction --name=demo/demo --stability=dev
+composer config prefer-stable true
+composer config repositories.php-svg-optimizer path "$repository"
+cp -R "$repository/dev/resources/svg" svg
 
 export TERM="${TERM:-xterm-256color}"
-export CLICOLOR_FORCE=1
 
-type_effect() {
-  echo "$1" | pv -qL 10
+type_line() {
+    echo "> $1" | pv -qL 10
 }
 
-type_effect "> # Install php-svg-optimizer with Composer"
+type_line "# Install php-svg-optimizer with Composer"
 sleep 1
-
-cd .. || { echo "Failed to leave the repository directory"; exit 1; }
-
-type_effect "> composer require mathiasreker/php-svg-optimizer"
+type_line "composer require mathiasreker/php-svg-optimizer"
 composer require mathiasreker/php-svg-optimizer --ansi
 
 echo ">"
-echo ">"
-
-type_effect "> # Optimize every SVG in a directory with one command"
-type_effect "> vendor/bin/svg-optimizer -a process php-svg-optimizer/dev/resources/svg"
-
-vendor/bin/svg-optimizer --with-all-rules --ansi process php-svg-optimizer/dev/resources/svg
+type_line "# Optimize every SVG in a directory with one command"
+type_line "vendor/bin/svg-optimizer --with-all-rules process svg"
+vendor/bin/svg-optimizer --with-all-rules --ansi process svg
 
 echo ">"
-echo ">"
-
-type_effect "> # Done! Smaller, cleaner, safer SVGs."
-
+type_line "# Done! Smaller, cleaner, safer SVGs."
 sleep 2

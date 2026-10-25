@@ -1,0 +1,59 @@
+name: Bug report
+description: Report wrong output, a rendering change, an error or a crash.
+labels: [bug]
+assignees: [MathiasReker]
+body:
+  - type: markdown
+    attributes:
+      value: Please report security vulnerabilities privately as described in the security policy, not here.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: input
+    attributes:
+      label: Input SVG
+      description: The smallest SVG that shows the problem.
+      render: xml
+    validations:
+      required: true
+  - type: textarea
+    id: rules
+    attributes:
+      label: Rules
+      description: The code, configuration file or command line you used.
+      render: php
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: The output or the error message. For a rendering change, name the browser and its version.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Library version
+      placeholder: "10.0.0"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: PHP and libxml version
+      description: "Output of: php -r 'echo PHP_VERSION, \" \", LIBXML_DOTTED_VERSION;'"
+      placeholder: "8.3.9 2.11.7"
+    validations:
+      required: true

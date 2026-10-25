@@ -38,7 +38,7 @@ return RectorConfig::configure()
     ->withAttributesSets()
     ->withTreatClassesAsFinal()
     ->withSkipPath(__DIR__ . '/vendor')
-    ->withPaths([__DIR__])
+    ->withPaths([__DIR__, __DIR__ . '/bin/svg-optimizer'])
     ->withoutParallel()
     ->withSkip(
         [
