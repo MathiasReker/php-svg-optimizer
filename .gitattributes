@@ -15,11 +15,9 @@
 /phpstan.neon export-ignore
 /phpstan-type-coverage.neon export-ignore
 /phpunit.xml export-ignore
-/phpcs.xml export-ignore
 /rector.php export-ignore
 /tests export-ignore
 /.github export-ignore
 /dev export-ignore
-/composer-dependency-analyser.php export-ignore
 /README.md export-ignore
 /composer.lock export-ignore

@@ -369,7 +369,7 @@ final class CommandDispatcherTest extends TestCase
     #[\Override]
     protected function setUp(): void
     {
-        $this->binPath = \dirname(__DIR__, 4) . '/bin/svg-optimizer';
+        $this->binPath = __DIR__ . '/../../../../bin/svg-optimizer';
         self::assertTrue(is_file($this->binPath), \sprintf('Could not resolve bin/svg-optimizer at "%s".', $this->binPath));
 
         $this->tempDir = sys_get_temp_dir() . '/svgopt_dispatcher_test_' . uniqid();

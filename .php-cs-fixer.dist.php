@@ -18,6 +18,7 @@ $header = <<<'EOD'
 
 $finder = PhpCsFixer\Finder::create()
     ->ignoreDotFiles(false)
+    ->ignoreVCSIgnored(true)
     ->in([__DIR__]);
 
 return (new PhpCsFixer\Config())
@@ -33,9 +34,9 @@ return (new PhpCsFixer\Config())
         ],
 
         // Migration Rules
-        '@PHP8x3Migration' => true,
-        '@PHP8x3Migration:risky' => true,
-        '@PHPUnit11x0Migration:risky' => true,
+        '@autoPHPMigration' => true,
+        '@autoPHPMigration:risky' => true,
+        '@autoPHPUnitMigration:risky' => true,
 
         // Doctrine Rules
         '@DoctrineAnnotation' => true,
@@ -62,6 +63,18 @@ return (new PhpCsFixer\Config())
         'multiline_promoted_properties' => true,
         'new_expression_parentheses' => true,
         'no_useless_printf' => true,
+        'class_keyword' => true,
+        'final_class' => true,
+        'final_public_method_for_abstract_class' => true,
+        'no_redundant_readonly_property' => true,
+        'phpdoc_tag_no_named_arguments' => ['fix_internal' => false],
+        'phpdoc_to_param_type' => true,
+        'phpdoc_to_property_type' => true,
+        'phpdoc_to_return_type' => true,
+        'regular_callable_call' => true,
+        'simplified_if_return' => true,
+        'simplified_null_return' => true,
+        'stringable_for_to_string' => true,
 
         // PER-CS3.0 Rules
         '@PER-CS3x0:risky' => true,
@@ -121,6 +134,11 @@ return (new PhpCsFixer\Config())
         PhpCsFixerCustomFixers\Fixer\CommentedOutFunctionFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\CommentSurroundedBySpacesFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\ClassConstantUsageFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\NoUselessDirnameCallFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\PromotedConstructorPropertyFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\SingleSpaceAfterStatementFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\SingleSpaceBeforeStatementFixer::name() => true,
+        PhpCsFixerCustomFixers\Fixer\TypedClassConstantFixer::name() => true,
     ])
     ->setFinder($finder)
     ->setLineEnding("\n");

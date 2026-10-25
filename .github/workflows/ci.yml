@@ -55,9 +55,6 @@ jobs:
       - name: Check PSR-4 autoloading
         run: composer analyze:autoload
 
-      - name: Analyze Composer Dependencies
-        run: composer analyze:dependency
-
       - name: Check syntax
         run: |
           find src tests -name '*.php' -exec php -l {} \;

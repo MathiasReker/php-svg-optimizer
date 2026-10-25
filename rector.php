@@ -12,25 +12,12 @@ declare(strict_types=1);
 use Rector\Config\RectorConfig;
 use Rector\PHPUnit\AnnotationsToAttributes\Rector\Class_\AnnotationWithValueToAttributeRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
-use Rector\TypeDeclaration\Rector\ClassMethod\AddParamArrayDocblockBasedOnCallableNativeFuncCallRector;
-use Rector\TypeDeclaration\Rector\ClassMethod\AddReturnDocblockForScalarArrayFromAssignsRector;
-use Rector\TypeDeclarationDocblocks\Rector\Class_\AddVarArrayDocblockFromDimFetchAssignRector;
-use Rector\TypeDeclarationDocblocks\Rector\Class_\ClassMethodArrayDocblockParamFromLocalCallsRector;
-use Rector\TypeDeclarationDocblocks\Rector\Class_\DocblockVarArrayFromGetterReturnRector;
-use Rector\TypeDeclarationDocblocks\Rector\Class_\DocblockVarArrayFromPropertyDefaultsRector;
-use Rector\TypeDeclarationDocblocks\Rector\Class_\DocblockVarFromParamDocblockInConstructorRector;
-use Rector\TypeDeclarationDocblocks\Rector\ClassMethod\AddParamArrayDocblockFromAssignsParamToParamReferenceRector;
-use Rector\TypeDeclarationDocblocks\Rector\ClassMethod\AddParamArrayDocblockFromDimFetchAccessRector;
-use Rector\TypeDeclarationDocblocks\Rector\ClassMethod\AddReturnDocblockForArrayDimAssignedObjectRector;
-use Rector\TypeDeclarationDocblocks\Rector\ClassMethod\AddReturnDocblockForCommonObjectDenominatorRector;
-use Rector\TypeDeclarationDocblocks\Rector\ClassMethod\AddReturnDocblockForJsonArrayRector;
-use Rector\TypeDeclarationDocblocks\Rector\ClassMethod\DocblockGetterReturnArrayFromPropertyDocblockVarRector;
-use Rector\TypeDeclarationDocblocks\Rector\ClassMethod\DocblockReturnArrayFromDirectArrayInstanceRector;
 use Rector\Visibility\Rector\ClassConst\ChangeConstantVisibilityRector;
 use Rector\Visibility\Rector\ClassMethod\ChangeMethodVisibilityRector;
 
 return RectorConfig::configure()
-    ->withPhpSets(php83: true)
+    ->withPhpSets()
+    ->withComposerBased(phpunit: true)
     ->withIndent()
     ->withImportNames(importShortClasses: false, removeUnusedImports: true)
     ->withPreparedSets(
@@ -38,15 +25,18 @@ return RectorConfig::configure()
         codeQuality: true,
         codingStyle: true,
         typeDeclarations: true,
+        typeDeclarationDocblocks: true,
         privatization: true,
         naming: true,
         instanceOf: true,
         earlyReturn: true,
         rectorPreset: true,
         phpunitCodeQuality: true,
+        phpunitNarrowAsserts: true,
         symfonyCodeQuality: true,
     )
     ->withAttributesSets()
+    ->withTreatClassesAsFinal()
     ->withSkipPath(__DIR__ . '/vendor')
     ->withPaths([__DIR__])
     ->withoutParallel()
@@ -57,22 +47,8 @@ return RectorConfig::configure()
     )
     ->withRules(
         [
-            DocblockVarArrayFromGetterReturnRector::class,
-            ClassMethodArrayDocblockParamFromLocalCallsRector::class,
-            AddVarArrayDocblockFromDimFetchAssignRector::class,
-            DocblockVarFromParamDocblockInConstructorRector::class,
-            DocblockVarArrayFromPropertyDefaultsRector::class,
-            AddReturnDocblockForArrayDimAssignedObjectRector::class,
-            AddReturnDocblockForCommonObjectDenominatorRector::class,
-            DocblockReturnArrayFromDirectArrayInstanceRector::class,
-            AddReturnDocblockForJsonArrayRector::class,
-            AddParamArrayDocblockFromAssignsParamToParamReferenceRector::class,
-            DocblockGetterReturnArrayFromPropertyDocblockVarRector::class,
-            AddParamArrayDocblockFromDimFetchAccessRector::class,
             ChangeConstantVisibilityRector::class,
             ChangeMethodVisibilityRector::class,
-            AddReturnDocblockForScalarArrayFromAssignsRector::class,
-            AddParamArrayDocblockBasedOnCallableNativeFuncCallRector::class,
             AnnotationWithValueToAttributeRector::class,
         ]
     );

@@ -13,6 +13,8 @@ namespace MathiasReker\PhpSvgOptimizer\Contract\Exception;
 
 /**
  * @api
+ *
+ * @no-named-arguments
  */
 interface SvgOptimizerExceptionInterface extends \Throwable
 {

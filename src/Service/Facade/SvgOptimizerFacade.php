@@ -27,6 +27,8 @@ use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
  * @api
  *
  * @see https://github.com/MathiasReker/php-svg-optimizer
+ *
+ * @no-named-arguments
  */
 final readonly class SvgOptimizerFacade
 {
