@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Filesystem;
 
 use MathiasReker\PhpSvgOptimizer\Console\Filesystem\Finder;
+use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\UnreadableDirectoryStreamWrapper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -193,11 +194,107 @@ final class FinderTest extends TestCase
     #[Test]
     public function returnsEmptyArrayWhenDirectoryCannotBeOpened(): void
     {
-        $restrictedDir = 'C:\System Volume Information';
+        $result = UnreadableDirectoryStreamWrapper::run(
+            static fn (): array => (new Finder())->in(UnreadableDirectoryStreamWrapper::UNREADABLE_DIRECTORY)->find(),
+        );
 
-        $finder = (new Finder())->in($restrictedDir);
+        self::assertSame([], $result);
+    }
 
-        self::assertSame([], $finder->find());
+    #[Test]
+    public function skipsSubdirectoriesThatCannotBeOpened(): void
+    {
+        $result = UnreadableDirectoryStreamWrapper::run(
+            static fn (): array => (new Finder())
+                ->in(UnreadableDirectoryStreamWrapper::READABLE_DIRECTORY)
+                ->files()
+                ->withExtension('svg')
+                ->find(),
+        );
+
+        self::assertSame(['icon.svg', 'inner.svg'], array_map(basename(...), $result));
+    }
+
+    #[Test]
+    public function findsEachFileOnceWhenASymlinkPointsBackToAnAncestor(): void
+    {
+        mkdir($this->tempDir . '/nested');
+        file_put_contents($this->tempDir . '/nested/icon.svg', '<svg/>');
+
+        self::assertTrue(symlink((string) realpath($this->tempDir), $this->tempDir . '/nested/loop'));
+
+        $result = (new Finder())->in($this->tempDir)->files()->withExtension('svg')->find();
+
+        self::assertSame([realpath($this->tempDir . '/nested/icon.svg')], $result);
+    }
+
+    #[Test]
+    public function findsFilesOnceWhenTwoSymlinksPointToTheSameDirectory(): void
+    {
+        mkdir($this->tempDir . '/target');
+        file_put_contents($this->tempDir . '/target/icon.svg', '<svg/>');
+
+        self::assertTrue(symlink((string) realpath($this->tempDir . '/target'), $this->tempDir . '/link'));
+
+        $result = (new Finder())->in($this->tempDir)->files()->withExtension('svg')->find();
+
+        self::assertCount(1, $result);
+        self::assertSame('icon.svg', basename($result[0]));
+    }
+
+    #[Test]
+    public function followsASymlinkToADirectoryOutsideTheSearchedDirectory(): void
+    {
+        $outside = $this->tempDir . '_outside';
+        mkdir($outside);
+        file_put_contents($outside . '/icon.svg', '<svg/>');
+        mkdir($this->tempDir . '/root');
+
+        try {
+            self::assertTrue(symlink((string) realpath($outside), $this->tempDir . '/root/link'));
+
+            $result = (new Finder())->in($this->tempDir . '/root')->files()->withExtension('svg')->find();
+
+            self::assertCount(1, $result);
+            self::assertStringEndsWith('link' . \DIRECTORY_SEPARATOR . 'icon.svg', $result[0]);
+        } finally {
+            unlink($outside . '/icon.svg');
+            rmdir($outside);
+        }
+    }
+
+    #[Test]
+    public function findsFilesWithSpacesAndMultibyteCharactersInTheirPath(): void
+    {
+        mkdir($this->tempDir . '/a b/ünï', 0o777, true);
+        file_put_contents($this->tempDir . '/a b/ünï/ïcön ✓.svg', '<svg/>');
+
+        $result = (new Finder())->in($this->tempDir)->files()->withExtension('svg')->find();
+
+        self::assertSame([realpath($this->tempDir . '/a b/ünï/ïcön ✓.svg')], $result);
+    }
+
+    #[Test]
+    public function returnsTheSameResultWhenSearchedTwice(): void
+    {
+        mkdir($this->tempDir . '/nested');
+        file_put_contents($this->tempDir . '/nested/icon.svg', '<svg/>');
+        $finder = (new Finder())->in($this->tempDir)->files()->withExtension('svg');
+
+        self::assertSame($finder->find(), $finder->find());
+        self::assertCount(1, $finder->find());
+    }
+
+    #[Test]
+    public function ignoresFilesWithoutAnExtensionAndDotFilesWithTheExtensionAsName(): void
+    {
+        file_put_contents($this->tempDir . '/svg', '<svg/>');
+        file_put_contents($this->tempDir . '/icon.svg.bak', '<svg/>');
+        file_put_contents($this->tempDir . '/.svg', '<svg/>');
+
+        $result = (new Finder())->in($this->tempDir)->files()->withExtension('svg')->find();
+
+        self::assertSame([realpath($this->tempDir . '/.svg')], $result);
     }
 
     #[\Override]
@@ -232,14 +329,76 @@ final class FinderTest extends TestCase
 
         /** @var \SplFileInfo $file */
         foreach ($iterator as $file) {
-            if ($file->isDir()) {
-                rmdir($file->getPathname());
-            } else {
-                unlink($file->getPathname());
-            }
+            $this->deleteEntry($file);
         }
 
         rmdir($dir);
+    }
+
+    private function deleteEntry(\SplFileInfo $file): void
+    {
+        $isDirectory = $file->isDir() && (!$file->isLink() || '\\' === \DIRECTORY_SEPARATOR);
+
+        $isDirectory ? rmdir($file->getPathname()) : unlink($file->getPathname());
+    }
+
+    #[Test]
+    public function returnsEmptyArrayForAnEmptyDirectoryName(): void
+    {
+        self::assertSame([], (new Finder())->in('')->find());
+    }
+
+    #[Test]
+    public function returnsADanglingSymlinkOnlyWhenNotRestrictedToFiles(): void
+    {
+        file_put_contents($this->tempDir . '/target.svg', '<svg/>');
+        file_put_contents($this->tempDir . '/icon.svg', '<svg/>');
+        self::assertTrue(symlink((string) realpath($this->tempDir . '/target.svg'), $this->tempDir . '/dangling.svg'));
+        unlink($this->tempDir . '/target.svg');
+
+        $all = (new Finder())->in($this->tempDir)->withExtension('svg')->find();
+        $files = (new Finder())->in($this->tempDir)->files()->withExtension('svg')->find();
+        sort($all);
+
+        self::assertSame(['dangling.svg', 'icon.svg'], array_map(basename(...), $all));
+        self::assertSame(['icon.svg'], array_map(basename(...), $files));
+    }
+
+    #[Test]
+    public function returnsAFileAndASymlinkToItUnderBothNames(): void
+    {
+        file_put_contents($this->tempDir . '/icon.svg', '<svg/>');
+        self::assertTrue(symlink((string) realpath($this->tempDir . '/icon.svg'), $this->tempDir . '/link.svg'));
+
+        $result = (new Finder())->in($this->tempDir)->files()->withExtension('svg')->find();
+        sort($result);
+
+        self::assertSame(['icon.svg', 'link.svg'], array_map(basename(...), $result));
+    }
+
+    #[Test]
+    public function doesNotEnterTheSearchedDirectoryAgainThroughASymlink(): void
+    {
+        file_put_contents($this->tempDir . '/icon.svg', '<svg/>');
+        mkdir($this->tempDir . '/nested');
+        self::assertTrue(symlink((string) realpath($this->tempDir), $this->tempDir . '/nested/loop'));
+
+        $result = (new Finder())->in($this->tempDir)->files()->withExtension('svg')->find();
+
+        self::assertSame(['icon.svg'], array_map(basename(...), $result));
+    }
+
+    #[Test]
+    public function matchesAMultibyteExtensionInAnyCase(): void
+    {
+        file_put_contents($this->tempDir . '/lower.äbc', '<svg/>');
+        file_put_contents($this->tempDir . '/upper.ÄBC', '<svg/>');
+        file_put_contents($this->tempDir . '/other.abc', '<svg/>');
+
+        $result = (new Finder())->in($this->tempDir)->files()->withExtension('ÄBC')->find();
+        sort($result);
+
+        self::assertSame(['lower.äbc', 'upper.ÄBC'], array_map(basename(...), $result));
     }
 
     #[Test]

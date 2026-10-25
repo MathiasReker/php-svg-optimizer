@@ -22,12 +22,13 @@ if (function_exists('error_reporting')) {
 
 $autoloadCandidates = [
     __DIR__ . '/../vendor/autoload.php',
+    is_string($GLOBALS['_composer_autoload_path'] ?? null) ? $GLOBALS['_composer_autoload_path'] : '',
     __DIR__ . '/../../../../vendor/autoload.php',
 ];
 
 $autoloadLoaded = false;
-foreach ($autoloadCandidates as $path) {
-    $real = realpath($path);
+foreach ($autoloadCandidates as $autoloadCandidate) {
+    $real = realpath($autoloadCandidate);
     if (false !== $real && is_file($real)) {
         include_once $real;
         $autoloadLoaded = true;
@@ -37,6 +38,12 @@ foreach ($autoloadCandidates as $path) {
 
 if (\PHP_SAPI !== 'cli') {
     echo 'This command can only be run in a CLI environment.', \PHP_EOL;
+
+    exit(1);
+}
+
+if (!$autoloadLoaded) {
+    fwrite(\STDERR, 'Unable to find the Composer autoloader. Run "composer install" first.' . \PHP_EOL);
 
     exit(1);
 }

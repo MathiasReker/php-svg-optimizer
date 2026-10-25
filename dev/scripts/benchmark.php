@@ -95,7 +95,7 @@ foreach ($documents as $name => $svg) {
         $median = $timings[intdiv(count($timings), 2)];
         $totalSeconds += $median;
         $checksums[$name . ' ' . $mode] = hash('sha256', $output);
-        $results[] = [$name, $mode, mb_strlen($svg), mb_strlen($output), $median];
+        $results[] = [$name, $mode, mb_strlen($svg, '8bit'), mb_strlen($output, '8bit'), $median];
     }
 }
 

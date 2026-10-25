@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Processor\Trait;
 
+use MathiasReker\PhpSvgOptimizer\Support\SvgDefaults;
+
 /**
  * @internal
  *
@@ -29,11 +31,14 @@ trait XmlLoaderTrait
     {
         $previous = libxml_use_internal_errors(true);
 
-        try {
-            return $domDocument->loadXML($source, $options);
-        } finally {
-            libxml_clear_errors();
-            libxml_use_internal_errors($previous);
+        $loaded = $domDocument->loadXML($source, $options);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+
+        if ($loaded) {
+            $domDocument->encoding ??= SvgDefaults::XML_ENCODING;
         }
+
+        return $loaded;
     }
 }

@@ -79,4 +79,16 @@ final class ByteFormatterTest extends TestCase
         self::assertSame('-4.88 KB', ByteFormatter::formatBytes(-5_000));
         self::assertSame('-1.91 MB', ByteFormatter::formatBytes(-2_000_000));
     }
+
+    #[Test]
+    public function formatBytesHandlesTheUnitBoundaries(): void
+    {
+        self::assertSame('0 B', ByteFormatter::formatBytes(0));
+        self::assertSame('1023 B', ByteFormatter::formatBytes(1_023));
+        self::assertSame('1.00 KB', ByteFormatter::formatBytes(1_024));
+        self::assertSame('1024.00 KB', ByteFormatter::formatBytes(1_048_575));
+        self::assertSame('1.00 MB', ByteFormatter::formatBytes(1_048_576));
+        self::assertSame('1024.00 TB', ByteFormatter::formatBytes(1_024 ** 5));
+        self::assertSame('-1 B', ByteFormatter::formatBytes(-1));
+    }
 }

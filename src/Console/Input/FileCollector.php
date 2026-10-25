@@ -64,6 +64,6 @@ final class FileCollector
 
     private function hasSvgExtension(string $filePath): bool
     {
-        return SvgTag::Svg->value === mb_strtolower(pathinfo($filePath, \PATHINFO_EXTENSION));
+        return 0 === strcasecmp(pathinfo($filePath, \PATHINFO_EXTENSION), SvgTag::Svg->value);
     }
 }

@@ -120,6 +120,30 @@ final class MetaDataAggregatorTest extends TestCase
     }
 
     #[Test]
+    public function largerOutputGivesNegativeSavings(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+        $metaDataAggregator->addFileData(100, 80, 0.1);
+        $metaDataAggregator->addFileData(50, 90, 0.1);
+
+        self::assertSame(-20, $metaDataAggregator->getSavedBytes());
+        self::assertEqualsWithDelta(-20 / 150 * 100, $metaDataAggregator->getSavedPercentage(), 0.000_001);
+        self::assertFalse($metaDataAggregator->hasSavedBytes());
+    }
+
+    #[Test]
+    public function zeroByteFilesGiveZeroPercentage(): void
+    {
+        $metaDataAggregator = new MetaDataAggregator();
+        $metaDataAggregator->addFileData(0, 0, 0.0);
+        $metaDataAggregator->addFileData(0, 0, 0.0);
+
+        self::assertSame(2, $metaDataAggregator->getOptimizedFileCount());
+        self::assertSame(0.0, $metaDataAggregator->getSavedPercentage());
+        self::assertTrue($metaDataAggregator->hasOptimizedFiles());
+    }
+
+    #[Test]
     public function initialOptimizationTimeIsZero(): void
     {
         $metaDataAggregator = new MetaDataAggregator();

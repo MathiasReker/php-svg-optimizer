@@ -129,6 +129,58 @@ final class ArgumentParserTest extends TestCase
         yield 'short option with separate value' => [['-c', 'config.json', '--dry-run', 'process', 'file.svg']];
         yield 'options after the paths' => [['process', 'file.svg', '-d', '--config', 'config.json']];
         yield 'options between the command and the paths' => [['process', '-c', 'config.json', '-d', 'file.svg']];
+        yield 'flag given twice' => [['-d', '--config=config.json', '--dry-run', 'process', 'file.svg']];
+        yield 'value on a flag that takes none' => [['--dry-run=yes', '-c', 'config.json', 'process', 'file.svg']];
+    }
+
+    /**
+     * @param list<string> $args
+     *
+     * @throws \InvalidArgumentException
+     */
+    #[DataProvider('provideValidateOptionsRejectsMalformedOptionsCases')]
+    #[Test]
+    public function validateOptionsRejectsMalformedOptions(array $args, string $name): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(\sprintf('Unknown option: "%s". Run with --help to see valid options.', $name));
+
+        (new ArgumentParser(['vendor/bin/svg-optimizer', ...$args]))->validateOptions();
+    }
+
+    /**
+     * @return iterable<string, array{list<string>, string}>
+     */
+    public static function provideValidateOptionsRejectsMalformedOptionsCases(): iterable
+    {
+        yield 'combined short flags' => [['-dq', 'process', 'file.svg'], '-dq'];
+        yield 'single dash' => [['process', '-'], '-'];
+        yield 'uppercase long option' => [['--DRY-RUN', 'process', 'file.svg'], '--DRY-RUN'];
+        yield 'long option with one dash' => [['-dry-run', 'process', 'file.svg'], '-dry-run'];
+        yield 'short option with two dashes' => [['--d', 'process', 'file.svg'], '--d'];
+        yield 'misspelled option' => [['--dryrun', 'process', 'file.svg'], '--dryrun'];
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getOptionTakesTheFirstOfRepeatedConfigOptions(): void
+    {
+        $argumentParser = new ArgumentParser(['vendor/bin/svg-optimizer', '-c', 'first.json', '--config=second.json', 'process', 'file.svg']);
+
+        self::assertSame('first.json', $argumentParser->getOption(Option::Config));
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getOptionTakesAJsonValueContainingSpacesAndEqualsSigns(): void
+    {
+        $argumentParser = new ArgumentParser(['vendor/bin/svg-optimizer', '--config={"a": true, "b=c": false}', 'process', 'file.svg']);
+
+        self::assertSame('{"a": true, "b=c": false}', $argumentParser->getOption(Option::Config));
     }
 
     /**
@@ -559,6 +611,30 @@ final class ArgumentParserTest extends TestCase
             self::assertSame([(string) realpath($dashFile)], $svgFiles);
         } finally {
             unlink($dashFile);
+            rmdir($tempDir);
+        }
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getPathsKeepsThePathsGivenBeforeAndAfterTheEndOfOptionsMarker(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/marker_paths_' . uniqid();
+        mkdir($tempDir);
+        $before = $tempDir . '/before.svg';
+        $after = $tempDir . '/-after.svg';
+        file_put_contents($before, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+        file_put_contents($after, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+
+        $argumentParser = new ArgumentParser(['vendor/bin/svg-optimizer', 'process', $before, '--', $after]);
+
+        try {
+            self::assertSame([(string) realpath($before), (string) realpath($after)], $argumentParser->getPaths());
+        } finally {
+            unlink($before);
+            unlink($after);
             rmdir($tempDir);
         }
     }

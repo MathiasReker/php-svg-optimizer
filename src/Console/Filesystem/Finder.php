@@ -24,6 +24,9 @@ final class Finder
 
     private string $extension = '';
 
+    /** @var array<string, true> */
+    private array $visitedDirectories = [];
+
     /**
      * @param string $directory The directory to search in
      */
@@ -75,12 +78,19 @@ final class Finder
     private function searchDirectory(): array
     {
         $results = [];
+        $this->visitedDirectories = [];
+        $this->isFirstVisit(new \SplFileInfo($this->directory));
 
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(
-                $this->directory,
-                \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::FOLLOW_SYMLINKS
-            )
+            new \RecursiveCallbackFilterIterator(
+                new \RecursiveDirectoryIterator(
+                    $this->directory,
+                    \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::FOLLOW_SYMLINKS
+                ),
+                fn (\SplFileInfo $fileInfo): bool => !$fileInfo->isDir() || $this->isFirstVisit($fileInfo),
+            ),
+            \RecursiveIteratorIterator::LEAVES_ONLY,
+            \RecursiveIteratorIterator::CATCH_GET_CHILD,
         );
 
         foreach ($iterator as $fileInfo) {
@@ -90,6 +100,28 @@ final class Finder
         }
 
         return $results;
+    }
+
+    /**
+     * @param \SplFileInfo $directory the directory to enter
+     *
+     * @return bool true if the directory was not entered before through another path, false otherwise
+     */
+    private function isFirstVisit(\SplFileInfo $directory): bool
+    {
+        $realPath = $directory->getRealPath();
+
+        if (false === $realPath) {
+            return true;
+        }
+
+        if (\array_key_exists($realPath, $this->visitedDirectories)) {
+            return false;
+        }
+
+        $this->visitedDirectories[$realPath] = true;
+
+        return true;
     }
 
     /**

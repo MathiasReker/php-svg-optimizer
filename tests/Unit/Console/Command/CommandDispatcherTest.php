@@ -121,8 +121,8 @@ final class CommandDispatcherTest extends TestCase
         $result = $this->runCli(['--not-a-real-option']);
 
         self::assertSame(1, $result['exitCode']);
-        self::assertStringContainsString(
-            'Error: Unknown option: "--not-a-real-option". Run with --help to see valid options.',
+        self::assertSame(
+            'Error: Unknown option: "--not-a-real-option". Run with --help to see valid options.' . \PHP_EOL,
             $result['stderr']
         );
         self::assertSame('', $result['stdout']);

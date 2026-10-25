@@ -53,7 +53,7 @@ trait TextWhitespaceTrait
 
         foreach ($this->textNodes($domDocument, $domDocument, self::TEXT_QUERY) as $domText) {
             if ($domText instanceof \DOMCdataSection) {
-                $domText->parentNode?->replaceChild(new \DOMText($domText->data), $domText);
+                $domText->replaceWith($domText->data);
             }
         }
 
@@ -118,7 +118,7 @@ trait TextWhitespaceTrait
      */
     private function textNodes(\DOMDocument $domDocument, \DOMNode $context, string $expression): array
     {
-        $domNodeList = (new \DOMXPath($domDocument))->query($expression, $context);
+        $domNodeList = (new \DOMXPath($domDocument))->query($expression, $context, false);
         $textNodes = [];
 
         foreach (false === $domNodeList ? [] : $domNodeList as $domNode) {
@@ -229,6 +229,6 @@ trait TextWhitespaceTrait
      */
     private function collapseTextWhitespace(\DOMText $domText): string
     {
-        return $this->preservesSpace($domText) ? str_repeat(' ', mb_strlen($domText->data)) : ' ';
+        return $this->preservesSpace($domText) ? strtr($domText->data, "\t\n\r", '   ') : ' ';
     }
 }

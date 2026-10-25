@@ -138,6 +138,57 @@ final class SvgValidatorTest extends TestCase
         yield 'mixed case local name' => ['<Svg/>'];
         yield 'svg in another default namespace' => ['<svg xmlns="http://www.w3.org/1999/xhtml"/>'];
         yield 'prefixed svg in another namespace' => ['<x:svg xmlns:x="urn:example"/>'];
+
+        yield 'html root' => ['<html xmlns="http://www.w3.org/1999/xhtml"><body><svg xmlns="http://www.w3.org/2000/svg"/></body></html>'];
+
+        yield 'math root' => ['<math xmlns="http://www.w3.org/1998/Math/MathML"/>'];
+
+        yield 'svg element that is not the root' => ['<g xmlns="http://www.w3.org/2000/svg"><svg/></g>'];
+
+        yield 'truncated document' => ['<svg xmlns="http://www.w3.org/2000/svg"><g>'];
+
+        yield 'two root elements' => ['<svg xmlns="http://www.w3.org/2000/svg"/><svg xmlns="http://www.w3.org/2000/svg"/>'];
+
+        yield 'text before the root' => ['junk<svg xmlns="http://www.w3.org/2000/svg"/>'];
+
+        yield 'invalid UTF-8' => ["<svg xmlns=\"http://www.w3.org/2000/svg\"><text>\xFF</text></svg>"];
+
+        yield 'NUL byte' => ["\0"];
+
+        yield 'undeclared prefix on the root' => ['<svg:svg/>'];
+    }
+
+    #[DataProvider('provideIsValidAcceptsSvgDocumentsInEveryEncodingAndLayoutCases')]
+    #[Test]
+    public function isValidAcceptsSvgDocumentsInEveryEncodingAndLayout(string $content): void
+    {
+        self::assertTrue($this->svgValidator->isValid($content));
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideIsValidAcceptsSvgDocumentsInEveryEncodingAndLayoutCases(): iterable
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg"><text>é</text></svg>';
+
+        yield 'UTF-8 byte order mark' => ["\xEF\xBB\xBF" . $svg];
+
+        yield 'UTF-16LE byte order mark' => ["\xFF\xFE" . mb_convert_encoding($svg, 'UTF-16LE', 'UTF-8')];
+
+        yield 'UTF-16BE byte order mark' => ["\xFE\xFF" . mb_convert_encoding($svg, 'UTF-16BE', 'UTF-8')];
+
+        yield 'ISO-8859-1 declaration' => ['<?xml version="1.0" encoding="ISO-8859-1"?>' . mb_convert_encoding($svg, 'ISO-8859-1', 'UTF-8')];
+
+        yield 'CRLF line endings' => ["<?xml version=\"1.0\"?>\r\n<svg xmlns=\"http://www.w3.org/2000/svg\">\r\n  <g/>\r\n</svg>\r\n"];
+
+        yield 'leading and trailing whitespace' => ["\n\t " . $svg . "\n\n"];
+
+        yield 'processing instructions and comments around the root' => ['<?xml-stylesheet href="a.css"?><!-- a --><?foo?>' . $svg . '<!-- b --><?bar?>'];
+
+        yield 'DOCTYPE with an internal subset and entities' => ['<!DOCTYPE svg [<!ENTITY a "é"><!ATTLIST svg x CDATA #IMPLIED>]><svg xmlns="http://www.w3.org/2000/svg"><text>&a;</text></svg>'];
+
+        yield 'deep nesting' => ['<svg xmlns="http://www.w3.org/2000/svg">' . str_repeat('<g>', 200) . str_repeat('</g>', 200) . '</svg>'];
     }
 
     #[\Override]

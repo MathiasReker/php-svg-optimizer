@@ -30,7 +30,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class FileProviderTest extends TestCase
 {
-    private const string TEST_INPUT_FILE = 'input.svg';
+    private string $inputFile = '';
 
     /**
      * @throws FileNotFoundException
@@ -39,7 +39,7 @@ final class FileProviderTest extends TestCase
     #[Test]
     public function getInputContent(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $fileProvider = new FileProvider($this->inputFile);
         $content = $fileProvider->getInputContent();
 
         self::assertStringContainsString('<svg', $content);
@@ -67,7 +67,7 @@ final class FileProviderTest extends TestCase
     #[Test]
     public function loadContentReturnsDomDocument(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $fileProvider = new FileProvider($this->inputFile);
 
         $domDocument = $fileProvider->loadContent();
 
@@ -82,7 +82,7 @@ final class FileProviderTest extends TestCase
     #[Test]
     public function getOutputContentBeforeOptimizeReturnsEmptyString(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $fileProvider = new FileProvider($this->inputFile);
 
         $output = $fileProvider->getOutputContent();
 
@@ -97,7 +97,7 @@ final class FileProviderTest extends TestCase
     #[Test]
     public function optimizeModifiesOutputContent(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $fileProvider = new FileProvider($this->inputFile);
 
         $domDocument = $fileProvider->loadContent();
 
@@ -118,7 +118,7 @@ final class FileProviderTest extends TestCase
     #[Test]
     public function optimize(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $fileProvider = new FileProvider($this->inputFile);
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>');
 
@@ -138,13 +138,13 @@ final class FileProviderTest extends TestCase
     public function optimizeWithMinimalSvg(): void
     {
         file_put_contents(
-            self::TEST_INPUT_FILE,
+            $this->inputFile,
             <<<'XML'
                 <svg xmlns="http://www.w3.org/2000/svg"><text textContent="a &amp; b"></text></svg>
                 XML
         );
 
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $fileProvider = new FileProvider($this->inputFile);
         $domDocument = $fileProvider->loadContent();
 
         $fileProvider->optimize($domDocument);
@@ -161,9 +161,9 @@ final class FileProviderTest extends TestCase
     #[Test]
     public function loadContentThrowsXmlProcessingException(): void
     {
-        file_put_contents(self::TEST_INPUT_FILE, '<svg><invalid></svg>');
+        file_put_contents($this->inputFile, '<svg><invalid></svg>');
 
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $fileProvider = new FileProvider($this->inputFile);
 
         $this->expectException(XmlProcessingException::class);
         $fileProvider->loadContent();
@@ -177,9 +177,9 @@ final class FileProviderTest extends TestCase
     #[Test]
     public function loadContentThrowsXmlProcessingExceptionOnMalformedXml(): void
     {
-        file_put_contents(self::TEST_INPUT_FILE, '<svg><unclosed></svg>');
+        file_put_contents($this->inputFile, '<svg><unclosed></svg>');
 
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $fileProvider = new FileProvider($this->inputFile);
 
         $this->expectException(XmlProcessingException::class);
 
@@ -193,7 +193,7 @@ final class FileProviderTest extends TestCase
     #[Test]
     public function optimizeUpdatesOutputContentWithAttributes(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $fileProvider = new FileProvider($this->inputFile);
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
 
@@ -216,7 +216,7 @@ final class FileProviderTest extends TestCase
     #[Test]
     public function optimizeThrowsTypeErrorOnInvalidInput(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $fileProvider = new FileProvider($this->inputFile);
 
         $this->expectException(\TypeError::class);
 
@@ -231,7 +231,7 @@ final class FileProviderTest extends TestCase
     #[Test]
     public function saveToFileCreatesEveryMissingParentDirectory(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $fileProvider = new FileProvider($this->inputFile);
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg/>');
 
@@ -263,9 +263,75 @@ final class FileProviderTest extends TestCase
      * @throws IOException
      */
     #[Test]
+    public function saveToFileRefusesToReplaceADirectory(): void
+    {
+        $fileProvider = new FileProvider($this->inputFile);
+        $directory = sys_get_temp_dir() . '/' . uniqid('svgtest_dir_', true);
+        mkdir($directory);
+
+        try {
+            $fileProvider->saveToFile($directory . '/');
+            self::fail('Expected an IOException.');
+        } catch (IOException $ioException) {
+            self::assertSame('Failed to write optimized content to the output file: ' . $directory . '/', $ioException->getMessage());
+            self::assertDirectoryExists($directory);
+        } finally {
+            rmdir($directory);
+        }
+    }
+
+    /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function saveToFileOverwritesTheInputFileAndKeepsItsContentReadable(): void
+    {
+        $directory = sys_get_temp_dir() . '/' . uniqid('svg test ü ', true);
+        mkdir($directory);
+        $inputFile = $directory . '/my.icon ✓.svg';
+        file_put_contents($inputFile, "\xEF\xBB\xBF<svg xmlns=\"http://www.w3.org/2000/svg\">\r\n  <text font-family=\"日本\">é</text>\r\n</svg>\r\n");
+
+        try {
+            $fileProvider = new FileProvider($inputFile);
+            $fileProvider->optimize($fileProvider->loadContent())->saveToFile($inputFile);
+
+            self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><text font-family="日本">é</text></svg>', file_get_contents($inputFile));
+            self::assertSame("\xEF\xBB\xBF<svg xmlns=\"http://www.w3.org/2000/svg\">\r\n  <text font-family=\"日本\">é</text>\r\n</svg>\r\n", $fileProvider->getInputContent());
+        } finally {
+            unlink($inputFile);
+            rmdir($directory);
+        }
+    }
+
+    /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    #[Test]
+    public function saveToFileWritesAnEmptyFileBeforeOptimization(): void
+    {
+        $fileProvider = new FileProvider($this->inputFile);
+        $outputPath = sys_get_temp_dir() . '/' . uniqid('svgtest_empty_', true) . '.svg';
+
+        try {
+            $fileProvider->saveToFile($outputPath);
+
+            self::assertSame('', file_get_contents($outputPath));
+        } finally {
+            unlink($outputPath);
+        }
+    }
+
+    /**
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    #[Test]
     public function saveToFileThrowsIOException(): void
     {
-        $fileProvider = new FileProvider(self::TEST_INPUT_FILE);
+        $fileProvider = new FileProvider($this->inputFile);
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg/>');
 
@@ -340,13 +406,14 @@ final class FileProviderTest extends TestCase
     #[\Override]
     protected function setUp(): void
     {
-        file_put_contents(self::TEST_INPUT_FILE, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>');
+        $this->inputFile = sys_get_temp_dir() . \DIRECTORY_SEPARATOR . uniqid('input_', true) . '.svg';
+        file_put_contents($this->inputFile, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>');
     }
 
     protected function tearDown(): void
     {
-        if (file_exists(self::TEST_INPUT_FILE)) {
-            unlink(self::TEST_INPUT_FILE);
+        if (file_exists($this->inputFile)) {
+            unlink($this->inputFile);
         }
 
         parent::tearDown();

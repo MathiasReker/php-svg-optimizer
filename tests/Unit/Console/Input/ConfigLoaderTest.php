@@ -251,6 +251,133 @@ final class ConfigLoaderTest extends TestCase
     }
 
     /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[DataProvider('provideLoadConfigRejectsValuesThatAreNotBooleansCases')]
+    #[Test]
+    public function loadConfigRejectsValuesThatAreNotBooleans(string $json, string $key): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(\sprintf('Configuration value for "%s" must be true or false.', $key));
+
+        ConfigLoader::loadConfig($json);
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideLoadConfigRejectsValuesThatAreNotBooleansCases(): iterable
+    {
+        yield 'string "true"' => ['{"removeComments": "true"}', 'removeComments'];
+
+        yield 'null' => ['{"removeComments": null}', 'removeComments'];
+
+        yield 'number 0' => ['{"removeComments": 0}', 'removeComments'];
+
+        yield 'later key after a valid one' => ['{"removeComments": true, "sortAttributes": 1.0}', 'sortAttributes'];
+
+        yield 'list of numbers' => ['[1]', '0'];
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     * @throws \JsonException
+     */
+    #[DataProvider('provideLoadConfigRejectsJsonThatIsNotStrictCases')]
+    #[Test]
+    public function loadConfigRejectsJsonThatIsNotStrict(string $json): void
+    {
+        $this->expectException(\JsonException::class);
+
+        ConfigLoader::loadConfig($json);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideLoadConfigRejectsJsonThatIsNotStrictCases(): iterable
+    {
+        yield 'trailing comma' => ['{"removeComments": true,}'];
+
+        yield 'single quotes' => ["{'removeComments': true}"];
+
+        yield 'unquoted key' => ['{removeComments: true}'];
+
+        yield 'comment' => ['{"removeComments": true /* c */}'];
+
+        yield 'truncated' => ['{"removeComments": true'];
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function loadConfigStripsAByteOrderMarkFromAJsonString(): void
+    {
+        self::assertSame(['removeComments' => true], ConfigLoader::loadConfig("\xEF\xBB\xBF{\"removeComments\": true}"));
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function loadConfigReadsAFileWithCrlfLineEndingsAndAPathWithSpacesAndUnicode(): void
+    {
+        $directory = sys_get_temp_dir() . '/config dir ü ' . uniqid();
+        mkdir($directory);
+        $path = $directory . '/my.config.json';
+        file_put_contents($path, "{\r\n  \"removeComments\": true,\r\n  \"sortAttributes\": false\r\n}\r\n");
+
+        try {
+            self::assertSame(['removeComments' => true, 'sortAttributes' => false], ConfigLoader::loadConfig($path));
+        } finally {
+            unlink($path);
+            rmdir($directory);
+        }
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function loadConfigKeepsTheLastValueOfADuplicateKey(): void
+    {
+        self::assertSame(['removeComments' => false], ConfigLoader::loadConfig('{"removeComments": true, "removeComments": false}'));
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function loadConfigRejectsAFileThatHoldsOnlyAByteOrderMark(): void
+    {
+        file_put_contents($this->configFile, "\xEF\xBB\xBF");
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Configuration must be a valid file path or a JSON string.');
+
+        ConfigLoader::loadConfig($this->configFile);
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function loadConfigReportsAMissingFileGivenWithAWindowsPath(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Configuration file "missing\config" does not exist.');
+
+        ConfigLoader::loadConfig('missing\config');
+    }
+
+    /**
      * @throws \TypeError
      */
     #[\Override]

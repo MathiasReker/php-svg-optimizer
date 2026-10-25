@@ -93,6 +93,19 @@ final class FileCollectorTest extends TestCase
     }
 
     #[Test]
+    public function returnsAListWithoutGapsAfterRemovingDuplicates(): void
+    {
+        $first = $this->tempDir . '/first.svg';
+        $second = $this->tempDir . '/second.svg';
+        file_put_contents($first, '<svg/>');
+        file_put_contents($second, '<svg/>');
+
+        $result = (new FileCollector())->collectSvgFiles([$first, $first, $second]);
+
+        self::assertSame([realpath($first), realpath($second)], $result);
+    }
+
+    #[Test]
     public function itCollectsFilesWithDifferentExtensions(): void
     {
         $txtFile = $this->tempDir . '/note.txt';
@@ -102,6 +115,57 @@ final class FileCollectorTest extends TestCase
         $result = $fileCollector->collectSvgFiles([$this->tempDir]);
 
         self::assertCount(0, $result);
+    }
+
+    #[Test]
+    public function removesDuplicatesGivenThroughDifferentSpellingsOfThePath(): void
+    {
+        mkdir($this->tempDir . '/a b');
+        $svgFile = $this->tempDir . '/a b/icon.svg';
+        file_put_contents($svgFile, '<svg/>');
+
+        $result = (new FileCollector())->collectSvgFiles([
+            $svgFile,
+            $this->tempDir . '/a b/../a b/./icon.svg',
+            $this->tempDir . '/a b/',
+            $this->tempDir . \DIRECTORY_SEPARATOR . 'a b' . \DIRECTORY_SEPARATOR,
+            $this->tempDir,
+        ]);
+
+        self::assertSame([realpath($svgFile)], $result);
+    }
+
+    #[Test]
+    public function collectsFilesWithUnicodeSpacesAndDotsInTheirName(): void
+    {
+        mkdir($this->tempDir . '/ünï.cöde dir');
+        $svgFile = $this->tempDir . '/ünï.cöde dir/my.icon ✓.SVG';
+        file_put_contents($svgFile, '<svg/>');
+
+        self::assertSame([realpath($svgFile)], (new FileCollector())->collectSvgFiles([$this->tempDir . '/ünï.cöde dir/']));
+        self::assertSame([realpath($svgFile)], (new FileCollector())->collectSvgFiles([$svgFile]));
+    }
+
+    #[Test]
+    public function returnsNothingForAnUnexpandedGlobOrAnEmptyPath(): void
+    {
+        file_put_contents($this->tempDir . '/icon.svg', '<svg/>');
+
+        self::assertSame([], (new FileCollector())->collectSvgFiles([$this->tempDir . '/*.svg', $this->tempDir . '/missing*.svg', '']));
+    }
+
+    #[Test]
+    public function ignoresAFileNamedLikeTheExtensionWithoutADot(): void
+    {
+        file_put_contents($this->tempDir . '/svg', '<svg/>');
+
+        self::assertSame([], (new FileCollector())->collectSvgFiles([$this->tempDir . '/svg', $this->tempDir]));
+    }
+
+    #[Test]
+    public function returnsNothingForAnEmptyList(): void
+    {
+        self::assertSame([], (new FileCollector())->collectSvgFiles([]));
     }
 
     #[\Override]

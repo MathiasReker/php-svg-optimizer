@@ -479,6 +479,75 @@ final class OutputManagerTest extends TestCase
     /**
      * @throws \RuntimeException
      */
+    #[Test]
+    public function printHelpWritesEverySectionWithItsBlankLinesAndIndentation(): void
+    {
+        $argumentData = new ArgumentData();
+
+        $options = '';
+
+        foreach ($argumentData->getOptions() as $cliOption) {
+            $options .= \sprintf('  %-3s  %-20s %s', $cliOption->getShorthand(), $cliOption->getFull(), $cliOption->getDescription()) . \PHP_EOL;
+        }
+
+        $commands = '';
+
+        foreach ($argumentData->getCommands() as $commandHelp) {
+            $commands .= \sprintf('  %-25s %s', $commandHelp->getTitle(), $commandHelp->getDescription()) . \PHP_EOL;
+        }
+
+        $examples = '';
+
+        foreach ($argumentData->getExamples() as $exampleCommand) {
+            $examples .= '  ' . $exampleCommand->getCommand() . \PHP_EOL;
+        }
+
+        $this->outputManager->printHelp();
+
+        self::assertNotSame('', $examples);
+        self::assertSame(
+            'PHP SVG Optimizer' . \PHP_EOL
+            . \PHP_EOL
+            . 'Usage:' . \PHP_EOL
+            . '  ' . $argumentData->getFormat() . \PHP_EOL
+            . \PHP_EOL
+            . 'Options:' . \PHP_EOL
+            . $options
+            . \PHP_EOL
+            . 'Commands:' . \PHP_EOL
+            . \PHP_EOL
+            . $commands
+            . \PHP_EOL
+            . 'Examples:' . \PHP_EOL
+            . \PHP_EOL
+            . $examples,
+            $this->memoryStream->getContent()
+        );
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function printTotalSummaryStartsWithABlankLine(): void
+    {
+        $this->outputManager->printTotalSummary(3, 10_240, 5_120, 5_120, 50.0, 0.001);
+
+        self::assertSame(
+            \PHP_EOL
+            . 'Summary:' . \PHP_EOL
+            . '  Files optimized:      3' . \PHP_EOL
+            . '  Original total size:  10.00 KB' . \PHP_EOL
+            . '  Optimized total size: 5.00 KB' . \PHP_EOL
+            . '  Space saved:          5.00 KB (50.00%)' . \PHP_EOL
+            . '  Optimization time:    0.0010 s' . \PHP_EOL,
+            $this->memoryStream->getContent()
+        );
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
     #[\Override]
     protected function setUp(): void
     {

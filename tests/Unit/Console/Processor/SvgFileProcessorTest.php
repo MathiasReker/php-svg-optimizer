@@ -260,6 +260,22 @@ final class SvgFileProcessorTest extends TestCase
 
     /**
      * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getUnknownConfigKeysReturnsAListOfStrings(): void
+    {
+        $svgFileProcessor = new SvgFileProcessor(
+            new CommandOption(true, '{"removeComments":true,"removeComents":false,"0":true}', false, false),
+            $this->outputManager,
+            $this->metaDataAggregator
+        );
+
+        self::assertSame(['removeComents', '0'], $svgFileProcessor->getUnknownConfigKeys());
+    }
+
+    /**
+     * @throws \JsonException
      * @throws \LogicException
      * @throws RiskyRulesNotAllowedException
      * @throws \RuntimeException

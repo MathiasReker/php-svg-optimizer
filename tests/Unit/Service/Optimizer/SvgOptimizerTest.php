@@ -29,6 +29,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -195,6 +196,7 @@ final class SvgOptimizerTest extends TestCase
             self::fail('Expected SvgValidationException was not thrown.');
         } catch (SvgValidationException $svgValidationException) {
             self::assertSame('The file does not appear to be a valid SVG file.', $svgValidationException->getMessage());
+            self::assertSame(0, $svgValidationException->getCode());
             self::assertInstanceOf(XmlProcessingException::class, $svgValidationException->getPrevious());
         }
     }
@@ -216,6 +218,7 @@ final class SvgOptimizerTest extends TestCase
         self::assertSame(11, $metrics->getOriginalSize());
         self::assertSame(20, $metrics->getOptimizedSize());
         self::assertGreaterThan(0, $metrics->getOptimizationTime());
+        self::assertLessThan(60, $metrics->getOptimizationTime());
     }
 
     /**
@@ -696,6 +699,184 @@ final class SvgOptimizerTest extends TestCase
         $this->expectExceptionMessage('Metadata is not available before optimization.');
 
         $svgOptimizer->getMetaData();
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function getMetaDataReportsNegativeSavingsWhenTheOutputIsLarger(): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg" a=\'"\'/>'));
+
+        $metrics = $svgOptimizer->optimize()->getMetaData();
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg" a="&quot;"/>', $svgOptimizer->getContent());
+        self::assertSame(47, $metrics->getOriginalSize());
+        self::assertSame(52, $metrics->getOptimizedSize());
+        self::assertSame(-5, $metrics->getSavedBytes());
+        self::assertEqualsWithDelta(-5 / 47 * 100, $metrics->getSavedPercentage(), 0.000_001);
+        self::assertFalse($metrics->hasSavedBytes());
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function getMetaDataCountsBytesNotCharacters(): void
+    {
+        $svg = "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>\u{1F600}é</text></svg>";
+        $svgOptimizer = new SvgOptimizer(new StringProvider("\xEF\xBB\xBF" . $svg));
+
+        $metrics = $svgOptimizer->optimize()->getMetaData();
+
+        self::assertSame($svg, $svgOptimizer->getContent());
+        self::assertSame(mb_strlen($svg, '8bit') + 3, $metrics->getOriginalSize());
+        self::assertSame(mb_strlen($svg, '8bit'), $metrics->getOptimizedSize());
+        self::assertSame(3, $metrics->getSavedBytes());
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function optimizeWritesLatin1InputAsUtf8WithoutAnXmlDeclaration(): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<svg xmlns=\"http://www.w3.org/2000/svg\"><text>caf\xE9</text></svg>\r\n"));
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><text>café</text></svg>', $svgOptimizer->optimize()->getContent());
+    }
+
+    /**
+     * @param non-empty-string $content
+     *
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     * @throws XmlProcessingException
+     */
+    #[DataProvider('provideOptimizeRejectsInputThatIsNotASvgDocumentCases')]
+    #[Test]
+    public function optimizeRejectsInputThatIsNotASvgDocument(string $content): void
+    {
+        $this->expectException(SvgValidationException::class);
+
+        (new SvgOptimizer(new StringProvider($content)))->optimize();
+    }
+
+    /**
+     * @return iterable<string, array{non-empty-string}>
+     */
+    public static function provideOptimizeRejectsInputThatIsNotASvgDocumentCases(): iterable
+    {
+        yield 'whitespace only' => [" \n\t"];
+
+        yield 'byte order mark only' => ["\xEF\xBB\xBF"];
+
+        yield 'truncated XML' => ['<svg xmlns="http://www.w3.org/2000/svg"><rect'];
+
+        yield 'html root' => ['<html xmlns="http://www.w3.org/1999/xhtml"/>'];
+
+        yield 'svg in the wrong namespace' => ['<svg xmlns="urn:x"/>'];
+
+        yield 'plain text' => ['not xml'];
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function sizeCheckRevertKeepsStylesheetInstructionsAndPrefixes(): void
+    {
+        $checkedRule = new class implements SvgOptimizerRuleInterface {
+            public function optimize(\DOMDocument $domDocument): void
+            {
+                $domDocument->documentElement?->appendChild($domDocument->createElementNS('http://www.w3.org/2000/svg', 'svg:g'));
+            }
+
+            public static function shouldCheckSize(): bool
+            {
+                return true;
+            }
+
+            public static function isRisky(): bool
+            {
+                return false;
+            }
+        };
+
+        $svg = '<?xml-stylesheet href="a.css"?><svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect width="1"/></svg:svg>';
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<?xml version="1.0"?>' . $svg . '<!-- after -->'));
+        $svgOptimizer->addRule($checkedRule);
+        $svgOptimizer->addRule($checkedRule);
+
+        self::assertSame($svg, $svgOptimizer->optimize()->getContent());
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function sizeCheckRevertKeepsNonAsciiAttributesAsUtf8(): void
+    {
+        $checkedRule = new class implements SvgOptimizerRuleInterface {
+            public function optimize(\DOMDocument $domDocument): void
+            {
+                $domDocument->documentElement?->setAttribute('data-x', 'grown');
+            }
+
+            public static function shouldCheckSize(): bool
+            {
+                return true;
+            }
+
+            public static function isRisky(): bool
+            {
+                return false;
+            }
+        };
+
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" font-family="日本 😀"><text>é</text></svg>';
+        $svgOptimizer = new SvgOptimizer(new StringProvider($svg));
+        $svgOptimizer->addRule($checkedRule);
+        $svgOptimizer->addRule($checkedRule);
+
+        self::assertSame($svg, $svgOptimizer->optimize()->getContent());
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function optimizeRejectsNestingDeeperThanTheParserLimit(): void
+    {
+        $this->expectException(SvgValidationException::class);
+
+        (new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg">' . str_repeat('<g>', 300) . str_repeat('</g>', 300) . '</svg>')))->optimize();
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function optimizeHandlesADeeplyNestedDocument(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg">' . str_repeat('<g>', 250) . '<rect/>' . str_repeat('</g>', 250) . '</svg>';
+
+        self::assertSame($svg, (new SvgOptimizer(new StringProvider($svg)))->optimize()->getContent());
     }
 
     #[\Override]

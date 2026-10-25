@@ -173,7 +173,7 @@ final class SvgOptimizer
     /**
      * @return bool True if one or more configured rules are risky, false otherwise
      */
-    public function hasRiskyRules(): bool
+    private function hasRiskyRules(): bool
     {
         foreach ($this->rules as $rule) {
             if ($rule::isRisky()) {

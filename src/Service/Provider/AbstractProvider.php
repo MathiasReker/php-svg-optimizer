@@ -71,24 +71,9 @@ abstract class AbstractProvider implements SvgProviderInterface
      */
     private function ensureDirectoryExists(string $directoryPath): bool
     {
-        if (is_dir($directoryPath)) {
-            return true;
-        }
-
-        if (file_exists($directoryPath)) {
-            return false;
-        }
-
-        $existingAncestor = \dirname($directoryPath);
-        while (!file_exists($existingAncestor) && \dirname($existingAncestor) !== $existingAncestor) {
-            $existingAncestor = \dirname($existingAncestor);
-        }
-
-        if (!is_dir($existingAncestor)) {
-            return false;
-        }
-
-        return $this->withoutWarnings(static fn (): bool => mkdir($directoryPath, self::DIRECTORY_PERMISSION, true)) || is_dir($directoryPath);
+        return is_dir($directoryPath)
+            || $this->withoutWarnings(static fn (): bool => mkdir($directoryPath, self::DIRECTORY_PERMISSION, true))
+            || is_dir($directoryPath);
     }
 
     /**

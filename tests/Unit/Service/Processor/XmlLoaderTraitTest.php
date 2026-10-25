@@ -84,6 +84,34 @@ final class XmlLoaderTraitTest extends TestCase
     }
 
     #[Test]
+    public function givesADocumentWithoutDeclaredEncodingTheUtf8Encoding(): void
+    {
+        $domDocument = new \DOMDocument();
+
+        self::assertTrue($this->loadXmlSilently($domDocument, '<svg font-family="日本"/>'));
+        self::assertSame('UTF-8', $domDocument->encoding);
+        self::assertSame('<svg font-family="日本"/>', $domDocument->saveXML($domDocument->documentElement));
+    }
+
+    #[Test]
+    public function keepsTheDeclaredEncoding(): void
+    {
+        $domDocument = new \DOMDocument();
+
+        self::assertTrue($this->loadXmlSilently($domDocument, '<?xml version="1.0" encoding="ISO-8859-1"?><svg/>'));
+        self::assertSame('ISO-8859-1', $domDocument->encoding);
+    }
+
+    #[Test]
+    public function leavesTheEncodingUnsetWhenLoadingFails(): void
+    {
+        $domDocument = new \DOMDocument();
+
+        self::assertFalse($this->loadXmlSilently($domDocument, '<svg'));
+        self::assertNull($domDocument->encoding);
+    }
+
+    #[Test]
     public function passesTheOptions(): void
     {
         $domDocument = new \DOMDocument();
