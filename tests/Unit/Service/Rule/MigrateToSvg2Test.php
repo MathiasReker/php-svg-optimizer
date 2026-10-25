@@ -70,18 +70,6 @@ final class MigrateToSvg2Test extends TestCase
         yield from self::provideTinyCases();
     }
 
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(MigrateToSvg2::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(MigrateToSvg2::shouldCheckSize());
-    }
-
     /**
      * @return iterable<string, array{string, string}>
      */
@@ -283,9 +271,9 @@ final class MigrateToSvg2Test extends TestCase
             '<?xml-stylesheet href="a.css" type="text/css"?><svg xmlns="http://www.w3.org/2000/svg"><text id="a">A</text><text><tref href="#a"/><altGlyph>B</altGlyph></text></svg>',
         ];
 
-        yield 'Removes the elements that SVG 2 dropped' => [
+        yield 'Removes the elements that SVG 2 dropped and keeps those with an id' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><defs><font id="f" horiz-adv-x="1"><font-face font-family="F"><font-face-src><font-face-uri href="f.svg"><font-face-format string="svg"/></font-face-uri><font-face-name name="F"/></font-face-src><definition-src href="d"/></font-face><missing-glyph d="M0 0"/><glyph unicode="a"/><hkern u1="a" u2="b" k="1"/><vkern u1="a" u2="b" k="1"/></font><altGlyphDef id="d"><altGlyphItem><glyphRef href="#g"/></altGlyphItem></altGlyphDef><color-profile name="p"/></defs><glyphRef href="#g"/><font-face-src/><rect width="1"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><defs/><rect width="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><font id="f" horiz-adv-x="1"/><altGlyphDef id="d"/></defs><rect width="1"/></svg>',
         ];
 
         yield 'Removes nested elements that SVG 2 dropped one by one' => [
@@ -303,14 +291,14 @@ final class MigrateToSvg2Test extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:first-child{fill:red}</style><font/><rect width="1"/></svg>',
         ];
 
-        yield 'Removes cursor elements and keeps the cursor properties' => [
+        yield 'Keeps cursor elements with an id and the cursor properties' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><cursor id="c" href="c.png"/><cursor id="d"/><g/><rect cursor="crosshair"/><rect cursor="url(#c),pointer"/><rect cursor=" url( \'#c\' ) 1 2 , url(#e), URL(#d) ,auto"/><rect cursor="url(#c)"/><rect cursor="url(c.cur), url(#cc), move"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g/><rect cursor="crosshair"/><rect cursor="url(#c),pointer"/><rect cursor=" url( \'#c\' ) 1 2 , url(#e), URL(#d) ,auto"/><rect cursor="url(#c)"/><rect cursor="url(c.cur), url(#cc), move"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><cursor id="c" href="c.png"/><cursor id="d"/><g/><rect cursor="crosshair"/><rect cursor="url(#c),pointer"/><rect cursor=" url( \'#c\' ) 1 2 , url(#e), URL(#d) ,auto"/><rect cursor="url(#c)"/><rect cursor="url(c.cur), url(#cc), move"/></svg>',
         ];
 
-        yield 'Keeps references to other removed elements in cursor attributes' => [
+        yield 'Keeps references to other obsolete elements in cursor attributes' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><font id="f"/><cursor id="c"/><rect cursor="url(#f), auto"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect cursor="url(#f), auto"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><font id="f"/><cursor id="c"/><rect cursor="url(#f), auto"/></svg>',
         ];
 
         yield 'Removes cursor elements without an id and keeps cursor attributes' => [
@@ -376,7 +364,7 @@ final class MigrateToSvg2Test extends TestCase
 
         yield 'Keeps dropped elements with content that can be referenced or takes effect' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><video><rect id="r"/></video><video><style>rect{fill:red}</style></video><font><set href="#r" attributeName="fill" to="red"/></font><font id="f"><font-face font-family="F"/><glyph id="g" d="M0 0"/><missing-glyph/></font><textArea><g/></textArea><use href="#r"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><video><rect id="r"/></video><video><style>rect{fill:red}</style></video><font><set href="#r" attributeName="fill" to="red"/></font><use href="#r"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><video><rect id="r"/></video><video><style>rect{fill:red}</style></video><font><set href="#r" attributeName="fill" to="red"/></font><font id="f"><glyph id="g" d="M0 0"/></font><use href="#r"/></svg>',
         ];
 
         yield 'Keeps dropped elements that a switch may render' => [
@@ -407,7 +395,7 @@ final class MigrateToSvg2Test extends TestCase
     {
         yield 'Keeps the priority of a paint that falls back to none' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><solidColor id="a"/><rect style="fill:url(#a) !important"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:none !important"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><solidColor id="a"/><rect style="fill:none !important"/></svg>',
         ];
 
         yield 'Removes dropped properties from inline styles' => [
@@ -481,9 +469,9 @@ final class MigrateToSvg2Test extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><g><g><g><g><g><g><use href="#a"/></g></g></g></g></g></g></svg>',
         ];
 
-        yield 'Removes tref pointing at itself, at nested tspans, at a missing id and at another document' => [
+        yield 'Removes tref pointing at nested tspans, at a missing id and at another document, and keeps one with an id' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><text id="n">a<tspan>b<tspan>c</tspan></tspan>d</text><text><tref id="s" href="#s"/><tref href="#n"/><tref href="#none"/><tref href="other.svg#n"/></text></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><text id="n">a<tspan>b<tspan>c</tspan></tspan>d</text><text/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text id="n">a<tspan>b<tspan>c</tspan></tspan>d</text><text><tref id="s" href="#s"/></text></svg>',
         ];
 
         yield 'Removes altGlyph with nested children and positioning lists' => [
@@ -513,7 +501,7 @@ final class MigrateToSvg2Test extends TestCase
 
         yield 'Processes a later element after skipping an earlier one' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><svg><animateColor attributeName="fill" to="red"/><cursor id="c"/><text><altGlyph>A</altGlyph></text></svg></foreignObject><text id="a">A</text><animateColor attributeName="fill" to="blue"/><cursor id="d"/><text><tref href="#none"/><tref href="#a"/><altGlyph>B</altGlyph></text><rect cursor="url(#c), auto"/><rect cursor="url(#d), auto"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><svg><animateColor attributeName="fill" to="red"/><cursor id="c"/><text><altGlyph>A</altGlyph></text></svg></foreignObject><text id="a">A</text><text/><rect cursor="url(#c), auto"/><rect cursor="url(#d), auto"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><svg><animateColor attributeName="fill" to="red"/><cursor id="c"/><text><altGlyph>A</altGlyph></text></svg></foreignObject><text id="a">A</text><cursor id="d"/><text/><rect cursor="url(#c), auto"/><rect cursor="url(#d), auto"/></svg>',
         ];
 
         yield 'Migrates an Illustrator document' => [
@@ -523,7 +511,7 @@ final class MigrateToSvg2Test extends TestCase
 
         yield 'Migrates an Inkscape document with SVG fonts and text references' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" inkscape:version="1.0" sodipodi:docname="a.svg"><sodipodi:namedview inkscape:zoom="1"/><defs><linearGradient id="a"><stop offset="0"/></linearGradient><linearGradient id="b" xlink:href="#a" inkscape:collect="always"/><font id="f" horiz-adv-x="500"><font-face font-family="F" units-per-em="1000"/><missing-glyph/><glyph unicode="a" d="M0 0"/></font></defs><g inkscape:groupmode="layer" inkscape:label="L"><text style="font-family:F;kerning:auto;glyph-orientation-vertical:0" glyph-orientation-vertical="0"><tref xlink:href="#t"/></text><text id="t">T</text><rect style="fill:url(#b)" width="1" height="1"><animateColor attributeName="fill" to="red" xlink:href="#r"/></rect></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" inkscape:version="1.0" sodipodi:docname="a.svg"><sodipodi:namedview inkscape:zoom="1"/><defs><linearGradient id="a"><stop offset="0"/></linearGradient><linearGradient id="b" inkscape:collect="always" href="#a"/></defs><g inkscape:groupmode="layer" inkscape:label="L"><text style="font-family:F" glyph-orientation-vertical="0"/><text id="t">T</text><rect style="fill:url(#b)" width="1" height="1"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" inkscape:version="1.0" sodipodi:docname="a.svg"><sodipodi:namedview inkscape:zoom="1"/><defs><linearGradient id="a"><stop offset="0"/></linearGradient><linearGradient id="b" inkscape:collect="always" href="#a"/><font id="f" horiz-adv-x="500"/></defs><g inkscape:groupmode="layer" inkscape:label="L"><text style="font-family:F" glyph-orientation-vertical="0"/><text id="t">T</text><rect style="fill:url(#b)" width="1" height="1"/></g></svg>',
         ];
     }
 
@@ -562,24 +550,24 @@ final class MigrateToSvg2Test extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg" playbackOrder="all" timelinebegin="loadend"><style>[playbackOrder]{fill:red}</style></svg>',
         ];
 
-        yield 'Replaces references to a removed solidColor with their fallback' => [
+        yield 'Replaces references to an obsolete solidColor with their fallback' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><defs><solidColor id="s" solid-color="red"/><solidColor xml:id="t" solid-color="blue"/><linearGradient id="g"/></defs><rect fill="url(#s) green"/><rect fill=" url( \'#t\' ) "/><rect stroke="URL(#s)"/><rect fill="url(#g)" stroke="url(#other) red"/><rect style="fill:url(#s) blue !important;stroke: url(#t) !important;color:url(#s)"/><rect style="fill:url(#g)"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g"/></defs><rect fill="green"/><rect fill=" url( \'#t\' ) "/><rect stroke="none"/><rect fill="url(#g)" stroke="url(#other) red"/><rect style="fill:blue !important;stroke: url(#t) !important;color:url(#s)"/><rect style="fill:url(#g)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><solidColor id="s"/><linearGradient id="g"/></defs><rect fill="green"/><rect fill=" url( \'#t\' ) "/><rect stroke="none"/><rect fill="url(#g)" stroke="url(#other) red"/><rect style="fill:blue !important;stroke: url(#t) !important;color:url(#s)"/><rect style="fill:url(#g)"/></svg>',
         ];
 
-        yield 'Keeps references to a removed solidColor that only had an xml:id' => [
+        yield 'Keeps a solidColor with only an xml:id and the references to it' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>[id]{fill:red}</style><solidColor xml:id="t"/><rect fill="url(#t) red"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><style>[id]{fill:red}</style><rect fill="url(#t) red"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[id]{fill:red}</style><solidColor xml:id="t"/><rect fill="url(#t) red"/></svg>',
         ];
 
-        yield 'Replaces references to any removed element with their fallback' => [
+        yield 'Replaces references to any obsolete element with their fallback' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><font id="f"/><textArea id="t"/><rect fill="url(#f) red"/><rect fill="url(#t)"/><rect style="stroke:url(#f) blue"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/><rect fill="none"/><rect style="stroke:blue"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><font id="f"/><textArea id="t"/><rect fill="red"/><rect fill="none"/><rect style="stroke:blue"/></svg>',
         ];
 
         yield 'Keeps removable elements whose id is used more than once' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><solidColor id="s"/><linearGradient id="s"/><font id="f"/><font id="f"/><font id="g"/><rect fill="url(#s) red" stroke="url(#g) blue"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><solidColor id="s"/><linearGradient id="s"/><font id="f"/><font id="f"/><rect fill="url(#s) red" stroke="blue"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><solidColor id="s"/><linearGradient id="s"/><font id="f"/><font id="f"/><font id="g"/><rect fill="url(#s) red" stroke="blue"/></svg>',
         ];
 
         yield 'Keeps references to solidColor when it cannot be removed' => [
@@ -658,7 +646,7 @@ final class MigrateToSvg2Test extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><use xlink:href="#a"/></svg>');
 
         $start = hrtime(true);
-        (new MigrateToSvg2())->optimize($domDocument);
+        (new MigrateToSvg2())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }
@@ -671,7 +659,7 @@ final class MigrateToSvg2Test extends TestCase
     private function optimizeContent(string $content): string
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new MigrateToSvg2());
+        $svgOptimizer->addPass(new MigrateToSvg2());
 
         return $svgOptimizer->optimize()->getContent();
     }

@@ -43,7 +43,7 @@ final class MinifyPathDataTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new MinifyPathData());
+        $svgOptimizer->addPass(new MinifyPathData());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -59,9 +59,9 @@ final class MinifyPathDataTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><style>[d="M 0 0 L 1 0"]{fill:red}</style><path d="M 0 0 L 1 0"/></svg>',
         ];
 
-        yield 'Leaves path data with a trailing decimal point untouched' => [
+        yield 'Minifies the commands before a number with a trailing decimal point and keeps the rest' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 L 400. 400"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 L 400. 400"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0L 400. 400"/></svg>',
         ];
 
         yield 'Drops repeated command letters and separators' => [
@@ -69,9 +69,9 @@ final class MinifyPathDataTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M10.5 20 30 40 50 60z"/></svg>',
         ];
 
-        yield 'Keeps path data with a separator after closepath' => [
+        yield 'Minifies the commands before a separator after closepath and keeps the separator' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 z,"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 z,"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0z,"/></svg>',
         ];
 
         yield 'Writes relative linetos along one axis as h and v' => [
@@ -99,9 +99,9 @@ final class MinifyPathDataTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1 .5"/></svg>',
         ];
 
-        yield 'Keeps arc flags separated' => [
+        yield 'Writes the arguments after arc flags without separators' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0 A 10 10 0 1 0 0.5 0.5 a1 1 0 11 2 2"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0A10 10 0 1 0 .5.5a1 1 0 1 1 2 2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0A10 10 0 10.5.5a1 1 0 112 2"/></svg>',
         ];
 
         yield 'Shortens exponents without changing the value' => [
@@ -134,9 +134,9 @@ final class MinifyPathDataTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M.123456789012345678901 1.000000000000000000001"/></svg>',
         ];
 
-        yield 'Leaves numbers after a close path untouched' => [
+        yield 'Minifies the commands before numbers after a close path and keeps the numbers' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 1 2 z 3 4"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 1 2 z 3 4"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1 2z 3 4"/></svg>',
         ];
 
         yield 'Leaves data not starting with a moveto untouched' => [
@@ -154,9 +154,9 @@ final class MinifyPathDataTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 1"/></svg>',
         ];
 
-        yield 'Leaves data with an invalid arc flag untouched' => [
+        yield 'Minifies the commands before an invalid arc flag and keeps the arc command' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 a 1 1 0 2 0 1 1"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 a 1 1 0 2 0 1 1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0a 1 1 0 2 0 1 1"/></svg>',
         ];
 
         yield 'Leaves non-ASCII data untouched' => [
@@ -214,9 +214,9 @@ final class MinifyPathDataTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M ,1 2"/></svg>',
         ];
 
-        yield 'Leaves data with a close path argument untouched' => [
+        yield 'Minifies the commands before a close path argument and keeps the argument' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 1 2 z 0"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 1 2 z 0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1 2z 0"/></svg>',
         ];
 
         yield 'Leaves data with a double comma untouched' => [
@@ -249,9 +249,9 @@ final class MinifyPathDataTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0 10 0 10 10m1 1h2l2 2"/></svg>',
         ];
 
-        yield 'Accepts arc flags without separators' => [
+        yield 'Writes arc flags without separators' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0 a 1 1 0 01 1.0 1.0 1 1 0 1 0 2 2"/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0a1 1 0 0 1 1 1 1 1 0 1 0 2 2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0a1 1 0 011 1 1 1 0 102 2"/></svg>',
         ];
 
         yield 'Accepts an exponent followed by a sign' => [
@@ -283,6 +283,51 @@ final class MinifyPathDataTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0 0 l -0 5 l 5 -0.0"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0v5h5"/></svg>',
         ];
+
+        yield 'Minifies the commands before an incomplete argument group and the numbers after it' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 10.0,10.0 L 90.0,10.0 L 90.0,0.0 C 10 20 30 40 50 60 70 80 90 95 5 L 0.50 0.50"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M10 10 90 10 90 0C 10 20 30 40 50 60 70 80 90 95 5 L .5 .5"/></svg>',
+        ];
+
+        yield 'Minifies the numbers of path data that starts with an invalid command' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="L 10.0,10.0 20.0,20.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="L 10,10 20,20"/></svg>',
+        ];
+
+        yield 'Minifies the numbers after an invalid command and keeps a separator that a number would join' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0L1 2 3 Z 0.50 0.50 a 1 1 0 0 1 0.5 0.5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0L1 2 3 Z .5 .5 a 1 1 0 0 1 .5 .5"/></svg>',
+        ];
+
+        yield 'Keeps invalid path data with a character that is no path token' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0L1 1 # 2.0 2.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0L1 1 # 2.0 2.0"/></svg>',
+        ];
+
+        yield 'Keeps invalid path data with a trailing decimal point' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="L 1. 2.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="L 1. 2.0"/></svg>',
+        ];
+
+        yield 'Keeps path data with non-ASCII characters' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0.50 0.50 Ｌ 1 1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M 0.50 0.50 Ｌ 1 1"/></svg>',
+        ];
+
+        yield 'Writes repeated arc arguments without separators after the flags' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0a1 1 0 1 1 10 10 1 1 0 0 0 -5 5A 2 2 0 0 1 .5 .5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0a1 1 0 1110 10 1 1 0 00-5 5A2 2 0 01.5.5"/></svg>',
+        ];
+
+        yield 'Separates numbers after an invalid command that would join once minified' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0L1 1 1 L1.0.5 2.50.5 1e0.5"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0L1 1 1 L1 .5 2.5.5 1 .5"/></svg>',
+        ];
+
+        yield 'Keeps arc flags after an invalid command apart from the numbers' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0L1 1 1 a1 1 0 0110.0 10.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0L1 1 1 a1 1 0 0110 10"/></svg>',
+        ];
     }
 
     /**
@@ -295,7 +340,7 @@ final class MinifyPathDataTest extends TestCase
     public function optimizeIsIdempotent(string $optimized): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
-        $svgOptimizer->addRule(new MinifyPathData());
+        $svgOptimizer->addPass(new MinifyPathData());
 
         self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
     }
@@ -308,17 +353,5 @@ final class MinifyPathDataTest extends TestCase
         foreach (self::provideOptimizeCases() as $name => [, $expected]) {
             yield $name => [$expected];
         }
-    }
-
-    #[Test]
-    public function isRiskyReturnsFalse(): void
-    {
-        self::assertFalse(MinifyPathData::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(MinifyPathData::shouldCheckSize());
     }
 }

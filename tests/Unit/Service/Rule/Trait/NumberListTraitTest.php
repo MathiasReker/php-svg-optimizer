@@ -33,41 +33,51 @@ final class NumberListTraitTest extends TestCase
     use NumberListTrait;
 
     /**
-     * @param list<string> $expected
+     * @param list<string> $expected        the numbers of the list
+     * @param list<string> $expectedCompact the numbers of the list when separators may be omitted
      */
     #[DataProvider('provideParsesNumberListCases')]
     #[Test]
-    public function parsesNumberList(string $value, array $expected): void
+    public function parsesNumberList(string $value, array $expected, array $expectedCompact): void
     {
-        self::assertSame($expected, $this->parseNumberList($value));
+        self::assertSame($expected, $this->parseNumberList($value, false));
+        self::assertSame($expectedCompact, $this->parseNumberList($value, true));
     }
 
     /**
-     * @return iterable<string, array{string, list<string>}>
+     * @return iterable<string, array{string, list<string>, list<string>}>
      */
     public static function provideParsesNumberListCases(): iterable
     {
-        yield 'whitespace and commas' => [" 1,2 \t3 , 4\n", ['1', '2', '3', '4']];
+        yield 'whitespace and commas' => [" 1,2 \t3 , 4\n", ['1', '2', '3', '4'], ['1', '2', '3', '4']];
 
-        yield 'exponents and signs' => ['1e2 -1E-2 +.5', ['1e2', '-1E-2', '+.5']];
+        yield 'exponents and signs' => ['1e2 -1E-2 +.5', ['1e2', '-1E-2', '+.5'], ['1e2', '-1E-2', '+.5']];
 
-        yield 'a single number' => ['7', ['7']];
+        yield 'a single number' => ['7', ['7'], ['7']];
 
-        yield 'numbers without a separator' => ['1-2', []];
+        yield 'numbers without a separator' => ['1-2', [], ['1', '-2']];
 
-        yield 'consecutive decimals' => ['1.5.5', []];
+        yield 'consecutive decimals' => ['1.5.5', [], ['1.5', '.5']];
 
-        yield 'a double comma' => ['1,,2', []];
+        yield 'an exponent followed by a decimal' => ['1e2.5', [], ['1e2', '.5']];
 
-        yield 'a leading comma' => [',1 2', []];
+        yield 'a double comma' => ['1,,2', [], []];
 
-        yield 'a trailing comma' => ['1 2,', []];
+        yield 'a leading comma' => [',1 2', [], []];
 
-        yield 'a unit' => ['1px 2', []];
+        yield 'a trailing comma' => ['1 2,', [], ['1', '2']];
 
-        yield 'an empty value' => ['', []];
+        yield 'a trailing comma after whitespace' => ['1 2 , ', [], ['1', '2']];
 
-        yield 'non-ASCII digits' => ['１ 2', []];
+        yield 'two trailing commas' => ['1 2,,', [], []];
+
+        yield 'only a comma' => [',', [], []];
+
+        yield 'a unit' => ['1px 2', [], []];
+
+        yield 'an empty value' => ['', [], []];
+
+        yield 'non-ASCII digits' => ['１ 2', [], []];
     }
 
     /**

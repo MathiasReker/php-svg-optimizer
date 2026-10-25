@@ -11,13 +11,12 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Processor;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDoctype;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -177,22 +176,22 @@ final class EntityReferenceTest extends TestCase
     }
 
     /**
-     * @param list<SvgOptimizerRuleInterface> $rules
+     * @param list<PassInterface> $rules
      *
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
      * @throws \LogicException
      */
-    #[DataProvider('provideResolvesEntityReferencesInNamespacesWhenRulesRemoveTheDoctypeCases')]
+    #[DataProvider('provideResolvesEntityReferencesInNamespacesWhenTheDoctypeIsDroppedCases')]
     #[Test]
-    public function resolvesEntityReferencesInNamespacesWhenRulesRemoveTheDoctype(array $rules): void
+    public function resolvesEntityReferencesInNamespacesWhenTheDoctypeIsDropped(array $rules): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider(
             "<!DOCTYPE svg [<!ENTITY ns \"http://x/\">]>\n<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:x=\"&ns;\"><rect width=\"9\" height=\"9\"/></svg>",
         ));
 
         foreach ($rules as $rule) {
-            $svgOptimizer->addRule($rule);
+            $svgOptimizer->addPass($rule);
         }
 
         self::assertSame(
@@ -202,13 +201,13 @@ final class EntityReferenceTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{list<SvgOptimizerRuleInterface>}>
+     * @return iterable<string, array{list<PassInterface>}>
      */
-    public static function provideResolvesEntityReferencesInNamespacesWhenRulesRemoveTheDoctypeCases(): iterable
+    public static function provideResolvesEntityReferencesInNamespacesWhenTheDoctypeIsDroppedCases(): iterable
     {
-        yield 'Removing the DOCTYPE' => [[new RemoveDoctype()]];
+        yield 'Serializing without a DOCTYPE' => [[]];
 
-        yield 'Removing the DOCTYPE and parsing the document again' => [[new RemoveDoctype(), new RemoveInvisibleCharacters()]];
+        yield 'Serializing without a DOCTYPE after parsing the document again' => [[new RemoveInvisibleCharacters()]];
     }
 
     /**

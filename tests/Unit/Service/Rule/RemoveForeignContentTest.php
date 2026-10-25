@@ -49,7 +49,7 @@ final class RemoveForeignContentTest extends TestCase
     public function optimize(string $content, string $expectedSvg): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveForeignContent());
+        $svgOptimizer->addPass(new RemoveForeignContent());
 
         self::assertSame($expectedSvg, $svgOptimizer->optimize()->getContent());
     }
@@ -133,17 +133,5 @@ final class RemoveForeignContentTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><?pi x?><script>alert(1)</script><rect onclick="x()" fill="url(javascript:x)"/><style>@import url(a.css);</style><!-- <b> --></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><?pi x?><script>alert(1)</script><rect onclick="x()" fill="url(javascript:x)"/><style>@import url(a.css);</style><!-- <b> --></svg>',
         ];
-    }
-
-    #[Test]
-    public function ruleIsNotRisky(): void
-    {
-        self::assertFalse(RemoveForeignContent::isRisky());
-    }
-
-    #[Test]
-    public function ruleSkipsTheSizeCheck(): void
-    {
-        self::assertFalse(RemoveForeignContent::shouldCheckSize());
     }
 }

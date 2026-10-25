@@ -114,11 +114,11 @@ trait Svg2AttributeMigrationTrait
     }
 
     /**
-     * @param \DOMElement           $domElement the element whose inline style is migrated
-     * @param list<string>          $properties the properties to remove
-     * @param array<string, string> $removedIds the ids of the removed elements, whose references fall back
+     * @param \DOMElement           $domElement  the element whose inline style is migrated
+     * @param list<string>          $properties  the properties to remove
+     * @param array<string, string> $obsoleteIds the ids of the obsolete elements, whose references fall back
      */
-    private function migrateStyleAttribute(\DOMElement $domElement, array $properties, array $removedIds): void
+    private function migrateStyleAttribute(\DOMElement $domElement, array $properties, array $obsoleteIds): void
     {
         $style = (string) preg_replace(self::SVG2_COMMENT_REGEX, '', $domElement->getAttribute(SvgAttribute::Style->value));
 
@@ -128,7 +128,7 @@ trait Svg2AttributeMigrationTrait
 
         $declarations = $this->splitCssDeclarations($style);
         $migrated = array_values(array_filter(
-            array_map(fn (string $declaration): string => $this->migrateDeclaration($declaration, $properties, $removedIds), $declarations),
+            array_map(fn (string $declaration): string => $this->migrateDeclaration($declaration, $properties, $obsoleteIds), $declarations),
             static fn (string $declaration): bool => '' !== $declaration,
         ));
 
@@ -146,11 +146,11 @@ trait Svg2AttributeMigrationTrait
     /**
      * @param string                $declaration a declaration of an inline style
      * @param list<string>          $properties  the properties to remove
-     * @param array<string, string> $removedIds  the ids of the removed elements
+     * @param array<string, string> $obsoleteIds the ids of the obsolete elements, whose references fall back
      *
      * @return string the SVG 2 declaration, or an empty string if the property was removed
      */
-    private function migrateDeclaration(string $declaration, array $properties, array $removedIds): string
+    private function migrateDeclaration(string $declaration, array $properties, array $obsoleteIds): string
     {
         [$property, $value] = explode(self::SVG2_PROPERTY_SEPARATOR, $declaration, 2) + ['', ''];
         $property = mb_strtolower(trim($property));
@@ -160,7 +160,7 @@ trait Svg2AttributeMigrationTrait
         }
 
         if (\in_array($property, self::SVG2_PAINT_PROPERTIES, true)) {
-            $paint = $this->withoutRemovedReference($value, $removedIds);
+            $paint = $this->withoutObsoleteReference($value, $obsoleteIds);
 
             return $paint === $value ? $declaration : $property . self::SVG2_PROPERTY_SEPARATOR . $paint;
         }
@@ -169,15 +169,15 @@ trait Svg2AttributeMigrationTrait
     }
 
     /**
-     * @param string                $paint      a paint value
-     * @param array<string, string> $removedIds the ids of the removed elements
+     * @param string                $paint       a paint value
+     * @param array<string, string> $obsoleteIds the ids of the obsolete elements, whose references fall back
      *
-     * @return string the fallback of a reference to a removed element, `none` without a fallback, or the paint
+     * @return string the fallback of a reference to an obsolete element, `none` without a fallback, or the paint
      */
-    private function withoutRemovedReference(string $paint, array $removedIds): string
+    private function withoutObsoleteReference(string $paint, array $obsoleteIds): string
     {
         if (1 !== preg_match(self::SVG2_PAINT_REFERENCE_REGEX, $paint, $matches)
-            || !\array_key_exists($matches[2], $removedIds)
+            || !\array_key_exists($matches[2], $obsoleteIds)
         ) {
             return $paint;
         }

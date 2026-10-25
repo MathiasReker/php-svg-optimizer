@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
@@ -25,7 +25,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\UnsafeAttributeTrait;
  *
  * @no-named-arguments
  */
-final readonly class RemoveUnsafeUrls implements SvgOptimizerRuleInterface
+final readonly class RemoveUnsafeUrls implements PassInterface
 {
     use AsciiCaseTrait;
     use DangerousAttributeValueTrait;
@@ -51,23 +51,11 @@ final readonly class RemoveUnsafeUrls implements SvgOptimizerRuleInterface
 
     private const string SMIL_VALUES_SAFE_DATA_URI_REGEX = '~data:image/(?:png|gif|jpeg|jpg|webp|avif|svg\+xml);base64,.*?(?=;|$)~i';
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to sanitize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $this->expandEntityReferences($domDocument);
         $this->removeUnsafeAttributes($domDocument);

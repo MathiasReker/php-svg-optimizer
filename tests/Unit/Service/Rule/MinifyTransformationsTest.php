@@ -43,7 +43,7 @@ final class MinifyTransformationsTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new MinifyTransformations());
+        $svgOptimizer->addPass(new MinifyTransformations());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -782,7 +782,7 @@ final class MinifyTransformationsTest extends TestCase
     public function optimizeIsIdempotent(string $optimized): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
-        $svgOptimizer->addRule(new MinifyTransformations());
+        $svgOptimizer->addPass(new MinifyTransformations());
 
         self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
     }
@@ -795,17 +795,5 @@ final class MinifyTransformationsTest extends TestCase
         foreach (self::provideOptimizeCases() as $name => [, $expected]) {
             yield $name => [$expected];
         }
-    }
-
-    #[Test]
-    public function isRiskyReturnsFalse(): void
-    {
-        self::assertFalse(MinifyTransformations::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(MinifyTransformations::shouldCheckSize());
     }
 }

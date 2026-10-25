@@ -31,7 +31,7 @@ enum RuleSet: string
     case Minification = 'minification';
 
     /**
-     * @return list<Rule> The rules of the set, in execution order
+     * @return list<Rule> The rules of the set, in the order of their first pass
      */
     public function rules(): array
     {
@@ -48,35 +48,24 @@ enum RuleSet: string
                 Rule::FixAttributeNames,
                 Rule::MigrateToSvg2,
                 Rule::RemoveNonStandardTags,
-                Rule::RemoveDeprecatedAttributes,
                 Rule::RemoveNonStandardAttributes,
             ],
             self::Cleanup => [
-                Rule::RemoveDoctype,
                 Rule::RemoveComments,
                 Rule::RemoveMetadata,
                 Rule::RemoveInkscapeFootprints,
+                Rule::RemoveUnusedIds,
                 Rule::RemoveDataAttributes,
                 Rule::RemoveInvisibleCharacters,
-                Rule::RemoveEnableBackgroundAttribute,
-                Rule::RemoveStyleTypeAttributes,
-                Rule::RemoveXmlSpaceDefault,
+                Rule::RemoveDefaultAttributes,
                 Rule::RemoveWidthHeightAttributes,
                 Rule::RemoveEmptyAttributes,
-                Rule::RemoveUnusedIds,
                 Rule::RemoveUnusedDefinitions,
-                Rule::RemoveNonInheritableGroupAttributes,
+                Rule::RemoveIneffectiveAttributes,
                 Rule::RemoveHiddenElements,
-                Rule::RemoveZeroSizeShapes,
-                Rule::RemoveEmptyTextElements,
-                Rule::RemoveUnusedTextAttributes,
-                Rule::RemoveDuplicateElements,
-                Rule::RemoveEmptyGroups,
-                Rule::RemoveEmptyContainers,
-                Rule::RemoveUnusedMasks,
-                Rule::RemoveUselessStrokeAndFill,
-                Rule::RemoveDefaultAttributes,
                 Rule::RemoveUselessDefs,
+                Rule::RemoveDuplicateElements,
+                Rule::RemoveEmptyElements,
                 Rule::RemoveUnusedNamespaces,
             ],
             self::Conversion => [
@@ -88,7 +77,6 @@ enum RuleSet: string
                 Rule::ConvertShapesToPath,
             ],
             self::Structure => [
-                Rule::ScopeSvgStyles,
                 Rule::MergeStyles,
                 Rule::MergeDuplicateGradients,
                 Rule::FlattenGroups,
@@ -98,12 +86,10 @@ enum RuleSet: string
             self::Minification => [
                 Rule::MinifyStyles,
                 Rule::MinifyNumericValues,
-                Rule::MinifyListValues,
                 Rule::MinifySvgCoordinates,
                 Rule::MinifyTransformations,
                 Rule::MinifyPathData,
                 Rule::RemoveUnnecessaryWhitespace,
-                Rule::ConvertEmptyTagsToSelfClosing,
                 Rule::SortDefsChildren,
                 Rule::SortAttributes,
             ],

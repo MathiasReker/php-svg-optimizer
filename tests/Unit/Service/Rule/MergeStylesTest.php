@@ -43,7 +43,7 @@ final class MergeStylesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new MergeStyles());
+        $svgOptimizer->addPass(new MergeStyles());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -59,7 +59,7 @@ final class MergeStylesTest extends TestCase
     public function optimizeIsIdempotent(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($expected));
-        $svgOptimizer->addRule(new MergeStyles());
+        $svgOptimizer->addPass(new MergeStyles());
 
         self::assertSame($expected, $svgOptimizer->optimize()->getContent());
     }
@@ -373,17 +373,5 @@ final class MergeStylesTest extends TestCase
             "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>a{}</style><style>\u{a0}b{}</style></svg>",
             "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>a{}\u{a0}b{}</style></svg>",
         ];
-    }
-
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(MergeStyles::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(MergeStyles::shouldCheckSize());
     }
 }

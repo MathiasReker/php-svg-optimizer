@@ -43,7 +43,7 @@ final class RemoveInkscapeFootprintsTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveInkscapeFootprints());
+        $svgOptimizer->addPass(new RemoveInkscapeFootprints());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -591,6 +591,11 @@ final class RemoveInkscapeFootprintsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><Rect inkscape:label="x"/><RECT inkscape:label="x"/><Script>x</Script><SCRIPT>x</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">x</s:script></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><Rect/><RECT/><Script>x</Script><SCRIPT>x</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">x</s:script></svg>',
         ];
+
+        yield 'Keeps an editor extension element that has an id or contains an SVG element with an id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/"><foreignObject id="f" requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"><i:pgfRef/></foreignObject><foreignObject requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"><svg><rect id="r"/></svg></foreignObject><foreignObject requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"><i:pgf id="p"/></foreignObject><rect width="1" height="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject id="f" requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"/><foreignObject requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"><svg><rect id="r"/></svg></foreignObject><rect width="1" height="1"/></svg>',
+        ];
     }
 
     private const array EDITOR_NAMESPACE_URIS = [
@@ -610,18 +615,6 @@ final class RemoveInkscapeFootprintsTest extends TestCase
         'Serif' => 'http://www.serif.com/',
         'Microsoft Visio' => 'http://schemas.microsoft.com/visio/2003/SVGExtensions/',
     ];
-
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(RemoveInkscapeFootprints::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveInkscapeFootprints::shouldCheckSize());
-    }
 
     #[Test]
     public function handlesManyNamespaceDeclarationsInLinearTime(): void
@@ -647,7 +640,7 @@ final class RemoveInkscapeFootprintsTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg">' . str_repeat('<g xmlns:i="http://www.inkscape.org/namespaces/inkscape"/>', $count) . '</svg>');
 
         $start = hrtime(true);
-        (new RemoveInkscapeFootprints())->optimize($domDocument);
+        (new RemoveInkscapeFootprints())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }
@@ -658,7 +651,7 @@ final class RemoveInkscapeFootprintsTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><rect inkscape:label="x"/><inkscape:x/></svg>');
 
         $start = hrtime(true);
-        (new RemoveInkscapeFootprints())->optimize($domDocument);
+        (new RemoveInkscapeFootprints())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }

@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Type;
 
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -25,8 +26,10 @@ use PHPUnit\Framework\TestCase;
 final class RuleSetTest extends TestCase
 {
     private const array RULES_IN_NO_SET = [
-        Rule::RemoveTitleAndDesc,
+        Rule::RemoveTitles,
+        Rule::RemoveDescriptions,
         Rule::RemoveAriaAndRole,
+        Rule::ScopeSvgStyles,
     ];
 
     /**
@@ -58,36 +61,25 @@ final class RuleSetTest extends TestCase
             Rule::FixAttributeNames,
             Rule::MigrateToSvg2,
             Rule::RemoveNonStandardTags,
-            Rule::RemoveDeprecatedAttributes,
             Rule::RemoveNonStandardAttributes,
         ]];
 
         yield 'cleanup' => [RuleSet::Cleanup, 'cleanup', [
-            Rule::RemoveDoctype,
             Rule::RemoveComments,
             Rule::RemoveMetadata,
             Rule::RemoveInkscapeFootprints,
+            Rule::RemoveUnusedIds,
             Rule::RemoveDataAttributes,
             Rule::RemoveInvisibleCharacters,
-            Rule::RemoveEnableBackgroundAttribute,
-            Rule::RemoveStyleTypeAttributes,
-            Rule::RemoveXmlSpaceDefault,
+            Rule::RemoveDefaultAttributes,
             Rule::RemoveWidthHeightAttributes,
             Rule::RemoveEmptyAttributes,
-            Rule::RemoveUnusedIds,
             Rule::RemoveUnusedDefinitions,
-            Rule::RemoveNonInheritableGroupAttributes,
+            Rule::RemoveIneffectiveAttributes,
             Rule::RemoveHiddenElements,
-            Rule::RemoveZeroSizeShapes,
-            Rule::RemoveEmptyTextElements,
-            Rule::RemoveUnusedTextAttributes,
-            Rule::RemoveDuplicateElements,
-            Rule::RemoveEmptyGroups,
-            Rule::RemoveEmptyContainers,
-            Rule::RemoveUnusedMasks,
-            Rule::RemoveUselessStrokeAndFill,
-            Rule::RemoveDefaultAttributes,
             Rule::RemoveUselessDefs,
+            Rule::RemoveDuplicateElements,
+            Rule::RemoveEmptyElements,
             Rule::RemoveUnusedNamespaces,
         ]];
 
@@ -101,7 +93,6 @@ final class RuleSetTest extends TestCase
         ]];
 
         yield 'structure' => [RuleSet::Structure, 'structure', [
-            Rule::ScopeSvgStyles,
             Rule::MergeStyles,
             Rule::MergeDuplicateGradients,
             Rule::FlattenGroups,
@@ -112,12 +103,10 @@ final class RuleSetTest extends TestCase
         yield 'minification' => [RuleSet::Minification, 'minification', [
             Rule::MinifyStyles,
             Rule::MinifyNumericValues,
-            Rule::MinifyListValues,
             Rule::MinifySvgCoordinates,
             Rule::MinifyTransformations,
             Rule::MinifyPathData,
             Rule::RemoveUnnecessaryWhitespace,
-            Rule::ConvertEmptyTagsToSelfClosing,
             Rule::SortDefsChildren,
             Rule::SortAttributes,
         ]];
@@ -154,10 +143,16 @@ final class RuleSetTest extends TestCase
     }
 
     #[Test]
-    public function theRulesOfEverySetAreInExecutionOrder(): void
+    public function theRulesOfEverySetAreInTheOrderOfTheirFirstPass(): void
     {
         foreach (RuleSet::cases() as $ruleSet) {
-            $priorities = array_map(static fn (Rule $rule): int => $rule->priority(), $ruleSet->rules());
+            $priorities = array_map(
+                static fn (Rule $rule): int => min(array_map(
+                    static fn (string $pass): int => (int) array_search($pass, ExecutionOrder::passes(), true),
+                    $rule->passes(),
+                )),
+                $ruleSet->rules(),
+            );
             $sortedPriorities = $priorities;
             sort($sortedPriorities);
 
@@ -179,7 +174,7 @@ final class RuleSetTest extends TestCase
     }
 
     #[Test]
-    public function theAccessibilityRulesAreInNoSet(): void
+    public function theRulesInNoSetAreInNoSet(): void
     {
         foreach (RuleSet::cases() as $ruleSet) {
             foreach (self::RULES_IN_NO_SET as $rule) {

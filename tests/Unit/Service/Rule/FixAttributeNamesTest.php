@@ -35,18 +35,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(AbstractProvider::class)]
 final class FixAttributeNamesTest extends TestCase
 {
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(FixAttributeNames::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(FixAttributeNames::shouldCheckSize());
-    }
-
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -57,7 +45,7 @@ final class FixAttributeNamesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new FixAttributeNames());
+        $svgOptimizer->addPass(new FixAttributeNames());
 
         $actual = $svgOptimizer->allowRisky()->optimize()->getContent();
 
@@ -460,7 +448,7 @@ final class FixAttributeNamesTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><rect ' . implode(' ', array_map(static fn (int $i): string => 'A' . $i . '="' . $i . '"', range(1, $count))) . '/></svg>');
 
         $start = hrtime(true);
-        (new FixAttributeNames())->optimize($domDocument);
+        (new FixAttributeNames())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }

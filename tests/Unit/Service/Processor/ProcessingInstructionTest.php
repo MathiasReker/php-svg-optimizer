@@ -81,7 +81,7 @@ final class ProcessingInstructionTest extends TestCase
     public function sanitizerStillRemovesStylesheetInstructions(): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider('<?xml-stylesheet href="https://evil.test/a.css"?><svg xmlns="http://www.w3.org/2000/svg"/>'));
-        $svgOptimizer->addRule(new RemoveUnsafeMarkup());
+        $svgOptimizer->addPass(new RemoveUnsafeMarkup());
 
         self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"/>', $svgOptimizer->optimize()->getContent());
     }

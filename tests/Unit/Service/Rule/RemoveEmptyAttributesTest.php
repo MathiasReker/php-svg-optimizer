@@ -43,13 +43,13 @@ final class RemoveEmptyAttributesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveEmptyAttributes());
+        $svgOptimizer->addPass(new RemoveEmptyAttributes());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
 
         $repeated = new SvgOptimizer(new StringProvider($actual));
-        $repeated->addRule(new RemoveEmptyAttributes());
+        $repeated->addPass(new RemoveEmptyAttributes());
         self::assertSame($actual, $repeated->optimize()->getContent());
     }
 
@@ -271,12 +271,6 @@ final class RemoveEmptyAttributesTest extends TestCase
     }
 
     #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveEmptyAttributes::shouldCheckSize());
-    }
-
-    #[Test]
     public function handlesManyEmptyAttributesAndAttributeSelectorsInLinearTime(): void
     {
         $small = $this->secondsToOptimize(1_000);
@@ -291,7 +285,7 @@ final class RemoveEmptyAttributesTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><style>' . str_repeat('[class-x] ', 25 * $count) . '{fill:red}</style>' . str_repeat('<rect class=""/>', $count) . '</svg>');
 
         $start = hrtime(true);
-        (new RemoveEmptyAttributes())->optimize($domDocument);
+        (new RemoveEmptyAttributes())->apply($domDocument);
 
         self::assertFalse($domDocument->documentElement?->lastElementChild?->hasAttributes());
 

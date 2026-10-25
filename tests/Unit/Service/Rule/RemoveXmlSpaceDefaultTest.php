@@ -43,7 +43,7 @@ final class RemoveXmlSpaceDefaultTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveXmlSpaceDefault());
+        $svgOptimizer->addPass(new RemoveXmlSpaceDefault());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -201,18 +201,6 @@ final class RemoveXmlSpaceDefaultTest extends TestCase
     }
 
     #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(RemoveXmlSpaceDefault::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveXmlSpaceDefault::shouldCheckSize());
-    }
-
-    #[Test]
     public function handlesManyNamespaceDeclarationsInLinearTime(): void
     {
         $small = $this->secondsToOptimize(2_000);
@@ -227,7 +215,7 @@ final class RemoveXmlSpaceDefaultTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><g xml:space="default"><text xml:space="default">a</text></g></svg>');
 
         $start = hrtime(true);
-        (new RemoveXmlSpaceDefault())->optimize($domDocument);
+        (new RemoveXmlSpaceDefault())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }

@@ -38,7 +38,10 @@ trait PathDataParserTrait
     /**
      * @param string $data the path data
      *
-     * @return list<array{string, list<string>}> the segments as [command, arguments], or an empty list if invalid
+     * @return array{list<array{string, list<string>}>, string} the segments of the commands before the first command
+     *                                                          that cannot be parsed as [command, arguments], and the
+     *                                                          text from that command on; no segments if the first
+     *                                                          command cannot be parsed
      */
     private function parsePathData(string $data): array
     {
@@ -50,22 +53,22 @@ trait PathDataParserTrait
             || [] === $commands
             || !\in_array($commands[0][1], self::PATH_MOVETO_COMMANDS, true)
         ) {
-            return [];
+            return [[], $data];
         }
 
         $segments = [];
 
-        foreach ($commands as [, $command, $arguments]) {
+        foreach ($commands as $index => [, $command, $arguments]) {
             $commandSegments = $this->parsePathCommand($command, trim($arguments, " \t\n\f\r"));
 
             if ([] === $commandSegments) {
-                return [];
+                return [$segments, implode('', array_column(\array_slice($commands, $index), 0))];
             }
 
             array_push($segments, ...$commandSegments);
         }
 
-        return $segments;
+        return [$segments, ''];
     }
 
     /**

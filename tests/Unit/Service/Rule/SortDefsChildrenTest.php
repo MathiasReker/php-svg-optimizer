@@ -173,18 +173,6 @@ final class SortDefsChildrenTest extends TestCase
         ];
     }
 
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(SortDefsChildren::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(SortDefsChildren::shouldCheckSize());
-    }
-
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -193,7 +181,7 @@ final class SortDefsChildrenTest extends TestCase
     private function optimizeContent(string $content): string
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new SortDefsChildren());
+        $svgOptimizer->addPass(new SortDefsChildren());
 
         return $svgOptimizer->optimize()->getContent();
     }

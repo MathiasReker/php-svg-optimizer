@@ -45,7 +45,7 @@ final class ConvertCssClassesToAttributesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new ConvertCssClassesToAttributes());
+        $svgOptimizer->addPass(new ConvertCssClassesToAttributes());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -752,6 +752,11 @@ final class ConvertCssClassesToAttributesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red;fill:blue}</style><style>.b{fill:green}</style><rect class="a b"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red;fill:blue}</style><style>.b{fill:green}</style><rect class="a b"/></svg>',
         ];
+
+        yield 'Keeps an emptied style element that has an id' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style id="s">.a{fill:red}</style><style>.b{stroke:blue}</style><rect class="a b"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style id="s"/><rect fill="red" stroke="blue"/></svg>',
+        ];
     }
 
     /**
@@ -764,12 +769,12 @@ final class ConvertCssClassesToAttributesTest extends TestCase
     public function isIdempotent(string $content): void
     {
         $once = new SvgOptimizer(new StringProvider($content));
-        $once->addRule(new ConvertCssClassesToAttributes());
+        $once->addPass(new ConvertCssClassesToAttributes());
 
         $expected = $once->optimize()->getContent();
 
         $twice = new SvgOptimizer(new StringProvider($expected));
-        $twice->addRule(new ConvertCssClassesToAttributes());
+        $twice->addPass(new ConvertCssClassesToAttributes());
 
         self::assertSame($expected, $twice->optimize()->getContent());
     }
@@ -782,18 +787,6 @@ final class ConvertCssClassesToAttributesTest extends TestCase
         yield 'partly converted' => ['<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red;font-size:2px}</style><rect class="a"/></svg>'];
 
         yield 'blocked property' => ['<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red;fill:blue}.b{stroke:red}</style><rect class="a b"/></svg>'];
-    }
-
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(ConvertCssClassesToAttributes::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(ConvertCssClassesToAttributes::shouldCheckSize());
     }
 
     #[Test]
@@ -811,7 +804,7 @@ final class ConvertCssClassesToAttributesTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><style>.a{fill:red}</style><rect class="a"/></svg>');
 
         $start = hrtime(true);
-        (new ConvertCssClassesToAttributes())->optimize($domDocument);
+        (new ConvertCssClassesToAttributes())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }

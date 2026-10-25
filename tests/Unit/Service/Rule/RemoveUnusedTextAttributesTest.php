@@ -227,18 +227,6 @@ final class RemoveUnusedTextAttributesTest extends TestCase
         ];
     }
 
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(RemoveUnusedTextAttributes::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveUnusedTextAttributes::shouldCheckSize());
-    }
-
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -247,7 +235,7 @@ final class RemoveUnusedTextAttributesTest extends TestCase
     private function optimizeContent(string $content): string
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveUnusedTextAttributes());
+        $svgOptimizer->addPass(new RemoveUnusedTextAttributes());
 
         return $svgOptimizer->optimize()->getContent();
     }

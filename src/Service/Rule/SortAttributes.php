@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
@@ -19,7 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
  *
  * @no-named-arguments
  */
-final readonly class SortAttributes implements SvgOptimizerRuleInterface
+final readonly class SortAttributes implements PassInterface
 {
     private const array ATTRIBUTE_ORDER = [
         SvgAttribute::Xmlns->value,
@@ -28,23 +28,11 @@ final readonly class SortAttributes implements SvgOptimizerRuleInterface
         SvgAttribute::Width->value,
     ];
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $domNodeList = $domDocument->getElementsByTagName('*');
 

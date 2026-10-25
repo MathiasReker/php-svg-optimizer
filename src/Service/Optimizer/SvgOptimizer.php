@@ -12,11 +12,13 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Service\Optimizer;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\RevertIfLargerPassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
@@ -32,7 +34,10 @@ final class SvgOptimizer
 {
     use XmlLoaderTrait;
 
-    /** @var list<SvgOptimizerRuleInterface> Array of optimization strategies */
+    /** @var list<PassInterface> The passes added one by one */
+    private array $passes = [];
+
+    /** @var list<Rule> The rules enabled one by one */
     private array $rules = [];
 
     /** @var string The SVG content after optimization */
@@ -86,26 +91,9 @@ final class SvgOptimizer
         );
     }
 
-    /**
-     * @return bool True if there are rules, false otherwise
-     */
-    public function hasRules(): bool
-    {
-        return $this->getRulesCount() > 0;
-    }
-
-    /**
-     * @return int The number of optimization rules
-     */
-    public function getRulesCount(): int
-    {
-        return \count($this->rules);
-    }
-
     public function allowRisky(): self
     {
         $this->allowRisky = true;
-        $this->configureRules($this->selectedRuleFlags());
 
         return $this;
     }
@@ -113,7 +101,6 @@ final class SvgOptimizer
     public function enableAllRules(): self
     {
         $this->allRulesEnabled = true;
-        $this->configureRules($this->selectedRuleFlags());
 
         return $this;
     }
@@ -124,25 +111,43 @@ final class SvgOptimizer
     public function enableRuleSets(RuleSet ...$ruleSets): self
     {
         $this->enabledRuleSets = [...$this->enabledRuleSets, ...$ruleSets];
-        $this->configureRules($this->selectedRuleFlags());
 
         return $this;
     }
 
     /**
-     * @return array<class-string<SvgOptimizerRuleInterface>, bool> Every rule selected by enableAllRules() or enableRuleSets(), with risky rules only if risky rules are allowed
+     * @param Rule ...$rules The rules to enable
      */
-    private function selectedRuleFlags(): array
+    public function enableRules(Rule ...$rules): self
     {
-        $ruleFlags = [];
+        $this->rules = [...$this->rules, ...$rules];
+
+        return $this;
+    }
+
+    /**
+     * @param PassInterface $pass The pass to run, whatever the enabled rules
+     */
+    public function addPass(PassInterface $pass): void
+    {
+        $this->passes[] = $pass;
+    }
+
+    /**
+     * @return list<Rule> The rules enabled one by one, and the rules enabled by enableAllRules() or enableRuleSets(),
+     *                    with risky rules only if risky rules are allowed
+     */
+    private function selectedRules(): array
+    {
+        $rules = $this->rules;
 
         foreach (Rule::cases() as $rule) {
-            /** @var class-string<SvgOptimizerRuleInterface> $ruleClass */
-            $ruleClass = $rule->value;
-            $ruleFlags[$ruleClass] = $this->isSelected($rule) && ($this->allowRisky || !$ruleClass::isRisky());
+            if ($this->isSelected($rule) && ($this->allowRisky || !$rule->isRisky())) {
+                $rules[] = $rule;
+            }
         }
 
-        return $ruleFlags;
+        return $rules;
     }
 
     private function isSelected(Rule $rule): bool
@@ -153,6 +158,40 @@ final class SvgOptimizer
 
         foreach ($this->enabledRuleSets as $enabledRuleSet) {
             if ($enabledRuleSet->contains($rule)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return list<PassInterface> The added passes and the passes of the selected rules, each pass once, in execution
+     *                             order
+     */
+    public function getPasses(): array
+    {
+        $passes = $this->passes;
+
+        foreach ($this->selectedRules() as $rule) {
+            foreach ($rule->passes() as $passClass) {
+                if (!$this->hasPass($passes, $passClass)) {
+                    $passes[] = new $passClass();
+                }
+            }
+        }
+
+        return ExecutionOrder::sort($passes);
+    }
+
+    /**
+     * @param list<PassInterface>         $passes    The passes to search
+     * @param class-string<PassInterface> $passClass The pass to look for
+     */
+    private function hasPass(array $passes, string $passClass): bool
+    {
+        foreach ($passes as $pass) {
+            if ($pass::class === $passClass) {
                 return true;
             }
         }
@@ -185,7 +224,7 @@ final class SvgOptimizer
             throw new SvgValidationException('The file does not appear to be a valid SVG file.');
         }
 
-        $this->applyRules($domDocument);
+        $this->applyPasses($domDocument);
         $this->domDocumentContent = $this->svgProvider->optimize($domDocument)->getOutputContent();
 
         $this->isOptimized = true;
@@ -198,12 +237,12 @@ final class SvgOptimizer
     }
 
     /**
-     * @return bool True if one or more configured rules are risky, false otherwise
+     * @return bool True if one or more rules enabled one by one are risky, false otherwise
      */
     private function hasRiskyRules(): bool
     {
         foreach ($this->rules as $rule) {
-            if ($rule::isRisky()) {
+            if ($rule->isRisky()) {
                 return true;
             }
         }
@@ -216,30 +255,30 @@ final class SvgOptimizer
      *
      * @throws XmlProcessingException
      */
-    private function applyRules(\DOMDocument $domDocument): void
+    private function applyPasses(\DOMDocument $domDocument): void
     {
-        foreach ($this->rules as $rule) {
-            if (!$rule::shouldCheckSize()) {
-                $rule->optimize($domDocument);
+        foreach ($this->getPasses() as $pass) {
+            if (!$pass instanceof RevertIfLargerPassInterface) {
+                $pass->apply($domDocument);
 
                 continue;
             }
 
-            $contentBeforeRule = $this->svgProvider->serialize($domDocument);
-            $rule->optimize($domDocument);
-            $this->revertIfLarger($domDocument, $contentBeforeRule);
+            $contentBeforePass = $this->svgProvider->serialize($domDocument);
+            $pass->apply($domDocument);
+            $this->revertIfLarger($domDocument, $contentBeforePass);
         }
     }
 
     /**
      * @throws XmlProcessingException
      */
-    private function revertIfLarger(\DOMDocument $domDocument, string $contentBeforeRule): void
+    private function revertIfLarger(\DOMDocument $domDocument, string $contentBeforePass): void
     {
         $newContent = $this->svgProvider->serialize($domDocument);
 
-        if ('' !== $contentBeforeRule && mb_strlen($newContent, '8bit') > mb_strlen($contentBeforeRule, '8bit')) {
-            $this->loadXmlSilently($domDocument, $contentBeforeRule);
+        if ('' !== $contentBeforePass && mb_strlen($newContent, '8bit') > mb_strlen($contentBeforePass, '8bit')) {
+            $this->loadXmlSilently($domDocument, $contentBeforePass);
         }
     }
 
@@ -255,50 +294,6 @@ final class SvgOptimizer
         }
 
         return $this->domDocumentContent;
-    }
-
-    /**
-     * @param array<class-string<SvgOptimizerRuleInterface>, bool> $ruleFlags
-     */
-    public function configureRules(array $ruleFlags): void
-    {
-        foreach ($ruleFlags as $ruleClass => $enabled) {
-            if ($enabled && !$this->hasRule($ruleClass)) {
-                $this->addRule(new $ruleClass());
-            }
-        }
-
-        usort(
-            $this->rules,
-            static fn (SvgOptimizerRuleInterface $a, SvgOptimizerRuleInterface $b): int => self::priority($a) <=> self::priority($b),
-        );
-    }
-
-    /**
-     * @param class-string<SvgOptimizerRuleInterface> $ruleClass
-     */
-    private function hasRule(string $ruleClass): bool
-    {
-        foreach ($this->rules as $rule) {
-            if ($rule::class === $ruleClass) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static function priority(SvgOptimizerRuleInterface $svgOptimizerRule): int
-    {
-        return Rule::tryFrom($svgOptimizerRule::class)?->priority() ?? \PHP_INT_MAX;
-    }
-
-    /**
-     * @param SvgOptimizerRuleInterface $svgOptimizerRule The optimization rule to add
-     */
-    public function addRule(SvgOptimizerRuleInterface $svgOptimizerRule): void
-    {
-        $this->rules[] = $svgOptimizerRule;
     }
 
     /**

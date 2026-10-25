@@ -43,7 +43,7 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveEnableBackgroundAttribute());
+        $svgOptimizer->addPass(new RemoveEnableBackgroundAttribute());
 
         $actual = $svgOptimizer->allowRisky()->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -272,17 +272,5 @@ final class RemoveEnableBackgroundAttributeTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" enable-background=" accumulate "/>',
             '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"/>',
         ];
-    }
-
-    #[Test]
-    public function ruleIsMarkedAsRisky(): void
-    {
-        self::assertTrue(RemoveEnableBackgroundAttribute::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveEnableBackgroundAttribute::shouldCheckSize());
     }
 }

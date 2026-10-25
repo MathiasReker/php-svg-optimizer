@@ -109,16 +109,14 @@ vendor/bin/svg-optimizer -s cleanup -s structure --allow-risky process /path/to/
     "convertColorsToHex": true,
     "convertCssClassesToAttributes": true,
     "convertEllipseToCircle": true,
-    "convertEmptyTagsToSelfClosing": true,
     "convertInlineStylesToAttributes": true,
-    "convertOneStopGradients": true,
+    "convertOneStopGradients": false,
     "convertShapesToPath": true,
     "fixAttributeNames": false,
     "flattenGroups": true,
-    "mergeDuplicateGradients": true,
+    "mergeDuplicateGradients": false,
     "mergeStyles": true,
     "migrateToSvg2": true,
-    "minifyListValues": true,
     "minifyNumericValues": true,
     "minifyPathData": true,
     "minifyStyles": true,
@@ -130,39 +128,29 @@ vendor/bin/svg-optimizer -s cleanup -s structure --allow-risky process /path/to/
     "removeComments": true,
     "removeDataAttributes": false,
     "removeDefaultAttributes": true,
-    "removeDeprecatedAttributes": true,
-    "removeDoctype": true,
+    "removeDescriptions": true,
     "removeDuplicateElements": true,
     "removeEmptyAttributes": true,
-    "removeEmptyContainers": true,
-    "removeEmptyGroups": true,
-    "removeEmptyTextElements": true,
-    "removeEnableBackgroundAttribute": false,
+    "removeEmptyElements": true,
     "removeForeignContent": false,
     "removeHiddenElements": true,
+    "removeIneffectiveAttributes": true,
     "removeInkscapeFootprints": true,
     "removeInvisibleCharacters": true,
     "removeMetadata": true,
-    "removeNonInheritableGroupAttributes": true,
     "removeNonStandardAttributes": false,
     "removeNonStandardTags": false,
     "removeScripts": false,
-    "removeStyleTypeAttributes": true,
-    "removeTitleAndDesc": true,
+    "removeTitles": true,
     "removeUnnecessaryWhitespace": true,
     "removeUnsafeMarkup": false,
     "removeUnsafeUrls": false,
     "removeUnusedDefinitions": false,
     "removeUnusedIds": false,
-    "removeUnusedMasks": true,
     "removeUnusedNamespaces": true,
-    "removeUnusedTextAttributes": true,
     "removeUseBombs": false,
     "removeUselessDefs": true,
-    "removeUselessStrokeAndFill": true,
     "removeWidthHeightAttributes": false,
-    "removeXmlSpaceDefault": true,
-    "removeZeroSizeShapes": true,
     "sanitizeStyleSheets": false,
     "scopeSvgStyles": false,
     "sortAttributes": true,
@@ -179,7 +167,7 @@ the rules enabled with `true` and to the sets given with `--set`:
 ```json
 {
     "sets": ["cleanup"],
-    "removeTitleAndDesc": true
+    "removeTitles": true
 }
 ```
 
@@ -230,16 +218,14 @@ try {
             convertColorsToHex: true,
             convertCssClassesToAttributes: true,
             convertEllipseToCircle: true,
-            convertEmptyTagsToSelfClosing: true,
             convertInlineStylesToAttributes: true,
-            convertOneStopGradients: true,
+            convertOneStopGradients: false,
             convertShapesToPath: true,
             fixAttributeNames: false,
             flattenGroups: true,
-            mergeDuplicateGradients: true,
+            mergeDuplicateGradients: false,
             mergeStyles: true,
             migrateToSvg2: true,
-            minifyListValues: true,
             minifyNumericValues: true,
             minifyPathData: true,
             minifyStyles: true,
@@ -251,39 +237,29 @@ try {
             removeComments: true,
             removeDataAttributes: false,
             removeDefaultAttributes: true,
-            removeDeprecatedAttributes: true,
-            removeDoctype: true,
+            removeDescriptions: true,
             removeDuplicateElements: true,
             removeEmptyAttributes: true,
-            removeEmptyContainers: true,
-            removeEmptyGroups: true,
-            removeEmptyTextElements: true,
-            removeEnableBackgroundAttribute: false,
+            removeEmptyElements: true,
             removeForeignContent: false,
             removeHiddenElements: true,
+            removeIneffectiveAttributes: true,
             removeInkscapeFootprints: true,
             removeInvisibleCharacters: true,
             removeMetadata: true,
-            removeNonInheritableGroupAttributes: true,
             removeNonStandardAttributes: false,
             removeNonStandardTags: false,
             removeScripts: false,
-            removeStyleTypeAttributes: true,
-            removeTitleAndDesc: true,
+            removeTitles: true,
             removeUnnecessaryWhitespace: true,
             removeUnsafeMarkup: false,
             removeUnsafeUrls: false,
             removeUnusedDefinitions: false,
             removeUnusedIds: false,
-            removeUnusedMasks: true,
             removeUnusedNamespaces: true,
-            removeUnusedTextAttributes: true,
             removeUseBombs: false,
             removeUselessDefs: true,
-            removeUselessStrokeAndFill: true,
             removeWidthHeightAttributes: false,
-            removeXmlSpaceDefault: true,
-            removeZeroSizeShapes: true,
             sanitizeStyleSheets: false,
             scopeSvgStyles: false,
             sortAttributes: true,
@@ -400,8 +376,10 @@ use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 try {
     $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
         ->withRules(
+            convertOneStopGradients: true,
+            fixAttributeNames: true,
+            mergeDuplicateGradients: true,
             removeDataAttributes: true,
-            removeEnableBackgroundAttribute: true,
             removeUnusedDefinitions: true,
             removeUnusedIds: true,
             removeWidthHeightAttributes: true,
@@ -456,18 +434,20 @@ file with `"sets": ["security", "minification"]`.
 | Set | `RuleSet` case | Purpose | Rules |
 | --- | --- | --- | --- |
 | `security` | `RuleSet::Security` | Remove scripts, event handlers, unsafe links and other active content from untrusted SVGs. | `removeUnsafeMarkup`, `removeScripts`, `removeForeignContent`, `removeUnsafeUrls`, `sanitizeStyleSheets`, `removeUseBombs` |
-| `standards` | `RuleSet::Standards` | Bring the markup in line with the SVG specification. | `fixAttributeNames`, `migrateToSvg2`, `removeNonStandardTags`, `removeDeprecatedAttributes`, `removeNonStandardAttributes` |
-| `cleanup` | `RuleSet::Cleanup` | Remove editor data, comments, unused definitions and content that has no effect. | `removeDoctype`, `removeComments`, `removeMetadata`, `removeInkscapeFootprints`, `removeDataAttributes` (risky), `removeInvisibleCharacters`, `removeEnableBackgroundAttribute` (risky), `removeStyleTypeAttributes`, `removeXmlSpaceDefault`, `removeWidthHeightAttributes` (risky), `removeEmptyAttributes`, `removeUnusedIds` (risky), `removeUnusedDefinitions` (risky), `removeNonInheritableGroupAttributes`, `removeHiddenElements`, `removeZeroSizeShapes`, `removeEmptyTextElements`, `removeUnusedTextAttributes`, `removeDuplicateElements`, `removeEmptyGroups`, `removeEmptyContainers`, `removeUnusedMasks`, `removeUselessStrokeAndFill`, `removeDefaultAttributes`, `removeUselessDefs`, `removeUnusedNamespaces` |
-| `conversion` | `RuleSet::Conversion` | Convert styles, colors, gradients and shapes into shorter equivalents. | `convertCssClassesToAttributes`, `convertInlineStylesToAttributes`, `convertColorsToHex`, `convertOneStopGradients`, `convertEllipseToCircle`, `convertShapesToPath` |
-| `structure` | `RuleSet::Structure` | Restructure styles, gradients and groups. | `scopeSvgStyles` (risky), `mergeStyles`, `mergeDuplicateGradients`, `flattenGroups`, `moveGroupAttributesToElements`, `moveCommonAttributesToGroup` |
-| `minification` | `RuleSet::Minification` | Write numbers, paths, styles and whitespace in their shortest form and order the markup. | `minifyStyles`, `minifyNumericValues`, `minifyListValues`, `minifySvgCoordinates`, `minifyTransformations`, `minifyPathData`, `removeUnnecessaryWhitespace`, `convertEmptyTagsToSelfClosing`, `sortDefsChildren`, `sortAttributes` |
+| `standards` | `RuleSet::Standards` | Bring the markup in line with the SVG specification. | `fixAttributeNames` (risky), `migrateToSvg2`, `removeNonStandardTags`, `removeNonStandardAttributes` |
+| `cleanup` | `RuleSet::Cleanup` | Remove editor data, comments, unused definitions and content that has no effect. | `removeComments`, `removeMetadata`, `removeInkscapeFootprints`, `removeUnusedIds` (risky), `removeDataAttributes` (risky), `removeInvisibleCharacters`, `removeDefaultAttributes`, `removeWidthHeightAttributes` (risky), `removeEmptyAttributes`, `removeUnusedDefinitions` (risky), `removeIneffectiveAttributes`, `removeHiddenElements`, `removeUselessDefs`, `removeDuplicateElements`, `removeEmptyElements`, `removeUnusedNamespaces` |
+| `conversion` | `RuleSet::Conversion` | Convert styles, colors, gradients and shapes into shorter equivalents. | `convertCssClassesToAttributes`, `convertInlineStylesToAttributes`, `convertColorsToHex`, `convertOneStopGradients` (risky), `convertEllipseToCircle`, `convertShapesToPath` |
+| `structure` | `RuleSet::Structure` | Restructure styles, gradients and groups. | `mergeStyles`, `mergeDuplicateGradients` (risky), `flattenGroups`, `moveGroupAttributesToElements`, `moveCommonAttributesToGroup` |
+| `minification` | `RuleSet::Minification` | Write numbers, paths, styles and whitespace in their shortest form and order the markup. | `minifyStyles`, `minifyNumericValues`, `minifySvgCoordinates`, `minifyTransformations`, `minifyPathData`, `removeUnnecessaryWhitespace`, `sortDefsChildren`, `sortAttributes` |
 
 Risky rules belong to the set of their purpose, but, like with `withAllRules()`, they are only applied when risky rules
 are allowed with `allowRisky()` (or `--allow-risky`), whether `allowRisky()` is called before or after
 `withRuleSets()`. Without it, the other rules of the set are applied and no exception is thrown.
 
-`removeTitleAndDesc` and `removeAriaAndRole` are deliberately in no set: they remove accessibility information, so they
-are only applied when you enable them yourself with `withRules()` or in the configuration.
+`removeTitles`, `removeDescriptions` and `removeAriaAndRole` are deliberately in no set: they remove accessibility
+information, so they are only applied when you enable them yourself with `withRules()` or in the configuration.
+`scopeSvgStyles` (risky) is in no set either: it renames ids and class names, which is only wanted when several SVGs
+share one page.
 
 ### Security: Sanitizing Untrusted SVGs
 
@@ -560,9 +540,8 @@ Rules that are not marked risky are lossless: the optimized SVG renders the same
 link and animation that can be reached from inside or outside the document (sprite sheets keep working), and no number
 is rounded. A few rules change the SVG on purpose, and say so in their description: the security rules
 `removeScripts`, `removeUnsafeUrls`, `removeForeignContent`, `sanitizeStyleSheets`, `removeUseBombs` and
-`removeUnsafeMarkup` remove unsafe content, also when it is visible; `removeNonStandardAttributes` removes event
-handler attributes such as `onclick`, so interactive SVGs lose their scripts; `fixAttributeNames` activates misspelled
-attributes that browsers ignore; and `removeTitleAndDesc` and `removeAriaAndRole` remove accessibility information.
+`removeUnsafeMarkup` remove unsafe content, also when it is visible; and `removeTitles`, `removeDescriptions` and
+`removeAriaAndRole` remove accessibility information.
 
 Some rules are marked **risky**: they rely on assumptions about how the SVG is used that the optimizer cannot check,
 such as no external CSS, JavaScript or `file.svg#id` reference depending on what they remove. Each risky rule says
@@ -610,18 +589,6 @@ $svgOptimizer->withRules(convertEllipseToCircle: true);
 
 ---
 
-### `convertEmptyTagsToSelfClosing`
-
-Converts elements without child nodes into self-closing tags. The serializer already writes every empty element as a
-self-closing tag, so this rule no longer changes the output; it is kept so existing configurations keep working.
-Markup-like text inside comments and processing instructions is never rewritten.
-
-```php
-$svgOptimizer->withRules(convertEmptyTagsToSelfClosing: true);
-```
-
----
-
 ### `convertInlineStylesToAttributes`
 
 Extracts individual style declarations from inline `style` attributes and converts them into their corresponding SVG
@@ -636,7 +603,7 @@ $svgOptimizer->withRules(convertInlineStylesToAttributes: true);
 
 ---
 
-### `convertOneStopGradients`
+### `convertOneStopGradients` (**risky**)
 
 Replaces a gradient that has a single `<stop>` with that stop's color where it is used as a `fill` or `stroke`, and
 removes the gradient. Gradients referenced in any other way or by other documents (see the sprite targets of
@@ -645,8 +612,10 @@ gradients with a `style` attribute or a `gradientTransform` other than translati
 cannot be inverted paints nothing), and documents with a style sheet, a script or an event handler attribute are left
 untouched. A gradient in object bounding box units is only replaced on rects, circles and ellipses, as it is not rendered on, for example, a straight line.
 
+**Why it is risky:** the gradient and its `id` are removed. CSS, JavaScript or a `file.svg#id` reference in the page that embeds the SVG that uses the gradient breaks.
+
 ```php
-$svgOptimizer->withRules(convertOneStopGradients: true);
+$svgOptimizer->withRules(convertOneStopGradients: true)->allowRisky();
 ```
 
 ---
@@ -665,7 +634,7 @@ $svgOptimizer->withRules(convertShapesToPath: true);
 
 ---
 
-### `fixAttributeNames`
+### `fixAttributeNames` (**risky**)
 
 Normalizes SVG attribute names to their canonical, specification-compliant casing and hyphenation. Attribute names are
 matched against a known set of valid SVG attributes and corrected where case differences or missing hyphens occur, and
@@ -678,8 +647,10 @@ This rule changes rendering on purpose: browsers ignore a misspelled attribute, 
 For example, `viewbox` becomes `viewBox` and `Fill` becomes `fill`, so an image that ignored those attributes until now
 will be scaled or painted by them.
 
+**Why it is risky:** browsers ignore a misspelled attribute, so renaming it changes rendering: `viewbox` becomes `viewBox` and the image is scaled, `Fill` becomes `fill` and the shape is painted. An image that looked right only because those attributes were ignored changes.
+
 ```php
-$svgOptimizer->withRules(fixAttributeNames: true);
+$svgOptimizer->withRules(fixAttributeNames: true)->allowRisky();
 ```
 
 ---
@@ -700,7 +671,7 @@ $svgOptimizer->withRules(flattenGroups: true);
 
 ---
 
-### `mergeDuplicateGradients`
+### `mergeDuplicateGradients` (**risky**)
 
 Merges gradients that are exactly identical (same element, same attributes apart from the `id`, same stops, and equal
 ancestors) into the first one, and points every `url(#id)`, `href` and `xlink:href` reference at it. Gradients that
@@ -708,8 +679,10 @@ are animated, referenced in a way that cannot be rewritten, or that other docume
 targets of `removeUnusedDefinitions`), such as the gradients of a resource library, are kept, and documents with a
 style sheet, a script or an event attribute are left untouched.
 
+**Why it is risky:** the duplicate gradients and their ids are removed. CSS, JavaScript or a `file.svg#id` reference in the page that embeds the SVG that uses a removed gradient breaks.
+
 ```php
-$svgOptimizer->withRules(mergeDuplicateGradients: true);
+$svgOptimizer->withRules(mergeDuplicateGradients: true)->allowRisky();
 ```
 
 ---
@@ -733,28 +706,32 @@ Migrates SVG 1.1 and SVG Tiny 1.2 markup to SVG 2 without changing how current b
 becomes `href`, also in animations, and `xlink:show="new"` becomes `target="_blank"`. Elements and attributes that
 SVG 2 dropped and browsers ignore are removed: SVG fonts, `tref`, `altGlyph`, `animateColor`, `cursor`,
 `color-profile`, the SVG Tiny elements and attributes, `xml:id`, and properties such as `version`, `baseProfile`,
-`requiredFeatures`, `kerning` and `enable-background`, also from inline styles. References to removed elements fall
+`requiredFeatures`, `kerning` and `enable-background`, also from inline styles. References to dropped elements fall
 back to their fallback paint, and the SVG Tiny timeline attributes are renamed to their SVG 2 forms. Unused `xlink`
 and XML Events namespace declarations are removed. Foreign content and anything author CSS may select are left
-untouched. Dropped elements that a `<switch>` may render, or that contain an element with an `id`, a style sheet, a
-script or an animation, are kept, and no element is removed when a style sheet uses sibling combinators or structural
+untouched. Dropped elements that have an `id`, that a `<switch>` may render, or that contain an element with an `id`, a style
+sheet, a script or an animation, are kept, and no element is removed when a style sheet uses sibling combinators or structural
 pseudo-classes.
+
+It also removes the attributes that SVG 2 deprecated:
+
+Removes attributes that SVG 2 deprecated and browsers ignore: `version`, `baseProfile`, `contentScriptType`,
+`contentStyleType`, `externalResourcesRequired`, `requiredFeatures`, `zoomAndPan`, `viewTarget`,
+`glyph-orientation-horizontal`, `glyph-orientation-vertical` and `xml:base`, and the SVG 1.1 view attributes. It
+migrates the XLink attributes: `xlink:href` becomes `href` (also in animations),
+`xlink:show="new"` on a link becomes `target="_blank"`, `xlink:title` on a link becomes a `<title>` child unless the
+link already has one or a style sheet uses sibling combinators or structural pseudo-classes, `xlink:title` on other
+elements, which browsers ignore, and the other XLink attributes are removed, and an unused `xlink` namespace
+declaration is removed.
+`xml:lang` becomes `lang`. Foreign content, attributes that a style sheet may select, and documents with an external
+style sheet are left untouched.
+
+And it removes the `enable-background` attribute and inline style declaration, which editors such as Illustrator add to almost
+every file and current browsers ignore. Foreign content, an attribute or `style` that a style sheet may select, and
+documents with an external style sheet are left untouched.
 
 ```php
 $svgOptimizer->withRules(migrateToSvg2: true);
-```
-
----
-
-### `minifyListValues`
-
-Shortens the notation of number lists such as `viewBox`, `points`, `stroke-dasharray`, `keyTimes` and the `values` of
-numeric animations. Numbers are shortened without rounding and lists use the fewest separators the attribute allows.
-Values with units, percentages, keywords or a number with a trailing decimal point are left untouched, and so is the
-document when a style sheet may select elements by an attribute value.
-
-```php
-$svgOptimizer->withRules(minifyListValues: true);
 ```
 
 ---
@@ -767,6 +744,13 @@ is kept where the attribute is a plain number on that element (such as `dx`/`dy`
 `<fePointLight>`), and integer attributes such as `numOctaves` are only shortened when written as plain integers. Only
 the notation changes; values are never rounded. Numbers with a trailing decimal point (`10.`), which browsers reject,
 are left as they are, and so is the document when a style sheet may select elements by an attribute value.
+
+It also shortens number lists:
+
+Shortens the notation of number lists such as `viewBox`, `points`, `stroke-dasharray`, `keyTimes` and the `values` of
+numeric animations. Numbers are shortened without rounding and lists use the fewest separators the attribute allows.
+Values with units, percentages, keywords or a number with a trailing decimal point are left untouched, and so is the
+document when a style sheet may select elements by an attribute value.
 
 ```php
 $svgOptimizer->withRules(minifyNumericValues: true);
@@ -884,12 +868,11 @@ $svgOptimizer->withRules(removeComments: true);
 
 ### `removeDataAttributes` (**risky**)
 
-Removes all `data-*` attributes from elements. These attributes are often used for application-specific metadata or
-scripting hooks, and removing them can significantly reduce file size.
+Removes `data-*` attributes from elements. These attributes are often used for application-specific metadata or
+scripting hooks, and removing them can significantly reduce file size. Attributes that a style sheet of the document
+names, for example in an attribute selector such as `[data-state="open"]` or in `attr()`, are kept.
 
-**Why it is risky:** `data-*` attributes never affect rendering, but scripts, CSS selectors such as `[data-state=open]`
-in the page that embeds the SVG, analytics, testing tools (`data-testid`) and design-tool round trips may read them.
-Those break when the attributes are gone.
+**Why it is risky:** scripts, CSS in the page that embeds the SVG, analytics, testing tools (`data-testid`) and design-tool round trips may read `data-*` attributes. Those break when the attributes are gone.
 
 ```php
 $svgOptimizer->withRules(removeDataAttributes: true)->allowRisky();
@@ -905,39 +888,33 @@ another value, as an attribute or in its inline style, up to the root or an elem
 Attributes that are animated or that the element's own inline style overrides are kept, and documents with a style sheet
 are left untouched.
 
+It also removes default type attributes:
+
+Removes the `type` attribute of `<style>` when it is `text/css` and of `<script>` when it is a JavaScript MIME type, as
+these are the defaults. Other values, such as `module`, are kept, and so is the type of a script with a `language`
+attribute, which would decide the script language without it.
+
+And `xml:space="default"` where it has no effect:
+
+Removes `xml:space="default"` where it has no effect, that is, when no ancestor sets `xml:space="preserve"` and no
+CSS `white-space` could be affected by it.
+
 ```php
 $svgOptimizer->withRules(removeDefaultAttributes: true);
 ```
 
 ---
 
-### `removeDeprecatedAttributes`
+### `removeDescriptions`
 
-Removes attributes that SVG 2 deprecated and browsers ignore: `version`, `baseProfile`, `contentScriptType`,
-`contentStyleType`, `externalResourcesRequired`, `requiredFeatures`, `zoomAndPan`, `viewTarget`,
-`glyph-orientation-horizontal`, `glyph-orientation-vertical` and `xml:base`, and the SVG 1.1 view attributes. It
-migrates the XLink attributes in the same way as `migrateToSvg2`: `xlink:href` becomes `href` (also in animations),
-`xlink:show="new"` on a link becomes `target="_blank"`, `xlink:title` on a link becomes a `<title>` child unless the
-link already has one or a style sheet uses sibling combinators or structural pseudo-classes, `xlink:title` on other
-elements, which browsers ignore, and the other XLink attributes are removed, and an unused `xlink` namespace
-declaration is removed.
-`xml:lang` becomes `lang`. Foreign content, attributes that a style sheet may select, and documents with an external
-style sheet are left untouched.
+Removes `<desc>` elements. Rendering stays the same, but by design the image loses its accessible
+description: screen readers no longer announce it. Only use this
+rule for decorative SVGs, or when the page that embeds the image provides the text. Elements in foreign content,
+children of a `<switch>`, and elements that contain an element with an `id`, an animation, a script or a style sheet
+are kept, and nothing is removed when a style sheet uses sibling combinators or structural pseudo-classes.
 
 ```php
-$svgOptimizer->withRules(removeDeprecatedAttributes: true);
-```
-
----
-
-### `removeDoctype`
-
-Removes the `<!DOCTYPE>` declaration from the SVG document. The serializer never writes the `<!DOCTYPE>` declaration,
-so this rule no longer changes the output; it is kept so existing configurations keep working. Entities declared in the
-internal subset are resolved before the declaration is dropped.
-
-```php
-$svgOptimizer->withRules(removeDoctype: true);
+$svgOptimizer->withRules(removeDescriptions: true);
 ```
 
 ---
@@ -971,7 +948,7 @@ $svgOptimizer->withRules(removeEmptyAttributes: true);
 
 ---
 
-### `removeEmptyContainers`
+### `removeEmptyElements`
 
 Removes container elements such as `<defs>`, `<g>`, `<symbol>`, `<mask>`, `<clipPath>`, `<pattern>`, `<marker>` and
 `<switch>` when they have no content. Containers that become empty are removed as well. Containers with an `id`, a
@@ -980,27 +957,7 @@ assistive technology or can take focus, children of a `<switch>`, and groups wit
 own, are kept. Nothing is removed when a style sheet may apply a `filter`, or uses sibling combinators or structural
 pseudo-classes (such as `g + rect` or `:nth-child()`), whose matches depend on the surrounding elements.
 
-```php
-$svgOptimizer->withRules(removeEmptyContainers: true);
-```
-
----
-
-### `removeEmptyGroups`
-
-Deletes `<g>` elements that have no attributes and do not contain any child elements, text or comments. This simplifies
-the DOM tree and removes unnecessary structural nodes. `removeEmptyContainers` applies the same clean-up to more
-container types and also removes empty groups that carry attributes other than `id` and `filter`. Nothing is removed
-when a style sheet may apply a `filter`, which can paint an empty group, or uses sibling combinators or structural
-pseudo-classes (such as `g + rect` or `:nth-child()`), whose matches depend on the surrounding elements.
-
-```php
-$svgOptimizer->withRules(removeEmptyGroups: true);
-```
-
----
-
-### `removeEmptyTextElements`
+It also removes empty text elements:
 
 Removes `<text>` and `<tspan>` elements that contain no text at all, and `<tref>` elements without a reference. These
 elements have no visual impact and can safely be eliminated to reduce file size. Whitespace-only elements are kept,
@@ -1009,23 +966,7 @@ since their whitespace may render as a space between the surrounding text, and s
 sheet uses sibling combinators or structural pseudo-classes.
 
 ```php
-$svgOptimizer->withRules(removeEmptyTextElements: true);
-```
-
----
-
-### `removeEnableBackgroundAttribute` (**risky**)
-
-Removes the `enable-background` attribute and inline style declaration, which editors such as Illustrator add to almost
-every file and current browsers ignore. Foreign content, an attribute or `style` that a style sheet may select, and
-documents with an external style sheet are left untouched.
-
-**Why it is risky:** older renderers that implement SVG 1.1 filters, such as some versions of Inkscape, Batik and
-librsvg, use `enable-background` to provide the `BackgroundImage` and `BackgroundAlpha` filter inputs. In those
-renderers, filters that use them (for example a multiply blend with the background) change or disappear.
-
-```php
-$svgOptimizer->withRules(removeEnableBackgroundAttribute: true)->allowRisky();
+$svgOptimizer->withRules(removeEmptyElements: true);
 ```
 
 ---
@@ -1058,8 +999,38 @@ shapes whose fill and stroke both resolve to `none`. Elements inside definitions
 and symbols, elements with an `id` or a referenced descendant, animated elements, links and interactive or accessible
 content are kept. Documents with a style sheet are left untouched.
 
+It also removes shapes with a zero size:
+
+Removes shapes the SVG specification says are not rendered: circles and ellipses with a zero radius, rects with a
+zero width or height, and paths, polylines and polygons without any data. Shapes with an `id`, child elements or a
+`style` attribute, and documents with a `<style>` element, are kept.
+
 ```php
 $svgOptimizer->withRules(removeHiddenElements: true);
+```
+
+---
+
+### `removeIneffectiveAttributes`
+
+Removes attributes that have no effect.
+
+Removes stroke and fill attributes that have no effect: the other `stroke-*` attributes when the stroke is `none`,
+the stroke attributes except `stroke-width` when the stroke width is zero, and `fill-opacity` and `fill-rule` when the
+fill is `none`. Elements are skipped when a descendant could re-enable the stroke or fill, and documents with a style
+sheet, markers or `pointer-events` are left untouched.
+
+Removes attributes from `<g>` elements that are neither inherited by the children nor apply to the group itself, such
+as `x`, `y`, `width`, `height`, `stop-color` or `flood-color`. Animated attributes are kept, and documents with a style
+sheet are left untouched.
+
+Removes text-only presentation attributes, such as `font-family`, `font-size`, `letter-spacing` or `text-anchor`, from
+elements whose whole subtree cannot render text. `direction`, `writing-mode` and `unicode-bidi` are kept on the root
+element, where they also set the direction of the viewport. Documents that use font-relative units or have a style sheet
+are left untouched.
+
+```php
+$svgOptimizer->withRules(removeIneffectiveAttributes: true);
 ```
 
 ---
@@ -1104,18 +1075,6 @@ $svgOptimizer->withRules(removeMetadata: true);
 
 ---
 
-### `removeNonInheritableGroupAttributes`
-
-Removes attributes from `<g>` elements that are neither inherited by the children nor apply to the group itself, such
-as `x`, `y`, `width`, `height`, `stop-color` or `flood-color`. Animated attributes are kept, and documents with a style
-sheet are left untouched.
-
-```php
-$svgOptimizer->withRules(removeNonInheritableGroupAttributes: true);
-```
-
----
-
 ### `removeNonStandardAttributes`
 
 Removes SVG attributes that are non-standard, unsafe, or not part of the official SVG specification.
@@ -1123,7 +1082,7 @@ Each SVG element keeps only the attributes the specification defines for it, plu
 apply to it (core attributes such as `id`, `lang`, `tabindex`, `nonce`, `part` and `slot`, presentation, ARIA,
 conditional processing, animation, filter primitive and similar), so for example `points` is removed from a `<rect>`.
 Elements the specification does not define fall back to the full list of known SVG attributes, without HTML-only
-attributes such as `src`, `srcset` and `action`. Event handler attributes (`on*`) and `xml:base` are always removed.
+attributes such as `src`, `srcset` and `action`. Event handler attributes (`on*`), which `removeScripts` removes, are always kept, and `xml:base` is always removed.
 Prefixed attributes are matched by namespace: only known `xlink:`, `xml:` and `ev:` attributes are kept, and attributes
 bound to any other namespace are removed. `data-*` attributes are kept when their name is valid, and so is any attribute
 that a style sheet selects. Elements outside the SVG namespace, the content of a `<foreignObject>`, such as XHTML, and
@@ -1167,28 +1126,16 @@ $svgOptimizer->withRules(removeScripts: true);
 
 ---
 
-### `removeStyleTypeAttributes`
+### `removeTitles`
 
-Removes the `type` attribute of `<style>` when it is `text/css` and of `<script>` when it is a JavaScript MIME type, as
-these are the defaults. Other values, such as `module`, are kept, and so is the type of a script with a `language`
-attribute, which would decide the script language without it.
-
-```php
-$svgOptimizer->withRules(removeStyleTypeAttributes: true);
-```
-
----
-
-### `removeTitleAndDesc`
-
-Removes `<title>` and `<desc>` elements. Rendering stays the same, but by design the image loses its accessible name and
-description: screen readers no longer announce them, and browsers no longer show the title as a tooltip. Only use this
+Removes `<title>` elements. Rendering stays the same, but by design the image loses its accessible name: screen readers no
+longer announce it, and browsers no longer show the title as a tooltip. Only use this
 rule for decorative SVGs, or when the page that embeds the image provides the text. Elements in foreign content,
 children of a `<switch>`, and elements that contain an element with an `id`, an animation, a script or a style sheet
 are kept, and nothing is removed when a style sheet uses sibling combinators or structural pseudo-classes.
 
 ```php
-$svgOptimizer->withRules(removeTitleAndDesc: true);
+$svgOptimizer->withRules(removeTitles: true);
 ```
 
 ---
@@ -1236,98 +1183,6 @@ caught. The element keeps its other attributes; `removeForeignContent` unwraps l
 
 ```php
 $svgOptimizer->withRules(removeUnsafeUrls: true);
-```
-
----
-
-### `removeUnusedNamespaces`
-
-Removes XML namespace declarations that are never referenced within the document. This cleans up the root element,
-reduces verbosity, and improves readability.
-
-```php
-$svgOptimizer->withRules(removeUnusedNamespaces: true);
-```
-
----
-
-### `removeUseBombs`
-
-Removes `<use>` elements that reference themselves or an ancestor, form a cycle with other `<use>` elements, or whose
-target would render 1,000 or more nested `<use>` instances, which can freeze a browser. Sprite sheets with hundreds of
-`<use>` elements and deep chains of references under the limit are kept, and references to other files are not
-followed.
-
-**Visible content it removes on purpose:** a `<use>` element over the limit is removed, also when a browser would
-render it.
-
-```php
-$svgOptimizer->withRules(removeUseBombs: true);
-```
-
----
-
-### `removeUselessDefs`
-
-Removes definitions that can never be used because neither they nor any descendant has an `id`: children of
-`<defs>`, and gradients, patterns, clip paths, masks, markers, symbols and filters anywhere in the document. Definitions
-that are or contain a `<style>`, a `<script>` or a font are kept, as these take effect anywhere. A `<defs>` left empty
-is removed as well.
-
-```php
-$svgOptimizer->withRules(removeUselessDefs: true);
-```
-
----
-
-### `removeUselessStrokeAndFill`
-
-Removes stroke and fill attributes that have no effect: the other `stroke-*` attributes when the stroke is `none`,
-the stroke attributes except `stroke-width` when the stroke width is zero, and `fill-opacity` and `fill-rule` when the
-fill is `none`. Elements are skipped when a descendant could re-enable the stroke or fill, and documents with a style
-sheet, markers or `pointer-events` are left untouched.
-
-```php
-$svgOptimizer->withRules(removeUselessStrokeAndFill: true);
-```
-
----
-
-### `removeWidthHeightAttributes` (**risky**)
-
-Removes the `width` and `height` attributes from the root `<svg>` element, relying solely on the `viewBox` for scaling.
-This lets the SVG resize with its container. Roots without a valid `viewBox` (four numbers with a positive width and
-height) are left untouched, as the SVG would otherwise lose its aspect ratio and fall back to 300×150 pixels.
-
-**Why it is risky:** without `width` and `height` the SVG has no intrinsic size, only an aspect ratio. An inline SVG or
-an `<img>` without CSS dimensions then stretches to the width of its container, and layouts, email clients and tools
-that rely on the fixed size render it at a different size.
-
-```php
-$svgOptimizer->withRules(removeWidthHeightAttributes: true)->allowRisky();
-```
-
----
-
-### `removeXmlSpaceDefault`
-
-Removes `xml:space="default"` where it has no effect, that is, when no ancestor sets `xml:space="preserve"` and no
-CSS `white-space` could be affected by it.
-
-```php
-$svgOptimizer->withRules(removeXmlSpaceDefault: true);
-```
-
----
-
-### `removeZeroSizeShapes`
-
-Removes shapes the SVG specification says are not rendered: circles and ellipses with a zero radius, rects with a
-zero width or height, and paths, polylines and polygons without any data. Shapes with an `id`, child elements or a
-`style` attribute, and documents with a `<style>` element, are kept.
-
-```php
-$svgOptimizer->withRules(removeZeroSizeShapes: true);
 ```
 
 ---
@@ -1383,28 +1238,58 @@ $svgOptimizer->withRules(removeUnusedIds: true)->allowRisky();
 
 ---
 
-### `removeUnusedMasks`
+### `removeUnusedNamespaces`
 
-Removes `<mask>` elements that nothing in the document references. Masks that other documents may reference (see the
-sprite targets of `removeUnusedDefinitions`), such as the masks of a resource library, and masks holding a style
-sheet, a script, a font or an animation, which apply outside the mask, are kept, and documents with a script, an event
-handler attribute, an external style sheet or a style sheet that depends on sibling elements are left untouched.
+Removes XML namespace declarations that are never referenced within the document. This cleans up the root element,
+reduces verbosity, and improves readability.
 
 ```php
-$svgOptimizer->withRules(removeUnusedMasks: true);
+$svgOptimizer->withRules(removeUnusedNamespaces: true);
 ```
 
 ---
 
-### `removeUnusedTextAttributes`
+### `removeUseBombs`
 
-Removes text-only presentation attributes, such as `font-family`, `font-size`, `letter-spacing` or `text-anchor`, from
-elements whose whole subtree cannot render text. `direction`, `writing-mode` and `unicode-bidi` are kept on the root
-element, where they also set the direction of the viewport. Documents that use font-relative units or have a style sheet
-are left untouched.
+Removes `<use>` elements that reference themselves or an ancestor, form a cycle with other `<use>` elements, or whose
+target would render 1,000 or more nested `<use>` instances, which can freeze a browser. Sprite sheets with hundreds of
+`<use>` elements and deep chains of references under the limit are kept, and references to other files are not
+followed.
+
+**Visible content it removes on purpose:** a `<use>` element over the limit is removed, also when a browser would
+render it.
 
 ```php
-$svgOptimizer->withRules(removeUnusedTextAttributes: true);
+$svgOptimizer->withRules(removeUseBombs: true);
+```
+
+---
+
+### `removeUselessDefs`
+
+Removes definitions that can never be used because neither they nor any descendant has an `id`: children of
+`<defs>`, and gradients, patterns, clip paths, masks, markers, symbols and filters anywhere in the document. Definitions
+that are or contain a `<style>`, a `<script>` or a font are kept, as these take effect anywhere. A `<defs>` left empty
+is removed as well.
+
+```php
+$svgOptimizer->withRules(removeUselessDefs: true);
+```
+
+---
+
+### `removeWidthHeightAttributes` (**risky**)
+
+Removes the `width` and `height` attributes from the root `<svg>` element, relying solely on the `viewBox` for scaling.
+This lets the SVG resize with its container. Roots without a valid `viewBox` (four numbers with a positive width and
+height) are left untouched, as the SVG would otherwise lose its aspect ratio and fall back to 300×150 pixels.
+
+**Why it is risky:** without `width` and `height` the SVG has no intrinsic size, only an aspect ratio. An inline SVG or
+an `<img>` without CSS dimensions then stretches to the width of its container, and layouts, email clients and tools
+that rely on the fixed size render it at a different size.
+
+```php
+$svgOptimizer->withRules(removeWidthHeightAttributes: true)->allowRisky();
 ```
 
 ---
@@ -1485,16 +1370,14 @@ $svgOptimizer->withRules(
     convertColorsToHex: true,
     convertCssClassesToAttributes: true,
     convertEllipseToCircle: true,
-    convertEmptyTagsToSelfClosing: true,
     convertInlineStylesToAttributes: true,
-    convertOneStopGradients: true,
+    convertOneStopGradients: false,
     convertShapesToPath: true,
-    fixAttributeNames: true,
+    fixAttributeNames: false,
     flattenGroups: true,
-    mergeDuplicateGradients: true,
+    mergeDuplicateGradients: false,
     mergeStyles: true,
     migrateToSvg2: true,
-    minifyListValues: true,
     minifyNumericValues: true,
     minifyPathData: true,
     minifyStyles: true,
@@ -1506,39 +1389,29 @@ $svgOptimizer->withRules(
     removeComments: true,
     removeDataAttributes: false,
     removeDefaultAttributes: true,
-    removeDeprecatedAttributes: true,
-    removeDoctype: true,
+    removeDescriptions: true,
     removeDuplicateElements: true,
     removeEmptyAttributes: true,
-    removeEmptyContainers: true,
-    removeEmptyGroups: true,
-    removeEmptyTextElements: true,
-    removeEnableBackgroundAttribute: false,
+    removeEmptyElements: true,
     removeForeignContent: true,
     removeHiddenElements: true,
+    removeIneffectiveAttributes: true,
     removeInkscapeFootprints: true,
     removeInvisibleCharacters: true,
     removeMetadata: true,
-    removeNonInheritableGroupAttributes: true,
     removeNonStandardAttributes: true,
     removeNonStandardTags: true,
     removeScripts: true,
-    removeStyleTypeAttributes: true,
-    removeTitleAndDesc: true,
+    removeTitles: true,
     removeUnnecessaryWhitespace: true,
     removeUnsafeMarkup: true,
     removeUnsafeUrls: true,
     removeUnusedDefinitions: false,
     removeUnusedIds: false,
-    removeUnusedMasks: true,
     removeUnusedNamespaces: true,
-    removeUnusedTextAttributes: true,
     removeUseBombs: true,
     removeUselessDefs: true,
-    removeUselessStrokeAndFill: true,
     removeWidthHeightAttributes: false,
-    removeXmlSpaceDefault: true,
-    removeZeroSizeShapes: true,
     sanitizeStyleSheets: true,
     scopeSvgStyles: false,
     sortAttributes: true,
@@ -1692,8 +1565,9 @@ change in any release.
 
 ### 1. **Create the Rule**
 
-Create a new **final readonly class** in the `/src/Service/Rule` directory and implement
-the `SvgOptimizerRuleInterface`. This interface will define the logic for your rule.
+Create a new **final readonly class** (a pass) in the `/src/Service/Rule` directory and implement
+`MathiasReker\PhpSvgOptimizer\Pass\PassInterface`. Implement `RevertIfLargerPassInterface` instead when the pass can
+make the document larger, so the optimizer reverts it in that case.
 
 ### 2. **Write Tests**
 
@@ -1702,8 +1576,8 @@ various scenarios to verify the correct behavior and edge cases for your rule.
 
 ### 3. **Integrate the Rule**
 
-- **Add your rule to the rule enum** in `/src/Type/Rule.php`, and add it to `Rule::EXECUTION_ORDER` after the rules it
-  depends on.
+- **Add your rule to the rule enum** in `/src/Type/Rule.php`, with its passes in `Rule::passes()` and, if it is risky,
+  in `Rule::isRisky()`, and add each pass to `/src/Pass/ExecutionOrder.php` after the passes it depends on.
 - **Register the rule** in the SVG optimizer builder located at `/src/Service/Facade/SvgOptimizerFacade.php`. Append
   the new parameter to `withRules()`, so existing calls with positional arguments keep working.
 

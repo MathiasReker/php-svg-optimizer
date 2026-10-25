@@ -53,7 +53,7 @@ trait TransformListTrait
         $items = [];
 
         foreach ($matches as [, $function, $argumentList]) {
-            $arguments = $this->parseNumberList($argumentList);
+            $arguments = $this->parseNumberList($argumentList, false);
 
             if (!\in_array(\count($arguments), self::TRANSFORM_ARGUMENT_COUNTS[$function] ?? [], true)) {
                 return [];

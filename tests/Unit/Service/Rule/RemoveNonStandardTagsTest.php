@@ -43,7 +43,7 @@ final class RemoveNonStandardTagsTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveNonStandardTags());
+        $svgOptimizer->addPass(new RemoveNonStandardTags());
 
         $actual = $svgOptimizer->allowRisky()->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -386,7 +386,7 @@ final class RemoveNonStandardTagsTest extends TestCase
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<foo xmlns="http://www.w3.org/2000/svg"><bar/></foo>');
 
-        (new RemoveNonStandardTags())->optimize($domDocument);
+        (new RemoveNonStandardTags())->apply($domDocument);
 
         self::assertSame('<foo xmlns="http://www.w3.org/2000/svg"/>', $domDocument->saveXML($domDocument->documentElement));
     }
@@ -396,20 +396,8 @@ final class RemoveNonStandardTagsTest extends TestCase
     {
         $domDocument = new \DOMDocument();
 
-        (new RemoveNonStandardTags())->optimize($domDocument);
+        (new RemoveNonStandardTags())->apply($domDocument);
 
         self::assertNull($domDocument->documentElement);
-    }
-
-    #[Test]
-    public function ruleIsMarkedAsRisky(): void
-    {
-        self::assertFalse(RemoveNonStandardTags::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveNonStandardTags::shouldCheckSize());
     }
 }

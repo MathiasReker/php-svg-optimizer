@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\RevertIfLargerPassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
@@ -27,7 +27,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\RenameElementTrait;
  *
  * @no-named-arguments
  */
-final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
+final readonly class ConvertShapesToPath implements RevertIfLargerPassInterface
 {
     use DocumentScriptTrait;
     use ElementTrait;
@@ -45,23 +45,11 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
 
     private const array PATH_REFERENCING_TAGS = [SvgTag::TextPath->value, SvgTag::Mpath->value];
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return true;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         if ($this->hasStyleElement($domDocument) || $this->hasScriptOrEventHandler($domDocument) || [] !== $this->elementsNamed($domDocument, SvgTag::Marker->value)) {
             return;
@@ -215,7 +203,7 @@ final readonly class ConvertShapesToPath implements SvgOptimizerRuleInterface
      */
     private function pointsSegments(\DOMElement $domElement, bool $close): array
     {
-        $coordinates = $this->parseNumberList($domElement->getAttribute(SvgAttribute::Points->value));
+        $coordinates = $this->parseNumberList($domElement->getAttribute(SvgAttribute::Points->value), false);
 
         if ([] === $coordinates || 0 !== \count($coordinates) % 2) {
             return [];

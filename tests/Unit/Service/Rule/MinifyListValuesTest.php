@@ -43,7 +43,7 @@ final class MinifyListValuesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new MinifyListValues());
+        $svgOptimizer->addPass(new MinifyListValues());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -179,9 +179,9 @@ final class MinifyListValuesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path stroke-dasharray="5.0px, 10.0"/><path stroke-dasharray="5.0%, 10.0"/><path stroke-dasharray="none"/><path stroke-dasharray="inherit"/><text x="1.0em 2.0">ab</text></svg>',
         ];
 
-        yield 'Keeps malformed lists' => [
+        yield 'Keeps malformed lists and minifies compact and trailing-comma point lists' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="1.0,,2.0"/><polygon points=",1.0 2.0"/><polygon points="1.0 2.0,"/><polygon points="1.0-2.0"/><polygon points="1.5.5 2.0"/><polygon points="1e 2.0"/><polygon points=". 2.0"/><polygon points=""/><polygon points="  "/></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="1.0,,2.0"/><polygon points=",1.0 2.0"/><polygon points="1.0 2.0,"/><polygon points="1.0-2.0"/><polygon points="1.5.5 2.0"/><polygon points="1e 2.0"/><polygon points=". 2.0"/><polygon points=""/><polygon points="  "/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="1.0,,2.0"/><polygon points=",1.0 2.0"/><polygon points="1 2"/><polygon points="1-2"/><polygon points="1.5.5 2"/><polygon points="1e 2.0"/><polygon points=". 2.0"/><polygon points=""/><polygon points="  "/></svg>',
         ];
 
         yield 'Keeps values that are not shorter' => [
@@ -238,6 +238,21 @@ final class MinifyListValuesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 １0.0 10.0"/>',
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 １0.0 10.0"/>',
         ];
+
+        yield 'Shortens points written without separators' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="10.0.5 90.0-40.5 50.0,90.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><polyline points="10 .5 90-40.5 50 90"/></svg>',
+        ];
+
+        yield 'Shortens points that end with a comma' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="0.0,0.0 90.0,0.0 90.0,90.0 , "/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><polygon points="0 0 90 0 90 90"/></svg>',
+        ];
+
+        yield 'Keeps other lists without separators' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0.0-1.0 10 10"><rect stroke-dasharray="1.0-2.0"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0.0-1.0 10 10"><rect stroke-dasharray="1.0-2.0"/></svg>',
+        ];
     }
 
     /**
@@ -250,7 +265,7 @@ final class MinifyListValuesTest extends TestCase
     public function optimizeIsIdempotent(string $optimized): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
-        $svgOptimizer->addRule(new MinifyListValues());
+        $svgOptimizer->addPass(new MinifyListValues());
 
         self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
     }
@@ -263,17 +278,5 @@ final class MinifyListValuesTest extends TestCase
         foreach (self::provideOptimizeCases() as $name => [, $expected]) {
             yield $name => [$expected];
         }
-    }
-
-    #[Test]
-    public function isRiskyReturnsFalse(): void
-    {
-        self::assertFalse(MinifyListValues::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(MinifyListValues::shouldCheckSize());
     }
 }

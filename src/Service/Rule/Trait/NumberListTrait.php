@@ -20,16 +20,20 @@ trait NumberListTrait
 {
     private const string NUMBER_LIST_REGEX = '/^\s*+(?>' . self::NUMBER_PATTERN . ')(?:(?:\s++,?+|,)\s*+(?>' . self::NUMBER_PATTERN . '))*+\s*+$/';
 
+    private const string COMPACT_NUMBER_LIST_REGEX = '/^\s*+(?>' . self::NUMBER_PATTERN . ')(?:(?:\s++,?+|,)?+\s*+(?>' . self::NUMBER_PATTERN . '))*+(?:\s*+,)?+\s*+$/';
+
     private const string NUMBER_LIST_ITEM_REGEX = '/' . self::NUMBER_PATTERN . '/';
 
     /**
-     * @param string $value the list to parse
+     * @param string $value   the list to parse
+     * @param bool   $compact whether a separator may be omitted where the numbers stay distinct, as in path data, and
+     *                        the list may end with a comma
      *
      * @return list<string> the number literals, or an empty list if the value is not a number list
      */
-    private function parseNumberList(string $value): array
+    private function parseNumberList(string $value, bool $compact): array
     {
-        if (1 !== preg_match(self::NUMBER_LIST_REGEX, $value)) {
+        if (1 !== preg_match($compact ? self::COMPACT_NUMBER_LIST_REGEX : self::NUMBER_LIST_REGEX, $value)) {
             return [];
         }
 

@@ -45,7 +45,7 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new ConvertInlineStylesToAttributes());
+        $svgOptimizer->addPass(new ConvertInlineStylesToAttributes());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -457,17 +457,5 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><path style="marker-end:url(#a);marker:url(#b)"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><path style="marker-end:url(#a); marker:url(#b)"/></svg>',
         ];
-    }
-
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(ConvertInlineStylesToAttributes::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(ConvertInlineStylesToAttributes::shouldCheckSize());
     }
 }

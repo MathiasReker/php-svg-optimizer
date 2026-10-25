@@ -49,7 +49,7 @@ final class RemoveUnsafeUrlsTest extends TestCase
     public function optimize(string $content, string $expectedSvg): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveUnsafeUrls());
+        $svgOptimizer->addPass(new RemoveUnsafeUrls());
 
         self::assertSame($expectedSvg, $svgOptimizer->optimize()->getContent());
     }
@@ -153,17 +153,5 @@ final class RemoveUnsafeUrlsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><?pi x?><script>alert(1)</script><rect onclick="x()" style="behavior:url(a.htc)"/><foreignObject/><style>@import url(a.css);</style><!-- <b> --></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><?pi x?><script>alert(1)</script><rect onclick="x()" style="behavior:url(a.htc)"/><foreignObject/><style>@import url(a.css);</style><!-- <b> --></svg>',
         ];
-    }
-
-    #[Test]
-    public function ruleIsNotRisky(): void
-    {
-        self::assertFalse(RemoveUnsafeUrls::isRisky());
-    }
-
-    #[Test]
-    public function ruleSkipsTheSizeCheck(): void
-    {
-        self::assertFalse(RemoveUnsafeUrls::shouldCheckSize());
     }
 }

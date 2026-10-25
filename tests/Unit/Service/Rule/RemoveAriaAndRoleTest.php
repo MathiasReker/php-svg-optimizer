@@ -33,18 +33,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class RemoveAriaAndRoleTest extends TestCase
 {
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(RemoveAriaAndRole::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveAriaAndRole::shouldCheckSize());
-    }
-
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -55,7 +43,7 @@ final class RemoveAriaAndRoleTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveAriaAndRole());
+        $svgOptimizer->addPass(new RemoveAriaAndRole());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);

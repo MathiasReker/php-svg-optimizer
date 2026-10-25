@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 
 /**
@@ -19,29 +19,17 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
  *
  * @no-named-arguments
  */
-final readonly class RemoveUnusedNamespaces implements SvgOptimizerRuleInterface
+final readonly class RemoveUnusedNamespaces implements PassInterface
 {
     private const string NAMESPACE_REGEX = '/xmlns:([a-zA-Z0-9\-]+)="([^"]+)"/';
 
     private const string PREFIXED_NAME_REGEX = '/([\w.\-]+):(?=[a-zA-Z0-9\-])/';
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $namespaceCounts = $this->countNamespaceElementsWithRegex((string) $domDocument->saveXML());
 

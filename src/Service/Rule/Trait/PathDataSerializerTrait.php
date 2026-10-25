@@ -24,6 +24,10 @@ trait PathDataSerializerTrait
 
     private const string PATH_CLOSE_UPPERCASE = 'Z';
 
+    private const array PATH_ARC_COMMANDS = ['A', 'a'];
+
+    private const array PATH_ARGUMENTS_AFTER_ARC_FLAGS = [4, 5];
+
     /**
      * @param list<array{string, list<string>}> $segments the segments as [command, arguments]
      */
@@ -41,8 +45,8 @@ trait PathDataSerializerTrait
                 $previousArgument = '';
             }
 
-            foreach ($arguments as $argument) {
-                $output .= $this->pathSeparatorBefore($previousArgument, $argument) . $argument;
+            foreach ($arguments as $index => $argument) {
+                $output .= ($this->followsArcFlag($command, $index) ? '' : $this->pathSeparatorBefore($previousArgument, $argument)) . $argument;
                 $previousArgument = $argument;
             }
 
@@ -82,6 +86,17 @@ trait PathDataSerializerTrait
         $implicit = self::PATH_IMPLICIT_AFTER_MOVETO[$previousCommand] ?? $previousCommand;
 
         return self::PATH_CLOSE === $command || $command !== $implicit;
+    }
+
+    /**
+     * @param string $command the command letter
+     * @param int    $index   the position of the argument within the segment
+     *
+     * @return bool true if the argument follows an arc flag, which is always one character, so it needs no separator
+     */
+    private function followsArcFlag(string $command, int $index): bool
+    {
+        return \in_array($command, self::PATH_ARC_COMMANDS, true) && \in_array($index, self::PATH_ARGUMENTS_AFTER_ARC_FLAGS, true);
     }
 
     /**

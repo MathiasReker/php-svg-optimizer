@@ -43,10 +43,11 @@ final class ScopeSvgStylesTest extends TestCase
     public function optimize(string $content, callable $assertion): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new ScopeSvgStyles());
+        $svgOptimizer->addPass(new ScopeSvgStyles());
 
         $actual = $svgOptimizer->allowRisky()->optimize()->getContent();
 
+        self::assertStringStartsWith('<svg', $actual);
         $assertion($actual);
     }
 
@@ -114,7 +115,7 @@ final class ScopeSvgStylesTest extends TestCase
         yield 'Scopes comma separated selectors' => [
             '<svg><style>.a,.b{fill:green}</style><rect class="a"/><rect class="b"/></svg>',
             static function (string $output): void {
-                self::assertMatchesRegularExpression('/\.a-[a-f0-9\-]+, \.b-[a-f0-9\-]+{fill:green}/', $output);
+                self::assertMatchesRegularExpression('/\.a-[a-f0-9\-]+,\.b-[a-f0-9\-]+{fill:green}/', $output);
             },
         ];
 
@@ -308,7 +309,7 @@ final class ScopeSvgStylesTest extends TestCase
         yield 'Scopes same class used in multiple selectors' => [
             '<svg><style>.a,.a:hover{fill:red}</style><rect class="a"/></svg>',
             static function (string $output): void {
-                self::assertMatchesRegularExpression('/\.a-[a-f0-9\-]+, \.a-[a-f0-9\-]+:hover{fill:red}/', $output);
+                self::assertMatchesRegularExpression('/\.a-[a-f0-9\-]+,\.a-[a-f0-9\-]+:hover{fill:red}/', $output);
             },
         ];
 
@@ -505,7 +506,7 @@ final class ScopeSvgStylesTest extends TestCase
         yield 'Trims each selector of a selector list' => [
             '<svg><style>.a , .b{fill:red}</style><rect class="a b"/></svg>',
             static function (string $output): void {
-                self::assertMatchesRegularExpression('/<style>\.a-([0-9a-f]{10}), \.b-\1\{fill:red}<\/style>/', $output);
+                self::assertMatchesRegularExpression('/<style>\.a-([0-9a-f]{10}),\.b-\1\{fill:red}<\/style>/', $output);
             },
         ];
 
@@ -688,7 +689,7 @@ final class ScopeSvgStylesTest extends TestCase
         $hash = mb_substr(sha1((string) $domDocument->saveXML($documentElement)), 0, 10);
 
         $scopeSvgStyles = new ScopeSvgStyles();
-        $scopeSvgStyles->optimize($domDocument);
+        $scopeSvgStyles->apply($domDocument);
 
         $rect = $domDocument->getElementsByTagName('rect')->item(0);
         self::assertInstanceOf(\DOMElement::class, $rect);
@@ -896,18 +897,6 @@ final class ScopeSvgStylesTest extends TestCase
     }
 
     #[Test]
-    public function ruleIsMarkedAsRisky(): void
-    {
-        self::assertTrue(ScopeSvgStyles::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(ScopeSvgStyles::shouldCheckSize());
-    }
-
-    #[Test]
     public function optimizeDoesNothingWhenNoSvgElementIsFound(): void
     {
         $domDocument = new \DOMDocument();
@@ -916,7 +905,7 @@ final class ScopeSvgStylesTest extends TestCase
         $before = $domDocument->saveXML();
 
         $scopeSvgStyles = new ScopeSvgStyles();
-        $scopeSvgStyles->optimize($domDocument);
+        $scopeSvgStyles->apply($domDocument);
 
         self::assertSame($before, $domDocument->saveXML());
     }
@@ -929,7 +918,7 @@ final class ScopeSvgStylesTest extends TestCase
     private function scope(string $content): string
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new ScopeSvgStyles());
+        $svgOptimizer->addPass(new ScopeSvgStyles());
 
         return $svgOptimizer->allowRisky()->optimize()->getContent();
     }
@@ -949,7 +938,7 @@ final class ScopeSvgStylesTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><style>.a{fill:red}</style><rect class="a" id="r" fill="url(#g)"/><use href="#r"/><svg><rect id="q"/></svg></svg>');
 
         $start = hrtime(true);
-        (new ScopeSvgStyles())->optimize($domDocument);
+        (new ScopeSvgStyles())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }

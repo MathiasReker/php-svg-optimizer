@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PresentationAttributeCleanupTrait;
@@ -21,7 +21,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\PresentationAttributeCleanup
  *
  * @no-named-arguments
  */
-final readonly class RemoveNonInheritableGroupAttributes implements SvgOptimizerRuleInterface
+final readonly class RemoveNonInheritableGroupAttributes implements PassInterface
 {
     use PresentationAttributeCleanupTrait;
 
@@ -47,23 +47,11 @@ final readonly class RemoveNonInheritableGroupAttributes implements SvgOptimizer
         SvgAttribute::Y->value,
     ];
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         if ($this->hasStyleElement($domDocument)) {
             return;

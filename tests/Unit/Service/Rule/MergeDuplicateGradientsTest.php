@@ -251,18 +251,11 @@ final class MergeDuplicateGradientsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"/>',
             '<svg xmlns="http://www.w3.org/2000/svg"/>',
         ];
-    }
 
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(MergeDuplicateGradients::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsTrue(): void
-    {
-        self::assertTrue(MergeDuplicateGradients::shouldCheckSize());
+        yield 'Merges gradients in a document with astral characters in attribute names' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="a"><stop offset="0"/></linearGradient><linearGradient id="b"><stop offset="0"/></linearGradient></defs><rect data-😀="1" fill="url(#a)"/><rect fill="url(#b)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="a"><stop offset="0"/></linearGradient></defs><rect data-😀="1" fill="url(#a)"/><rect fill="url(#a)"/></svg>',
+        ];
     }
 
     /**
@@ -273,7 +266,7 @@ final class MergeDuplicateGradientsTest extends TestCase
     private function optimizeContent(string $content): string
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new MergeDuplicateGradients());
+        $svgOptimizer->addPass(new MergeDuplicateGradients());
 
         return $svgOptimizer->optimize()->getContent();
     }

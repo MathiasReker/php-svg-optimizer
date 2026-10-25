@@ -49,7 +49,7 @@ final class RemoveScriptsTest extends TestCase
     public function optimize(string $content, string $expectedSvg): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveScripts());
+        $svgOptimizer->addPass(new RemoveScripts());
 
         self::assertSame($expectedSvg, $svgOptimizer->optimize()->getContent());
     }
@@ -163,17 +163,5 @@ final class RemoveScriptsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><?pi x?><!-- <b> --><a href="javascript:alert(1)"><text>x</text></a><foreignObject/><style>@import url(a.css);</style><rect xmlns:ev="http://www.w3.org/2001/xml-events" ev:event="click"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><?pi x?><!-- <b> --><a href="javascript:alert(1)"><text>x</text></a><foreignObject/><style>@import url(a.css);</style><rect xmlns:ev="http://www.w3.org/2001/xml-events" ev:event="click"/></svg>',
         ];
-    }
-
-    #[Test]
-    public function ruleIsNotRisky(): void
-    {
-        self::assertFalse(RemoveScripts::isRisky());
-    }
-
-    #[Test]
-    public function ruleSkipsTheSizeCheck(): void
-    {
-        self::assertFalse(RemoveScripts::shouldCheckSize());
     }
 }

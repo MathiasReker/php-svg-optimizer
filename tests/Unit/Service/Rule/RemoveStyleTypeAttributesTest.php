@@ -62,7 +62,7 @@ final class RemoveStyleTypeAttributesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveStyleTypeAttributes());
+        $svgOptimizer->addPass(new RemoveStyleTypeAttributes());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -212,18 +212,6 @@ final class RemoveStyleTypeAttributesTest extends TestCase
     }
 
     #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(RemoveStyleTypeAttributes::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveStyleTypeAttributes::shouldCheckSize());
-    }
-
-    #[Test]
     public function handlesManyNamespaceDeclarationsInLinearTime(): void
     {
         $small = $this->secondsToOptimize(2_000);
@@ -238,7 +226,7 @@ final class RemoveStyleTypeAttributesTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><style type="text/css">a{}</style></svg>');
 
         $start = hrtime(true);
-        (new RemoveStyleTypeAttributes())->optimize($domDocument);
+        (new RemoveStyleTypeAttributes())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }

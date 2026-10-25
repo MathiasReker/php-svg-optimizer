@@ -43,7 +43,7 @@ final class ConvertShapesToPathTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new ConvertShapesToPath());
+        $svgOptimizer->addPass(new ConvertShapesToPath());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -300,7 +300,7 @@ final class ConvertShapesToPathTest extends TestCase
     public function optimizeIsIdempotent(string $optimized): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
-        $svgOptimizer->addRule(new ConvertShapesToPath());
+        $svgOptimizer->addPass(new ConvertShapesToPath());
 
         self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
     }
@@ -313,17 +313,5 @@ final class ConvertShapesToPathTest extends TestCase
         foreach (self::provideOptimizeCases() as $name => [, $expected]) {
             yield $name => [$expected];
         }
-    }
-
-    #[Test]
-    public function isRiskyReturnsFalse(): void
-    {
-        self::assertFalse(ConvertShapesToPath::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsTrue(): void
-    {
-        self::assertTrue(ConvertShapesToPath::shouldCheckSize());
     }
 }

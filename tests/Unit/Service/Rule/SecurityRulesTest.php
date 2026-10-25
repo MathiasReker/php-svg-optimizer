@@ -11,9 +11,10 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
@@ -28,7 +29,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeUrls;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUseBombs;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SanitizeStyleSheets;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
-use MathiasReker\PhpSvgOptimizer\Type\Rule;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -2670,7 +2670,7 @@ final class SecurityRulesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><a href="java&#x200B;script:alert(1)"><text>x</text></a></svg>'
         ));
         $this->addSecurityRules($svgOptimizer);
-        $svgOptimizer->addRule(new RemoveInvisibleCharacters());
+        $svgOptimizer->addPass(new RemoveInvisibleCharacters());
 
         self::assertSame(
             '<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>',
@@ -2827,24 +2827,24 @@ final class SecurityRulesTest extends TestCase
 
     #[DataProvider('provideEachRuleExpandsEntityReferencesOnItsOwnCases')]
     #[Test]
-    public function eachRuleExpandsEntityReferencesOnItsOwn(SvgOptimizerRuleInterface $svgOptimizerRule): void
+    public function eachRuleExpandsEntityReferencesOnItsOwn(PassInterface $pass): void
     {
         $domDocument = new \DOMDocument();
         $domDocument->substituteEntities = false;
         $domDocument->loadXML('<!DOCTYPE svg [<!ENTITY e "x">]><svg xmlns="http://www.w3.org/2000/svg"><text>&e;</text></svg>');
 
-        $svgOptimizerRule->optimize($domDocument);
+        $pass->apply($domDocument);
 
         self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><text>x</text></svg>', $domDocument->saveXML($domDocument->documentElement));
     }
 
     /**
-     * @return iterable<string, array{SvgOptimizerRuleInterface}>
+     * @return iterable<string, array{PassInterface}>
      */
     public static function provideEachRuleExpandsEntityReferencesOnItsOwnCases(): iterable
     {
-        foreach (self::securityRules() as $svgOptimizerRule) {
-            yield $svgOptimizerRule::class => [$svgOptimizerRule];
+        foreach (self::securityRules() as $pass) {
+            yield $pass::class => [$pass];
         }
     }
 
@@ -3116,13 +3116,14 @@ final class SecurityRulesTest extends TestCase
     #[Test]
     public function securityRulesRunInTheirExecutionOrder(): void
     {
-        $priorities = array_map(static fn (SvgOptimizerRuleInterface $svgOptimizerRule): int => Rule::from($svgOptimizerRule::class)->priority(), self::securityRules());
-
-        self::assertSame(range(0, 5), $priorities);
+        self::assertSame(
+            array_map(static fn (PassInterface $pass): string => $pass::class, self::securityRules()),
+            \array_slice(ExecutionOrder::passes(), 0, 6),
+        );
     }
 
     /**
-     * @return list<SvgOptimizerRuleInterface> the security rules in their execution order
+     * @return list<PassInterface> the security rules in their execution order
      */
     private static function securityRules(): array
     {
@@ -3131,15 +3132,15 @@ final class SecurityRulesTest extends TestCase
 
     private function addSecurityRules(SvgOptimizer $svgOptimizer): void
     {
-        foreach (self::securityRules() as $svgOptimizerRule) {
-            $svgOptimizer->addRule($svgOptimizerRule);
+        foreach (self::securityRules() as $pass) {
+            $svgOptimizer->addPass($pass);
         }
     }
 
     private function applySecurityRules(\DOMDocument $domDocument): void
     {
-        foreach (self::securityRules() as $svgOptimizerRule) {
-            $svgOptimizerRule->optimize($domDocument);
+        foreach (self::securityRules() as $pass) {
+            $pass->apply($domDocument);
         }
     }
 }

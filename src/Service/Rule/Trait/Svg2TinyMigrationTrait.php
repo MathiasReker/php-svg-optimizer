@@ -74,14 +74,14 @@ trait Svg2TinyMigrationTrait
     }
 
     /**
-     * @param \DOMElement           $domElement the element to modify
-     * @param array<string, string> $removedIds the ids of the removed elements
+     * @param \DOMElement           $domElement  the element to modify
+     * @param array<string, string> $obsoleteIds the ids of the obsolete elements
      */
-    private function migratePaintAttributes(\DOMElement $domElement, array $removedIds): void
+    private function migratePaintAttributes(\DOMElement $domElement, array $obsoleteIds): void
     {
         foreach (self::SVG2_PAINT_PROPERTIES as $property) {
             $value = $domElement->getAttribute($property);
-            $migrated = $this->withoutRemovedReference($value, $removedIds);
+            $migrated = $this->withoutObsoleteReference($value, $obsoleteIds);
 
             if ($migrated !== $value) {
                 $domElement->setAttribute($property, $migrated);

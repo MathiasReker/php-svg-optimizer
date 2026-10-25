@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
@@ -23,7 +23,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2XlinkMigrationTrait;
  *
  * @no-named-arguments
  */
-final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInterface
+final readonly class RemoveDeprecatedAttributes implements PassInterface
 {
     use Svg2AttributeMigrationTrait;
     use Svg2XlinkMigrationTrait;
@@ -34,23 +34,11 @@ final readonly class RemoveDeprecatedAttributes implements SvgOptimizerRuleInter
 
     private const string XML_LANG = 'lang';
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
         $css = $this->styleSheetText($domDocument);

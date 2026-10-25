@@ -43,7 +43,7 @@ final class ConvertEllipseToCircleTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new ConvertEllipseToCircle());
+        $svgOptimizer->addPass(new ConvertEllipseToCircle());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -165,7 +165,7 @@ final class ConvertEllipseToCircleTest extends TestCase
     public function optimizeIsIdempotent(string $optimized): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
-        $svgOptimizer->addRule(new ConvertEllipseToCircle());
+        $svgOptimizer->addPass(new ConvertEllipseToCircle());
 
         self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
     }
@@ -178,17 +178,5 @@ final class ConvertEllipseToCircleTest extends TestCase
         foreach (self::provideOptimizeCases() as $name => [, $expected]) {
             yield $name => [$expected];
         }
-    }
-
-    #[Test]
-    public function isRiskyReturnsFalse(): void
-    {
-        self::assertFalse(ConvertEllipseToCircle::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(ConvertEllipseToCircle::shouldCheckSize());
     }
 }

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
@@ -20,7 +20,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  *
  * @no-named-arguments
  */
-final readonly class RemoveInvisibleCharacters implements SvgOptimizerRuleInterface
+final readonly class RemoveInvisibleCharacters implements PassInterface
 {
     use ElementTrait;
 
@@ -41,23 +41,11 @@ final readonly class RemoveInvisibleCharacters implements SvgOptimizerRuleInterf
         SvgTag::Tspan->value,
     ];
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         /** @var \DOMNodeList<\DOMText> $domNodeList */
         $domNodeList = (new \DOMXPath($domDocument))->query(self::XPATH_TEXT_NODES, null, false);

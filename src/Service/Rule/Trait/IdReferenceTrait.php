@@ -40,6 +40,8 @@ trait IdReferenceTrait
 
     private const string ID_LIST_ITEM_REGEX = '/\S+/';
 
+    private const array IGNORED_REFERENCE_TAGS = ['altGlyph', 'glyphRef', 'tref'];
+
     private const string ID_ATTRIBUTE_SELECTOR_REGEX = '/\[\s*(?:[\w*-]*\|)?id\b/i';
 
     private const string EXACT_ID_ATTRIBUTE_SELECTOR_REGEX
@@ -55,7 +57,8 @@ trait IdReferenceTrait
     /**
      * @param \DOMDocument $domDocument the DOM document to scan
      *
-     * @return array<string, true> the referenced ids
+     * @return array<string, true> the ids referenced by attributes, for rules that leave documents with a style sheet
+     *                             untouched
      */
     private function collectReferencedIds(\DOMDocument $domDocument): array
     {
@@ -64,10 +67,6 @@ trait IdReferenceTrait
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
             foreach ($domNodeList->attributes as $attribute) {
                 $referencedIds += $this->attributeReferences($attribute);
-            }
-
-            if (SvgTag::Style->value === $domNodeList->localName) {
-                $referencedIds += $this->styleSheetReferences($domNodeList->textContent);
             }
         }
 
@@ -134,7 +133,7 @@ trait IdReferenceTrait
 
             if (SvgTag::Style->value === $domNodeList->localName
                 || !$this->isInsideDefinition($domNodeList, $definitions, $alwaysLive)) {
-                $live += $this->elementReferences($domNodeList);
+                $live += $this->liveElementReferences($domNodeList);
             }
         }
 
@@ -174,13 +173,24 @@ trait IdReferenceTrait
      */
     private function subtreeReferences(\DOMElement $domElement): array
     {
-        $referencedIds = $this->elementReferences($domElement);
+        $referencedIds = $this->liveElementReferences($domElement);
 
         foreach ($domElement->getElementsByTagName('*') as $domNodeList) {
-            $referencedIds += $this->elementReferences($domNodeList);
+            $referencedIds += $this->liveElementReferences($domNodeList);
         }
 
         return $referencedIds;
+    }
+
+    /**
+     * @param \DOMElement $domElement the element to scan
+     *
+     * @return array<string, true> the ids referenced by the element, or none if browsers ignore the element, as they
+     *                             ignore `<tref>`, `<altGlyph>` and `<glyphRef>`
+     */
+    private function liveElementReferences(\DOMElement $domElement): array
+    {
+        return \in_array($domElement->localName, self::IGNORED_REFERENCE_TAGS, true) ? [] : $this->elementReferences($domElement);
     }
 
     /**
@@ -231,16 +241,26 @@ trait IdReferenceTrait
      */
     private function attributeReferences(\DOMAttr $domAttr): array
     {
-        $referencedIds = $this->fragmentReferences($domAttr->value);
-        $name = $domAttr->nodeName;
+        return $this->attributeValueReferences($domAttr->nodeName, $domAttr->value);
+    }
+
+    /**
+     * @param string $name  the qualified name of an attribute
+     * @param string $value the value of the attribute
+     *
+     * @return array<string, true> the ids referenced through a fragment, an id list or a SMIL timing value
+     */
+    private function attributeValueReferences(string $name, string $value): array
+    {
+        $referencedIds = $this->fragmentReferences($value);
 
         if (\in_array($name, self::ID_LIST_ATTRIBUTES, true)) {
-            preg_match_all(self::ID_LIST_ITEM_REGEX, $domAttr->value, $items);
+            preg_match_all(self::ID_LIST_ITEM_REGEX, $value, $items);
             $referencedIds += array_fill_keys($items[0], true);
         }
 
         if (SvgAttribute::Begin->value === $name || SvgAttribute::End->value === $name) {
-            foreach (explode(self::SMIL_ITEM_SEPARATOR, $domAttr->value) as $item) {
+            foreach (explode(self::SMIL_ITEM_SEPARATOR, $value) as $item) {
                 $referencedIds += $this->idCandidates(trim($item));
             }
         }

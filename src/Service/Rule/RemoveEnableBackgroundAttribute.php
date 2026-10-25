@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2AttributeMigrationTrait;
 
@@ -20,29 +20,17 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2AttributeMigrationTrait;
  *
  * @no-named-arguments
  */
-final readonly class RemoveEnableBackgroundAttribute implements SvgOptimizerRuleInterface
+final readonly class RemoveEnableBackgroundAttribute implements PassInterface
 {
     use Svg2AttributeMigrationTrait;
 
     private const array ENABLE_BACKGROUND = [SvgAttribute::EnableBackground->value];
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return true;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $css = $this->styleSheetText($domDocument);
         $removable = $this->removableAttributes($domDocument, $css, self::ENABLE_BACKGROUND);

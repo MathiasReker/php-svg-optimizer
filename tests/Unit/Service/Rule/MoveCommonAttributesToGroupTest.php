@@ -363,18 +363,6 @@ final class MoveCommonAttributesToGroupTest extends TestCase
         ];
     }
 
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(MoveCommonAttributesToGroup::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsTrue(): void
-    {
-        self::assertTrue(MoveCommonAttributesToGroup::shouldCheckSize());
-    }
-
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -383,7 +371,7 @@ final class MoveCommonAttributesToGroupTest extends TestCase
     private function optimizeContent(string $content): string
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new MoveCommonAttributesToGroup());
+        $svgOptimizer->addPass(new MoveCommonAttributesToGroup());
 
         return $svgOptimizer->optimize()->getContent();
     }

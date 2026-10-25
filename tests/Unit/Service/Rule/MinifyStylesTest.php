@@ -43,7 +43,7 @@ final class MinifyStylesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new MinifyStyles());
+        $svgOptimizer->addPass(new MinifyStyles());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -59,7 +59,7 @@ final class MinifyStylesTest extends TestCase
     public function optimizeIsIdempotent(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($expected));
-        $svgOptimizer->addRule(new MinifyStyles());
+        $svgOptimizer->addPass(new MinifyStyles());
 
         self::assertSame($expected, $svgOptimizer->optimize()->getContent());
     }
@@ -488,17 +488,5 @@ final class MinifyStylesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><style xmlns="http://www.w3.org/1999/xhtml"> a { } </style><svg><style> b { } </style></svg></foreignObject><x:style xmlns:x="urn:x"> c { } </x:style><style> d { } </style></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><style xmlns="http://www.w3.org/1999/xhtml"> a { } </style><svg><style> b { } </style></svg></foreignObject><x:style xmlns:x="urn:x"> c { } </x:style><style>d{}</style></svg>',
         ];
-    }
-
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(MinifyStyles::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(MinifyStyles::shouldCheckSize());
     }
 }

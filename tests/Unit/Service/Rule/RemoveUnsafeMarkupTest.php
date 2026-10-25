@@ -49,7 +49,7 @@ final class RemoveUnsafeMarkupTest extends TestCase
     public function optimize(string $content, string $expectedSvg): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveUnsafeMarkup());
+        $svgOptimizer->addPass(new RemoveUnsafeMarkup());
 
         self::assertSame($expectedSvg, $svgOptimizer->optimize()->getContent());
     }
@@ -88,17 +88,5 @@ final class RemoveUnsafeMarkupTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><a href="javascript:x"><rect onclick="x()"/></a><foreignObject/><style>@import url(a.css);</style></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><a href="javascript:x"><rect onclick="x()"/></a><foreignObject/><style>@import url(a.css);</style></svg>',
         ];
-    }
-
-    #[Test]
-    public function ruleIsNotRisky(): void
-    {
-        self::assertFalse(RemoveUnsafeMarkup::isRisky());
-    }
-
-    #[Test]
-    public function ruleSkipsTheSizeCheck(): void
-    {
-        self::assertFalse(RemoveUnsafeMarkup::shouldCheckSize());
     }
 }

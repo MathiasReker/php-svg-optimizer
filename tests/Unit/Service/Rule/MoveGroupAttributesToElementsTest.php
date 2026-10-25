@@ -47,7 +47,7 @@ final class MoveGroupAttributesToElementsTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new MoveGroupAttributesToElements());
+        $svgOptimizer->addPass(new MoveGroupAttributesToElements());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -360,10 +360,10 @@ final class MoveGroupAttributesToElementsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><g transform="scale(2)"><g transform="scale(3)" fill="red"><rect/><circle/></g><g><rect fill="red" transform="rotate(5)"/></g></g></svg>',
         ];
 
-        yield 'Keeps an overriding inner value below an outer one' => [
+        yield 'Flattens the groups when the children override the outer value' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><g transform="scale(2)"><rect fill="blue"/><rect fill="blue"/></g></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><g transform="scale(2)" fill="blue"><rect/><rect/></g></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><g transform="scale(2)" fill="blue"><rect/><rect/></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="blue" transform="scale(2)"/><rect fill="blue" transform="scale(2)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="blue" transform="scale(2)"/><rect fill="blue" transform="scale(2)"/></svg>',
         ];
 
         yield 'Normalizes odd whitespace and merges transforms of flattened groups' => [
@@ -372,9 +372,9 @@ final class MoveGroupAttributesToElementsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><!--c--><rect fill="red" transform="translate( 1 , 2 ),  scale(2) rotate(5)"/><text fill="red" transform="scale(3)">a</text></svg>',
         ];
 
-        yield 'Settles after a second pass when flattening exposes shared attributes' => [
+        yield 'Lifts the attributes that flattening exposes in the same run' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g opacity=".5"><g transform="scale(2)"><rect stroke="red"/></g><g transform="scale(3)"><rect stroke="red"/></g></g></svg>',
-            '<svg xmlns="http://www.w3.org/2000/svg"><g opacity=".5"><rect stroke="red" transform="scale(2)"/><rect stroke="red" transform="scale(3)"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g opacity=".5" stroke="red"><rect transform="scale(2)"/><rect transform="scale(3)"/></g></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><g opacity=".5" stroke="red"><rect transform="scale(2)"/><rect transform="scale(3)"/></g></svg>',
         ];
 
@@ -385,18 +385,6 @@ final class MoveGroupAttributesToElementsTest extends TestCase
         ];
     }
 
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(MoveGroupAttributesToElements::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsTrue(): void
-    {
-        self::assertTrue(MoveGroupAttributesToElements::shouldCheckSize());
-    }
-
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -405,9 +393,9 @@ final class MoveGroupAttributesToElementsTest extends TestCase
     private function optimizeCombined(string $content): string
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new MoveCommonAttributesToGroup());
-        $svgOptimizer->addRule(new MoveGroupAttributesToElements());
-        $svgOptimizer->addRule(new FlattenGroups());
+        $svgOptimizer->addPass(new MoveCommonAttributesToGroup());
+        $svgOptimizer->addPass(new MoveGroupAttributesToElements());
+        $svgOptimizer->addPass(new FlattenGroups());
 
         return $svgOptimizer->optimize()->getContent();
     }
@@ -419,7 +407,7 @@ final class MoveGroupAttributesToElementsTest extends TestCase
         $domDocument = new \DOMDocument();
         $domDocument->loadXML($content);
 
-        (new MoveGroupAttributesToElements())->optimize($domDocument);
+        (new MoveGroupAttributesToElements())->apply($domDocument);
 
         return (string) $domDocument->saveXML($domDocument->documentElement);
     }

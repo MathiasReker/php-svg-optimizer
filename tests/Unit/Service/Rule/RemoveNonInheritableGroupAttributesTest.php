@@ -172,18 +172,6 @@ final class RemoveNonInheritableGroupAttributesTest extends TestCase
         ];
     }
 
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(RemoveNonInheritableGroupAttributes::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveNonInheritableGroupAttributes::shouldCheckSize());
-    }
-
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -192,7 +180,7 @@ final class RemoveNonInheritableGroupAttributesTest extends TestCase
     private function optimizeContent(string $content): string
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveNonInheritableGroupAttributes());
+        $svgOptimizer->addPass(new RemoveNonInheritableGroupAttributes());
 
         return $svgOptimizer->optimize()->getContent();
     }

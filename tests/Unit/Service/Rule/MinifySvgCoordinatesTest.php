@@ -45,7 +45,7 @@ final class MinifySvgCoordinatesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new MinifySvgCoordinates());
+        $svgOptimizer->addPass(new MinifySvgCoordinates());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -447,7 +447,7 @@ final class MinifySvgCoordinatesTest extends TestCase
     public function optimizeIsIdempotent(string $optimized): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
-        $svgOptimizer->addRule(new MinifySvgCoordinates());
+        $svgOptimizer->addPass(new MinifySvgCoordinates());
 
         self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
     }
@@ -460,18 +460,6 @@ final class MinifySvgCoordinatesTest extends TestCase
         foreach (self::provideOptimizeCases() as $name => [, $expected]) {
             yield $name => [$expected];
         }
-    }
-
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(MinifySvgCoordinates::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(MinifySvgCoordinates::shouldCheckSize());
     }
 
     #[Test]
@@ -489,7 +477,7 @@ final class MinifySvgCoordinatesTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0' . str_repeat(' L1.50 2.0', $count) . '"/></svg>');
 
         $start = hrtime(true);
-        (new MinifySvgCoordinates())->optimize($domDocument);
+        (new MinifySvgCoordinates())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }

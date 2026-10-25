@@ -317,18 +317,6 @@ final class RemoveUselessStrokeAndFillTest extends TestCase
         ];
     }
 
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(RemoveUselessStrokeAndFill::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveUselessStrokeAndFill::shouldCheckSize());
-    }
-
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -337,7 +325,7 @@ final class RemoveUselessStrokeAndFillTest extends TestCase
     private function optimizeContent(string $content): string
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveUselessStrokeAndFill());
+        $svgOptimizer->addPass(new RemoveUselessStrokeAndFill());
 
         return $svgOptimizer->optimize()->getContent();
     }

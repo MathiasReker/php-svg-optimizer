@@ -45,13 +45,13 @@ final class FlattenGroupsTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new FlattenGroups());
+        $svgOptimizer->addPass(new FlattenGroups());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
 
         $repeated = new SvgOptimizer(new StringProvider($actual));
-        $repeated->addRule(new FlattenGroups());
+        $repeated->addPass(new FlattenGroups());
         self::assertSame($actual, $repeated->optimize()->getContent());
     }
 
@@ -870,17 +870,5 @@ final class FlattenGroupsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a"><g a:fill="red"><g><rect width="10" height="10"/></g></g></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:a="urn:a"><g a:fill="red"><rect width="10" height="10"/></g></svg>',
         ];
-    }
-
-    #[Test]
-    public function isRiskyReturnsFalse(): void
-    {
-        self::assertFalse(FlattenGroups::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsTrue(): void
-    {
-        self::assertTrue(FlattenGroups::shouldCheckSize());
     }
 }

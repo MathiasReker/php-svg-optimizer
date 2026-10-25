@@ -33,7 +33,7 @@ trait Svg2ElementMigrationTrait
     /**
      * @param \DOMDocument $domDocument the DOM document to modify
      *
-     * @return array<string, string> the ids of the removed elements, by themselves
+     * @return array<string, string> the unique ids of the obsolete elements, which are kept, by themselves
      */
     private function removeObsoleteElements(\DOMDocument $domDocument): array
     {
@@ -44,7 +44,7 @@ trait Svg2ElementMigrationTrait
             $idCounts[$id] = ($idCounts[$id] ?? 0) + 1;
         }
 
-        $removedIds = [];
+        $obsoleteIds = [];
 
         foreach (self::SVG2_REMOVED_ELEMENTS as $localName) {
             foreach ($this->elementsNamed($domDocument, $localName) as $domNodeList) {
@@ -53,12 +53,28 @@ trait Svg2ElementMigrationTrait
                 if (('' === $id || 1 === $idCounts[$id])
                     && $this->isRemovableUnrenderedElement($domNodeList, self::SVG2_REMOVED_ELEMENTS)
                 ) {
-                    $removedIds[$id] = $id;
-                    $domNodeList->remove();
+                    $obsoleteIds += $this->removeObsoleteElement($domNodeList, $id);
                 }
             }
         }
 
-        return $removedIds;
+        return $obsoleteIds;
+    }
+
+    /**
+     * @param \DOMElement $domElement an obsolete element
+     * @param string      $id         the id of the element, or an empty string
+     *
+     * @return array<string, string> the id of the element by itself, as an element with an id is kept, or nothing
+     */
+    private function removeObsoleteElement(\DOMElement $domElement, string $id): array
+    {
+        if ($this->hasId($domElement)) {
+            return '' === $id ? [] : [$id => $id];
+        }
+
+        $domElement->remove();
+
+        return [];
     }
 }

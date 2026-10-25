@@ -13,8 +13,8 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule\Trait;
 
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertOneStopGradients;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedDefinitions;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedMasks;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
 use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\RegexFailureTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -26,10 +26,10 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
+#[CoversClass(RemoveUnusedDefinitions::class)]
 #[CoversClass(ConvertOneStopGradients::class)]
 #[CoversClass(FlattenGroups::class)]
 #[CoversClass(RemoveUnusedIds::class)]
-#[CoversClass(RemoveUnusedMasks::class)]
 final class IdReferenceTraitTest extends TestCase
 {
     use IdReferenceTrait;
@@ -75,7 +75,7 @@ final class IdReferenceTraitTest extends TestCase
 
         $expected = (string) $domDocument->saveXML();
 
-        (new FlattenGroups())->optimize($domDocument);
+        (new FlattenGroups())->apply($domDocument);
 
         self::assertSame($expected, $domDocument->saveXML());
     }

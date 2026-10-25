@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
@@ -23,7 +23,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberListTrait;
  *
  * @no-named-arguments
  */
-final readonly class RemoveWidthHeightAttributes implements SvgOptimizerRuleInterface
+final readonly class RemoveWidthHeightAttributes implements PassInterface
 {
     use AsciiCaseTrait;
     use NumberFormatterTrait;
@@ -31,23 +31,11 @@ final readonly class RemoveWidthHeightAttributes implements SvgOptimizerRuleInte
 
     private const int VIEW_BOX_LENGTH = 4;
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return true;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $svg = $domDocument->documentElement;
 
@@ -78,7 +66,7 @@ final readonly class RemoveWidthHeightAttributes implements SvgOptimizerRuleInte
      */
     private function hasValidViewBox(\DOMElement $domElement): bool
     {
-        $values = $this->parseNumberList($domElement->getAttribute(SvgAttribute::ViewBox->value));
+        $values = $this->parseNumberList($domElement->getAttribute(SvgAttribute::ViewBox->value), false);
 
         return self::VIEW_BOX_LENGTH === \count($values) && $this->isPositiveNumber($values[2]) && $this->isPositiveNumber($values[3]);
     }

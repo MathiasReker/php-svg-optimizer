@@ -43,13 +43,13 @@ final class RemoveInvisibleCharactersTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveInvisibleCharacters());
+        $svgOptimizer->addPass(new RemoveInvisibleCharacters());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
 
         $repeated = new SvgOptimizer(new StringProvider($actual));
-        $repeated->addRule(new RemoveInvisibleCharacters());
+        $repeated->addPass(new RemoveInvisibleCharacters());
         self::assertSame($actual, $repeated->optimize()->getContent());
     }
 
@@ -216,18 +216,6 @@ final class RemoveInvisibleCharactersTest extends TestCase
     }
 
     #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(RemoveInvisibleCharacters::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveInvisibleCharacters::shouldCheckSize());
-    }
-
-    #[Test]
     public function handlesManyNamespaceDeclarationsInLinearTime(): void
     {
         $small = $this->secondsToOptimize(2_000);
@@ -242,7 +230,7 @@ final class RemoveInvisibleCharactersTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><g>&#x200B;</g></svg>');
 
         $start = hrtime(true);
-        (new RemoveInvisibleCharacters())->optimize($domDocument);
+        (new RemoveInvisibleCharacters())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }

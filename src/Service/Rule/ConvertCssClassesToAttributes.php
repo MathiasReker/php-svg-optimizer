@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgInlineStyleProperty;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
@@ -27,7 +27,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  *
  * @no-named-arguments
  */
-final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleInterface
+final readonly class ConvertCssClassesToAttributes implements PassInterface
 {
     use ClassAttributeTrait;
     use CssDeclarationTrait;
@@ -39,23 +39,11 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
 
     private const array ALL_MEDIA = ['', 'all'];
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         /** @var \DOMNodeList<\DOMElement> $domNodeList */
         $domNodeList = $domDocument->getElementsByTagName(SvgTag::Style->value);
@@ -74,10 +62,12 @@ final readonly class ConvertCssClassesToAttributes implements SvgOptimizerRuleIn
             [$remainingCss, $classes] = $this->processCss($styleElement->textContent, $classMap, $blockedProperties);
             $convertedClasses = [...$convertedClasses, ...$classes];
 
-            if ('' === $remainingCss) {
-                $styleElement->remove();
-            } else {
+            if ('' !== $remainingCss) {
                 $styleElement->textContent = $remainingCss;
+            } elseif ($this->hasId($styleElement)) {
+                $styleElement->replaceChildren();
+            } else {
+                $styleElement->remove();
             }
         }
 

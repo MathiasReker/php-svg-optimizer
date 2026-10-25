@@ -11,11 +11,12 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgElementAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
@@ -23,32 +24,21 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  *
  * @no-named-arguments
  */
-final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInterface
+final readonly class RemoveNonStandardAttributes implements PassInterface
 {
     use CssDeclarationTrait;
+    use DocumentScriptTrait;
     use ElementTrait;
 
     private const string XPATH_ALL_WITH_ATTRIBUTES = '/descendant::*[@*]';
 
     private const string DATA_ATTRIBUTE_REGEX = '/^data-[\-\w.\x{00B7}-\x{FFFF}]+$/u';
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         if ($this->hasExternalStyleSheet($domDocument)) {
             return;
@@ -87,7 +77,7 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
 
         return $cache[$element] ??= array_diff_key(
             SvgElementAttributes::forElement($element),
-            array_flip([...SvgAttribute::eventHandlers(), SvgAttribute::XmlBase->value]),
+            [SvgAttribute::XmlBase->value => true],
         );
     }
 
@@ -101,7 +91,7 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
 
         return $lookup ??= array_diff_key(
             array_fill_keys(SvgAttribute::values(), true),
-            array_flip([...SvgAttribute::eventHandlers(), ...SvgAttribute::htmlOnly()]),
+            array_flip(SvgAttribute::htmlOnly()),
         );
     }
 
@@ -125,14 +115,15 @@ final readonly class RemoveNonStandardAttributes implements SvgOptimizerRuleInte
      * @param \DOMAttr            $domAttr the attribute to check
      * @param array<string, true> $allowed a lookup map of allowed attribute names
      *
-     * @return bool true if the attribute is allowed, false otherwise
+     * @return bool true if the attribute is allowed, or an event handler, which removeScripts removes, false otherwise
      */
     private function isAttributeAllowed(\DOMAttr $domAttr, array $allowed): bool
     {
         $name = $this->qualifiedName($domAttr);
 
         return \array_key_exists($name, $allowed)
-            || 1 === preg_match(self::DATA_ATTRIBUTE_REGEX, $name);
+            || 1 === preg_match(self::DATA_ATTRIBUTE_REGEX, $name)
+            || (null === $domAttr->namespaceURI && $this->isEventHandlerName($name));
     }
 
     /**

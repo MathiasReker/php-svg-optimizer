@@ -49,7 +49,7 @@ final class RemoveUseBombsTest extends TestCase
     public function optimize(string $content, string $expectedSvg): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveUseBombs());
+        $svgOptimizer->addPass(new RemoveUseBombs());
 
         self::assertSame($expectedSvg, $svgOptimizer->optimize()->getContent());
     }
@@ -78,17 +78,5 @@ final class RemoveUseBombsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><?pi x?><script>alert(1)</script><a href="javascript:x"><rect onclick="x()"/></a><foreignObject/><style>@import url(a.css);</style><!-- <b> --></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><?pi x?><script>alert(1)</script><a href="javascript:x"><rect onclick="x()"/></a><foreignObject/><style>@import url(a.css);</style><!-- <b> --></svg>',
         ];
-    }
-
-    #[Test]
-    public function ruleIsNotRisky(): void
-    {
-        self::assertFalse(RemoveUseBombs::isRisky());
-    }
-
-    #[Test]
-    public function ruleSkipsTheSizeCheck(): void
-    {
-        self::assertFalse(RemoveUseBombs::shouldCheckSize());
     }
 }

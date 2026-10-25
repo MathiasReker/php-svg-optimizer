@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
@@ -24,30 +24,18 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TagMatcherTrait;
  *
  * @no-named-arguments
  */
-final readonly class RemoveEmptyContainers implements SvgOptimizerRuleInterface
+final readonly class RemoveEmptyContainers implements PassInterface
 {
     use AsciiCaseTrait;
     use ElementTrait;
     use EmptyElementRemovalTrait;
     use TagMatcherTrait;
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $this->removeElementsBottomUp($domDocument, $this->isRemovable(...));
     }

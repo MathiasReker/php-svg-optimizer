@@ -11,12 +11,12 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -188,15 +188,141 @@ final class RuleInvariantsTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws \LogicException
      */
+    #[DataProvider('provideNonRiskyRuleKeepsEveryIdCases')]
+    #[Test]
+    public function nonRiskyRuleKeepsEveryId(Rule $rule, string $content): void
+    {
+        self::assertSame([], array_values(array_diff($this->ids($content), $this->ids($this->apply($rule, $content)))));
+    }
+
+    /**
+     * @return iterable<string, array{Rule, string}>
+     */
+    public static function provideNonRiskyRuleKeepsEveryIdCases(): iterable
+    {
+        $exempt = [...RuleSet::Security->rules(), Rule::RemoveTitles, Rule::RemoveDescriptions, Rule::RemoveAriaAndRole];
+        $documents = [
+            ...iterator_to_array(self::provideAllRulesKeepTheDocumentValidAndAreIdempotentCases(), true),
+            ...self::idDocuments(),
+        ];
+
+        foreach (SpriteSupportTest::provideSpriteCases() as $name => [$content]) {
+            $documents['sprite: ' . $name] = [$content];
+        }
+
+        foreach (Rule::cases() as $rule) {
+            if ($rule->isRisky() || \in_array($rule, $exempt, true)) {
+                continue;
+            }
+
+            foreach ($documents as $name => [$content]) {
+                yield $rule->name . ': ' . $name => [$rule, $content];
+            }
+        }
+    }
+
+    #[Test]
+    public function theIdInvariantCoversEveryNonRiskyRuleOutsideTheExemptions(): void
+    {
+        $rules = array_unique(array_map(
+            static fn (array $case): string => $case[0]->name,
+            iterator_to_array(self::provideNonRiskyRuleKeepsEveryIdCases(), false),
+        ));
+
+        self::assertCount(32, $rules);
+        self::assertNotContains(Rule::RemoveUnusedIds->name, $rules);
+        self::assertNotContains(Rule::RemoveScripts->name, $rules);
+        self::assertNotContains(Rule::RemoveTitles->name, $rules);
+        self::assertContains(Rule::MigrateToSvg2->name, $rules);
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideAllRulesGiveTheSameResultWhenRunTwiceCases')]
+    #[Test]
+    public function allRulesGiveTheSameResultWhenRunTwice(string $content, bool $allowRisky): void
+    {
+        $once = $this->applyAll($content, $allowRisky);
+
+        self::assertSame($once, $this->applyAll($once, $allowRisky));
+    }
+
+    /**
+     * @return iterable<string, array{string, bool}>
+     */
+    public static function provideAllRulesGiveTheSameResultWhenRunTwiceCases(): iterable
+    {
+        $documents = [...iterator_to_array(self::provideAllRulesKeepTheDocumentValidAndAreIdempotentCases(), true), ...self::idDocuments()];
+
+        $files = glob(__DIR__ . '/../../../../dev/resources/svg/*.svg');
+
+        foreach (false === $files ? [] : $files as $file) {
+            $documents['fixture ' . basename($file)] = [(string) file_get_contents($file)];
+        }
+
+        foreach ($documents as $name => [$content]) {
+            yield $name => [$content, false];
+
+            yield $name . ', risky' => [$content, true];
+        }
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    private static function idDocuments(): array
+    {
+        return [
+            'referenced and unreferenced ids' => [
+                '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="used" d="M0 0h5v5z"/><path id="unused" d="M0 0h1"/><g id="empty-group"/></defs><use xlink:href="#used"/><g id="wrapper"><g id="inner"><rect id="r" width="1" height="1" display="none"/><rect id="zero" width="0" height="1"/></g></g><text id="t"><tspan id="ts"/></text><g id="gone" opacity="0"/></svg>',
+            ],
+            'gradients with ids' => [
+                '<svg xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="a"><stop id="s1" offset="0" stop-color="red"/></linearGradient><linearGradient id="b"><stop offset="0" stop-color="red"/></linearGradient><linearGradient id="c" href="#a"/><radialGradient id="d"><stop offset="0" stop-color="#ff0000"/><stop offset="1" stop-color="blue"/></radialGradient><radialGradient id="e"><stop offset="0" stop-color="#ff0000"/><stop offset="1" stop-color="blue"/></radialGradient></defs><rect fill="url(#a)" width="1" height="1"/><rect fill="url(#b)" width="1" height="1"/><rect fill="url(#d)" stroke="url(#e)" width="1" height="1"/></svg>',
+            ],
+            'masks and clip paths with ids' => [
+                '<svg xmlns="http://www.w3.org/2000/svg"><mask id="m1"><rect id="mr" width="1" height="1" fill="white"/></mask><mask id="m2"/><clipPath id="c1"><rect width="1" height="1"/></clipPath><clipPath id="c2"/><g mask="url(#m1)" clip-path="url(#c1)"><rect width="1" height="1"/></g></svg>',
+            ],
+            'styles, editor data and obsolete elements with ids' => [
+                '<svg xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"><sodipodi:namedview id="base"/><metadata id="meta"/><style id="st">.a{fill:red}</style><style id="empty"/><rect class="a" width="1" height="1"/><defs><font id="f"/><solidColor id="sc"/></defs><foreignObject id="fo" requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/" width="1" height="1"/></svg>',
+            ],
+        ];
+    }
+
+    /**
+     * @return list<string> the ids of the elements in the SVG namespace, except `<metadata>`, which never renders
+     */
+    private function ids(string $content): array
+    {
+        self::assertNotSame('', $content);
+
+        $domDocument = new \DOMDocument();
+        self::assertTrue($domDocument->loadXML($content));
+
+        $ids = [];
+
+        foreach ($domDocument->getElementsByTagNameNS(self::SVG_NAMESPACE, '*') as $elementsByTagNameN) {
+            if ('metadata' !== $elementsByTagNameN->localName && $elementsByTagNameN->hasAttribute('id')) {
+                $ids[] = $elementsByTagNameN->getAttribute('id');
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
     private function apply(Rule $rule, string $content): string
     {
-        /** @var class-string<SvgOptimizerRuleInterface> $ruleClass */
-        $ruleClass = $rule->value;
-
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new $ruleClass());
+        $svgOptimizer->enableRules($rule);
 
-        if ($ruleClass::isRisky()) {
+        if ($rule->isRisky()) {
             $svgOptimizer->allowRisky();
         }
 
@@ -208,11 +334,14 @@ final class RuleInvariantsTest extends TestCase
      * @throws RiskyRulesNotAllowedException
      * @throws \LogicException
      */
-    private function applyAll(string $content): string
+    private function applyAll(string $content, bool $allowRisky = true): string
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->allowRisky();
         $svgOptimizer->enableAllRules();
+
+        if ($allowRisky) {
+            $svgOptimizer->allowRisky();
+        }
 
         return $svgOptimizer->optimize()->getContent();
     }

@@ -43,7 +43,7 @@ final class RemoveNonStandardAttributesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveNonStandardAttributes());
+        $svgOptimizer->addPass(new RemoveNonStandardAttributes());
 
         $actual = $svgOptimizer
             ->allowRisky()
@@ -98,9 +98,9 @@ final class RemoveNonStandardAttributesTest extends TestCase
             '<svg><g><g><rect width="10"/></g></g></svg>',
         ];
 
-        yield 'Keeps xml, xlink and data-* attributes but removes on* attributes' => [
+        yield 'Keeps xml, xlink, data-* and on* attributes' => [
             '<svg xml:lang="en" data-test="1" onload="alert(1)" onfake="oops"><use xlink:href="#a" onclick="x()"/></svg>',
-            '<svg xml:lang="en" data-test="1"><use xlink:href="#a"/></svg>',
+            '<svg xml:lang="en" data-test="1" onload="alert(1)" onfake="oops"><use xlink:href="#a" onclick="x()"/></svg>',
         ];
 
         yield 'Removes attributes the specification does not define for the element' => [
@@ -123,9 +123,9 @@ final class RemoveNonStandardAttributesTest extends TestCase
             '<svg fill="red" aria-label="x"><g stroke="blue" role="img"><circle r="1" opacity=".5"/></g></svg>',
         ];
 
-        yield 'Falls back to the global allowlist for unknown elements' => [
+        yield 'Falls back to the global allowlist for unknown elements and keeps event attributes' => [
             '<svg><unknown width="1" d="M0 0" foo="bar" onclick="x()"/></svg>',
-            '<svg><unknown width="1" d="M0 0"/></svg>',
+            '<svg><unknown width="1" d="M0 0" onclick="x()"/></svg>',
         ];
 
         yield 'Removes HTML-only attributes from unknown elements' => [
@@ -138,9 +138,9 @@ final class RemoveNonStandardAttributesTest extends TestCase
             '<svg data-test="1"/>',
         ];
 
-        yield 'Removes on* event attributes' => [
+        yield 'Keeps on* event attributes, which removeScripts removes' => [
             '<svg onclick="doSomething()" onmouseover="hover()" onfake="fail()" width="1"></svg>',
-            '<svg width="1"/>',
+            '<svg onclick="doSomething()" onmouseover="hover()" onfake="fail()" width="1"/>',
         ];
 
         yield 'Removes name attribute' => [
@@ -347,18 +347,11 @@ final class RemoveNonStandardAttributesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><Rect bogus="1"/><RECT bogus="1"/><Script>x</Script><SCRIPT>x</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">x</s:script></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><Rect/><RECT/><Script>x</Script><SCRIPT>x</SCRIPT><s:script xmlns:s="http://www.w3.org/2000/svg">x</s:script></svg>',
         ];
-    }
 
-    #[Test]
-    public function ruleIsMarkedAsRisky(): void
-    {
-        self::assertFalse(RemoveNonStandardAttributes::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveNonStandardAttributes::shouldCheckSize());
+        yield 'Keeps event attributes in any case and removes them in another namespace' => [
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x" ONCLICK="a()" OnLoad="b()" x:onclick="c()"><rect onfocusin="d()" x:onload="e()"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x" ONCLICK="a()" OnLoad="b()"><rect onfocusin="d()"/></svg>',
+        ];
     }
 
     #[Test]
@@ -385,7 +378,7 @@ final class RemoveNonStandardAttributesTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><rect foo="x"/></svg>');
 
         $start = hrtime(true);
-        (new RemoveNonStandardAttributes())->optimize($domDocument);
+        (new RemoveNonStandardAttributes())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }
@@ -396,7 +389,7 @@ final class RemoveNonStandardAttributesTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><defs>' . implode('', array_map(static fn (int $i): string => '<linearGradient id="g' . $i . '"><stop offset="0" stop-color="#' . $i . '"/></linearGradient>', range(1, $count))) . '</defs>' . implode('', array_map(static fn (int $i): string => '<rect fill="url(#g' . $i . ')"/>', range(1, $count))) . '</svg>');
 
         $start = hrtime(true);
-        (new RemoveNonStandardAttributes())->optimize($domDocument);
+        (new RemoveNonStandardAttributes())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }

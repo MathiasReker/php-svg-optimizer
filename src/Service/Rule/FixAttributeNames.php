@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgElementAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
@@ -22,29 +22,17 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  *
  * @no-named-arguments
  */
-final readonly class FixAttributeNames implements SvgOptimizerRuleInterface
+final readonly class FixAttributeNames implements PassInterface
 {
     use ElementTrait;
 
     private const string EVENT_HANDLER_PREFIX = 'on';
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $domNodeList = $domDocument->getElementsByTagName('*');
 

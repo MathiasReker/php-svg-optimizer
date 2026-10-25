@@ -11,34 +11,22 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 
 /**
  * @internal
  *
  * @no-named-arguments
  */
-final readonly class RemoveComments implements SvgOptimizerRuleInterface
+final readonly class RemoveComments implements PassInterface
 {
     private const string XPATH_COMMENT_NODES = '//comment()';
-
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
 
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
 

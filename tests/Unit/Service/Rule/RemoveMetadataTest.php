@@ -33,18 +33,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class RemoveMetadataTest extends TestCase
 {
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(RemoveMetadata::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveMetadata::shouldCheckSize());
-    }
-
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -55,7 +43,7 @@ final class RemoveMetadataTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveMetadata());
+        $svgOptimizer->addPass(new RemoveMetadata());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);

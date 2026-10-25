@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
@@ -212,13 +211,10 @@ final class SpriteSupportTest extends TestCase
     #[Test]
     public function eachRuleKeepsTheSprite(Rule $rule, string $content, array $targets): void
     {
-        /** @var class-string<SvgOptimizerRuleInterface> $ruleClass */
-        $ruleClass = $rule->value;
-
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new $ruleClass());
+        $svgOptimizer->enableRules($rule);
 
-        if ($ruleClass::isRisky()) {
+        if ($rule->isRisky()) {
             $svgOptimizer->allowRisky();
         }
 

@@ -38,13 +38,23 @@ trait DocumentScriptTrait
             }
 
             foreach ($domNodeList->attributes as $attribute) {
-                if (str_starts_with($this->asciiLowercase((string) $attribute->localName), self::EVENT_HANDLER_PREFIX)) {
+                if ($this->isEventHandlerName((string) $attribute->localName)) {
                     return true;
                 }
             }
         }
 
         return false;
+    }
+
+    /**
+     * @param string $name the local name of an attribute
+     *
+     * @return bool true if the attribute name is the name of an event handler, in any case
+     */
+    private function isEventHandlerName(string $name): bool
+    {
+        return str_starts_with($this->asciiLowercase($name), self::EVENT_HANDLER_PREFIX);
     }
 
     /**

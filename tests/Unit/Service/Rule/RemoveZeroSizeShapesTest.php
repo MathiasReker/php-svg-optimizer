@@ -43,13 +43,13 @@ final class RemoveZeroSizeShapesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveZeroSizeShapes());
+        $svgOptimizer->addPass(new RemoveZeroSizeShapes());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
 
         $repeated = new SvgOptimizer(new StringProvider($actual));
-        $repeated->addRule(new RemoveZeroSizeShapes());
+        $repeated->addPass(new RemoveZeroSizeShapes());
         self::assertSame($actual, $repeated->optimize()->getContent());
     }
 
@@ -192,17 +192,5 @@ final class RemoveZeroSizeShapesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><g/><text/><use/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><g/><text/><use/></svg>',
         ];
-    }
-
-    #[Test]
-    public function isRiskyReturnsFalse(): void
-    {
-        self::assertFalse(RemoveZeroSizeShapes::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveZeroSizeShapes::shouldCheckSize());
     }
 }

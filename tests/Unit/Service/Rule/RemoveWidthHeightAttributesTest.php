@@ -43,7 +43,7 @@ final class RemoveWidthHeightAttributesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveWidthHeightAttributes());
+        $svgOptimizer->addPass(new RemoveWidthHeightAttributes());
 
         $actual = $svgOptimizer->allowRisky()->optimize()->getContent();
 
@@ -329,24 +329,12 @@ final class RemoveWidthHeightAttributesTest extends TestCase
     }
 
     #[Test]
-    public function ruleIsMarkedAsRisky(): void
-    {
-        self::assertTrue(RemoveWidthHeightAttributes::isRisky());
-    }
-
-    #[Test]
     public function optimizeLeavesADocumentWithoutRootAlone(): void
     {
         $domDocument = new \DOMDocument();
 
-        (new RemoveWidthHeightAttributes())->optimize($domDocument);
+        (new RemoveWidthHeightAttributes())->apply($domDocument);
 
         self::assertNull($domDocument->documentElement);
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveWidthHeightAttributes::shouldCheckSize());
     }
 }

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 
 /**
@@ -19,7 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
  *
  * @no-named-arguments
  */
-final readonly class RemoveXmlSpaceDefault implements SvgOptimizerRuleInterface
+final readonly class RemoveXmlSpaceDefault implements PassInterface
 {
     private const string SPACE_ATTRIBUTE = 'space';
 
@@ -39,23 +39,11 @@ final readonly class RemoveXmlSpaceDefault implements SvgOptimizerRuleInterface
 
     private const string XPATH_WHITE_SPACE_STYLING = 'ancestor-or-self::*[@white-space or @style[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "white-space")]]';
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
 

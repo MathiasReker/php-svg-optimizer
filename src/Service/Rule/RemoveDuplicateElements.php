@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DefinitionElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
@@ -21,7 +21,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  *
  * @no-named-arguments
  */
-final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterface
+final readonly class RemoveDuplicateElements implements PassInterface
 {
     use DefinitionElementTrait;
     use ElementTrait;
@@ -33,25 +33,13 @@ final readonly class RemoveDuplicateElements implements SvgOptimizerRuleInterfac
         SvgTag::Title->value,
     ];
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      *
      * @throws \JsonException
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         if ($this->hasSiblingSensitiveStyle($domDocument)) {
             return;

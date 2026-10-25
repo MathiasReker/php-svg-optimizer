@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
@@ -26,7 +26,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ParentValueTrait;
  *
  * @no-named-arguments
  */
-final readonly class MoveCommonAttributesToGroup implements SvgOptimizerRuleInterface
+final readonly class MoveCommonAttributesToGroup implements PassInterface
 {
     use AsciiCaseTrait;
     use DocumentScriptTrait;
@@ -52,23 +52,11 @@ final readonly class MoveCommonAttributesToGroup implements SvgOptimizerRuleInte
         SvgTag::Title->value,
     ];
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return true;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         if ($this->hasStyleElement($domDocument) || $this->hasScriptOrEventHandler($domDocument)) {
             return;

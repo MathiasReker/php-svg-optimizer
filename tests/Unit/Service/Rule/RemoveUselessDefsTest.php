@@ -43,7 +43,7 @@ final class RemoveUselessDefsTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveUselessDefs());
+        $svgOptimizer->addPass(new RemoveUselessDefs());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -193,17 +193,10 @@ final class RemoveUselessDefsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><defs><g><g><g><rect xml:id="a"/></g></g></g></defs></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><defs><g><g><g><rect xml:id="a"/></g></g></g></defs></svg>',
         ];
-    }
 
-    #[Test]
-    public function isRiskyReturnsFalse(): void
-    {
-        self::assertFalse(RemoveUselessDefs::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveUselessDefs::shouldCheckSize());
+        yield 'Removes masks without an id inside and outside defs' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><defs><mask><rect/></mask></defs><mask><rect width="1" height="1"/></mask><rect width="1" height="1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>',
+        ];
     }
 }

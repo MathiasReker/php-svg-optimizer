@@ -37,18 +37,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgNamespace::class)]
 final class RemoveDeprecatedAttributesTest extends TestCase
 {
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(RemoveDeprecatedAttributes::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveDeprecatedAttributes::shouldCheckSize());
-    }
-
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -59,7 +47,7 @@ final class RemoveDeprecatedAttributesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveDeprecatedAttributes());
+        $svgOptimizer->addPass(new RemoveDeprecatedAttributes());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);

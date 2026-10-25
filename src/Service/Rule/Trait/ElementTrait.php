@@ -282,6 +282,24 @@ trait ElementTrait
     /**
      * @param \DOMElement $domElement the element to check
      *
+     * @return bool true if the element or a descendant in the SVG namespace has an id
+     */
+    private function hasSvgElementWithId(\DOMElement $domElement): bool
+    {
+        foreach ([[$domElement], $domElement->getElementsByTagName('*')] as $elements) {
+            foreach ($elements as $element) {
+                if ($this->hasId($element) && \in_array($element->namespaceURI, [null, SvgNamespace::Svg->value], true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param \DOMElement $domElement the element to check
+     *
      * @return bool true if the element or a descendant can be referenced by id
      */
     private function hasIdInSubtree(\DOMElement $domElement): bool

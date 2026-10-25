@@ -43,7 +43,7 @@ final class RemoveDuplicateElementsTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveDuplicateElements());
+        $svgOptimizer->addPass(new RemoveDuplicateElements());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -447,17 +447,5 @@ final class RemoveDuplicateElementsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><desc><![CDATA[a<b]]></desc><desc><![CDATA[a<b]]></desc></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><desc>a&lt;b</desc></svg>',
         ];
-    }
-
-    #[Test]
-    public function isRiskyReturnsFalse(): void
-    {
-        self::assertFalse(RemoveDuplicateElements::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveDuplicateElements::shouldCheckSize());
     }
 }

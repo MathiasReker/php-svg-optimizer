@@ -47,13 +47,13 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveUnnecessaryWhitespace());
+        $svgOptimizer->addPass(new RemoveUnnecessaryWhitespace());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
 
         $repeated = new SvgOptimizer(new StringProvider($actual));
-        $repeated->addRule(new RemoveUnnecessaryWhitespace());
+        $repeated->addPass(new RemoveUnnecessaryWhitespace());
         self::assertSame($actual, $repeated->optimize()->getContent());
     }
 
@@ -582,20 +582,8 @@ final class RemoveUnnecessaryWhitespaceTest extends TestCase
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill : red ;  font-family: &quot;a  b&quot;"/></svg>');
 
-        $this->withFailingRegularExpressions(static fn () => (new RemoveUnnecessaryWhitespace())->optimize($domDocument));
+        $this->withFailingRegularExpressions(static fn () => (new RemoveUnnecessaryWhitespace())->apply($domDocument));
 
         self::assertSame('fill : red ;  font-family: "a  b"', $domDocument->documentElement?->firstElementChild?->getAttribute('style'));
-    }
-
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(RemoveUnnecessaryWhitespace::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveUnnecessaryWhitespace::shouldCheckSize());
     }
 }

@@ -45,7 +45,7 @@ final class ConvertColorsToHexTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new ConvertColorsToHex());
+        $svgOptimizer->addPass(new ConvertColorsToHex());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -743,7 +743,7 @@ final class ConvertColorsToHexTest extends TestCase
     public function optimizeIsIdempotent(string $optimized): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($optimized));
-        $svgOptimizer->addRule(new ConvertColorsToHex());
+        $svgOptimizer->addPass(new ConvertColorsToHex());
 
         self::assertSame($optimized, $svgOptimizer->optimize()->getContent());
     }
@@ -756,17 +756,5 @@ final class ConvertColorsToHexTest extends TestCase
         foreach (self::provideOptimizeCases() as $name => [, $expected]) {
             yield $name => [$expected];
         }
-    }
-
-    #[Test]
-    public function isRiskyReturnsFalse(): void
-    {
-        self::assertFalse(ConvertColorsToHex::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(ConvertColorsToHex::shouldCheckSize());
     }
 }

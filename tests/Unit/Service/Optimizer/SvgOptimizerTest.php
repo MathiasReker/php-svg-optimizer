@@ -12,18 +12,18 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Service\Optimizer;
 
 use MathiasReker\PhpSvgOptimizer\Contract\Service\Provider\SvgProviderInterface;
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\RevertIfLargerPassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyContainers;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
@@ -50,58 +50,40 @@ final class SvgOptimizerTest extends TestCase
     private SvgProviderInterface $svgProvider;
 
     #[Test]
-    public function addRuleAndGetRulesCount(): void
+    public function addPassAddsThePass(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
-        self::assertSame(0, $svgOptimizer->getRulesCount());
+        self::assertCount(0, $svgOptimizer->getPasses());
 
-        $rule = new class implements SvgOptimizerRuleInterface {
-            public function optimize(\DOMDocument $domDocument): void
+        $rule = new class implements PassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
             {
-            }
-
-            public static function shouldCheckSize(): bool
-            {
-                return false;
-            }
-
-            public static function isRisky(): bool
-            {
-                return false;
             }
         };
 
-        $svgOptimizer->addRule($rule);
-        self::assertSame(1, $svgOptimizer->getRulesCount());
+        $svgOptimizer->addPass($rule);
+        self::assertCount(1, $svgOptimizer->getPasses());
     }
 
     #[Test]
-    public function hasRules(): void
+    public function getPassesListsTheAddedPasses(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
-        self::assertFalse($svgOptimizer->hasRules(), 'Expected hasRules() to return false when no rules are added.');
+        self::assertSame([], $svgOptimizer->getPasses());
 
-        $rule = new class implements SvgOptimizerRuleInterface {
-            public function optimize(\DOMDocument $domDocument): void
+        $rule = new class implements PassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
             {
-            }
-
-            public static function shouldCheckSize(): bool
-            {
-                return false;
-            }
-
-            public static function isRisky(): bool
-            {
-                return false;
             }
         };
 
-        $svgOptimizer->addRule($rule);
+        $svgOptimizer->addPass($rule);
 
-        self::assertTrue($svgOptimizer->hasRules(), 'Expected hasRules() to return true after a rule is added.');
+        self::assertSame([$rule], $svgOptimizer->getPasses());
     }
 
     /**
@@ -304,66 +286,64 @@ final class SvgOptimizerTest extends TestCase
     }
 
     #[Test]
-    public function configureRulesAddsOnlyEnabledRules(): void
+    public function enableRulesAddsThePassesOfEachRuleOnce(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
-        self::assertSame(0, $svgOptimizer->getRulesCount());
+        $svgOptimizer->enableRules(Rule::RemoveComments, Rule::SortAttributes);
+        $svgOptimizer->enableRules(Rule::RemoveComments, Rule::RemoveEmptyElements);
 
-        $ruleClassEnabled = new class implements SvgOptimizerRuleInterface {
-            public function optimize(\DOMDocument $domDocument): void
-            {
-            }
+        self::assertSame(
+            [RemoveComments::class, RemoveEmptyTextElements::class, RemoveEmptyContainers::class, SortAttributes::class],
+            array_map(static fn (PassInterface $pass): string => $pass::class, $svgOptimizer->getPasses()),
+        );
+    }
 
-            public static function shouldCheckSize(): bool
-            {
-                return false;
-            }
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideARuleRunsEachOfItsPassesCases')]
+    #[Test]
+    public function aRuleRunsEachOfItsPasses(Rule $rule, string $content, string $expected): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider($content));
+        $svgOptimizer->enableRules($rule);
 
-            public static function isRisky(): bool
-            {
-                return false;
-            }
-        };
+        self::assertSame($expected, $svgOptimizer->optimize()->getContent());
+    }
 
-        $ruleClassDisabled = new class implements SvgOptimizerRuleInterface {
-            public function optimize(\DOMDocument $domDocument): void
-            {
-            }
+    /**
+     * @return iterable<string, array{Rule, string, string}>
+     */
+    public static function provideARuleRunsEachOfItsPassesCases(): iterable
+    {
+        yield 'migrateToSvg2 migrates links, deprecated attributes and enable-background' => [Rule::MigrateToSvg2, '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" enable-background="new 0 0 10 10"><use xlink:href="#r"/><rect id="r" width="1" height="1"/></svg>', '<svg xmlns="http://www.w3.org/2000/svg"><use href="#r"/><rect id="r" width="1" height="1"/></svg>'];
 
-            public static function shouldCheckSize(): bool
-            {
-                return false;
-            }
+        yield 'minifyNumericValues minifies numbers and number lists' => [Rule::MinifyNumericValues, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1.50" height="1"/><polygon points="0, 0, 1, 1"/></svg>', '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1.5" height="1"/><polygon points="0 0 1 1"/></svg>'];
 
-            public static function isRisky(): bool
-            {
-                return false;
-            }
-        };
+        yield 'removeDefaultAttributes removes defaults and xml:space="default"' => [Rule::RemoveDefaultAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" stroke-linejoin="miter"/><text xml:space="default">a</text></svg>', '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/><text>a</text></svg>'];
 
-        $enabledRuleClassName = $ruleClassEnabled::class;
-        $disabledRuleClassName = $ruleClassDisabled::class;
+        yield 'removeDefaultAttributes removes default style types' => [Rule::RemoveDefaultAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><style type="text/css">rect{fill:red}</style><rect width="1" height="1"/></svg>', '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:red}</style><rect width="1" height="1"/></svg>'];
 
-        $ruleFlags = [
-            $enabledRuleClassName => true,
-            $disabledRuleClassName => false,
-        ];
+        yield 'removeEmptyElements removes empty containers and text elements' => [Rule::RemoveEmptyElements, '<svg xmlns="http://www.w3.org/2000/svg"><g/><text/><rect width="1" height="1"/></svg>', '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>'];
 
-        $svgOptimizer->configureRules($ruleFlags);
+        yield 'removeHiddenElements removes hidden elements and zero-size shapes' => [Rule::RemoveHiddenElements, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" display="none"/><rect width="0" height="1"/><rect width="2" height="2"/></svg>', '<svg xmlns="http://www.w3.org/2000/svg"><rect width="2" height="2"/></svg>'];
 
-        self::assertSame(1, $svgOptimizer->getRulesCount());
+        yield 'removeIneffectiveAttributes removes useless strokes, non-inheritable group attributes and unused text attributes' => [Rule::RemoveIneffectiveAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" stroke-width="2"/><g x="1"><rect width="1" height="1"/></g><rect width="1" height="1" font-size="12"/></svg>', '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/><g><rect width="1" height="1"/></g><rect width="1" height="1"/></svg>'];
     }
 
     #[Test]
-    public function configureRulesEnablesEachRuleOnce(): void
+    public function addedPassesAreNotAddedAgainByARule(): void
     {
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
+        $removeComments = new RemoveComments();
 
-        $svgOptimizer->configureRules([RemoveComments::class => true, SortAttributes::class => true]);
-        $svgOptimizer->configureRules([RemoveComments::class => true, RemoveMetadata::class => true]);
+        $svgOptimizer->addPass($removeComments);
+        $svgOptimizer->enableRules(Rule::RemoveComments);
 
-        self::assertSame(3, $svgOptimizer->getRulesCount());
+        self::assertSame([$removeComments], $svgOptimizer->getPasses());
     }
 
     /**
@@ -372,12 +352,12 @@ final class SvgOptimizerTest extends TestCase
      * @throws \LogicException
      */
     #[Test]
-    public function configureRulesRunsRulesByPriorityWhateverTheOrderTheyAreEnabledIn(): void
+    public function enableRulesRunsPassesInExecutionOrderWhateverTheOrderTheyAreEnabledIn(): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg"><rect style="stroke-width:1"/></svg>'));
 
-        $svgOptimizer->configureRules([RemoveDefaultAttributes::class => true]);
-        $svgOptimizer->configureRules([ConvertInlineStylesToAttributes::class => true]);
+        $svgOptimizer->enableRules(Rule::RemoveDefaultAttributes);
+        $svgOptimizer->enableRules(Rule::ConvertInlineStylesToAttributes);
         $svgOptimizer->optimize();
 
         self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>', $svgOptimizer->getContent());
@@ -389,30 +369,53 @@ final class SvgOptimizerTest extends TestCase
      * @throws \LogicException
      */
     #[Test]
-    public function configureRulesRunsRulesWithoutPriorityLast(): void
+    public function passesWithoutAPositionRunLast(): void
     {
-        $styleRule = new class implements SvgOptimizerRuleInterface {
-            public function optimize(\DOMDocument $domDocument): void
+        $styleRule = new class implements PassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
             {
                 $domDocument->documentElement?->setAttribute('style', 'fill:red');
-            }
-
-            public static function shouldCheckSize(): bool
-            {
-                return false;
-            }
-
-            public static function isRisky(): bool
-            {
-                return false;
             }
         };
 
         $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg"/>'));
-        $svgOptimizer->configureRules([$styleRule::class => true, ConvertInlineStylesToAttributes::class => true]);
+        $svgOptimizer->addPass($styleRule);
+        $svgOptimizer->enableRules(Rule::ConvertInlineStylesToAttributes);
         $svgOptimizer->optimize();
 
         self::assertSame('<svg xmlns="http://www.w3.org/2000/svg" style="fill:red"/>', $svgOptimizer->getContent());
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws SvgValidationException
+     */
+    #[Test]
+    public function aRiskyRuleEnabledOneByOneNeedsRiskyRulesToBeAllowed(): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg"/>'));
+        $svgOptimizer->enableRules(Rule::RemoveComments, Rule::RemoveUnusedIds);
+
+        $this->expectException(RiskyRulesNotAllowedException::class);
+
+        $svgOptimizer->optimize();
+    }
+
+    /**
+     * @throws XmlProcessingException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function aRiskyRuleEnabledOneByOneRunsOnceRiskyRulesAreAllowed(): void
+    {
+        $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg"><rect id="a" width="1"/></svg>'));
+        $svgOptimizer->enableRules(Rule::RemoveComments, Rule::RemoveUnusedIds);
+        $svgOptimizer->allowRisky();
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><rect width="1"/></svg>', $svgOptimizer->optimize()->getContent());
     }
 
     /**
@@ -476,28 +479,19 @@ final class SvgOptimizerTest extends TestCase
             }
         };
 
-        $growingRule = new class implements SvgOptimizerRuleInterface {
-            public function optimize(\DOMDocument $domDocument): void
+        $growingRule = new class implements RevertIfLargerPassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
             {
                 $domDocument->documentElement?->setAttribute(
                     'data-extra-padding-attribute',
                     'this-makes-the-serialized-content-significantly-longer-than-before'
                 );
             }
-
-            public static function shouldCheckSize(): bool
-            {
-                return true;
-            }
-
-            public static function isRisky(): bool
-            {
-                return false;
-            }
         };
 
         $svgOptimizer = new SvgOptimizer($provider);
-        $svgOptimizer->addRule($growingRule);
+        $svgOptimizer->addPass($growingRule);
 
         $svgOptimizer->optimize();
 
@@ -512,45 +506,27 @@ final class SvgOptimizerTest extends TestCase
     #[Test]
     public function sizeCheckOnlyRevertsTheCheckedRule(): void
     {
-        $growingRule = new class implements SvgOptimizerRuleInterface {
-            public function optimize(\DOMDocument $domDocument): void
+        $growingRule = new class implements PassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
             {
                 $domDocument->documentElement?->setAttribute('fill', 'red');
             }
-
-            public static function shouldCheckSize(): bool
-            {
-                return false;
-            }
-
-            public static function isRisky(): bool
-            {
-                return false;
-            }
         };
 
-        $checkedRule = new class implements SvgOptimizerRuleInterface {
-            public function optimize(\DOMDocument $domDocument): void
+        $checkedRule = new class implements RevertIfLargerPassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
             {
                 $domDocument->documentElement?->appendChild($domDocument->createElement('g'));
-            }
-
-            public static function shouldCheckSize(): bool
-            {
-                return true;
-            }
-
-            public static function isRisky(): bool
-            {
-                return false;
             }
         };
 
         $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg"/>'));
-        $svgOptimizer->addRule($growingRule);
-        $svgOptimizer->addRule($checkedRule);
-        $svgOptimizer->addRule($growingRule);
-        $svgOptimizer->addRule($checkedRule);
+        $svgOptimizer->addPass($growingRule);
+        $svgOptimizer->addPass($checkedRule);
+        $svgOptimizer->addPass($growingRule);
+        $svgOptimizer->addPass($checkedRule);
 
         $svgOptimizer->optimize();
 
@@ -565,25 +541,16 @@ final class SvgOptimizerTest extends TestCase
     #[Test]
     public function sizeCheckKeepsACheckedRuleThatDoesNotGrowTheDocument(): void
     {
-        $shrinkingRule = new class implements SvgOptimizerRuleInterface {
-            public function optimize(\DOMDocument $domDocument): void
+        $shrinkingRule = new class implements RevertIfLargerPassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
             {
                 $domDocument->documentElement?->removeAttribute('width');
-            }
-
-            public static function shouldCheckSize(): bool
-            {
-                return true;
-            }
-
-            public static function isRisky(): bool
-            {
-                return false;
             }
         };
 
         $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg" width="1"/>'));
-        $svgOptimizer->addRule($shrinkingRule);
+        $svgOptimizer->addPass($shrinkingRule);
 
         $svgOptimizer->optimize();
 
@@ -598,25 +565,16 @@ final class SvgOptimizerTest extends TestCase
     #[Test]
     public function sizeCheckKeepsACheckedRuleThatKeepsTheSize(): void
     {
-        $sameSizeRule = new class implements SvgOptimizerRuleInterface {
-            public function optimize(\DOMDocument $domDocument): void
+        $sameSizeRule = new class implements RevertIfLargerPassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
             {
                 $domDocument->documentElement?->setAttribute('width', '2');
-            }
-
-            public static function shouldCheckSize(): bool
-            {
-                return true;
-            }
-
-            public static function isRisky(): bool
-            {
-                return false;
             }
         };
 
         $svgOptimizer = new SvgOptimizer(new StringProvider('<svg xmlns="http://www.w3.org/2000/svg" width="1"/>'));
-        $svgOptimizer->addRule($sameSizeRule);
+        $svgOptimizer->addPass($sameSizeRule);
 
         $svgOptimizer->optimize();
 
@@ -631,25 +589,16 @@ final class SvgOptimizerTest extends TestCase
     #[Test]
     public function revertingARuleDoesNotEmitPhpWarnings(): void
     {
-        $growingRule = new class implements SvgOptimizerRuleInterface {
-            public function optimize(\DOMDocument $domDocument): void
+        $growingRule = new class implements RevertIfLargerPassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
             {
                 $domDocument->documentElement?->setAttribute('data-padding', 'makes-the-serialized-content-longer');
-            }
-
-            public static function shouldCheckSize(): bool
-            {
-                return true;
-            }
-
-            public static function isRisky(): bool
-            {
-                return false;
             }
         };
 
         $svgOptimizer = new SvgOptimizer(new StringProvider('<svg><use xlink:href="#a"/></svg>'));
-        $svgOptimizer->addRule($growingRule);
+        $svgOptimizer->addPass($growingRule);
 
         $warnings = [];
         set_error_handler(static function (int $errno, string $errstr) use (&$warnings): bool {
@@ -677,7 +626,7 @@ final class SvgOptimizerTest extends TestCase
     public function getMetaDataMeasuresTheInputAndTheOutputInBytes(): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider("<svg xmlns=\"http://www.w3.org/2000/svg\"><!-- \u{e9} --></svg>"));
-        $svgOptimizer->configureRules([RemoveComments::class => true]);
+        $svgOptimizer->enableRules(Rule::RemoveComments);
         $svgOptimizer->optimize();
 
         $metrics = $svgOptimizer->getMetaData();
@@ -797,27 +746,18 @@ final class SvgOptimizerTest extends TestCase
     #[Test]
     public function sizeCheckRevertKeepsStylesheetInstructionsAndPrefixes(): void
     {
-        $checkedRule = new class implements SvgOptimizerRuleInterface {
-            public function optimize(\DOMDocument $domDocument): void
+        $checkedRule = new class implements RevertIfLargerPassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
             {
                 $domDocument->documentElement?->appendChild($domDocument->createElementNS('http://www.w3.org/2000/svg', 'svg:g'));
-            }
-
-            public static function shouldCheckSize(): bool
-            {
-                return true;
-            }
-
-            public static function isRisky(): bool
-            {
-                return false;
             }
         };
 
         $svg = '<?xml-stylesheet href="a.css"?><svg:svg xmlns:svg="http://www.w3.org/2000/svg"><svg:rect width="1"/></svg:svg>';
         $svgOptimizer = new SvgOptimizer(new StringProvider('<?xml version="1.0"?>' . $svg . '<!-- after -->'));
-        $svgOptimizer->addRule($checkedRule);
-        $svgOptimizer->addRule($checkedRule);
+        $svgOptimizer->addPass($checkedRule);
+        $svgOptimizer->addPass($checkedRule);
 
         self::assertSame($svg, $svgOptimizer->optimize()->getContent());
     }
@@ -830,27 +770,18 @@ final class SvgOptimizerTest extends TestCase
     #[Test]
     public function sizeCheckRevertKeepsNonAsciiAttributesAsUtf8(): void
     {
-        $checkedRule = new class implements SvgOptimizerRuleInterface {
-            public function optimize(\DOMDocument $domDocument): void
+        $checkedRule = new class implements RevertIfLargerPassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
             {
                 $domDocument->documentElement?->setAttribute('data-x', 'grown');
-            }
-
-            public static function shouldCheckSize(): bool
-            {
-                return true;
-            }
-
-            public static function isRisky(): bool
-            {
-                return false;
             }
         };
 
         $svg = '<svg xmlns="http://www.w3.org/2000/svg" font-family="日本 😀"><text>é</text></svg>';
         $svgOptimizer = new SvgOptimizer(new StringProvider($svg));
-        $svgOptimizer->addRule($checkedRule);
-        $svgOptimizer->addRule($checkedRule);
+        $svgOptimizer->addPass($checkedRule);
+        $svgOptimizer->addPass($checkedRule);
 
         self::assertSame($svg, $svgOptimizer->optimize()->getContent());
     }
@@ -926,16 +857,16 @@ final class SvgOptimizerTest extends TestCase
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
         $svgOptimizer->enableRuleSets();
-        self::assertSame(0, $svgOptimizer->getRulesCount());
+        self::assertCount(0, $svgOptimizer->getPasses());
 
         $svgOptimizer->enableRuleSets(RuleSet::Cleanup);
-        self::assertSame($this->countRules(RuleSet::Cleanup, false), $svgOptimizer->getRulesCount());
+        self::assertCount($this->countRules(RuleSet::Cleanup, false), $svgOptimizer->getPasses());
 
         $svgOptimizer->enableRuleSets(RuleSet::Minification, RuleSet::Cleanup);
-        self::assertSame($this->countRules(RuleSet::Cleanup, false) + $this->countRules(RuleSet::Minification, false), $svgOptimizer->getRulesCount());
+        self::assertCount($this->countRules(RuleSet::Cleanup, false) + $this->countRules(RuleSet::Minification, false), $svgOptimizer->getPasses());
 
         $svgOptimizer->allowRisky();
-        self::assertSame($this->countRules(RuleSet::Cleanup, true) + $this->countRules(RuleSet::Minification, true), $svgOptimizer->getRulesCount());
+        self::assertCount($this->countRules(RuleSet::Cleanup, true) + $this->countRules(RuleSet::Minification, true), $svgOptimizer->getPasses());
     }
 
     #[Test]
@@ -944,10 +875,10 @@ final class SvgOptimizerTest extends TestCase
         $svgOptimizer = new SvgOptimizer($this->svgProvider);
 
         $svgOptimizer->allowRisky();
-        self::assertSame(0, $svgOptimizer->getRulesCount());
+        self::assertCount(0, $svgOptimizer->getPasses());
 
         $svgOptimizer->enableRuleSets(RuleSet::Structure);
-        self::assertSame($this->countRules(RuleSet::Structure, true), $svgOptimizer->getRulesCount());
+        self::assertCount($this->countRules(RuleSet::Structure, true), $svgOptimizer->getPasses());
         self::assertGreaterThan($this->countRules(RuleSet::Structure, false), $this->countRules(RuleSet::Structure, true));
     }
 
@@ -958,15 +889,18 @@ final class SvgOptimizerTest extends TestCase
 
         $svgOptimizer->enableAllRules();
 
-        $allRulesCount = $svgOptimizer->getRulesCount();
+        $allRulesCount = \count($svgOptimizer->getPasses());
         $svgOptimizer->enableRuleSets(...RuleSet::cases());
 
-        self::assertSame($allRulesCount, $svgOptimizer->getRulesCount());
-        self::assertSame(\count(array_filter(Rule::cases(), static fn (Rule $rule): bool => !$rule->value::isRisky())), $allRulesCount);
+        self::assertCount($allRulesCount, $svgOptimizer->getPasses());
+        self::assertSame(\count(array_merge(...array_map(static fn (Rule $rule): array => $rule->passes(), array_filter(Rule::cases(), static fn (Rule $rule): bool => !$rule->isRisky())))), $allRulesCount);
     }
 
     private function countRules(RuleSet $ruleSet, bool $withRisky): int
     {
-        return \count(array_filter($ruleSet->rules(), static fn (Rule $rule): bool => $withRisky || !$rule->value::isRisky()));
+        return \count(array_merge(...array_map(
+            static fn (Rule $rule): array => $rule->passes(),
+            array_filter($ruleSet->rules(), static fn (Rule $rule): bool => $withRisky || !$rule->isRisky()),
+        )));
     }
 }

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
@@ -25,30 +25,18 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
  *
  * @no-named-arguments
  */
-final readonly class RemoveUnusedDefinitions implements SvgOptimizerRuleInterface
+final readonly class RemoveUnusedDefinitions implements PassInterface
 {
     use DefinitionElementTrait;
     use ElementTrait;
     use FragmentTargetTrait;
     use IdReferenceTrait;
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return true;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         if ($this->hasSiblingSensitiveStyle($domDocument)
             || $this->mayTargetAnyId($domDocument)

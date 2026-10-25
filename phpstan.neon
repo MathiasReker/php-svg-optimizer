@@ -23,6 +23,8 @@ parameters:
   ignoreErrors:
     # Rules share logic through traits by design.
     - identifier: symplify.forbiddenTrait
+    # Interfaces live next to their implementations by design.
+    - identifier: symplify.requiredInterfaceContractNamespace
   type_coverage:
     return: 100
     param: 100

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\RevertIfLargerPassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
@@ -27,7 +27,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
  *
  * @no-named-arguments
  */
-final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterface
+final readonly class ConvertOneStopGradients implements RevertIfLargerPassInterface
 {
     use DocumentScriptTrait;
     use ElementTrait;
@@ -55,23 +55,11 @@ final readonly class ConvertOneStopGradients implements SvgOptimizerRuleInterfac
 
     private const string TRANSPARENT = 'transparent';
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return true;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         if ($this->hasStyleElement($domDocument) || $this->hasScriptOrEventHandler($domDocument)) {
             return;

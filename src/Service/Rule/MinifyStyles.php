@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\StyleSheetContextTrait;
@@ -21,7 +21,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\StyleSheetContextTrait;
  *
  * @no-named-arguments
  */
-final readonly class MinifyStyles implements SvgOptimizerRuleInterface
+final readonly class MinifyStyles implements PassInterface
 {
     use ElementTrait;
     use StyleSheetContextTrait;
@@ -40,23 +40,11 @@ final readonly class MinifyStyles implements SvgOptimizerRuleInterface
 
     private const array JOINING_PAIRS = ['>=', '~=', '->', '<!', '!-'];
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         foreach ($this->elementsNamed($domDocument, SvgTag::Style->value) as $domElement) {
             if ($this->isForeignContent($domElement) || !$this->isCssTextStyle($domElement)) {

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
@@ -23,7 +23,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
  *
  * @no-named-arguments
  */
-final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterface
+final readonly class RemoveInkscapeFootprints implements PassInterface
 {
     use CssDeclarationTrait;
     use ElementTrait;
@@ -60,23 +60,11 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
 
     private const string EXTENSION_SEPARATOR = ' ';
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         if ($this->hasExternalStyleSheet($domDocument)) {
             return;
@@ -124,6 +112,7 @@ final readonly class RemoveInkscapeFootprints implements SvgOptimizerRuleInterfa
         foreach ($domNodeList as $domElement) {
             if (\in_array($domElement->namespaceURI, [null, SvgNamespace::Svg->value], true)
                 && $this->requiresEditorExtension($domElement)
+                && !$this->hasSvgElementWithId($domElement)
                 && $domElement->parentNode instanceof \DOMElement
             ) {
                 $domElement->parentNode->removeChild($domElement);

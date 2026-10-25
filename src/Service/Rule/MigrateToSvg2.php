@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
@@ -26,7 +26,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\Svg2XlinkMigrationTrait;
  *
  * @no-named-arguments
  */
-final readonly class MigrateToSvg2 implements SvgOptimizerRuleInterface
+final readonly class MigrateToSvg2 implements PassInterface
 {
     use CssDeclarationTrait;
     use ElementTrait;
@@ -89,23 +89,11 @@ final readonly class MigrateToSvg2 implements SvgOptimizerRuleInterface
         'solid-opacity',
     ];
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
         $hasExternalStyle = $this->hasExternalStyleSheet($domDocument);
@@ -117,9 +105,9 @@ final readonly class MigrateToSvg2 implements SvgOptimizerRuleInterface
 
         $this->removeXmlIds($domDocument, $hasExternalStyle, $css);
         $removesElements = !$this->hasSiblingSensitiveStyle($domDocument);
-        $removedIds = $removesElements ? $this->removeObsoleteElements($domDocument) : [];
+        $obsoleteIds = $removesElements ? $this->removeObsoleteElements($domDocument) : [];
 
-        $this->migrateAttributes($domDocument, $css, $removedIds);
+        $this->migrateAttributes($domDocument, $css, $obsoleteIds);
 
         if (!$hasExternalStyle) {
             $this->removeXmlEventsNodes($domXPath, $css, $removesElements);
@@ -132,9 +120,9 @@ final readonly class MigrateToSvg2 implements SvgOptimizerRuleInterface
     /**
      * @param \DOMDocument          $domDocument the DOM document to modify
      * @param string                $css         the style sheets of the document
-     * @param array<string, string> $removedIds  the ids of the removed elements
+     * @param array<string, string> $obsoleteIds the ids of the obsolete elements, whose references fall back
      */
-    private function migrateAttributes(\DOMDocument $domDocument, string $css, array $removedIds): void
+    private function migrateAttributes(\DOMDocument $domDocument, string $css, array $obsoleteIds): void
     {
         $removable = $this->removableDroppedAttributes($domDocument, $css, self::REMOVED_ATTRIBUTES);
         $migratesStyles = [] !== $this->removableAttributes($domDocument, $css, [SvgAttribute::Style->value]);
@@ -147,10 +135,10 @@ final readonly class MigrateToSvg2 implements SvgOptimizerRuleInterface
             $this->migrateTimelineAttributes($domNodeList, $removable);
             $this->removeObsoleteAttributes($domNodeList, $removable);
 
-            $this->migratePaintAttributes($domNodeList, $removedIds);
+            $this->migratePaintAttributes($domNodeList, $obsoleteIds);
 
             if ($migratesStyles) {
-                $this->migrateStyleAttribute($domNodeList, self::REMOVED_PROPERTIES, $removedIds);
+                $this->migrateStyleAttribute($domNodeList, self::REMOVED_PROPERTIES, $obsoleteIds);
             }
         }
     }

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
@@ -28,7 +28,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\UnsafeAttributeTrait;
  *
  * @no-named-arguments
  */
-final readonly class RemoveForeignContent implements SvgOptimizerRuleInterface
+final readonly class RemoveForeignContent implements PassInterface
 {
     use AsciiCaseTrait;
     use CanonicalNameTrait;
@@ -57,23 +57,11 @@ final readonly class RemoveForeignContent implements SvgOptimizerRuleInterface
 
     private const string FONT_TAG = 'font';
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to sanitize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $this->expandEntityReferences($domDocument);
         $this->removeElementsWhere($domDocument, $this->isUnsafeElement(...));

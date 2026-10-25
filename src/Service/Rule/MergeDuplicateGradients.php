@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\RevertIfLargerPassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
@@ -27,7 +27,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdRenameTrait;
  *
  * @no-named-arguments
  */
-final readonly class MergeDuplicateGradients implements SvgOptimizerRuleInterface
+final readonly class MergeDuplicateGradients implements RevertIfLargerPassInterface
 {
     use DocumentScriptTrait;
     use ElementTrait;
@@ -38,23 +38,11 @@ final readonly class MergeDuplicateGradients implements SvgOptimizerRuleInterfac
 
     private const string URL_REFERENCE_REGEX = '/(url\(\s*([\'"]?)#)([^\'")\s]+)(\2\s*\))/i';
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return true;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         if ($this->hasStyleElement($domDocument)
             || $this->hasScriptOrEventHandler($domDocument)) {
@@ -211,8 +199,7 @@ final readonly class MergeDuplicateGradients implements SvgOptimizerRuleInterfac
 
         foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
             foreach ($domNodeList->attributes as $attribute) {
-                $rewritten = new \DOMAttr($attribute->nodeName, $this->rewrittenValue($attribute, $replacements));
-                $blocked += $this->attributeReferences($rewritten);
+                $blocked += $this->attributeValueReferences($attribute->nodeName, $this->rewrittenValue($attribute, $replacements));
             }
         }
 

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
@@ -22,7 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdRenameTrait;
 /**
  * @internal
  */
-final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
+final readonly class ScopeSvgStyles implements PassInterface
 {
     use CssDeclarationTrait;
     use CssStyleElementTrait;
@@ -58,19 +58,7 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
     private const string SCOPED_NAME_REGEX = '/-[0-9a-f]{10}(?:-\d+)?$/';
 
     #[\Override]
-    public static function isRisky(): bool
-    {
-        return true;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $domXPath = new \DOMXPath($domDocument);
 
@@ -225,7 +213,7 @@ final readonly class ScopeSvgStyles implements SvgOptimizerRuleInterface
                     $scopedSelectors[] = $this->scopeSelectorIds($selector, $hash, $fragmentTargets);
                 }
 
-                return \sprintf('%s{%s}', implode(', ', $scopedSelectors), $body);
+                return \sprintf('%s{%s}', implode(',', $scopedSelectors), $body);
             },
             $css
         );

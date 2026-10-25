@@ -48,7 +48,7 @@ final class RemoveUnusedIdsTest extends TestCase
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
         $svgOptimizer->allowRisky();
-        $svgOptimizer->addRule(new RemoveUnusedIds());
+        $svgOptimizer->addPass(new RemoveUnusedIds());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -65,6 +65,11 @@ final class RemoveUnusedIdsTest extends TestCase
         yield from self::provideKeptElementCases();
         yield from self::provideFragmentTargetCases();
         yield from self::provideResourceDocumentCases();
+
+        yield 'Removes ids referenced only from elements that browsers ignore' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><text id="t">a</text><text id="u">b</text><text><tref href="#t"/><altGlyph href="#u">a</altGlyph><glyphRef href="#t"/></text><rect id="r" fill="url(#t)"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text id="t">a</text><text>b</text><text><tref href="#t"/><altGlyph href="#u">a</altGlyph><glyphRef href="#t"/></text><rect fill="url(#t)"/></svg>',
+        ];
     }
 
     /**
@@ -634,21 +639,9 @@ final class RemoveUnusedIdsTest extends TestCase
     {
         $domDocument = new \DOMDocument();
 
-        (new RemoveUnusedIds())->optimize($domDocument);
+        (new RemoveUnusedIds())->apply($domDocument);
 
         self::assertNull($domDocument->documentElement);
-    }
-
-    #[Test]
-    public function isRiskyReturnsTrue(): void
-    {
-        self::assertTrue(RemoveUnusedIds::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveUnusedIds::shouldCheckSize());
     }
 
     #[Test]
@@ -666,7 +659,7 @@ final class RemoveUnusedIdsTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><defs><rect id="r"/></defs><use href="#r"/><rect id="s"/></svg>');
 
         $start = hrtime(true);
-        (new RemoveUnusedIds())->optimize($domDocument);
+        (new RemoveUnusedIds())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }

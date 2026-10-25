@@ -45,13 +45,13 @@ final class RemoveEmptyTextElementsTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveEmptyTextElements());
+        $svgOptimizer->addPass(new RemoveEmptyTextElements());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
 
         $repeated = new SvgOptimizer(new StringProvider($actual));
-        $repeated->addRule(new RemoveEmptyTextElements());
+        $repeated->addPass(new RemoveEmptyTextElements());
         self::assertSame($actual, $repeated->optimize()->getContent());
     }
 
@@ -312,11 +312,5 @@ final class RemoveEmptyTextElementsTest extends TestCase
                 <svg xmlns="http://www.w3.org/2000/svg"><rect width="2" height="2"/></svg>
                 XML,
         ];
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsTrue(): void
-    {
-        self::assertTrue(RemoveEmptyTextElements::shouldCheckSize());
     }
 }

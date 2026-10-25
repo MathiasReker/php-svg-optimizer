@@ -673,28 +673,6 @@ enum SvgAttribute: string implements SvgDataInterface
     /**
      * @return list<string>
      */
-    public static function eventHandlers(): array
-    {
-        /** @var list<string>|null $cache */
-        static $cache = null;
-
-        return $cache ??= self::valuesFromCases(self::eventHandlerCases());
-    }
-
-    /**
-     * @return list<SvgAttribute>
-     */
-    public static function eventHandlerCases(): array
-    {
-        return array_values(array_filter(
-            self::cases(),
-            static fn (self $attribute): bool => str_starts_with($attribute->value, 'on'),
-        ));
-    }
-
-    /**
-     * @return list<string>
-     */
     public static function htmlOnly(): array
     {
         /** @var list<string>|null $cache */

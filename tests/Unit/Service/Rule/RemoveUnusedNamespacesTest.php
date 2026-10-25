@@ -43,7 +43,7 @@ final class RemoveUnusedNamespacesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveUnusedNamespaces());
+        $svgOptimizer->addPass(new RemoveUnusedNamespaces());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -245,18 +245,6 @@ final class RemoveUnusedNamespacesTest extends TestCase
     }
 
     #[Test]
-    public function isRiskyReturnsFalse(): void
-    {
-        self::assertFalse(RemoveUnusedNamespaces::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveUnusedNamespaces::shouldCheckSize());
-    }
-
-    #[Test]
     public function handlesAnElementWithManyAttributesInLinearTime(): void
     {
         $small = $this->secondsToOptimize(5_000);
@@ -271,7 +259,7 @@ final class RemoveUnusedNamespacesTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect ' . implode(' ', array_map(static fn (int $i): string => 'a' . $i . '="' . $i . '"', range(1, $count))) . '/></svg>');
 
         $start = hrtime(true);
-        (new RemoveUnusedNamespaces())->optimize($domDocument);
+        (new RemoveUnusedNamespaces())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }

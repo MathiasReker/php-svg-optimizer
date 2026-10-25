@@ -11,41 +11,45 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 
 /**
  * @internal
  *
  * @no-named-arguments
  */
-final readonly class RemoveDataAttributes implements SvgOptimizerRuleInterface
+final readonly class RemoveDataAttributes implements PassInterface
 {
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return true;
-    }
+    use ElementTrait;
 
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
+    private const string DATA_ATTRIBUTE_PREFIX = 'data-';
 
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
-        $domNodeList = $domDocument->getElementsByTagName('*');
+        $css = $this->styleSheetText($domDocument);
 
-        foreach ($domNodeList as $domElement) {
-            foreach (array_keys(iterator_to_array($domElement->attributes, true)) as $name) {
-                if (0 === strncasecmp($name, 'data-', 5)) {
-                    $domElement->removeAttribute($name);
+        foreach ($domDocument->getElementsByTagName('*') as $domNodeList) {
+            foreach (array_keys(iterator_to_array($domNodeList->attributes, true)) as $name) {
+                if (0 === strncasecmp($name, self::DATA_ATTRIBUTE_PREFIX, mb_strlen(self::DATA_ATTRIBUTE_PREFIX)) && !$this->isNamedIn($css, $name)) {
+                    $domNodeList->removeAttribute($name);
                 }
             }
         }
+    }
+
+    /**
+     * @param string $css  the style sheets of the document
+     * @param string $name the name of a data attribute
+     *
+     * @return bool true if the style sheets name the attribute, as in an attribute selector or an `attr()` function
+     */
+    private function isNamedIn(string $css, string $name): bool
+    {
+        return 1 === preg_match('/(?<![\w-])' . preg_quote($name, '/') . '(?![\w-])/iu', $css);
     }
 }

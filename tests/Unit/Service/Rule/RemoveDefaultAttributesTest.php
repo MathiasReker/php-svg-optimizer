@@ -43,13 +43,13 @@ final class RemoveDefaultAttributesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveDefaultAttributes());
+        $svgOptimizer->addPass(new RemoveDefaultAttributes());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
 
         $repeated = new SvgOptimizer(new StringProvider($actual));
-        $repeated->addRule(new RemoveDefaultAttributes());
+        $repeated->addPass(new RemoveDefaultAttributes());
         self::assertSame($actual, $repeated->optimize()->getContent());
     }
 
@@ -314,17 +314,5 @@ final class RemoveDefaultAttributesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><g><set attributeName="stroke" to="red"/><path stroke-linecap="butt" d="M0 0h1"/></g></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><g><set attributeName="stroke" to="red"/><path d="M0 0h1"/></g></svg>',
         ];
-    }
-
-    #[Test]
-    public function isRiskyReturnsFalse(): void
-    {
-        self::assertFalse(RemoveDefaultAttributes::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveDefaultAttributes::shouldCheckSize());
     }
 }

@@ -47,7 +47,7 @@ final class ConvertOneStopGradientsTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new ConvertOneStopGradients());
+        $svgOptimizer->addPass(new ConvertOneStopGradients());
 
         $actual = $svgOptimizer->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -529,17 +529,5 @@ final class ConvertOneStopGradientsTest extends TestCase
         }
 
         return $chain;
-    }
-
-    #[Test]
-    public function isRiskyReturnsFalse(): void
-    {
-        self::assertFalse(ConvertOneStopGradients::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsTrue(): void
-    {
-        self::assertTrue(ConvertOneStopGradients::shouldCheckSize());
     }
 }

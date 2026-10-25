@@ -33,18 +33,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 final class RemoveDataAttributesTest extends TestCase
 {
-    #[Test]
-    public function ruleIsMarkedAsRisky(): void
-    {
-        self::assertTrue(RemoveDataAttributes::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveDataAttributes::shouldCheckSize());
-    }
-
     /**
      * @throws XmlProcessingException
      * @throws RiskyRulesNotAllowedException
@@ -55,7 +43,7 @@ final class RemoveDataAttributesTest extends TestCase
     public function optimize(string $content, string $expected): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveDataAttributes());
+        $svgOptimizer->addPass(new RemoveDataAttributes());
 
         $actual = $svgOptimizer->allowRisky()->optimize()->getContent();
         self::assertSame($expected, $actual);
@@ -229,6 +217,26 @@ final class RemoveDataAttributesTest extends TestCase
         yield 'Removes data attributes written in another case or with an astral name' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect DATA-X="1" Data-Y="2" data-😀="3"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>',
+        ];
+
+        yield 'Keeps data attributes that a style sheet selects' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[data-state="on"]{fill:red} rect[ DATA-Kind ]{stroke:blue}</style><rect data-state="on" data-kind="a" data-other="1" data-state-extra="2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[data-state="on"]{fill:red} rect[ DATA-Kind ]{stroke:blue}</style><rect data-state="on" data-kind="a"/></svg>',
+        ];
+
+        yield 'Keeps data attributes that a style sheet reads with attr()' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>text::after{content:attr(data-label)}</style><text data-label="x" data-labels="y">t</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>text::after{content:attr(data-label)}</style><text data-label="x">t</text></svg>',
+        ];
+
+        yield 'Removes data attributes that only another document could select' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[data-x-y]{fill:red}</style><rect data-x="1" data-y="2" data-x-y="3"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[data-x-y]{fill:red}</style><rect data-x-y="3"/></svg>',
+        ];
+
+        yield 'Matches the name of a data attribute literally' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[data-axb]{fill:red}</style><rect data-a.b="1" data-axb="2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>[data-axb]{fill:red}</style><rect data-axb="2"/></svg>',
         ];
     }
 }

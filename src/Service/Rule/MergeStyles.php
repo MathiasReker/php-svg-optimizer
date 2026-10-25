@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
@@ -22,7 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\StyleSheetTokenTrait;
  *
  * @no-named-arguments
  */
-final readonly class MergeStyles implements SvgOptimizerRuleInterface
+final readonly class MergeStyles implements PassInterface
 {
     use ElementTrait;
     use StyleSheetTokenTrait;
@@ -49,23 +49,11 @@ final readonly class MergeStyles implements SvgOptimizerRuleInterface
         SvgAttribute::SystemLanguage->value,
     ];
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         $styles = $this->elementsNamed($domDocument, SvgTag::Style->value);
 

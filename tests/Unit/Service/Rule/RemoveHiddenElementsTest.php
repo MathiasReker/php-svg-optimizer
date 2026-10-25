@@ -363,18 +363,6 @@ final class RemoveHiddenElementsTest extends TestCase
         ];
     }
 
-    #[Test]
-    public function ruleIsMarkedAsNotRisky(): void
-    {
-        self::assertFalse(RemoveHiddenElements::isRisky());
-    }
-
-    #[Test]
-    public function shouldCheckSizeReturnsFalse(): void
-    {
-        self::assertFalse(RemoveHiddenElements::shouldCheckSize());
-    }
-
     #[DataProvider('provideHandlesManyNamespaceDeclarationsInLinearTimeCases')]
     #[Test]
     public function handlesManyNamespaceDeclarationsInLinearTime(string $element): void
@@ -401,7 +389,7 @@ final class RemoveHiddenElementsTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '>' . str_repeat($element, $count) . '</svg>');
 
         $start = hrtime(true);
-        (new RemoveHiddenElements())->optimize($domDocument);
+        (new RemoveHiddenElements())->apply($domDocument);
 
         self::assertNull($domDocument->documentElement?->firstElementChild);
 
@@ -416,7 +404,7 @@ final class RemoveHiddenElementsTest extends TestCase
     private function optimizeContent(string $content): string
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new RemoveHiddenElements());
+        $svgOptimizer->addPass(new RemoveHiddenElements());
 
         return $svgOptimizer->optimize()->getContent();
     }

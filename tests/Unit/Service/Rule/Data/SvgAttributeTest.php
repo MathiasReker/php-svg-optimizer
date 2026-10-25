@@ -56,7 +56,6 @@ final class SvgAttributeTest extends TestCase
         self::assertCount(41, SvgAttribute::inheritedCases());
         self::assertNotSame([], SvgAttribute::colorCases());
         self::assertNotSame([], SvgAttribute::dangerousExactCases());
-        self::assertNotSame([], SvgAttribute::eventHandlerCases());
         self::assertNotSame([], SvgAttribute::htmlOnlyCases());
         self::assertNotSame([], SvgAttribute::dangerousCases());
     }
@@ -112,33 +111,6 @@ final class SvgAttributeTest extends TestCase
         self::assertContains('fill', $values);
         self::assertContains('id', $values);
         self::assertContains('viewBox', $values);
-    }
-
-    #[Test]
-    public function eventHandlersReturnsEveryOnAttribute(): void
-    {
-        $eventHandlers = SvgAttribute::eventHandlers();
-        $expected = array_values(array_filter(
-            SvgAttribute::values(),
-            static fn (string $value): bool => str_starts_with($value, 'on'),
-        ));
-
-        self::assertSame($expected, $eventHandlers);
-        self::assertContains('onclick', $eventHandlers);
-        self::assertContains('onload', $eventHandlers);
-        self::assertContains('onwheel', $eventHandlers);
-        self::assertNotContains('opacity', $eventHandlers);
-        self::assertNotContains('orientation', $eventHandlers);
-    }
-
-    #[Test]
-    public function eventHandlersIsCached(): void
-    {
-        self::assertSame(SvgAttribute::eventHandlers(), SvgAttribute::eventHandlers());
-        self::assertSame(
-            array_map(static fn (SvgAttribute $svgAttribute): string => $svgAttribute->value, SvgAttribute::eventHandlerCases()),
-            SvgAttribute::eventHandlers(),
-        );
     }
 
     #[Test]

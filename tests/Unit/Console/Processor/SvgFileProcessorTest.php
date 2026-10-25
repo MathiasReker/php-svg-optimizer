@@ -21,6 +21,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Console\Processor\SvgFileProcessor;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
+use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
@@ -29,7 +30,6 @@ use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEllipseToCircle;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEmptyTagsToSelfClosing;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertOneStopGradients;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertShapesToPath;
@@ -48,11 +48,10 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDataAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDoctype;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDescriptions;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDuplicateElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyContainers;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyGroups;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveForeignContent;
@@ -63,12 +62,11 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardTags;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveScripts;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveStyleTypeAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitleAndDesc;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeMarkup;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeUrls;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedMasks;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUseBombs;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessDefs;
@@ -89,6 +87,9 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
+#[CoversClass(ExecutionOrder::class)]
+#[CoversClass(RemoveDescriptions::class)]
+#[CoversClass(RemoveTitles::class)]
 #[CoversClass(SvgFileProcessor::class)]
 #[CoversClass(OutputManager::class)]
 #[CoversClass(MemoryStream::class)]
@@ -111,7 +112,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ConvertColorsToHex::class)]
 #[CoversClass(ConvertCssClassesToAttributes::class)]
 #[CoversClass(ConvertEllipseToCircle::class)]
-#[CoversClass(ConvertEmptyTagsToSelfClosing::class)]
 #[CoversClass(ConvertInlineStylesToAttributes::class)]
 #[CoversClass(ConvertOneStopGradients::class)]
 #[CoversClass(ConvertShapesToPath::class)]
@@ -129,17 +129,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RemoveDataAttributes::class)]
 #[CoversClass(RemoveDefaultAttributes::class)]
 #[CoversClass(RemoveDeprecatedAttributes::class)]
-#[CoversClass(RemoveDoctype::class)]
 #[CoversClass(RemoveDuplicateElements::class)]
 #[CoversClass(RemoveEmptyAttributes::class)]
 #[CoversClass(RemoveEmptyContainers::class)]
-#[CoversClass(RemoveEmptyGroups::class)]
 #[CoversClass(RemoveEmptyTextElements::class)]
 #[CoversClass(RemoveEnableBackgroundAttribute::class)]
 #[CoversClass(RemoveInkscapeFootprints::class)]
 #[CoversClass(RemoveInvisibleCharacters::class)]
 #[CoversClass(RemoveMetadata::class)]
-#[CoversClass(RemoveTitleAndDesc::class)]
 #[CoversClass(RemoveUnnecessaryWhitespace::class)]
 #[CoversClass(RemoveForeignContent::class)]
 #[CoversClass(RemoveScripts::class)]
@@ -148,7 +145,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(RemoveUseBombs::class)]
 #[CoversClass(SanitizeStyleSheets::class)]
 #[CoversClass(RemoveUnusedIds::class)]
-#[CoversClass(RemoveUnusedMasks::class)]
 #[CoversClass(RemoveUnusedNamespaces::class)]
 #[CoversClass(RemoveUselessDefs::class)]
 #[CoversClass(RemoveWidthHeightAttributes::class)]

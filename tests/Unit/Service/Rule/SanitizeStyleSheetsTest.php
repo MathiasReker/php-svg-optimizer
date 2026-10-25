@@ -49,7 +49,7 @@ final class SanitizeStyleSheetsTest extends TestCase
     public function optimize(string $content, string $expectedSvg): void
     {
         $svgOptimizer = new SvgOptimizer(new StringProvider($content));
-        $svgOptimizer->addRule(new SanitizeStyleSheets());
+        $svgOptimizer->addPass(new SanitizeStyleSheets());
 
         self::assertSame($expectedSvg, $svgOptimizer->optimize()->getContent());
     }
@@ -123,17 +123,5 @@ final class SanitizeStyleSheetsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><?pi x?><script>alert(1)</script><a href="javascript:x"><rect onclick="x()" fill="url(javascript:x)"/></a><foreignObject/><!-- <b> --></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><?pi x?><script>alert(1)</script><a href="javascript:x"><rect onclick="x()" fill="url(javascript:x)"/></a><foreignObject/><!-- <b> --></svg>',
         ];
-    }
-
-    #[Test]
-    public function ruleIsNotRisky(): void
-    {
-        self::assertFalse(SanitizeStyleSheets::isRisky());
-    }
-
-    #[Test]
-    public function ruleSkipsTheSizeCheck(): void
-    {
-        self::assertFalse(SanitizeStyleSheets::shouldCheckSize());
     }
 }

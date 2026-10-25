@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Service\Rule;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Service\Rule\SvgOptimizerRuleInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
 
@@ -20,7 +20,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\NumberFormatterTrait;
  *
  * @no-named-arguments
  */
-final readonly class MinifyNumericValues implements SvgOptimizerRuleInterface
+final readonly class MinifyNumericValues implements PassInterface
 {
     use ElementTrait;
     use NumberFormatterTrait;
@@ -47,29 +47,19 @@ final readonly class MinifyNumericValues implements SvgOptimizerRuleInterface
         'y' => ['fePointLight', 'feSpotLight'],
     ];
 
-    private const string LENGTH_REGEX = '/^\s*(' . self::NUMBER_PATTERN . ')(?:px)?\s*$/';
+    private const string LENGTH_UNIT_PATTERN = '%|(?i:px|cm|mm|q|in|pt|pc|r?em|r?ex|r?ch|r?cap|r?ic|r?lh|[sld]?v(?:w|h|i|b|min|max)|cq(?:w|h|i|b|min|max))';
+
+    private const string LENGTH_REGEX = '/^\s*(' . self::NUMBER_PATTERN . ')(?:px|(' . self::LENGTH_UNIT_PATTERN . '))?\s*$/';
 
     private const string NUMBER_REGEX = '/^\s*(' . self::NUMBER_PATTERN . ')\s*$/';
 
     private const string INTEGER_REGEX = '/^\s*(-?\d+)\s*$/';
 
-    #[\Override]
-    public static function isRisky(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public static function shouldCheckSize(): bool
-    {
-        return false;
-    }
-
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
      */
     #[\Override]
-    public function optimize(\DOMDocument $domDocument): void
+    public function apply(\DOMDocument $domDocument): void
     {
         if ($this->mayMatchAttributeValues($domDocument)) {
             return;
@@ -99,7 +89,7 @@ final readonly class MinifyNumericValues implements SvgOptimizerRuleInterface
         $regex = $this->valueRegex($element, $domAttr->name);
 
         if ('' !== $regex && 1 === preg_match($regex, $domAttr->value, $matches)) {
-            $domAttr->value = $this->minifyNumber($matches[1]);
+            $domAttr->value = $this->minifyNumber($matches[1]) . ($matches[2] ?? '');
         }
     }
 
