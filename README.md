@@ -433,7 +433,7 @@ file with `"sets": ["security", "minification"]`.
 | --- | --- | --- | --- |
 | `security` | `RuleSet::Security` | Remove scripts, event handlers, unsafe links and other active content from untrusted SVGs. | `removeUnsafeMarkup`, `removeScripts`, `removeForeignContent`, `removeUnsafeUrls`, `sanitizeStyleSheets`, `removeUseBombs` |
 | `standards` | `RuleSet::Standards` | Bring the markup in line with the SVG specification. | `fixAttributeNames` (risky), `migrateToSvg2`, `removeNonStandardTags`, `removeNonStandardAttributes` |
-| `cleanup` | `RuleSet::Cleanup` | Remove editor data, comments, unused definitions and content that has no effect. | `removeComments`, `removeMetadata`, `removeInkscapeFootprints`, `removeUnusedIds` (risky), `removeDataAttributes` (risky), `removeInvisibleCharacters`, `removeDefaultAttributes`, `removeWidthHeightAttributes` (risky), `removeEmptyAttributes`, `removeUnusedDefinitions` (risky), `removeIneffectiveAttributes`, `removeHiddenElements`, `removeUselessDefs`, `removeDuplicateElements`, `removeEmptyElements`, `removeUnusedNamespaces` |
+| `cleanup` | `RuleSet::Cleanup` | Remove editor data, comments, unused definitions and content that has no effect. | `removeComments`, `removeMetadata`, `removeInkscapeFootprints`, `removeUnusedIds` (risky), `removeDataAttributes` (risky), `removeInvisibleCharacters`, `removeDefaultAttributes`, `removeWidthHeightAttributes` (risky), `removeEmptyAttributes`, `removeIneffectiveAttributes`, `removeHiddenElements`, `removeUselessDefs`, `removeDuplicateElements`, `removeEmptyElements`, `removeUnusedDefinitions` (risky), `removeUnusedNamespaces` |
 | `conversion` | `RuleSet::Conversion` | Convert styles, colors, gradients and shapes into shorter equivalents. | `convertCssClassesToAttributes`, `convertInlineStylesToAttributes`, `convertColorsToHex`, `convertOneStopGradients` (risky), `convertEllipseToCircle`, `convertShapesToPath` |
 | `structure` | `RuleSet::Structure` | Restructure styles, gradients and groups. | `mergeStyles`, `mergeDuplicateGradients` (risky), `flattenGroups`, `moveGroupAttributesToElements`, `moveCommonAttributesToGroup` |
 | `minification` | `RuleSet::Minification` | Write numbers, paths, styles and whitespace in their shortest form and order the markup. | `minifyStyles`, `minifyNumericValues`, `minifyTransformations`, `minifyPathData`, `removeUnnecessaryWhitespace`, `sortDefsChildren`, `sortAttributes` |
@@ -1208,7 +1208,8 @@ ids that another document may address through `sprite.svg#id` (with `<use>`, `<i
 - `<symbol>` and `<view>` elements;
 - `<g>`, `<svg>` and `<symbol>` elements directly inside the root `<svg>`;
 - elements that `<use>` can show (such as `<g>`, `<path>` or a nested `<svg>`) inside the root `<defs>` or inside a
-  group hidden with `display: none`, and inside groups within those;
+  group hidden with `display: none` (as an attribute, in its `style`, or through a class that a style sheet may
+  hide), and inside groups within those;
 - every element with an id, when a style sheet uses `:target`;
 - every top-level element of a document that renders nothing itself, such as an inline sprite hidden with
   `display: none` or sized `0`, or a library of gradients, filters and masks.

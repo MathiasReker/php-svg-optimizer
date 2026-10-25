@@ -77,12 +77,12 @@ final class RuleSetTest extends TestCase
             Rule::RemoveDefaultAttributes,
             Rule::RemoveWidthHeightAttributes,
             Rule::RemoveEmptyAttributes,
-            Rule::RemoveUnusedDefinitions,
             Rule::RemoveIneffectiveAttributes,
             Rule::RemoveHiddenElements,
             Rule::RemoveUselessDefs,
             Rule::RemoveDuplicateElements,
             Rule::RemoveEmptyElements,
+            Rule::RemoveUnusedDefinitions,
             Rule::RemoveUnusedNamespaces,
         ]];
 

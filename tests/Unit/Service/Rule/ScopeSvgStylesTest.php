@@ -19,6 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ClassAttributeTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssStyleElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\FragmentTargetTrait;
@@ -40,6 +41,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(ClassAttributeTrait::class)]
 #[CoversTrait(CssDeclarationTrait::class)]
 #[CoversTrait(CssStyleElementTrait::class)]
 #[CoversTrait(FragmentTargetTrait::class)]

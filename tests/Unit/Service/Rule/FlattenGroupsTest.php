@@ -22,6 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
@@ -49,6 +50,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(SvgNamespace::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(CssDeclarationTrait::class)]
 #[CoversTrait(DocumentScriptTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(IdReferenceTrait::class)]
@@ -96,6 +98,30 @@ final class FlattenGroupsTest extends TestCase
         yield 'Keeps a group whose child unsets an inherited property' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><rect style="fill:unset" width="5" height="5"/></g></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><rect style="fill:unset" width="5" height="5"/></g></svg>',
+        ];
+        yield 'Leaves out a group attribute that the style of a child sets to the same value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><rect style="fill:red" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red" width="5" height="5"/></svg>',
+        ];
+
+        yield 'Leaves out a group attribute that the style of a child sets to the same value in another case' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><rect style="FILL: red" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="FILL: red" width="5" height="5"/></svg>',
+        ];
+
+        yield 'Sets a group attribute that the style of a child sets to another value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><rect style="fill:blue" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:blue" width="5" height="5" fill="red"/></svg>',
+        ];
+
+        yield 'Sets a group attribute that the style of a child does not set' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><rect style="stroke:red" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="stroke:red" width="5" height="5" fill="red"/></svg>',
+        ];
+
+        yield 'Sets a group attribute when the style of a child cannot be split safely' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><g fill="red"><rect style="fill:red;content:\'x" width="5" height="5"/></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;content:\'x" width="5" height="5" fill="red"/></svg>',
         ];
 
         yield 'Keeps a group whose child uses a custom property' => [

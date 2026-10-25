@@ -20,6 +20,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedDefinitions;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ClassAttributeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DefinitionElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
@@ -43,6 +45,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(ClassAttributeTrait::class)]
+#[CoversTrait(CssDeclarationTrait::class)]
 #[CoversTrait(DefinitionElementTrait::class)]
 #[CoversTrait(DocumentScriptTrait::class)]
 #[CoversTrait(ElementTrait::class)]

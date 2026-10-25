@@ -19,6 +19,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ClassAttributeTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DefinitionElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
@@ -42,6 +44,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(ClassAttributeTrait::class)]
+#[CoversTrait(CssDeclarationTrait::class)]
 #[CoversTrait(DefinitionElementTrait::class)]
 #[CoversTrait(DocumentScriptTrait::class)]
 #[CoversTrait(ElementTrait::class)]
@@ -565,6 +569,35 @@ final class RemoveUnusedIdsTest extends TestCase
         yield 'Removes the ids inside a group without a class when a style sheet hides through a class' => [
             self::SVG . '<style>.h{display:none}</style><g><g id="a"/><rect/></g></svg>',
             self::SVG . '<style>.h{display:none}</style><g><g/><rect/></g></svg>',
+        ];
+        yield 'Removes the ids inside a group whose class no style sheet hides' => [
+            self::SVG . '<style>.h{display:none}.f{fill:red}</style><g class="f"><g id="a"/><rect/></g></svg>',
+            self::SVG . '<style>.h{display:none}.f{fill:red}</style><g class="f"><g/><rect/></g></svg>',
+        ];
+
+        yield 'Removes the ids inside a group whose class a style sheet without hiding rules styles' => [
+            self::SVG . '<style>.f{fill:red}</style><style>.h{display:none}</style><g class="f"><g id="a"/><rect/></g></svg>',
+            self::SVG . '<style>.f{fill:red}</style><style>.h{display:none}</style><g class="f"><g/><rect/></g></svg>',
+        ];
+
+        yield 'Keeps the ids inside a group with a hidden class among its classes' => [
+            self::SVG . '<style>.h{display:none}.f{fill:red}</style><g class="f h"><g id="a"/><rect/></g></svg>',
+            self::SVG . '<style>.h{display:none}.f{fill:red}</style><g class="f h"><g id="a"/><rect/></g></svg>',
+        ];
+
+        yield 'Keeps the ids inside a group with a class from a hiding selector list' => [
+            self::SVG . '<style>.h,.k{display:none}</style><g class="k"><g id="a"/><rect/></g></svg>',
+            self::SVG . '<style>.h,.k{display:none}</style><g class="k"><g id="a"/><rect/></g></svg>',
+        ];
+
+        yield 'Keeps the ids inside a group with any class when a hiding rule selects more than classes' => [
+            self::SVG . '<style>rect{display:none}.f{fill:red}</style><g class="f"><g id="a"/><rect/></g></svg>',
+            self::SVG . '<style>rect{display:none}.f{fill:red}</style><g class="f"><g id="a"/><rect/></g></svg>',
+        ];
+
+        yield 'Keeps the ids inside a group with any class when a hiding style sheet is not a plain rule list' => [
+            self::SVG . '<style>/* c */.h{display:none}</style><g class="f"><g id="a"/><rect/></g></svg>',
+            self::SVG . '<style>/* c */.h{display:none}</style><g class="f"><g id="a"/><rect/></g></svg>',
         ];
 
         yield 'Removes empty ids of symbols and other elements' => [

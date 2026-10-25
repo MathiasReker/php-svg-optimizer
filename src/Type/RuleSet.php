@@ -60,12 +60,12 @@ enum RuleSet: string
                 Rule::RemoveDefaultAttributes,
                 Rule::RemoveWidthHeightAttributes,
                 Rule::RemoveEmptyAttributes,
-                Rule::RemoveUnusedDefinitions,
                 Rule::RemoveIneffectiveAttributes,
                 Rule::RemoveHiddenElements,
                 Rule::RemoveUselessDefs,
                 Rule::RemoveDuplicateElements,
                 Rule::RemoveEmptyElements,
+                Rule::RemoveUnusedDefinitions,
                 Rule::RemoveUnusedNamespaces,
             ],
             self::Conversion => [

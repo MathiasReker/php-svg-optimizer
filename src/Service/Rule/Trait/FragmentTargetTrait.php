@@ -22,6 +22,8 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
  */
 trait FragmentTargetTrait
 {
+    use ClassAttributeTrait;
+
     private const string FRAGMENT_TARGET_ALWAYS_QUERY = '//*[local-name()="symbol" or local-name()="view"]';
 
     private const string FRAGMENT_TARGET_ALL_IDS_QUERY = '//*[@id or @xml:id]';
@@ -68,12 +70,12 @@ trait FragmentTargetTrait
             return $this->idsOfNodes($this->queryFragmentNodes($domXPath, self::FRAGMENT_TARGET_ALL_IDS_QUERY));
         }
 
-        $classHides = $this->hasHidingStyleSheet($domXPath);
+        $hidingClasses = $this->hidingClasses($domXPath);
         $targets = $this->idsOfNodes($this->queryFragmentNodes($domXPath, self::FRAGMENT_TARGET_ALWAYS_QUERY));
 
         foreach ($this->rootElements($domDocument) as $root) {
-            $resource = $this->isResourceDocument($root, $classHides);
-            $targets += $this->fragmentTargetsWithin($root, $resource, $resource, $classHides);
+            $resource = $this->isResourceDocument($root, $hidingClasses);
+            $targets += $this->fragmentTargetsWithin($root, $resource, $resource, $hidingClasses);
         }
 
         return $targets;
@@ -106,11 +108,60 @@ trait FragmentTargetTrait
     /**
      * @param \DOMXPath $domXPath the XPath object for querying the document
      *
-     * @return bool true if a style sheet may hide an element through its class
+     * @return array<string, true>|true the classes that style sheets hide elements through, or true if they may hide
+     *                                  an element through any class
      */
-    private function hasHidingStyleSheet(\DOMXPath $domXPath): bool
+    private function hidingClasses(\DOMXPath $domXPath): array|true
     {
-        return $this->anyStyleMatches($domXPath, self::FRAGMENT_TARGET_HIDING_CSS_REGEX);
+        $classes = [];
+
+        foreach ($this->queryFragmentNodes($domXPath, self::FRAGMENT_TARGET_STYLE_QUERY) as $style) {
+            $styleClasses = $this->hidingClassesOf($style->textContent);
+
+            if (true === $styleClasses) {
+                return true;
+            }
+
+            $classes += $styleClasses;
+        }
+
+        return $classes;
+    }
+
+    /**
+     * @param string $css the CSS content of a `<style>` element
+     *
+     * @return array<string, true>|true the classes that the style sheet hides elements through, or true if it may hide
+     *                                  an element through any class
+     */
+    private function hidingClassesOf(string $css): array|true
+    {
+        if (1 !== preg_match(self::FRAGMENT_TARGET_HIDING_CSS_REGEX, $css)) {
+            return [];
+        }
+
+        if (!$this->isPlainCssRuleList($css)) {
+            return true;
+        }
+
+        preg_match_all(self::CSS_PLAIN_RULE_REGEX, $css, $matches, \PREG_SET_ORDER);
+        $classes = [];
+
+        foreach ($matches as $match) {
+            if (1 !== preg_match(self::FRAGMENT_TARGET_HIDING_CSS_REGEX, $match[2])) {
+                continue;
+            }
+
+            $ruleClasses = $this->classSelectorList($match[1]);
+
+            if ([] === $ruleClasses) {
+                return true;
+            }
+
+            $classes += array_fill_keys($ruleClasses, true);
+        }
+
+        return $classes;
     }
 
     /**
@@ -182,14 +233,14 @@ trait FragmentTargetTrait
     }
 
     /**
-     * @param \DOMElement $domElement the parent of the elements to scan
-     * @param bool        $inArea     true if the children are not rendered where they are, such as inside `<defs>`
-     * @param bool        $resource   true if the document renders nothing itself
-     * @param bool        $classHides true if a style sheet may hide an element through its class
+     * @param \DOMElement              $domElement    the parent of the elements to scan
+     * @param bool                     $inArea        true if the children are not rendered where they are, such as inside `<defs>`
+     * @param bool                     $resource      true if the document renders nothing itself
+     * @param array<string, true>|true $hidingClasses the classes that hide an element, or true if any class may
      *
      * @return array<string, true> the ids of the children, and of their descendants, that may be addressed
      */
-    private function fragmentTargetsWithin(\DOMElement $domElement, bool $inArea, bool $resource, bool $classHides): array
+    private function fragmentTargetsWithin(\DOMElement $domElement, bool $inArea, bool $resource, array|true $hidingClasses): array
     {
         $targets = [];
 
@@ -200,10 +251,10 @@ trait FragmentTargetTrait
                 $targets += $this->fragmentIdsOf($child);
             }
 
-            $opensArea = SvgTag::Defs->value === $localName || $this->isHiddenElement($child, $classHides);
+            $opensArea = SvgTag::Defs->value === $localName || $this->isHiddenElement($child, $hidingClasses);
 
             if ($opensArea || ($inArea && \in_array($localName, self::FRAGMENT_TARGET_GROUPING_TAGS, true))) {
-                $targets += $this->fragmentTargetsWithin($child, true, $resource, $classHides);
+                $targets += $this->fragmentTargetsWithin($child, true, $resource, $hidingClasses);
             }
         }
 
@@ -227,12 +278,12 @@ trait FragmentTargetTrait
     }
 
     /**
-     * @param \DOMElement $domElement the element to check
-     * @param bool        $classHides true if a style sheet may hide an element through its class
+     * @param \DOMElement              $domElement    the element to check
+     * @param array<string, true>|true $hidingClasses the classes that hide an element, or true if any class may
      *
      * @return bool true if the element may have `display: none`
      */
-    private function isHiddenElement(\DOMElement $domElement, bool $classHides): bool
+    private function isHiddenElement(\DOMElement $domElement, array|true $hidingClasses): bool
     {
         if (self::FRAGMENT_TARGET_NONE === mb_strtolower(trim($domElement->getAttribute(SvgAttribute::Display->value)))) {
             return true;
@@ -242,40 +293,44 @@ trait FragmentTargetTrait
             return true;
         }
 
-        return $classHides && $domElement->hasAttribute(SvgAttribute::Class_->value);
+        if (true === $hidingClasses) {
+            return $domElement->hasAttribute(SvgAttribute::Class_->value);
+        }
+
+        return [] !== array_intersect_key(array_flip($this->classList($domElement)), $hidingClasses);
     }
 
     /**
-     * @param \DOMElement $domElement the root element
-     * @param bool        $classHides true if a style sheet may hide an element through its class
+     * @param \DOMElement              $domElement    the root element
+     * @param array<string, true>|true $hidingClasses the classes that hide an element, or true if any class may
      *
      * @return bool true if the document renders nothing itself, such as an inline sprite or a library of paint servers
      */
-    private function isResourceDocument(\DOMElement $domElement, bool $classHides): bool
+    private function isResourceDocument(\DOMElement $domElement, array|true $hidingClasses): bool
     {
-        return $this->isHiddenElement($domElement, $classHides)
+        return $this->isHiddenElement($domElement, $hidingClasses)
             || 1 === preg_match(self::FRAGMENT_TARGET_ZERO_LENGTH_REGEX, $domElement->getAttribute(SvgAttribute::Width->value))
             || 1 === preg_match(self::FRAGMENT_TARGET_ZERO_LENGTH_REGEX, $domElement->getAttribute(SvgAttribute::Height->value))
-            || !$this->rendersContent($domElement, $classHides);
+            || !$this->rendersContent($domElement, $hidingClasses);
     }
 
     /**
-     * @param \DOMElement $domElement the container to check
-     * @param bool        $classHides true if a style sheet may hide an element through its class
+     * @param \DOMElement              $domElement    the container to check
+     * @param array<string, true>|true $hidingClasses the classes that hide an element, or true if any class may
      *
      * @return bool true if a child of the container, or of a rendered container inside it, renders
      */
-    private function rendersContent(\DOMElement $domElement, bool $classHides): bool
+    private function rendersContent(\DOMElement $domElement, array|true $hidingClasses): bool
     {
         foreach ($this->svgChildElements($domElement) as $child) {
-            if ($this->isHiddenElement($child, $classHides)) {
+            if ($this->isHiddenElement($child, $hidingClasses)) {
                 continue;
             }
 
             $localName = $child->localName ?? '';
 
             if (\in_array($localName, self::FRAGMENT_TARGET_RENDERED_LEAVES, true)
-                || (\in_array($localName, self::FRAGMENT_TARGET_RENDERED_CONTAINERS, true) && $this->rendersContent($child, $classHides))) {
+                || (\in_array($localName, self::FRAGMENT_TARGET_RENDERED_CONTAINERS, true) && $this->rendersContent($child, $hidingClasses))) {
                 return true;
             }
         }

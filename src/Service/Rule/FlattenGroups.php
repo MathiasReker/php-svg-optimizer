@@ -16,6 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgAttribute;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgNamespace;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\AsciiCaseTrait;
+use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\CssDeclarationTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\DocumentScriptTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\IdReferenceTrait;
@@ -30,6 +31,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\Trait\TransformListTrait;
 final readonly class FlattenGroups implements RevertIfLargerPassInterface
 {
     use AsciiCaseTrait;
+    use CssDeclarationTrait;
     use DocumentScriptTrait;
     use ElementTrait;
     use IdReferenceTrait;
@@ -243,11 +245,36 @@ final readonly class FlattenGroups implements RevertIfLargerPassInterface
      */
     private function setInheritedAttribute(\DOMElement $domElement, \DOMAttr $domAttr): void
     {
+        if ($this->styleDeclaresSameValue($domElement, $domAttr)) {
+            return;
+        }
+
         $ownValue = $domElement->getAttribute($domAttr->nodeName);
 
         if (!$domElement->hasAttribute($domAttr->nodeName) || $this->isInheritKeyword($ownValue)) {
             $domElement->setAttribute($domAttr->nodeName, $domAttr->value);
         }
+    }
+
+    /**
+     * @param \DOMElement $domElement the element to check
+     * @param \DOMAttr    $domAttr    the inherited attribute
+     *
+     * @return bool true if the `style` of the element declares the property with the same value, which wins over the
+     *              attribute
+     */
+    private function styleDeclaresSameValue(\DOMElement $domElement, \DOMAttr $domAttr): bool
+    {
+        $style = $domElement->getAttribute(SvgAttribute::Style->value);
+
+        return $this->isSplittableCssDeclarationBlock($style) && \in_array(
+            [$domAttr->nodeName, trim($domAttr->value)],
+            array_map(
+                fn (array $declaration): array => [$this->asciiLowercase($declaration[0]), $declaration[1]],
+                $this->parseCssDeclarations($style),
+            ),
+            true,
+        );
     }
 
     /**

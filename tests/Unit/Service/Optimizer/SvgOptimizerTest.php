@@ -783,6 +783,33 @@ final class SvgOptimizerTest extends TestCase
      * @throws XmlProcessingException
      * @throws \LogicException
      */
+    #[DataProvider('provideAllRulesGiveTheSameResultOnASecondRunCases')]
+    #[Test]
+    public function allRulesGiveTheSameResultOnASecondRun(string $content): void
+    {
+        $once = (new SvgOptimizer(new StringProvider($content)))->enableAllRules()->allowRisky()->optimize()->getContent();
+        $twice = (new SvgOptimizer(new StringProvider($once)))->enableAllRules()->allowRisky()->optimize()->getContent();
+
+        self::assertSame($once, $twice);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideAllRulesGiveTheSameResultOnASecondRunCases(): iterable
+    {
+        yield 'a mask that only an empty group references' => ['<svg xmlns="http://www.w3.org/2000/svg"><mask id="m"><path/></mask><path d="M0 0h1v1H0z"/><g mask="url(#m)"><g transform="translate(1 1)"/></g></svg>'];
+
+        yield 'ids inside a group whose class no style sheet hides' => ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><style>.h{display:none}.f{fill:red}</style><rect class="h" id="r" width="10" height="10"/><g class="f"><path id="p" d="M0 0h5v5H0z"/></g></svg>'];
+
+        yield 'a group attribute that the style of a child repeats' => ['<svg xmlns="http://www.w3.org/2000/svg"><g><g><g style="fill:#000095"><path style="font-size:20px;fill:#000095" d="M0 0h5v5H0z"/></g></g></g></svg>'];
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
     #[Test]
     public function revertingAPassKeepsXmlAttributesAfterAnElementWasCloned(): void
     {

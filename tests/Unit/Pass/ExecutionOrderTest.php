@@ -154,7 +154,7 @@ final class ExecutionOrderTest extends TestCase
 
         yield 'gradients are inlined before useless definitions are removed' => [ConvertOneStopGradients::class, RemoveUselessDefs::class];
 
-        yield 'unused definitions are removed before empty containers are removed' => [RemoveUnusedDefinitions::class, RemoveEmptyContainers::class];
+        yield 'empty containers are removed before unused definitions, so the definitions they referenced are unused' => [RemoveEmptyContainers::class, RemoveUnusedDefinitions::class];
 
         yield 'useless definitions are removed before empty containers are removed' => [RemoveUselessDefs::class, RemoveEmptyContainers::class];
 
