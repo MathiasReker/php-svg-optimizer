@@ -76,6 +76,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -88,6 +89,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(SvgOptimizerFacade::class)]
 #[CoversClass(SvgOptimizer::class)]
+#[CoversClass(RuleSet::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(AbstractProvider::class)]
 #[CoversClass(StringProvider::class)]
@@ -150,6 +152,165 @@ final class SvgOptimizerFacadeTest extends TestCase
     private string $sampleSvg;
 
     private string $tempFilePath;
+
+    private const string RULE_SET_SAMPLE_SVG = '<!DOCTYPE svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="100" height="100" viewBox="0 0 100 100" data-x="1" enable-background="new" inkscape:version="1"><!-- comment --><metadata>m</metadata><title>T</title><style type="text/css"> .a { fill : red ; } </style><style>.b{fill:blue}</style><script>alert(1)</script><foreignObject><p xmlns="http://www.w3.org/1999/xhtml">x</p></foreignObject><defs><linearGradient id="g"><stop stop-color="#ff0000"/></linearGradient><rect id="unused" width="1" height="1"/></defs><g fill="red" x="1"><rect class="a" width="10.50" height="10" style="stroke-width:1" onclick="x()"/><ellipse rx="5" ry="5" fill="rgb(0, 0, 255)"/><polygon points="0, 0, 1, 1, 2, 0"/></g><a xlink:href="javascript:alert(1)"><rect width="0" height="1"/></a><use xlink:href="#g" transform="translate(0, 0)"/><text xml:space="default"> </text><path d="M 0 0 L 10 10" aria-label="p" role="img" fill="url(#g)"/></svg>';
+
+    /**
+     * @param list<RuleSet> $ruleSets   The rule sets to enable
+     * @param bool          $allowRisky Whether risky rules are allowed
+     *
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideWithRuleSetsAppliesExactlyTheRulesOfTheSetsCases')]
+    #[Test]
+    public function withRuleSetsAppliesExactlyTheRulesOfTheSets(array $ruleSets, bool $allowRisky): void
+    {
+        $ruleFlags = [];
+
+        foreach (Rule::cases() as $rule) {
+            $inSet = [] !== array_filter($ruleSets, static fn (RuleSet $ruleSet): bool => \in_array($rule, $ruleSet->rules(), true));
+            $ruleFlags[$rule->value] = $inSet && ($allowRisky || !$rule->value::isRisky());
+        }
+
+        foreach ($this->ruleSetCorpus() as $svg) {
+            $svgOptimizer = new SvgOptimizer(new StringProvider($svg));
+            $svgOptimizer->configureRules($ruleFlags);
+
+            if ($allowRisky) {
+                $svgOptimizer->allowRisky();
+            }
+
+            $expected = $svgOptimizer->optimize()->getContent();
+
+            self::assertSame($expected, SvgOptimizerFacade::fromString($svg)->allowRisky($allowRisky)->withRuleSets(...$ruleSets)->optimize()->getContent());
+            self::assertSame($expected, SvgOptimizerFacade::fromString($svg)->withRuleSets(...$ruleSets)->allowRisky($allowRisky)->optimize()->getContent());
+        }
+    }
+
+    /**
+     * @return iterable<string, array{list<RuleSet>, bool}>
+     */
+    public static function provideWithRuleSetsAppliesExactlyTheRulesOfTheSetsCases(): iterable
+    {
+        foreach (RuleSet::cases() as $ruleSet) {
+            yield $ruleSet->value => [[$ruleSet], false];
+
+            yield $ruleSet->value . ', risky' => [[$ruleSet], true];
+        }
+
+        yield 'security and minification' => [[RuleSet::Security, RuleSet::Minification], false];
+
+        yield 'cleanup and structure, risky' => [[RuleSet::Cleanup, RuleSet::Structure], true];
+
+        yield 'no set' => [[], true];
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function withRuleSetsChangesTheSampleForEverySet(): void
+    {
+        $withoutRules = SvgOptimizerFacade::fromString(self::RULE_SET_SAMPLE_SVG)->optimize()->getContent();
+
+        foreach (RuleSet::cases() as $ruleSet) {
+            self::assertNotSame($withoutRules, SvgOptimizerFacade::fromString(self::RULE_SET_SAMPLE_SVG)->withRuleSets($ruleSet)->optimize()->getContent(), $ruleSet->value);
+        }
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function withRuleSetsAppliesRiskyRulesOnlyIfRiskyRulesAreAllowedWhateverTheCallOrder(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" data-x="1"><!-- c --><rect width="1" height="1"/></svg>';
+
+        $withoutRisky = SvgOptimizerFacade::fromString($svg)->withRuleSets(RuleSet::Cleanup)->allowRisky(false)->optimize()->getContent();
+        $allowRiskyFirst = SvgOptimizerFacade::fromString($svg)->allowRisky()->withRuleSets(RuleSet::Cleanup)->optimize()->getContent();
+        $allowRiskyLast = SvgOptimizerFacade::fromString($svg)->withRuleSets(RuleSet::Cleanup)->allowRisky()->optimize()->getContent();
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg" data-x="1"><rect width="1" height="1"/></svg>', $withoutRisky);
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>', $allowRiskyFirst);
+        self::assertSame($allowRiskyFirst, $allowRiskyLast);
+    }
+
+    /**
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function withRuleSetsAddsToTheRulesOfWithRulesAndWithAllRules(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg"><title>T</title><!-- c --><rect width="1.50" height="1"/></svg>';
+
+        $content = SvgOptimizerFacade::fromString($svg)
+            ->withRules(...$this->ruleFlagsFor('removeTitleAndDesc'))
+            ->withRuleSets(RuleSet::Minification)
+            ->optimize()
+            ->getContent();
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><!-- c --><rect width="1.5" height="1"/></svg>', $content);
+
+        $content = SvgOptimizerFacade::fromString($svg)
+            ->withRuleSets(RuleSet::Minification)
+            ->withRules(...$this->ruleFlagsFor('removeTitleAndDesc'))
+            ->withRuleSets(RuleSet::Cleanup)
+            ->optimize()
+            ->getContent();
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><rect width="1.5" height="1"/></svg>', $content);
+
+        self::assertSame(
+            SvgOptimizerFacade::fromString(self::RULE_SET_SAMPLE_SVG)->withAllRules()->optimize()->getContent(),
+            SvgOptimizerFacade::fromString(self::RULE_SET_SAMPLE_SVG)->withRuleSets(RuleSet::Minification)->withAllRules()->withRuleSets(RuleSet::Cleanup)->optimize()->getContent(),
+        );
+    }
+
+    /**
+     * @throws SvgValidationException
+     * @throws RiskyRulesNotAllowedException
+     * @throws XmlProcessingException
+     */
+    #[Test]
+    public function withRuleSetsDoesNotAllowARiskyRuleEnabledWithWithRules(): void
+    {
+        $this->expectException(RiskyRulesNotAllowedException::class);
+
+        SvgOptimizerFacade::fromString('<svg xmlns="http://www.w3.org/2000/svg" data-x="1"></svg>')
+            ->withRuleSets(RuleSet::Cleanup)
+            ->withRules(...$this->ruleFlagsFor('removeDataAttributes'))
+            ->optimize();
+    }
+
+    /**
+     * @return list<bool> The positional arguments of withRules() that enable only the given rule
+     */
+    private function ruleFlagsFor(string $ruleName): array
+    {
+        return array_map(
+            static fn (\ReflectionParameter $reflectionParameter): bool => $ruleName === $reflectionParameter->getName(),
+            (new \ReflectionMethod(SvgOptimizerFacade::class, 'withRules'))->getParameters(),
+        );
+    }
+
+    /**
+     * @return list<string> SVG documents that exercise the rules of every set
+     */
+    private function ruleSetCorpus(): array
+    {
+        $files = glob(__DIR__ . '/../../../../dev/resources/svg/*.svg');
+        self::assertIsArray($files);
+
+        return [self::RULE_SET_SAMPLE_SVG, ...array_map(static fn (string $file): string => (string) file_get_contents($file), $files)];
+    }
 
     /**
      * @throws RiskyRulesNotAllowedException

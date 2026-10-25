@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\ValueObject;
 
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -30,6 +31,7 @@ final class CommandOptionTest extends TestCase
             '/path/to/config.json',
             false,
             true,
+            [],
         );
 
         self::assertTrue($commandOption->isDryRun());
@@ -46,11 +48,21 @@ final class CommandOptionTest extends TestCase
             '',
             true,
             false,
+            [],
         );
 
         self::assertFalse($commandOption->isDryRun());
         self::assertSame('', $commandOption->getConfigPath());
         self::assertTrue($commandOption->allowRisky());
         self::assertFalse($commandOption->withAllRules());
+        self::assertSame([], $commandOption->getRuleSets());
+    }
+
+    #[Test]
+    public function ruleSetsAreAssignedCorrectly(): void
+    {
+        $commandOption = new CommandOption(false, '', false, false, [RuleSet::Security, RuleSet::Minification]);
+
+        self::assertSame([RuleSet::Security, RuleSet::Minification], $commandOption->getRuleSets());
     }
 }

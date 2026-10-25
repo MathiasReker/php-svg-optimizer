@@ -113,7 +113,7 @@ final readonly class ArgumentParser
      */
     private function requiresValue(string $name): bool
     {
-        return $this->matches($name, Option::Config);
+        return $this->matches($name, Option::Config) || $this->matches($name, Option::Set);
     }
 
     /**
@@ -163,6 +163,32 @@ final readonly class ArgumentParser
         }
 
         throw new \InvalidArgumentException(\sprintf('Option "%s" not found in the command-line arguments.', $option->value));
+    }
+
+    /**
+     * @param Option $option The option to get the values of
+     *
+     * @return list<string> The values of every occurrence of the option, in order
+     *
+     * @throws \InvalidArgumentException If an occurrence of the option has no value
+     */
+    public function getOptionValues(Option $option): array
+    {
+        $values = [];
+
+        foreach ($this->options as $parsedOption) {
+            if (!$this->matches($parsedOption['name'], $option)) {
+                continue;
+            }
+
+            if (!$parsedOption['hasValue']) {
+                throw new \InvalidArgumentException(\sprintf('Option "%s" requires a value.', $parsedOption['name']));
+            }
+
+            $values[] = $parsedOption['value'];
+        }
+
+        return $values;
     }
 
     /**

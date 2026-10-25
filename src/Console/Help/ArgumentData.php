@@ -16,6 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandHelp;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\ExampleCommand;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 
 /**
  * @internal
@@ -93,6 +94,16 @@ final class ArgumentData
                     '%s %s %s /path/to/file.svg',
                     self::BINARY_PATH,
                     Option::WithAllRules->getFull(),
+                    Command::Process->value,
+                )
+            ),
+            new ExampleCommand(
+                \sprintf(
+                    '%s %s=%s,%s %s /path/to/svgs',
+                    self::BINARY_PATH,
+                    Option::Set->getFull(),
+                    RuleSet::Security->value,
+                    RuleSet::Minification->value,
                     Command::Process->value,
                 )
             ),

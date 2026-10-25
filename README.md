@@ -65,10 +65,11 @@ vendor/bin/svg-optimizer [options] process <path1> <path2> ...
 ```bash
 Options:
 -h , --help               Display help for the command.
--c , --config             Path to a JSON file, or a raw JSON string, with the optimization rules to enable. Without --config and --with-all-rules, no rules are applied.
+-c , --config             Path to a JSON file, or a raw JSON string, with the optimization rules to enable. Without --config, --set and --with-all-rules, no rules are applied.
 -d , --dry-run            Only calculate potential savings without modifying the files.
 -r , --allow-risky        Explicitly enables risky rules, allowing them to be applied.
 -a , --with-all-rules     Enable all non-risky rules. Use --allow-risky to include risky rules as well.
+-s , --set                Comma-separated rule sets to enable (security, standards, cleanup, conversion, structure, minification). Can be repeated. Use --allow-risky to include their risky rules as well.
 -q , --quiet              Suppress all output except errors.
 -v , --version            Display the version of the library.
     --ansi                Force ANSI color output, even when output is not an interactive terminal.
@@ -79,7 +80,11 @@ Process                   Provide a list of directories or files to process.
 ```
 
 Options can be placed anywhere before a `--` argument; everything after `--` is treated as a path. The value of
-`--config` (`-c`) can be given as `--config=value` or `--config value`.
+`--config` (`-c`) and `--set` (`-s`) can be given as `--config=value` or `--config value`.
+
+`--set` enables one or more [rule sets](#rule-sets): give the set names separated by commas
+(`--set=security,minification`), or repeat the option (`--set=security --set=minification`). An unknown set name is
+reported as an error that lists the valid names. Rule sets add to the rules of `--config` and `--with-all-rules`.
 
 Errors are written to stderr, also with `--quiet`. The command exits with code `1` if the arguments or the
 configuration are invalid, or if any file could not be optimized, and with code `0` otherwise.
@@ -93,6 +98,8 @@ vendor/bin/svg-optimizer --config='{"removeInkscapeFootprints": true}' process /
 vendor/bin/svg-optimizer --quiet --with-all-rules process /path/to/file.svg
 vendor/bin/svg-optimizer --with-all-rules --allow-risky process /path/to/file.svg
 vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
+vendor/bin/svg-optimizer --set=security,minification process /path/to/svgs
+vendor/bin/svg-optimizer -s cleanup -s structure --allow-risky process /path/to/file.svg
 ```
 
 #### Config file example:
@@ -165,6 +172,19 @@ vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg
 
 Each value must be the JSON boolean `true` or `false`; any other value, such as `"false"` or `0`, is reported as an
 error. Rules that are left out are not applied.
+
+The configuration can also enable [rule sets](#rule-sets) with the `sets` key, a list of set names. The sets add to
+the rules enabled with `true` and to the sets given with `--set`:
+
+```json
+{
+    "sets": ["cleanup"],
+    "removeTitleAndDesc": true
+}
+```
+
+The value of `sets` must be a list of strings, and every string must name a rule set; anything else is reported as an
+error.
 
 ### Example Workflow for GitHub Actions
 
@@ -404,6 +424,50 @@ try {
     echo $exception->getMessage();
 }
 ```
+
+### Rule sets
+
+Rule sets enable a group of rules with the same purpose at once, so you do not have to list every rule. Each rule
+belongs to at most one set, and sets can be combined with each other, with `withRules()` and with `withAllRules()`.
+
+```php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
+
+try {
+    $svgOptimizer = SvgOptimizerFacade::fromFile('path/to/source.svg')
+        ->withRuleSets(RuleSet::Security, RuleSet::Minification)
+        ->optimize()
+        ->saveToFile('path/to/output.svg');
+} catch (\Exception $exception) {
+    echo $exception->getMessage();
+}
+```
+
+The same sets can be enabled from the [CLI tool](#cli-tool) with `--set=security,minification`, or in a configuration
+file with `"sets": ["security", "minification"]`.
+
+| Set | `RuleSet` case | Purpose | Rules |
+| --- | --- | --- | --- |
+| `security` | `RuleSet::Security` | Remove scripts, event handlers, unsafe links and other active content from untrusted SVGs. | `removeUnsafeMarkup`, `removeScripts`, `removeForeignContent`, `removeUnsafeUrls`, `sanitizeStyleSheets`, `removeUseBombs` |
+| `standards` | `RuleSet::Standards` | Bring the markup in line with the SVG specification. | `fixAttributeNames`, `migrateToSvg2`, `removeNonStandardTags`, `removeDeprecatedAttributes`, `removeNonStandardAttributes` |
+| `cleanup` | `RuleSet::Cleanup` | Remove editor data, comments, unused definitions and content that has no effect. | `removeDoctype`, `removeComments`, `removeMetadata`, `removeInkscapeFootprints`, `removeDataAttributes` (risky), `removeInvisibleCharacters`, `removeEnableBackgroundAttribute` (risky), `removeStyleTypeAttributes`, `removeXmlSpaceDefault`, `removeWidthHeightAttributes` (risky), `removeEmptyAttributes`, `removeUnusedIds` (risky), `removeUnusedDefinitions` (risky), `removeNonInheritableGroupAttributes`, `removeHiddenElements`, `removeZeroSizeShapes`, `removeEmptyTextElements`, `removeUnusedTextAttributes`, `removeDuplicateElements`, `removeEmptyGroups`, `removeEmptyContainers`, `removeUnusedMasks`, `removeUselessStrokeAndFill`, `removeDefaultAttributes`, `removeUselessDefs`, `removeUnusedNamespaces` |
+| `conversion` | `RuleSet::Conversion` | Convert styles, colors, gradients and shapes into shorter equivalents. | `convertCssClassesToAttributes`, `convertInlineStylesToAttributes`, `convertColorsToHex`, `convertOneStopGradients`, `convertEllipseToCircle`, `convertShapesToPath` |
+| `structure` | `RuleSet::Structure` | Restructure styles, gradients and groups. | `scopeSvgStyles` (risky), `mergeStyles`, `mergeDuplicateGradients`, `flattenGroups`, `moveGroupAttributesToElements`, `moveCommonAttributesToGroup` |
+| `minification` | `RuleSet::Minification` | Write numbers, paths, styles and whitespace in their shortest form and order the markup. | `minifyStyles`, `minifyNumericValues`, `minifyListValues`, `minifySvgCoordinates`, `minifyTransformations`, `minifyPathData`, `removeUnnecessaryWhitespace`, `convertEmptyTagsToSelfClosing`, `sortDefsChildren`, `sortAttributes` |
+
+Risky rules belong to the set of their purpose, but, like with `withAllRules()`, they are only applied when risky rules
+are allowed with `allowRisky()` (or `--allow-risky`), whether `allowRisky()` is called before or after
+`withRuleSets()`. Without it, the other rules of the set are applied and no exception is thrown.
+
+`removeTitleAndDesc` and `removeAriaAndRole` are deliberately in no set: they remove accessibility information, so they
+are only applied when you enable them yourself with `withRules()` or in the configuration.
 
 ### Security: Sanitizing Untrusted SVGs
 
@@ -1495,10 +1559,21 @@ $svgOptimizer->withAllRules();
 
 ---
 
+#### `withRuleSets`
+
+Enable every rule of the given [rule sets](#rule-sets). Risky rules of the sets are only included when risky rules are
+allowed with `allowRisky()`, no matter whether `allowRisky()` is called before or after `withRuleSets()`.
+
+```php
+$svgOptimizer->withRuleSets(RuleSet::Security, RuleSet::Minification);
+```
+
+---
+
 #### `allowRisky`
 
 Allow risky rules. By default, `optimize()` throws a `RiskyRulesNotAllowedException` if a risky rule is enabled with
-`withRules()`, and `withAllRules()` leaves the risky rules out.
+`withRules()`, and `withAllRules()` and `withRuleSets()` leave the risky rules out.
 
 ```php
 $svgOptimizer->allowRisky();

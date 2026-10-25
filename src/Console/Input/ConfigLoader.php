@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
+
 /**
  * @internal
  *
@@ -22,15 +24,106 @@ final readonly class ConfigLoader
 
     private const string UTF8_BOM = "\xEF\xBB\xBF";
 
+    private const string RULE_SETS_KEY = 'sets';
+
+    private const int MAXIMUM_DEPTH = 3;
+
+    private const string MAXIMUM_DEPTH_MESSAGE = 'Maximum stack depth exceeded';
+
     /**
      * @param string $config The path to a config file or a JSON string
      *
-     * @return array<array-key, bool> The configuration as an associative array
+     * @return array<array-key, bool> The rule flags of the configuration, without the rule sets
      *
-     * @throws \InvalidArgumentException If the file cannot be read, the JSON is invalid or a value is not a boolean
+     * @throws \InvalidArgumentException If the file cannot be read, the JSON is invalid or a value is not valid
      * @throws \JsonException            If the JSON decoding fails
      */
     public static function loadConfig(string $config): array
+    {
+        return self::parseConfig($config)[0];
+    }
+
+    /**
+     * @param string $config The path to a config file or a JSON string
+     *
+     * @return list<RuleSet> The rule sets listed under the "sets" key of the configuration
+     *
+     * @throws \InvalidArgumentException If the file cannot be read, the JSON is invalid or a value is not valid
+     * @throws \JsonException            If the JSON decoding fails
+     */
+    public static function loadRuleSets(string $config): array
+    {
+        return self::parseConfig($config)[1];
+    }
+
+    /**
+     * @param string $config The path to a config file or a JSON string
+     *
+     * @return array{array<array-key, bool>, list<RuleSet>} The rule flags and the rule sets of the configuration
+     *
+     * @throws \InvalidArgumentException If the file cannot be read, the JSON is invalid or a value is not valid
+     * @throws \JsonException            If the JSON decoding fails
+     */
+    private static function parseConfig(string $config): array
+    {
+        $ruleFlags = [];
+        $ruleSets = [];
+
+        foreach (self::decodeConfig($config) as $key => $value) {
+            if (self::RULE_SETS_KEY === $key) {
+                $ruleSets = self::parseRuleSets($value);
+
+                continue;
+            }
+
+            $ruleFlags[$key] = self::parseRuleFlag($key, $value);
+        }
+
+        return [$ruleFlags, $ruleSets];
+    }
+
+    /**
+     * @param array-key $key   The key of the value
+     * @param mixed     $value The value of a rule key
+     *
+     * @return bool The rule flag
+     *
+     * @throws \InvalidArgumentException If the value is not a boolean
+     */
+    private static function parseRuleFlag(int|string $key, mixed $value): bool
+    {
+        if (!\is_bool($value)) {
+            throw new \InvalidArgumentException(\sprintf('Configuration value for "%s" must be true or false.', $key));
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param mixed $value The value of the "sets" key
+     *
+     * @return list<RuleSet> The rule sets
+     *
+     * @throws \InvalidArgumentException If the value is not a list of rule set names
+     */
+    private static function parseRuleSets(mixed $value): array
+    {
+        if (!\is_array($value) || !array_is_list($value) || array_filter($value, is_string(...)) !== $value) {
+            throw new \InvalidArgumentException(\sprintf('Configuration value for "%s" must be a list of rule set names.', self::RULE_SETS_KEY));
+        }
+
+        return RuleSetParser::parse($value);
+    }
+
+    /**
+     * @param string $config The path to a config file or a JSON string
+     *
+     * @return array<array-key, mixed> The decoded configuration
+     *
+     * @throws \InvalidArgumentException If the file cannot be read or the content is not a JSON object or list
+     * @throws \JsonException            If the JSON decoding fails
+     */
+    private static function decodeConfig(string $config): array
     {
         $configContent = self::readConfig($config);
 
@@ -45,7 +138,7 @@ final readonly class ConfigLoader
         $decodedConfig = json_decode(
             $configContent,
             true,
-            2,
+            self::MAXIMUM_DEPTH,
             \JSON_THROW_ON_ERROR
         );
 
@@ -53,17 +146,11 @@ final readonly class ConfigLoader
             throw new \InvalidArgumentException('Configuration must be a valid file path or a JSON string.');
         }
 
-        $ruleFlags = [];
-
-        foreach ($decodedConfig as $key => $value) {
-            if (!\is_bool($value)) {
-                throw new \InvalidArgumentException(\sprintf('Configuration value for "%s" must be true or false.', $key));
-            }
-
-            $ruleFlags[$key] = $value;
+        if ([] !== array_filter(array_diff_key($decodedConfig, [self::RULE_SETS_KEY => true]), is_array(...))) {
+            throw new \JsonException(self::MAXIMUM_DEPTH_MESSAGE, \JSON_ERROR_DEPTH);
         }
 
-        return $ruleFlags;
+        return $decodedConfig;
     }
 
     /**

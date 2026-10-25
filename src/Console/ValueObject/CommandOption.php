@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\ValueObject;
 
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
+
 /**
  * @internal
  *
@@ -19,16 +21,18 @@ namespace MathiasReker\PhpSvgOptimizer\Console\ValueObject;
 final readonly class CommandOption
 {
     /**
-     * @param bool   $dryRun       if true, the command will run in dry-run mode, calculating potential changes without modifying files
-     * @param string $configPath   Path to a JSON configuration file defining custom optimization rules. Ignored if not provided.
-     * @param bool   $allowRisky   Whether risky optimization rules are allowed. Risky rules may change the visual output of SVGs.
-     * @param bool   $withAllRules If true, all available optimization rules will be applied. Non-risky rules only unless $allowRisky is also true.
+     * @param bool          $dryRun       if true, the command will run in dry-run mode, calculating potential changes without modifying files
+     * @param string        $configPath   Path to a JSON configuration file defining custom optimization rules. Ignored if not provided.
+     * @param bool          $allowRisky   Whether risky optimization rules are allowed. Risky rules may change the visual output of SVGs.
+     * @param bool          $withAllRules If true, all available optimization rules will be applied. Non-risky rules only unless $allowRisky is also true.
+     * @param list<RuleSet> $ruleSets     The rule sets to enable. Their risky rules are applied only if $allowRisky is also true.
      */
     public function __construct(
         private bool $dryRun,
         private string $configPath,
         private bool $allowRisky,
         private bool $withAllRules,
+        private array $ruleSets,
     ) {}
 
     /**
@@ -61,5 +65,13 @@ final readonly class CommandOption
     public function withAllRules(): bool
     {
         return $this->withAllRules;
+    }
+
+    /**
+     * @return list<RuleSet> the rule sets to enable
+     */
+    public function getRuleSets(): array
+    {
+        return $this->ruleSets;
     }
 }

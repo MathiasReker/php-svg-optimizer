@@ -27,6 +27,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -43,6 +44,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SvgValidator::class)]
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(Rule::class)]
+#[CoversClass(RuleSet::class)]
 final class SvgOptimizerTest extends TestCase
 {
     private SvgProviderInterface $svgProvider;
@@ -916,5 +918,55 @@ final class SvgOptimizerTest extends TestCase
                 return '<svg>optimized</svg>';
             }
         };
+    }
+
+    #[Test]
+    public function enableRuleSetsAddsTheRulesOfTheSetsAndTheirRiskyRulesOnceRiskyRulesAreAllowed(): void
+    {
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
+
+        $svgOptimizer->enableRuleSets();
+        self::assertSame(0, $svgOptimizer->getRulesCount());
+
+        $svgOptimizer->enableRuleSets(RuleSet::Cleanup);
+        self::assertSame($this->countRules(RuleSet::Cleanup, false), $svgOptimizer->getRulesCount());
+
+        $svgOptimizer->enableRuleSets(RuleSet::Minification, RuleSet::Cleanup);
+        self::assertSame($this->countRules(RuleSet::Cleanup, false) + $this->countRules(RuleSet::Minification, false), $svgOptimizer->getRulesCount());
+
+        $svgOptimizer->allowRisky();
+        self::assertSame($this->countRules(RuleSet::Cleanup, true) + $this->countRules(RuleSet::Minification, true), $svgOptimizer->getRulesCount());
+    }
+
+    #[Test]
+    public function enableRuleSetsAfterAllowRiskyAddsTheRiskyRules(): void
+    {
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
+
+        $svgOptimizer->allowRisky();
+        self::assertSame(0, $svgOptimizer->getRulesCount());
+
+        $svgOptimizer->enableRuleSets(RuleSet::Structure);
+        self::assertSame($this->countRules(RuleSet::Structure, true), $svgOptimizer->getRulesCount());
+        self::assertGreaterThan($this->countRules(RuleSet::Structure, false), $this->countRules(RuleSet::Structure, true));
+    }
+
+    #[Test]
+    public function enableRuleSetsAddsNothingToAllRules(): void
+    {
+        $svgOptimizer = new SvgOptimizer($this->svgProvider);
+
+        $svgOptimizer->enableAllRules();
+
+        $allRulesCount = $svgOptimizer->getRulesCount();
+        $svgOptimizer->enableRuleSets(...RuleSet::cases());
+
+        self::assertSame($allRulesCount, $svgOptimizer->getRulesCount());
+        self::assertSame(\count(array_filter(Rule::cases(), static fn (Rule $rule): bool => !$rule->value::isRisky())), $allRulesCount);
+    }
+
+    private function countRules(RuleSet $ruleSet, bool $withRisky): int
+    {
+        return \count(array_filter($ruleSet->rules(), static fn (Rule $rule): bool => $withRisky || !$rule->value::isRisky()));
     }
 }

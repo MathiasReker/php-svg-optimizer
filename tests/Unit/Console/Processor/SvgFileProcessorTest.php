@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Processor;
 
 use MathiasReker\PhpSvgOptimizer\Console\Filesystem\Finder;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
+use MathiasReker\PhpSvgOptimizer\Console\Input\RuleSetParser;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream;
@@ -79,6 +80,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -98,6 +100,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DomDocumentWrapper::class)]
 #[CoversClass(SvgOptimizerFacade::class)]
 #[CoversClass(Rule::class)]
+#[CoversClass(RuleSet::class)]
+#[CoversClass(RuleSetParser::class)]
 #[CoversClass(Metrics::class)]
 #[CoversClass(AbstractProvider::class)]
 #[CoversClass(AbstractStream::class)]
@@ -181,6 +185,7 @@ final class SvgFileProcessorTest extends TestCase
             '',
             true,
             false,
+            [],
         );
 
         $svgFileProcessor = new SvgFileProcessor(
@@ -220,6 +225,7 @@ final class SvgFileProcessorTest extends TestCase
             '',
             false,
             false,
+            [],
         );
 
         $svgFileProcessor = new SvgFileProcessor(
@@ -254,6 +260,7 @@ final class SvgFileProcessorTest extends TestCase
             '',
             false,
             false,
+            [],
         );
 
         $svgFileProcessor = new SvgFileProcessor(
@@ -276,7 +283,7 @@ final class SvgFileProcessorTest extends TestCase
     public function getUnknownConfigKeysReturnsAListOfStrings(): void
     {
         $svgFileProcessor = new SvgFileProcessor(
-            new CommandOption(true, '{"removeComments":true,"removeComents":false,"0":true}', false, false),
+            new CommandOption(true, '{"removeComments":true,"removeComents":false,"0":true}', false, false, []),
             $this->outputManager,
             $this->metaDataAggregator
         );
@@ -297,7 +304,7 @@ final class SvgFileProcessorTest extends TestCase
         file_put_contents($uppercaseFile, '<svg><!-- comment --><rect width="10" height="10"></rect></svg>');
 
         $svgFileProcessor = new SvgFileProcessor(
-            new CommandOption(false, '{"removeComments":true}', false, false),
+            new CommandOption(false, '{"removeComments":true}', false, false, []),
             $this->outputManager,
             $this->metaDataAggregator
         );
@@ -323,6 +330,7 @@ final class SvgFileProcessorTest extends TestCase
             '',
             true,
             false,
+            [],
         );
 
         $svgFileProcessor = new SvgFileProcessor(
@@ -352,6 +360,7 @@ final class SvgFileProcessorTest extends TestCase
             '',
             true,
             true,
+            [],
         );
 
         $svgFileProcessor = new SvgFileProcessor(
@@ -382,6 +391,7 @@ final class SvgFileProcessorTest extends TestCase
             $configFile,
             false,
             false,
+            [],
         );
 
         $svgFileProcessor = new SvgFileProcessor(
@@ -428,5 +438,52 @@ final class SvgFileProcessorTest extends TestCase
         }
 
         rmdir($this->tempDir);
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getUnknownConfigKeysDoesNotReportTheRuleSets(): void
+    {
+        $svgFileProcessor = new SvgFileProcessor(
+            new CommandOption(true, '{"sets":["cleanup"],"removeComents":true}', false, false, []),
+            $this->outputManager,
+            $this->metaDataAggregator
+        );
+
+        self::assertSame(['removeComents'], $svgFileProcessor->getUnknownConfigKeys());
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \LogicException
+     * @throws RiskyRulesNotAllowedException
+     * @throws \RuntimeException
+     */
+    #[Test]
+    public function processAppliesTheRuleSetsOfTheOptionsAndOfTheConfiguration(): void
+    {
+        $content = '<svg xmlns="http://www.w3.org/2000/svg" data-x="1"><!-- comment --><rect width="10" height="10" fill="red"/></svg>';
+        file_put_contents($this->svgFile, $content);
+
+        $svgFileProcessor = new SvgFileProcessor(
+            new CommandOption(false, '{"sets":["conversion"]}', false, false, [RuleSet::Cleanup]),
+            $this->outputManager,
+            $this->metaDataAggregator
+        );
+
+        $svgFileProcessor->processPath($this->svgFile);
+
+        $expected = SvgOptimizerFacade::fromString($content)
+            ->withRuleSets(RuleSet::Cleanup, RuleSet::Conversion)
+            ->optimize()
+            ->getContent();
+
+        self::assertSame($expected, file_get_contents($this->svgFile));
+        self::assertStringNotContainsString('<!--', $expected);
+        self::assertStringContainsString('<path', $expected);
+        self::assertStringContainsString('data-x="1"', $expected);
     }
 }

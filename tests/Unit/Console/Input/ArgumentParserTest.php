@@ -713,6 +713,72 @@ final class ArgumentParserTest extends TestCase
         $argumentParser->getPaths();
     }
 
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getOptionValuesReturnsTheValueOfEveryOccurrenceInOrder(): void
+    {
+        $argumentParser = new ArgumentParser([
+            'vendor/bin/svg-optimizer',
+            '--dry-run',
+            '--set=security',
+            '-s',
+            'cleanup',
+            '--config=config.json',
+            '--set',
+            'minification,structure',
+            '-s=conversion',
+            'process',
+            'file.svg',
+            '--quiet',
+        ]);
+
+        $argumentParser->validateOptions();
+
+        self::assertSame(['security', 'cleanup', 'minification,structure', 'conversion'], $argumentParser->getOptionValues(Option::Set));
+        self::assertSame(['config.json'], $argumentParser->getOptionValues(Option::Config));
+        self::assertSame('config.json', $argumentParser->getOption(Option::Config));
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getOptionValuesReturnsAnEmptyListIfTheOptionIsMissing(): void
+    {
+        self::assertSame([], $this->argumentParser->getOptionValues(Option::Set));
+    }
+
+    /**
+     * @param list<string> $args The arguments after the script name
+     *
+     * @throws \InvalidArgumentException
+     */
+    #[DataProvider('provideGetOptionValuesThrowsIfAnOccurrenceHasNoValueCases')]
+    #[Test]
+    public function getOptionValuesThrowsIfAnOccurrenceHasNoValue(array $args, string $name): void
+    {
+        $argumentParser = new ArgumentParser(['vendor/bin/svg-optimizer', ...$args]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(\sprintf('Option "%s" requires a value.', $name));
+
+        $argumentParser->getOptionValues(Option::Set);
+    }
+
+    /**
+     * @return iterable<string, array{list<string>, string}>
+     */
+    public static function provideGetOptionValuesThrowsIfAnOccurrenceHasNoValueCases(): iterable
+    {
+        yield 'empty value after a valid occurrence' => [['--set=security', '-s=', 'process', 'file.svg'], '-s'];
+
+        yield 'separate value is the end of options marker' => [['process', '--set', '--', 'file.svg'], '--set'];
+
+        yield 'last argument' => [['process', 'file.svg', '--set'], '--set'];
+    }
+
     #[\Override]
     protected function setUp(): void
     {

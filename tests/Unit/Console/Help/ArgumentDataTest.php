@@ -78,7 +78,7 @@ final class ArgumentDataTest extends TestCase
     {
         $examples = $this->argumentData->getExamples();
 
-        self::assertCount(5, $examples);
+        self::assertCount(6, $examples);
 
         $expectedCommands = [
             'vendor/bin/svg-optimizer --with-all-rules --dry-run process /path/to/svgs',
@@ -86,6 +86,7 @@ final class ArgumentDataTest extends TestCase
             'vendor/bin/svg-optimizer --quiet --with-all-rules process /path/to/file.svg',
             'vendor/bin/svg-optimizer --with-all-rules --allow-risky process /path/to/file.svg',
             'vendor/bin/svg-optimizer --with-all-rules process /path/to/file.svg',
+            'vendor/bin/svg-optimizer --set=security,minification process /path/to/svgs',
         ];
 
         foreach ($examples as $key => $example) {

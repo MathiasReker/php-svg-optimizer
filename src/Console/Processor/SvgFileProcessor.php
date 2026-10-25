@@ -19,6 +19,7 @@ use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
 use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 
 /**
  * @internal
@@ -86,6 +87,7 @@ final readonly class SvgFileProcessor
             ->allowRisky($this->commandOption->allowRisky())
             ->withAllRules($this->commandOption->withAllRules())
             ->withRules(...$this->ruleFlags())
+            ->withRuleSets(...$this->commandOption->getRuleSets(), ...$this->configRuleSets())
             ->optimize();
 
         $metrics = $svgOptimizerFacade->getMetaData();
@@ -117,6 +119,19 @@ final readonly class SvgFileProcessor
             static fn (string $ruleName): bool => $config[$ruleName] ?? false,
             $this->ruleNames(),
         );
+    }
+
+    /**
+     * @return list<RuleSet> The rule sets listed in the configuration
+     *
+     * @throws \JsonException            If the configuration file contains invalid JSON
+     * @throws \InvalidArgumentException If the configuration cannot be read
+     */
+    private function configRuleSets(): array
+    {
+        return '' !== $this->commandOption->getConfigPath()
+            ? ConfigLoader::loadRuleSets($this->commandOption->getConfigPath())
+            : [];
     }
 
     /**

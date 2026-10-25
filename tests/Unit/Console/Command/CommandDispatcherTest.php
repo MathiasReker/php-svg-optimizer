@@ -15,12 +15,17 @@ use MathiasReker\PhpSvgOptimizer\Console\Command\CommandDispatcher;
 use MathiasReker\PhpSvgOptimizer\Console\Command\CommandFactory;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Console\Input\OptionIntent;
+use MathiasReker\PhpSvgOptimizer\Console\Input\RuleSetParser;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\MemoryStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\SilentStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
 use MathiasReker\PhpSvgOptimizer\Console\Type\Application;
+use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
+use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -35,6 +40,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(StdoutStream::class)]
 #[CoversClass(SilentStream::class)]
 #[CoversClass(Application::class)]
+#[CoversClass(RuleSetParser::class)]
 final class CommandDispatcherTest extends TestCase
 {
     private string $binPath;
@@ -473,5 +479,108 @@ final class CommandDispatcherTest extends TestCase
     public function fromArgsCreatesADispatcherForTheStandardStreams(): void
     {
         self::assertSame(0, CommandDispatcher::fromArgs([$this->binPath, '--quiet', '--version'])->run());
+    }
+
+    /**
+     * @param list<string>  $options  The options that select the rule sets
+     * @param list<RuleSet> $ruleSets The rule sets the options select
+     *
+     * @throws \RuntimeException
+     * @throws \LogicException
+     * @throws RiskyRulesNotAllowedException
+     */
+    #[DataProvider('provideRunAppliesTheGivenRuleSetsCases')]
+    #[Test]
+    public function runAppliesTheGivenRuleSets(array $options, array $ruleSets): void
+    {
+        $content = '<svg xmlns="http://www.w3.org/2000/svg" data-x="1"><!-- comment --><rect width="10" height="10" fill="red"/></svg>';
+        $svgFile = $this->tempDir . '/sets.svg';
+        file_put_contents($svgFile, $content);
+
+        $result = $this->runCli([...$options, 'process', $svgFile]);
+
+        $expected = SvgOptimizerFacade::fromString($content)->withRuleSets(...$ruleSets)->optimize()->getContent();
+
+        self::assertSame(0, $result['exitCode']);
+        self::assertSame('', $result['stderr']);
+        self::assertNotSame($content, $expected);
+        self::assertSame($expected, file_get_contents($svgFile));
+    }
+
+    /**
+     * @return iterable<string, array{list<string>, list<RuleSet>}>
+     */
+    public static function provideRunAppliesTheGivenRuleSetsCases(): iterable
+    {
+        yield 'one set' => [['--set=cleanup'], [RuleSet::Cleanup]];
+
+        yield 'comma-separated sets' => [['--set=cleanup,conversion'], [RuleSet::Cleanup, RuleSet::Conversion]];
+
+        yield 'repeated shorthand option' => [['-s', 'conversion', '-s', 'cleanup'], [RuleSet::Cleanup, RuleSet::Conversion]];
+
+        yield 'configuration' => [['--config={"sets":["conversion"]}'], [RuleSet::Conversion]];
+
+        yield 'option and configuration' => [['--set=conversion', '-c', '{"sets":["cleanup"]}'], [RuleSet::Cleanup, RuleSet::Conversion]];
+    }
+
+    /**
+     * @throws \RuntimeException
+     * @throws \LogicException
+     */
+    #[Test]
+    public function runAppliesTheRiskyRulesOfARuleSetOnlyWithAllowRisky(): void
+    {
+        $svgFile = $this->tempDir . '/risky-set.svg';
+        file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg" data-x="1"><!-- comment --></svg>');
+
+        $result = $this->runCli(['--set=cleanup', 'process', $svgFile]);
+
+        self::assertSame(0, $result['exitCode']);
+        self::assertSame('', $result['stderr']);
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg" data-x="1"/>', file_get_contents($svgFile));
+
+        $result = $this->runCli(['--set=cleanup', '--allow-risky', 'process', $svgFile]);
+
+        self::assertSame(0, $result['exitCode']);
+        self::assertSame('', $result['stderr']);
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"/>', file_get_contents($svgFile));
+    }
+
+    /**
+     * @param list<string> $options The options that select the rule sets
+     *
+     * @throws \RuntimeException
+     * @throws \LogicException
+     */
+    #[DataProvider('provideRunWithAnInvalidRuleSetPrintsErrorAndExitsOneCases')]
+    #[Test]
+    public function runWithAnInvalidRuleSetPrintsErrorAndExitsOne(array $options, string $error): void
+    {
+        $content = '<svg xmlns="http://www.w3.org/2000/svg"><!-- comment --></svg>';
+        $svgFile = $this->tempDir . '/invalid-set.svg';
+        file_put_contents($svgFile, $content);
+
+        $result = $this->runCli([...$options, 'process', $svgFile]);
+
+        self::assertSame(1, $result['exitCode']);
+        self::assertSame('Error: ' . $error . \PHP_EOL, $result['stderr']);
+        self::assertSame('', $result['stdout']);
+        self::assertSame($content, file_get_contents($svgFile));
+    }
+
+    /**
+     * @return iterable<string, array{list<string>, string}>
+     */
+    public static function provideRunWithAnInvalidRuleSetPrintsErrorAndExitsOneCases(): iterable
+    {
+        $validNames = 'Valid rule sets are: security, standards, cleanup, conversion, structure, minification.';
+
+        yield 'unknown set in the option' => [['--set=cleanup,lossless'], 'Unknown rule set "lossless". ' . $validNames];
+
+        yield 'option without value' => [['--set='], 'Option "--set" requires a value.'];
+
+        yield 'unknown set in the configuration' => [['--config={"sets":["risky"]}'], 'Unknown rule set "risky". ' . $validNames];
+
+        yield 'sets in the configuration that are not a list' => [['--config={"sets":"cleanup"}'], 'Configuration value for "sets" must be a list of rule set names.'];
     }
 }

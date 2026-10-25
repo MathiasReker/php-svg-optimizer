@@ -20,6 +20,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\XmlProcessingException;
 use MathiasReker\PhpSvgOptimizer\Service\Processor\Trait\XmlLoaderTrait;
 use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 
 /**
@@ -40,6 +41,9 @@ final class SvgOptimizer
     private bool $allowRisky = false;
 
     private bool $allRulesEnabled = false;
+
+    /** @var list<RuleSet> */
+    private array $enabledRuleSets = [];
 
     /** @var SvgValidator The SVG validator */
     private readonly SvgValidator $svgValidator;
@@ -101,10 +105,7 @@ final class SvgOptimizer
     public function allowRisky(): self
     {
         $this->allowRisky = true;
-
-        if ($this->allRulesEnabled) {
-            $this->configureRules($this->allRuleFlags());
-        }
+        $this->configureRules($this->selectedRuleFlags());
 
         return $this;
     }
@@ -112,25 +113,51 @@ final class SvgOptimizer
     public function enableAllRules(): self
     {
         $this->allRulesEnabled = true;
-        $this->configureRules($this->allRuleFlags());
+        $this->configureRules($this->selectedRuleFlags());
 
         return $this;
     }
 
     /**
-     * @return array<class-string<SvgOptimizerRuleInterface>, bool> Every rule, with risky rules only if risky rules are allowed
+     * @param RuleSet ...$ruleSets The rule sets to enable
      */
-    private function allRuleFlags(): array
+    public function enableRuleSets(RuleSet ...$ruleSets): self
+    {
+        $this->enabledRuleSets = [...$this->enabledRuleSets, ...$ruleSets];
+        $this->configureRules($this->selectedRuleFlags());
+
+        return $this;
+    }
+
+    /**
+     * @return array<class-string<SvgOptimizerRuleInterface>, bool> Every rule selected by enableAllRules() or enableRuleSets(), with risky rules only if risky rules are allowed
+     */
+    private function selectedRuleFlags(): array
     {
         $ruleFlags = [];
 
         foreach (Rule::cases() as $rule) {
             /** @var class-string<SvgOptimizerRuleInterface> $ruleClass */
             $ruleClass = $rule->value;
-            $ruleFlags[$ruleClass] = $this->allowRisky || !$ruleClass::isRisky();
+            $ruleFlags[$ruleClass] = $this->isSelected($rule) && ($this->allowRisky || !$ruleClass::isRisky());
         }
 
         return $ruleFlags;
+    }
+
+    private function isSelected(Rule $rule): bool
+    {
+        if ($this->allRulesEnabled) {
+            return true;
+        }
+
+        foreach ($this->enabledRuleSets as $enabledRuleSet) {
+            if ($enabledRuleSet->contains($rule)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

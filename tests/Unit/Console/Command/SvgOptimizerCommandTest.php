@@ -180,6 +180,7 @@ final class SvgOptimizerCommandTest extends TestCase
             '',
             false,
             false,
+            [],
         );
 
         $constructor->invoke($command, [$svgFile], $commandOption, $outputManager);
@@ -216,6 +217,7 @@ final class SvgOptimizerCommandTest extends TestCase
             '',
             false,
             false,
+            [],
         );
 
         $constructor->invoke($command, [], $commandOption, $outputManager);
@@ -253,6 +255,7 @@ final class SvgOptimizerCommandTest extends TestCase
                 '',
                 false,
                 false,
+                [],
             ),
             new OutputManager(new MemoryStream(), false, new MemoryStream())
         );
@@ -281,6 +284,7 @@ final class SvgOptimizerCommandTest extends TestCase
                 '{"scopeSvgStyles":true}',
                 false,
                 false,
+                [],
             ),
             new OutputManager($memoryStream, false, $memoryStream)
         );
@@ -306,7 +310,7 @@ final class SvgOptimizerCommandTest extends TestCase
         file_put_contents($second, '<svg xmlns="http://www.w3.org/2000/svg"><!-- c --></svg>');
         $memoryStream = new MemoryStream();
 
-        $exitCode = (new Command([$first, $second], new CommandOption(false, '{bad', false, false), new OutputManager(new MemoryStream(), false, $memoryStream)))->run();
+        $exitCode = (new Command([$first, $second], new CommandOption(false, '{bad', false, false, []), new OutputManager(new MemoryStream(), false, $memoryStream)))->run();
 
         self::assertSame(1, $exitCode);
         self::assertSame(1, mb_substr_count($memoryStream->getContent(), 'Error: '));
@@ -333,6 +337,7 @@ final class SvgOptimizerCommandTest extends TestCase
                 $configPath,
                 false,
                 false,
+                [],
             ),
             new OutputManager($memoryStream, false, $memoryStream)
         );
@@ -368,6 +373,7 @@ final class SvgOptimizerCommandTest extends TestCase
                 '{"removeComments":true,"removeComents":true,"0":false}',
                 false,
                 false,
+                [],
             ),
             new OutputManager($memoryStream, false, $memoryStream)
         );
@@ -398,7 +404,7 @@ final class SvgOptimizerCommandTest extends TestCase
         file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"><!-- c --></svg>');
 
         $memoryStream = new MemoryStream();
-        (new Command([$svgFile], new CommandOption(false, '{"removeComments":true}', false, false), new OutputManager($memoryStream, false, $memoryStream)))->run();
+        (new Command([$svgFile], new CommandOption(false, '{"removeComments":true}', false, false, []), new OutputManager($memoryStream, false, $memoryStream)))->run();
 
         self::assertStringContainsString(\PHP_EOL . 'Summary:' . \PHP_EOL . '  Files optimized:      1' . \PHP_EOL, $memoryStream->getContent());
         self::assertStringContainsString('  Original total size:  56 B' . \PHP_EOL, $memoryStream->getContent());
@@ -406,7 +412,7 @@ final class SvgOptimizerCommandTest extends TestCase
         self::assertStringContainsString('  Space saved:          15 B (26.79%)' . \PHP_EOL, $memoryStream->getContent());
 
         $emptyStream = new MemoryStream();
-        (new Command([$this->tempDir . '/missing.svg'], new CommandOption(false, '', false, false), new OutputManager($emptyStream, false, $emptyStream)))->run();
+        (new Command([$this->tempDir . '/missing.svg'], new CommandOption(false, '', false, false, []), new OutputManager($emptyStream, false, $emptyStream)))->run();
 
         self::assertStringNotContainsString('Summary:', $emptyStream->getContent());
     }
@@ -430,6 +436,7 @@ final class SvgOptimizerCommandTest extends TestCase
                 '{"removeComments":true,"removeMetadata":false}',
                 false,
                 false,
+                [],
             ),
             new OutputManager($memoryStream, false, $memoryStream)
         );
@@ -459,6 +466,7 @@ final class SvgOptimizerCommandTest extends TestCase
                 '42',
                 false,
                 false,
+                [],
             ),
             new OutputManager($memoryStream, false, $memoryStream)
         );
@@ -493,6 +501,7 @@ final class SvgOptimizerCommandTest extends TestCase
                     '',
                     false,
                     false,
+                    [],
                 ),
                 new OutputManager($memoryStream, false, $memoryStream)
             );
@@ -526,7 +535,7 @@ final class SvgOptimizerCommandTest extends TestCase
 
         $memoryStream = new MemoryStream();
 
-        (new Command([$svgFile], new CommandOption(false, '', false, false), new OutputManager($memoryStream, false, $memoryStream)))->run();
+        (new Command([$svgFile], new CommandOption(false, '', false, false, []), new OutputManager($memoryStream, false, $memoryStream)))->run();
 
         self::assertStringContainsString(
             \sprintf('Error: Failed processing "%s": The file does not appear to be a valid SVG file.', $svgFile),
@@ -548,7 +557,7 @@ final class SvgOptimizerCommandTest extends TestCase
 
         self::assertSame(
             Command::SUCCESS,
-            (new Command([$svgFile], new CommandOption(true, '', false, false), new OutputManager($memoryStream, false, $memoryStream)))->run()
+            (new Command([$svgFile], new CommandOption(true, '', false, false, []), new OutputManager($memoryStream, false, $memoryStream)))->run()
         );
     }
 
@@ -569,7 +578,7 @@ final class SvgOptimizerCommandTest extends TestCase
         $memoryStream = new MemoryStream();
         $command = new Command(
             array_map(fn (string $path): string => $this->tempDir . '/' . $path, $paths),
-            new CommandOption(true, $config, false, false),
+            new CommandOption(true, $config, false, false, []),
             new OutputManager($memoryStream, false, $memoryStream)
         );
 
@@ -602,7 +611,7 @@ final class SvgOptimizerCommandTest extends TestCase
         file_put_contents($svgFile, "<?xml version=\"1.0\"?>\r\n<svg xmlns=\"http://www.w3.org/2000/svg\">\r\n  <!-- c -->\r\n  <rect width=\"1\"/>\r\n</svg>\r\n");
         $memoryStream = new MemoryStream();
 
-        $command = new Command([$svgFile], new CommandOption(false, '{"removeComments":true}', false, false), new OutputManager($memoryStream, false, $memoryStream));
+        $command = new Command([$svgFile], new CommandOption(false, '{"removeComments":true}', false, false, []), new OutputManager($memoryStream, false, $memoryStream));
 
         self::assertSame(Command::SUCCESS, $command->run());
         self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><rect width="1"/></svg>', file_get_contents($svgFile));
@@ -622,7 +631,7 @@ final class SvgOptimizerCommandTest extends TestCase
         file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg"> <rect/> </svg>');
         $memoryStream = new MemoryStream();
 
-        $command = new Command([$svgFile, $svgFile], new CommandOption(false, '', false, false), new OutputManager($memoryStream, false, $memoryStream));
+        $command = new Command([$svgFile, $svgFile], new CommandOption(false, '', false, false, []), new OutputManager($memoryStream, false, $memoryStream));
 
         self::assertSame(Command::SUCCESS, $command->run());
         self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>', file_get_contents($svgFile));
@@ -640,7 +649,7 @@ final class SvgOptimizerCommandTest extends TestCase
         file_put_contents($svgFile, '<svg xmlns="http://www.w3.org/2000/svg" a=\'"\'/>');
         $memoryStream = new MemoryStream();
 
-        $command = new Command([$svgFile], new CommandOption(true, '', false, false), new OutputManager($memoryStream, false, $memoryStream));
+        $command = new Command([$svgFile], new CommandOption(true, '', false, false, []), new OutputManager($memoryStream, false, $memoryStream));
 
         self::assertSame(Command::SUCCESS, $command->run());
         self::assertStringContainsString('(-10.64%)', $memoryStream->getContent());
@@ -659,7 +668,7 @@ final class SvgOptimizerCommandTest extends TestCase
         file_put_contents($svgFile, '');
         $memoryStream = new MemoryStream();
 
-        $command = new Command([$svgFile], new CommandOption(false, '', false, false), new OutputManager($memoryStream, false, $memoryStream));
+        $command = new Command([$svgFile], new CommandOption(false, '', false, false, []), new OutputManager($memoryStream, false, $memoryStream));
 
         self::assertSame(Command::FAILURE, $command->run());
         self::assertStringContainsString('The file does not appear to be a valid SVG file.', $memoryStream->getContent());
@@ -726,7 +735,7 @@ final class SvgOptimizerCommandTest extends TestCase
         stream_wrapper_register('changing', $streamWrapper::class);
 
         try {
-            $exitCode = (new Command([$svgFile], new CommandOption(false, 'changing://config.json', false, false), new OutputManager($memoryStream, false, $memoryStream)))->run();
+            $exitCode = (new Command([$svgFile], new CommandOption(false, 'changing://config.json', false, false, []), new OutputManager($memoryStream, false, $memoryStream)))->run();
         } finally {
             stream_wrapper_unregister('changing');
         }

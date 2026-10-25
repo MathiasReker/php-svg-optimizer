@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 
 /**
  * @internal
@@ -20,6 +21,8 @@ use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
  */
 final readonly class OptionIntent
 {
+    private const string RULE_SET_SEPARATOR = ',';
+
     /**
      * @param ArgumentParser $argumentParser the argument parser to check for options
      */
@@ -85,6 +88,22 @@ final readonly class OptionIntent
     public function withAllRules(): bool
     {
         return $this->argumentParser->hasOption(Option::WithAllRules);
+    }
+
+    /**
+     * @return list<RuleSet> the rule sets given with every set option, in order
+     *
+     * @throws \InvalidArgumentException If a set option has no value or names an unknown rule set
+     */
+    public function getRuleSets(): array
+    {
+        $names = [];
+
+        foreach ($this->argumentParser->getOptionValues(Option::Set) as $value) {
+            $names = [...$names, ...array_map(trim(...), explode(self::RULE_SET_SEPARATOR, $value))];
+        }
+
+        return RuleSetParser::parse($names);
     }
 
     /**

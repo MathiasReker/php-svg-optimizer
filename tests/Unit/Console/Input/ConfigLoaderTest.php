@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
+use MathiasReker\PhpSvgOptimizer\Console\Input\RuleSetParser;
 use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\UnreadableFileStreamWrapper;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -22,6 +24,7 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(ConfigLoader::class)]
+#[CoversClass(RuleSetParser::class)]
 final class ConfigLoaderTest extends TestCase
 {
     private string $configFile;
@@ -418,5 +421,136 @@ final class ConfigLoaderTest extends TestCase
         $this->expectExceptionMessage('Failed to read configuration content.');
 
         UnreadableFileStreamWrapper::run(static fn (string $path): array => ConfigLoader::loadConfig($path));
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function loadConfigSkipsTheRuleSetsAndLoadRuleSetsReturnsThem(): void
+    {
+        $json = '{"removeComments": true, "sets": ["security", "cleanup"], "flattenGroups": false}';
+
+        self::assertSame(['removeComments' => true, 'flattenGroups' => false], ConfigLoader::loadConfig($json));
+        self::assertSame([RuleSet::Security, RuleSet::Cleanup], ConfigLoader::loadRuleSets($json));
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function loadRuleSetsReadsAFile(): void
+    {
+        file_put_contents($this->configFile, '{"sets": ["minification", "structure", "standards", "conversion"]}');
+
+        self::assertSame([RuleSet::Minification, RuleSet::Structure, RuleSet::Standards, RuleSet::Conversion], ConfigLoader::loadRuleSets($this->configFile));
+        self::assertSame([], ConfigLoader::loadConfig($this->configFile));
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[DataProvider('provideLoadRuleSetsReturnsAnEmptyListCases')]
+    #[Test]
+    public function loadRuleSetsReturnsAnEmptyList(string $json): void
+    {
+        self::assertSame([], ConfigLoader::loadRuleSets($json));
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideLoadRuleSetsReturnsAnEmptyListCases(): iterable
+    {
+        yield 'no sets key' => ['{"removeComments": true}'];
+
+        yield 'empty list' => ['{"sets": []}'];
+
+        yield 'empty object' => ['{}'];
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[DataProvider('provideLoadConfigRejectsRuleSetsThatAreNotAListOfNamesCases')]
+    #[Test]
+    public function loadConfigRejectsRuleSetsThatAreNotAListOfNames(string $json): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Configuration value for "sets" must be a list of rule set names.');
+
+        ConfigLoader::loadConfig($json);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideLoadConfigRejectsRuleSetsThatAreNotAListOfNamesCases(): iterable
+    {
+        yield 'string' => ['{"sets": "security"}'];
+
+        yield 'boolean' => ['{"removeComments": true, "sets": true}'];
+
+        yield 'null' => ['{"sets": null}'];
+
+        yield 'object with a name key' => ['{"sets": {"a": "security"}}'];
+
+        yield 'object with a numeric key that does not start at zero' => ['{"sets": {"1": "security"}}'];
+
+        yield 'number after a name' => ['{"sets": ["security", 1]}'];
+
+        yield 'null before a name' => ['{"sets": [null, "security"]}'];
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function loadRuleSetsRejectsAnUnknownRuleSet(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown rule set "Security". Valid rule sets are: security, standards, cleanup, conversion, structure, minification.');
+
+        ConfigLoader::loadRuleSets('{"sets": ["cleanup", "Security"]}');
+    }
+
+    /**
+     * @throws \JsonException
+     * @throws \InvalidArgumentException
+     */
+    #[DataProvider('provideLoadConfigRejectsNestingDeeperThanAllowedCases')]
+    #[Test]
+    public function loadConfigRejectsNestingDeeperThanAllowed(string $json): void
+    {
+        $this->expectException(\JsonException::class);
+        $this->expectExceptionMessage('Maximum stack depth exceeded');
+        $this->expectExceptionCode(\JSON_ERROR_DEPTH);
+
+        ConfigLoader::loadConfig($json);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideLoadConfigRejectsNestingDeeperThanAllowedCases(): iterable
+    {
+        yield 'list under a rule key' => ['{"removeComments": [true]}'];
+
+        yield 'empty list under a rule key' => ['{"removeComments": []}'];
+
+        yield 'nested list after a value that is not a boolean' => ['{"removeComments": 1, "flattenGroups": [true]}'];
+
+        yield 'nested object after invalid sets' => ['{"sets": "security", "flattenGroups": {"a": true}}'];
+
+        yield 'nested list in a list' => ['[[true]]'];
+
+        yield 'list in the sets' => ['{"sets": [["security"]]}'];
+
+        yield 'object in a rule object' => ['{"a": {"b": {"c": true}}}'];
     }
 }

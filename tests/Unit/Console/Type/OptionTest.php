@@ -56,7 +56,7 @@ final class OptionTest extends TestCase
             'config',
             '-c',
             '--config',
-            'Path to a JSON file, or a raw JSON string, with the optimization rules to enable. Without --config and --with-all-rules, no rules are applied.',
+            'Path to a JSON file, or a raw JSON string, with the optimization rules to enable. Without --config, --set and --with-all-rules, no rules are applied.',
         ];
 
         yield 'DryRun' => [
@@ -81,6 +81,14 @@ final class OptionTest extends TestCase
             '-a',
             '--with-all-rules',
             'Enable all non-risky rules. Use --allow-risky to include risky rules as well.',
+        ];
+
+        yield 'Set' => [
+            Option::Set,
+            'set',
+            '-s',
+            '--set',
+            'Comma-separated rule sets to enable (security, standards, cleanup, conversion, structure, minification). Can be repeated. Use --allow-risky to include their risky rules as well.',
         ];
 
         yield 'Quiet' => [

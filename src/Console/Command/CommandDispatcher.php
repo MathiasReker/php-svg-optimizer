@@ -102,6 +102,7 @@ final readonly class CommandDispatcher
                 $optionIntent->getConfigPath(),
                 $optionIntent->allowRisky(),
                 $optionIntent->withAllRules(),
+                $optionIntent->getRuleSets(),
             );
 
             return (new CommandFactory($stream, $argumentParser, $colorEnabled, $this->errorStream))

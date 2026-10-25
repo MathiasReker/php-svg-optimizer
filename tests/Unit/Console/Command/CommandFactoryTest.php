@@ -59,7 +59,7 @@ final class CommandFactoryTest extends TestCase
         self::assertSame($errorStream, $commandFactory->errorStream);
         self::assertSame($argumentParser, $commandFactory->argumentParser);
 
-        $commandOption = new CommandOption(false, '', false, false);
+        $commandOption = new CommandOption(false, '', false, false, []);
 
         $command = $commandFactory->create($commandOption);
 

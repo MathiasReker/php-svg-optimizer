@@ -21,6 +21,7 @@ use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
 use MathiasReker\PhpSvgOptimizer\Service\Provider\StringProvider;
 use MathiasReker\PhpSvgOptimizer\Type\Rule;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
 
 /**
@@ -285,6 +286,20 @@ final readonly class SvgOptimizerFacade
         if ($enable) {
             $this->svgOptimizer->enableAllRules();
         }
+
+        return $this;
+    }
+
+    /**
+     * @param RuleSet ...$ruleSets The rule sets to enable; their risky rules are applied only if risky rules are allowed
+     *
+     * @return $this The SvgOptimizerFacade instance
+     *
+     * @no-named-arguments
+     */
+    public function withRuleSets(RuleSet ...$ruleSets): self
+    {
+        $this->svgOptimizer->enableRuleSets(...$ruleSets);
 
         return $this;
     }

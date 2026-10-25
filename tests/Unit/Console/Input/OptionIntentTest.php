@@ -14,12 +14,15 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 use MathiasReker\PhpSvgOptimizer\Console\Help\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Console\Input\ArgumentParser;
 use MathiasReker\PhpSvgOptimizer\Console\Input\OptionIntent;
+use MathiasReker\PhpSvgOptimizer\Console\Input\RuleSetParser;
 use MathiasReker\PhpSvgOptimizer\Console\Type\Command;
 use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandHelp;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\ExampleCommand;
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -34,6 +37,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(CliOption::class)]
 #[CoversClass(ExampleCommand::class)]
 #[CoversClass(CommandHelp::class)]
+#[CoversClass(RuleSetParser::class)]
 final class OptionIntentTest extends TestCase
 {
     #[Test]
@@ -247,5 +251,82 @@ final class OptionIntentTest extends TestCase
         self::assertFalse($optionIntent->isVersion());
         self::assertFalse($optionIntent->allowRisky());
         self::assertSame('', $optionIntent->getConfigPath());
+        self::assertSame([], $optionIntent->getRuleSets());
+    }
+
+    /**
+     * @param list<string>  $args     The arguments after the script name
+     * @param list<RuleSet> $expected The expected rule sets
+     *
+     * @throws \InvalidArgumentException
+     */
+    #[DataProvider('provideGetRuleSetsCases')]
+    #[Test]
+    public function getRuleSets(array $args, array $expected): void
+    {
+        $optionIntent = new OptionIntent(new ArgumentParser(['vendor/bin/svg-optimizer', ...$args]));
+
+        self::assertSame($expected, $optionIntent->getRuleSets());
+    }
+
+    /**
+     * @return iterable<string, array{list<string>, list<RuleSet>}>
+     */
+    public static function provideGetRuleSetsCases(): iterable
+    {
+        yield 'single set' => [['--set=security'], [RuleSet::Security]];
+
+        yield 'comma-separated sets' => [['--set=security,minification'], [RuleSet::Security, RuleSet::Minification]];
+
+        yield 'spaces around the names' => [['--set', ' cleanup , structure '], [RuleSet::Cleanup, RuleSet::Structure]];
+
+        yield 'repeated option' => [['-s', 'standards,conversion', '--dry-run', '--set=cleanup'], [RuleSet::Standards, RuleSet::Conversion, RuleSet::Cleanup]];
+
+        yield 'every set' => [['-s=security,standards,cleanup,conversion,structure,minification'], RuleSet::cases()];
+    }
+
+    /**
+     * @param list<string> $args The arguments after the script name
+     *
+     * @throws \InvalidArgumentException
+     */
+    #[DataProvider('provideGetRuleSetsThrowsForAnUnknownSetCases')]
+    #[Test]
+    public function getRuleSetsThrowsForAnUnknownSet(array $args, string $name): void
+    {
+        $optionIntent = new OptionIntent(new ArgumentParser(['vendor/bin/svg-optimizer', ...$args]));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(\sprintf('Unknown rule set "%s". Valid rule sets are: security, standards, cleanup, conversion, structure, minification.', $name));
+
+        $optionIntent->getRuleSets();
+    }
+
+    /**
+     * @return iterable<string, array{list<string>, string}>
+     */
+    public static function provideGetRuleSetsThrowsForAnUnknownSetCases(): iterable
+    {
+        yield 'unknown name' => [['--set=lossless'], 'lossless'];
+
+        yield 'unknown name after a known one' => [['--set=security,risky'], 'risky'];
+
+        yield 'unknown name in a later option' => [['--set=security', '-s', 'Cleanup'], 'Cleanup'];
+
+        yield 'empty name' => [['--set=security,,cleanup'], ''];
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    #[Test]
+    public function getRuleSetsThrowsForASetOptionWithoutValue(): void
+    {
+        $optionIntent = new OptionIntent(new ArgumentParser(['vendor/bin/svg-optimizer', '--set=']));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Option "--set" requires a value.');
+
+        $optionIntent->getRuleSets();
     }
 }

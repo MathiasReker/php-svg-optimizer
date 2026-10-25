@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Type;
 
+use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
+
 /**
  * @internal
  *
@@ -28,6 +30,8 @@ enum Option: string
 
     case WithAllRules = 'with-all-rules';
 
+    case Set = 'set';
+
     case Quiet = 'quiet';
 
     case Version = 'version';
@@ -44,6 +48,7 @@ enum Option: string
             self::DryRun->value => '-d',
             self::AllowRisky->value => '-r',
             self::WithAllRules->value => '-a',
+            self::Set->value => '-s',
             self::Quiet->value => '-q',
             self::Version->value => '-v',
             self::Ansi->value, self::NoAnsi->value => '',
@@ -58,6 +63,7 @@ enum Option: string
             self::DryRun->value => '--dry-run',
             self::AllowRisky->value => '--allow-risky',
             self::WithAllRules->value => '--with-all-rules',
+            self::Set->value => '--set',
             self::Quiet->value => '--quiet',
             self::Version->value => '--version',
             self::Ansi->value => '--ansi',
@@ -69,10 +75,11 @@ enum Option: string
     {
         return match ($this->value) {
             self::Help->value => 'Display help for the command.',
-            self::Config->value => 'Path to a JSON file, or a raw JSON string, with the optimization rules to enable. Without --config and --with-all-rules, no rules are applied.',
+            self::Config->value => 'Path to a JSON file, or a raw JSON string, with the optimization rules to enable. Without --config, --set and --with-all-rules, no rules are applied.',
             self::DryRun->value => 'Only calculate potential savings without modifying the files.',
             self::AllowRisky->value => 'Explicitly enables risky rules, allowing them to be applied.',
             self::WithAllRules->value => 'Enable all non-risky rules. Use --allow-risky to include risky rules as well.',
+            self::Set->value => \sprintf('Comma-separated rule sets to enable (%s). Can be repeated. Use --allow-risky to include their risky rules as well.', implode(', ', array_column(RuleSet::cases(), 'value'))),
             self::Quiet->value => 'Suppress all output except errors.',
             self::Version->value => 'Display the version of the library.',
             self::Ansi->value => 'Force ANSI color output, even when output is not an interactive terminal.',
