@@ -25,124 +25,129 @@ use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandHelp;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\ExampleCommand;
+use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
+use MathiasReker\PhpSvgOptimizer\File\SvgFile;
+use MathiasReker\PhpSvgOptimizer\Metrics;
+use MathiasReker\PhpSvgOptimizer\OptimizationResult;
+use MathiasReker\PhpSvgOptimizer\Pass\ConvertCssClassesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\ConvertEllipsesToCircles;
+use MathiasReker\PhpSvgOptimizer\Pass\ConvertInlineStylesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\ConvertOneStopGradientsToColors;
+use MathiasReker\PhpSvgOptimizer\Pass\ConvertShapesToPaths;
 use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
-use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
-use MathiasReker\PhpSvgOptimizer\Service\Optimizer\SvgOptimizer;
-use MathiasReker\PhpSvgOptimizer\Service\Processor\DomDocumentWrapper;
-use MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider;
-use MathiasReker\PhpSvgOptimizer\Service\Provider\FileProvider;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEllipseToCircle;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertOneStopGradients;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertShapesToPath;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyListValues;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyNumericValues;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyPathData;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDescriptions;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDuplicateElements;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyContainers;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveForeignContent;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveScripts;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveStyleTypeAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitles;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeMarkup;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeUrls;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUseBombs;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessDefs;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveXmlSpaceDefault;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveZeroSizeShapes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\SanitizeStyleSheets;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Validator\SvgValidator;
-use MathiasReker\PhpSvgOptimizer\Type\Rule;
-use MathiasReker\PhpSvgOptimizer\ValueObject\Metrics;
+use MathiasReker\PhpSvgOptimizer\Pass\FlattenGroups;
+use MathiasReker\PhpSvgOptimizer\Pass\MigrateDeprecatedAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\MinifyAttributeWhitespace;
+use MathiasReker\PhpSvgOptimizer\Pass\MinifyColors;
+use MathiasReker\PhpSvgOptimizer\Pass\MinifyNumberLists;
+use MathiasReker\PhpSvgOptimizer\Pass\MinifyNumericValues;
+use MathiasReker\PhpSvgOptimizer\Pass\MinifyPathData;
+use MathiasReker\PhpSvgOptimizer\Pass\MinifyTransforms;
+use MathiasReker\PhpSvgOptimizer\Pass\Pipeline;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveComments;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveDefaultAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveDefaultTypeAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveDefaultXmlSpace;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveDescriptions;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveDuplicateElements;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveEditorMarkup;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveEmptyAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveEmptyContainers;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveEmptyTextElements;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveEnableBackground;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveForeignContent;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveIneffectiveDefinitions;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveInvisibleCharacters;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveMetadata;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveScripts;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveTitles;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnsafeMarkup;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnsafeStyles;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnsafeUrls;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnusedIds;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnusedNamespaces;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveUseBombs;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveWidthHeightAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveZeroSizeShapes;
+use MathiasReker\PhpSvgOptimizer\Pass\SortAttributes;
+use MathiasReker\PhpSvgOptimizer\Rule;
+use MathiasReker\PhpSvgOptimizer\SvgOptimizer;
+use MathiasReker\PhpSvgOptimizer\Xml\Parser;
+use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
+use MathiasReker\PhpSvgOptimizer\Xml\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[CoversClass(ExecutionOrder::class)]
-#[CoversClass(RemoveDescriptions::class)]
-#[CoversClass(RemoveTitles::class)]
+#[CoversClass(ArgumentData::class)]
+#[CoversClass(ByteFormatter::class)]
+#[CoversClass(CliOption::class)]
 #[CoversClass(Command::class)]
-#[CoversClass(SvgOptimizer::class)]
-#[CoversClass(DomDocumentWrapper::class)]
-#[CoversClass(AbstractProvider::class)]
-#[CoversClass(FileProvider::class)]
-#[CoversClass(ConvertColorsToHex::class)]
+#[CoversClass(CommandHelp::class)]
+#[CoversClass(CommandOption::class)]
+#[CoversClass(ConfigLoader::class)]
+#[CoversClass(ConvertCssClassesToAttributes::class)]
+#[CoversClass(ConvertEllipsesToCircles::class)]
+#[CoversClass(ConvertInlineStylesToAttributes::class)]
+#[CoversClass(ConvertOneStopGradientsToColors::class)]
+#[CoversClass(ConvertShapesToPaths::class)]
+#[CoversClass(ExampleCommand::class)]
+#[CoversClass(ExecutionOrder::class)]
+#[CoversClass(Finder::class)]
 #[CoversClass(FlattenGroups::class)]
-#[CoversClass(MinifyListValues::class)]
+#[CoversClass(MemoryStream::class)]
+#[CoversClass(MetaDataAggregator::class)]
+#[CoversClass(Metrics::class)]
+#[CoversClass(MigrateDeprecatedAttributes::class)]
+#[CoversClass(MinifyAttributeWhitespace::class)]
+#[CoversClass(MinifyColors::class)]
+#[CoversClass(MinifyNumberLists::class)]
 #[CoversClass(MinifyNumericValues::class)]
 #[CoversClass(MinifyPathData::class)]
-#[CoversClass(MinifyTransformations::class)]
+#[CoversClass(MinifyTransforms::class)]
+#[CoversClass(Option::class)]
+#[CoversClass(OutputManager::class)]
+#[CoversClass(Parser::class)]
+#[CoversClass(Pipeline::class)]
 #[CoversClass(RemoveComments::class)]
 #[CoversClass(RemoveDefaultAttributes::class)]
-#[CoversClass(RemoveDeprecatedAttributes::class)]
+#[CoversClass(RemoveDefaultTypeAttributes::class)]
+#[CoversClass(RemoveDefaultXmlSpace::class)]
+#[CoversClass(RemoveDescriptions::class)]
+#[CoversClass(RemoveDuplicateElements::class)]
+#[CoversClass(RemoveEditorMarkup::class)]
 #[CoversClass(RemoveEmptyAttributes::class)]
 #[CoversClass(RemoveEmptyContainers::class)]
-#[CoversClass(RemoveEnableBackgroundAttribute::class)]
-#[CoversClass(RemoveInkscapeFootprints::class)]
+#[CoversClass(RemoveEmptyTextElements::class)]
+#[CoversClass(RemoveEnableBackground::class)]
+#[CoversClass(RemoveForeignContent::class)]
+#[CoversClass(RemoveIneffectiveDefinitions::class)]
 #[CoversClass(RemoveInvisibleCharacters::class)]
 #[CoversClass(RemoveMetadata::class)]
-#[CoversClass(RemoveStyleTypeAttributes::class)]
-#[CoversClass(RemoveUnnecessaryWhitespace::class)]
-#[CoversClass(RemoveForeignContent::class)]
 #[CoversClass(RemoveScripts::class)]
+#[CoversClass(RemoveTitles::class)]
 #[CoversClass(RemoveUnsafeMarkup::class)]
+#[CoversClass(RemoveUnsafeStyles::class)]
 #[CoversClass(RemoveUnsafeUrls::class)]
-#[CoversClass(RemoveUseBombs::class)]
-#[CoversClass(SanitizeStyleSheets::class)]
 #[CoversClass(RemoveUnusedIds::class)]
 #[CoversClass(RemoveUnusedNamespaces::class)]
-#[CoversClass(RemoveUselessDefs::class)]
-#[CoversClass(SvgOptimizerFacade::class)]
-#[CoversClass(SvgValidator::class)]
-#[CoversClass(Rule::class)]
-#[CoversClass(Metrics::class)]
-#[CoversClass(MemoryStream::class)]
-#[CoversClass(ArgumentData::class)]
-#[CoversClass(Option::class)]
-#[CoversClass(CliOption::class)]
-#[CoversClass(ExampleCommand::class)]
-#[CoversClass(CommandHelp::class)]
-#[CoversClass(OutputManager::class)]
-#[CoversClass(MetaDataAggregator::class)]
-#[CoversClass(CommandOption::class)]
-#[CoversClass(SvgFileProcessor::class)]
-#[CoversClass(ConfigLoader::class)]
-#[CoversClass(ByteFormatter::class)]
-#[CoversClass(SortAttributes::class)]
-#[CoversClass(Finder::class)]
-#[CoversClass(ConvertCssClassesToAttributes::class)]
-#[CoversClass(ConvertEllipseToCircle::class)]
-#[CoversClass(ConvertInlineStylesToAttributes::class)]
-#[CoversClass(ConvertOneStopGradients::class)]
-#[CoversClass(ConvertShapesToPath::class)]
+#[CoversClass(RemoveUseBombs::class)]
 #[CoversClass(RemoveWidthHeightAttributes::class)]
-#[CoversClass(RemoveXmlSpaceDefault::class)]
 #[CoversClass(RemoveZeroSizeShapes::class)]
-#[CoversClass(RemoveDuplicateElements::class)]
-#[CoversClass(RemoveEmptyTextElements::class)]
+#[CoversClass(Rule::class)]
+#[CoversClass(SortAttributes::class)]
+#[CoversClass(SvgFileProcessor::class)]
+#[CoversClass(SvgOptimizer::class)]
+#[CoversClass(SvgValidator::class)]
+#[UsesClass(OptimizationResult::class)]
+#[UsesClass(RiskyRulesNotAllowedException::class)]
+#[UsesClass(Serializer::class)]
+#[UsesClass(SvgFile::class)]
 final class SvgOptimizerCommandTest extends TestCase
 {
     private string $tempDir;
@@ -275,7 +280,7 @@ final class SvgOptimizerCommandTest extends TestCase
             [$svgFile],
             new CommandOption(
                 false,
-                '{"scopeSvgStyles":true}',
+                '{"prefixIdsAndClasses":true}',
                 false,
                 false,
                 [],

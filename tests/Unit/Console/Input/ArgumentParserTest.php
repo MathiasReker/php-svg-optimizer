@@ -29,14 +29,14 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(ArgumentParser::class)]
-#[CoversClass(CliOption::class)]
-#[CoversClass(Option::class)]
-#[CoversClass(ExampleCommand::class)]
 #[CoversClass(ArgumentData::class)]
+#[CoversClass(CliOption::class)]
 #[CoversClass(Command::class)]
 #[CoversClass(CommandHelp::class)]
+#[CoversClass(ExampleCommand::class)]
 #[CoversClass(FileCollector::class)]
 #[CoversClass(Finder::class)]
+#[CoversClass(Option::class)]
 final class ArgumentParserTest extends TestCase
 {
     private const array EXAMPLE_ARGS = [
@@ -315,7 +315,7 @@ final class ArgumentParserTest extends TestCase
      * @throws \InvalidArgumentException
      */
     #[Test]
-    public function invalidOption(): void
+    public function rejectsAnUnknownOption(): void
     {
         $args = [
             'vendor/bin/svg-optimizer',

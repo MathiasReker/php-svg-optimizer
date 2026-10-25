@@ -86,34 +86,34 @@
         "sort-packages": true
     },
     "scripts": {
-        "analyze:all": [
-            "@analyze:validate",
-            "@analyze:normalize",
-            "@analyze:phpstan",
-            "@analyze:rector",
-            "@analyze:php-cs-fixer",
-            "@analyze:audit"
+        "benchmark": "@php dev/scripts/benchmark.php",
+        "build:badges": "bash dev/scripts/build-badges.sh",
+        "build:badges-without-mutation": "bash dev/scripts/build-badges.sh --skip-mutation",
+        "check": [
+            "@check:composer-validate",
+            "@check:composer-normalize",
+            "@check:phpstan",
+            "@check:rector",
+            "@check:php-cs-fixer",
+            "@check:audit"
         ],
-        "analyze:audit": "composer audit --format=table",
-        "analyze:autoload": "composer dump-autoload -o --strict-psr --strict-ambiguous",
-        "analyze:check": "composer check",
-        "analyze:normalize": "composer normalize --dry-run --no-check-lock",
-        "analyze:php-cs-fixer": "bash -c 'unset PHP_BINARY; $(command -v php8.3 || command -v php) vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php --dry-run --diff'",
-        "analyze:phpstan": "@php vendor/bin/phpstan analyse -c phpstan.neon",
-        "analyze:rector": "@php vendor/bin/rector process --dry-run",
-        "analyze:validate": "composer validate --strict",
-        "build:badges": "bash dev/scripts/badges.sh",
-        "build:badges-fast": "bash dev/scripts/badges.sh --skip-mutation",
-        "lint:all": [
-            "@lint:normalize",
-            "bash -c 'composer lint:rector; composer lint:php-cs-fixer'"
+        "check:audit": "composer audit --format=table",
+        "check:autoload": "composer dump-autoload --optimize --strict-psr --strict-ambiguous",
+        "check:composer-normalize": "composer normalize --dry-run --no-check-lock",
+        "check:composer-validate": "composer validate --strict",
+        "check:php-cs-fixer": "bash -c 'unset PHP_BINARY; $(command -v php8.3 || command -v php) vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php --dry-run --diff'",
+        "check:phpstan": "@php vendor/bin/phpstan analyse -c phpstan.neon",
+        "check:platform": "composer check-platform-reqs",
+        "check:rector": "@php vendor/bin/rector process --dry-run",
+        "fix": [
+            "@fix:composer-normalize",
+            "bash -c 'composer fix:rector; composer fix:php-cs-fixer'"
         ],
-        "lint:normalize": "composer normalize",
-        "lint:php-cs-fixer": "bash -c 'unset PHP_BINARY; $(command -v php8.3 || command -v php) vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php'",
-        "lint:rector": "@php vendor/bin/rector process",
-        "test": "@php vendor/bin/phpunit tests",
-        "test:benchmark": "@php dev/scripts/benchmark.php",
-        "test:coverage": "@php vendor/bin/phpunit tests --coverage-text",
+        "fix:composer-normalize": "composer normalize",
+        "fix:php-cs-fixer": "bash -c 'unset PHP_BINARY; $(command -v php8.3 || command -v php) vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php'",
+        "fix:rector": "@php vendor/bin/rector process",
+        "test": "@php vendor/bin/phpunit",
+        "test:coverage": "@php vendor/bin/phpunit --coverage-text",
         "test:mutation": "@php vendor/bin/infection --threads=max"
     }
 }

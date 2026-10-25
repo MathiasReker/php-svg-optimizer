@@ -13,7 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Console\Output\Manager;
 
 use MathiasReker\PhpSvgOptimizer\Console\Help\ArgumentData;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Formatter\ByteFormatter;
-use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StreamInterface;
 
 /**
  * @internal

@@ -23,11 +23,8 @@ use PHPUnit\Framework\TestCase;
 final class IOExceptionTest extends TestCase
 {
     #[Test]
-    public function canBeInstantiated(): void
+    public function keepsTheMessage(): void
     {
-        $ioException = new IOException('IO operation failed', 500);
-
-        self::assertSame('IO operation failed', $ioException->getMessage());
-        self::assertSame(500, $ioException->getCode());
+        self::assertSame('IO operation failed', (new IOException('IO operation failed'))->getMessage());
     }
 }

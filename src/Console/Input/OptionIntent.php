@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
-use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
+use MathiasReker\PhpSvgOptimizer\RuleSet;
 
 /**
  * @internal

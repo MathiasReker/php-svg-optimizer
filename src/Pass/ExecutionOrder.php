@@ -11,64 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Pass;
 
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertEllipseToCircle;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertOneStopGradients;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertShapesToPath;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\FixAttributeNames;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MergeDuplicateGradients;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MergeStyles;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MigrateToSvg2;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyListValues;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyNumericValues;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyPathData;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyStyles;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MoveCommonAttributesToGroup;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MoveGroupAttributesToElements;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveAriaAndRole;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDataAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDescriptions;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDuplicateElements;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyContainers;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEnableBackgroundAttribute;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveForeignContent;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveHiddenElements;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInkscapeFootprints;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveInvisibleCharacters;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveMetadata;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonInheritableGroupAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardTags;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveScripts;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveStyleTypeAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitles;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnnecessaryWhitespace;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeMarkup;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeUrls;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedDefinitions;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedTextAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUseBombs;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessDefs;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessStrokeAndFill;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveWidthHeightAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveXmlSpaceDefault;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveZeroSizeShapes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\SanitizeStyleSheets;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\SortDefsChildren;
-
 /**
  * @internal
  *
@@ -81,58 +23,58 @@ final class ExecutionOrder
         RemoveScripts::class,
         RemoveForeignContent::class,
         RemoveUnsafeUrls::class,
-        SanitizeStyleSheets::class,
+        RemoveUnsafeStyles::class,
         RemoveUseBombs::class,
         RemoveComments::class,
         RemoveMetadata::class,
-        RemoveInkscapeFootprints::class,
+        RemoveEditorMarkup::class,
         FixAttributeNames::class,
-        ScopeSvgStyles::class,
+        PrefixIdsAndClasses::class,
         RemoveUnusedIds::class,
         MigrateToSvg2::class,
-        RemoveNonStandardTags::class,
-        RemoveDeprecatedAttributes::class,
+        RemoveNonStandardElements::class,
+        MigrateDeprecatedAttributes::class,
         RemoveTitles::class,
         RemoveDescriptions::class,
         RemoveNonStandardAttributes::class,
         RemoveDataAttributes::class,
-        RemoveAriaAndRole::class,
+        RemoveAriaAttributes::class,
         RemoveInvisibleCharacters::class,
-        RemoveEnableBackgroundAttribute::class,
-        RemoveStyleTypeAttributes::class,
-        RemoveXmlSpaceDefault::class,
+        RemoveEnableBackground::class,
+        RemoveDefaultTypeAttributes::class,
+        RemoveDefaultXmlSpace::class,
         RemoveWidthHeightAttributes::class,
-        MergeStyles::class,
-        MinifyStyles::class,
+        MergeStyleSheets::class,
+        MinifyStyleSheets::class,
         ConvertCssClassesToAttributes::class,
         ConvertInlineStylesToAttributes::class,
         RemoveEmptyAttributes::class,
         MinifyNumericValues::class,
-        MinifyListValues::class,
-        ConvertColorsToHex::class,
+        MinifyNumberLists::class,
+        MinifyColors::class,
         MergeDuplicateGradients::class,
-        ConvertOneStopGradients::class,
-        RemoveNonInheritableGroupAttributes::class,
+        ConvertOneStopGradientsToColors::class,
+        RemoveIneffectiveGroupAttributes::class,
         RemoveHiddenElements::class,
         RemoveZeroSizeShapes::class,
-        RemoveUselessDefs::class,
+        RemoveIneffectiveDefinitions::class,
         RemoveDuplicateElements::class,
         RemoveEmptyTextElements::class,
-        RemoveUnusedTextAttributes::class,
+        RemoveIneffectiveTextAttributes::class,
         RemoveEmptyContainers::class,
         RemoveUnusedDefinitions::class,
         FlattenGroups::class,
-        MoveGroupAttributesToElements::class,
-        MoveCommonAttributesToGroup::class,
-        RemoveUselessStrokeAndFill::class,
+        MoveGroupTransformsToChildren::class,
+        MoveCommonAttributesToGroups::class,
+        RemoveIneffectiveStrokeAndFill::class,
         RemoveDefaultAttributes::class,
-        MinifyTransformations::class,
-        ConvertEllipseToCircle::class,
-        ConvertShapesToPath::class,
+        MinifyTransforms::class,
+        ConvertEllipsesToCircles::class,
+        ConvertShapesToPaths::class,
         MinifyPathData::class,
         RemoveUnusedNamespaces::class,
-        RemoveUnnecessaryWhitespace::class,
-        SortDefsChildren::class,
+        MinifyAttributeWhitespace::class,
+        SortDefinitions::class,
         SortAttributes::class,
     ];
 
@@ -152,14 +94,19 @@ final class ExecutionOrder
      */
     public static function sort(array $passes): array
     {
-        usort($passes, static fn (PassInterface $a, PassInterface $b): int => self::position($a) <=> self::position($b));
+        usort($passes, static fn (PassInterface $a, PassInterface $b): int => self::position($a::class) <=> self::position($b::class));
 
         return $passes;
     }
 
-    private static function position(PassInterface $pass): int
+    /**
+     * @param class-string<PassInterface> $passClass the pass to look up
+     *
+     * @return int the position of the pass in the execution order, or PHP_INT_MAX if it has none
+     */
+    public static function position(string $passClass): int
     {
-        $position = array_search($pass::class, self::PASSES, true);
+        $position = array_search($passClass, self::PASSES, true);
 
         return false === $position ? \PHP_INT_MAX : $position;
     }

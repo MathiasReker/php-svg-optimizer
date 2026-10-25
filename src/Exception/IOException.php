@@ -11,13 +11,11 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Exception;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Exception\SvgOptimizerExceptionInterface;
-
 /**
  * @api
  *
  * @no-named-arguments
  */
-final class IOException extends \RuntimeException implements SvgOptimizerExceptionInterface
+final class IOException extends \RuntimeException implements ExceptionInterface
 {
 }

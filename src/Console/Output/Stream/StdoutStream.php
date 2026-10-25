@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Output\Stream;
 
-use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
-
 /**
  * @internal
  *

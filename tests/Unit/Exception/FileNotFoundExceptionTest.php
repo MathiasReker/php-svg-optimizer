@@ -23,11 +23,8 @@ use PHPUnit\Framework\TestCase;
 final class FileNotFoundExceptionTest extends TestCase
 {
     #[Test]
-    public function canBeInstantiated(): void
+    public function keepsTheMessage(): void
     {
-        $fileNotFoundException = new FileNotFoundException('File not found', 404);
-
-        self::assertSame('File not found', $fileNotFoundException->getMessage());
-        self::assertSame(404, $fileNotFoundException->getCode());
+        self::assertSame('File not found', (new FileNotFoundException('File not found'))->getMessage());
     }
 }

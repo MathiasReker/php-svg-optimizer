@@ -23,9 +23,9 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Option::class)]
 final class OptionTest extends TestCase
 {
-    #[DataProvider('provideOptionCases')]
+    #[DataProvider('provideDescribesEveryOptionCases')]
     #[Test]
-    public function testOption(
+    public function describesEveryOption(
         Option $option,
         string $value,
         string $shorthand,
@@ -41,7 +41,7 @@ final class OptionTest extends TestCase
     /**
      * @return \Generator<array{Option, string, string, string, string}>
      */
-    public static function provideOptionCases(): iterable
+    public static function provideDescribesEveryOptionCases(): iterable
     {
         yield 'Help' => [
             Option::Help,

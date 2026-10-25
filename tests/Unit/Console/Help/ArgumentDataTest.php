@@ -26,11 +26,11 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(ArgumentData::class)]
-#[CoversClass(Option::class)]
 #[CoversClass(CliOption::class)]
-#[CoversClass(ExampleCommand::class)]
 #[CoversClass(Command::class)]
 #[CoversClass(CommandHelp::class)]
+#[CoversClass(ExampleCommand::class)]
+#[CoversClass(Option::class)]
 final class ArgumentDataTest extends TestCase
 {
     private ArgumentData $argumentData;

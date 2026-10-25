@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\RuleSetParser;
-use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
+use MathiasReker\PhpSvgOptimizer\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

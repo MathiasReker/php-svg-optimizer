@@ -10,6 +10,7 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use Rector\Naming\Rector\Foreach_\RenameForeachValueVariableToMatchMethodCallReturnTypeRector;
 use Rector\PHPUnit\AnnotationsToAttributes\Rector\Class_\AnnotationWithValueToAttributeRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
 use Rector\Visibility\Rector\ClassConst\ChangeConstantVisibilityRector;
@@ -43,6 +44,7 @@ return RectorConfig::configure()
     ->withSkip(
         [
             PreferPHPUnitThisCallRector::class,
+            RenameForeachValueVariableToMatchMethodCallReturnTypeRector::class => [__DIR__ . '/src/Pass'],
         ]
     )
     ->withRules(

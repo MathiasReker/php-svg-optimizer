@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Console\Filesystem\Finder;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
+use MathiasReker\PhpSvgOptimizer\Svg\Element;
 
 /**
  * @internal
@@ -51,7 +51,7 @@ final class FileCollector
             return (new Finder(\DIRECTORY_SEPARATOR))
                 ->in($realPath)
                 ->files()
-                ->withExtension(SvgTag::Svg->value)
+                ->withExtension(Element::Svg->value)
                 ->find();
         }
 
@@ -64,6 +64,6 @@ final class FileCollector
 
     private function hasSvgExtension(string $filePath): bool
     {
-        return 0 === strcasecmp(pathinfo($filePath, \PATHINFO_EXTENSION), SvgTag::Svg->value);
+        return 0 === strcasecmp(pathinfo($filePath, \PATHINFO_EXTENSION), Element::Svg->value);
     }
 }

@@ -9,7 +9,8 @@
 
 declare(strict_types=1);
 
-use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
+use MathiasReker\PhpSvgOptimizer\Rule;
+use MathiasReker\PhpSvgOptimizer\SvgOptimizer;
 use Random\Engine\Mt19937;
 use Random\Randomizer;
 
@@ -70,24 +71,29 @@ function generatedDocuments(): array
 }
 
 $documents = [];
-foreach (glob(__DIR__ . '/../resources/svg/*.svg') ?: [] as $file) {
-    $documents['resources/' . basename($file)] = (string) file_get_contents($file);
+foreach (glob(__DIR__ . '/../samples/*.svg') ?: [] as $file) {
+    $documents['samples/' . basename($file)] = (string) file_get_contents($file);
 }
 
 $documents += generatedDocuments();
 
+$allRules = (new SvgOptimizer())->withRules(...Rule::cases());
+$optimizers = [
+    'safe' => $allRules->withoutRules(...array_filter(Rule::cases(), static fn (Rule $rule): bool => $rule->isRisky())),
+    'risky' => $allRules->withRiskyRulesAllowed(),
+];
 $results = [];
 $checksums = [];
 $totalSeconds = 0.0;
 
 foreach ($documents as $name => $svg) {
-    foreach (['safe' => false, 'risky' => true] as $mode => $allowRisky) {
+    foreach (array_keys($optimizers) as $mode) {
         $timings = [];
         $output = '';
 
         for ($run = 0; $run < $iterations; ++$run) {
             $start = hrtime(true);
-            $output = SvgOptimizerFacade::fromString($svg)->allowRisky($allowRisky)->withAllRules()->optimize()->getContent();
+            $output = $optimizers[$mode]->optimizeString($svg)->getContent();
             $timings[] = (hrtime(true) - $start) / 1e9;
         }
 

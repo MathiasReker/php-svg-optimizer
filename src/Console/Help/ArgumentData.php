@@ -16,7 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandHelp;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\ExampleCommand;
-use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
+use MathiasReker\PhpSvgOptimizer\RuleSet;
 
 /**
  * @internal

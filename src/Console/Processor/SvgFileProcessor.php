@@ -16,10 +16,10 @@ use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
-use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
-use MathiasReker\PhpSvgOptimizer\Service\Facade\SvgOptimizerFacade;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\Data\SvgTag;
-use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
+use MathiasReker\PhpSvgOptimizer\Rule;
+use MathiasReker\PhpSvgOptimizer\RuleSet;
+use MathiasReker\PhpSvgOptimizer\Svg\Element;
+use MathiasReker\PhpSvgOptimizer\SvgOptimizer;
 
 /**
  * @internal
@@ -43,13 +43,12 @@ final readonly class SvgFileProcessor
      * @throws \RuntimeException
      * @throws \JsonException
      * @throws \LogicException
-     * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     public function processPath(string $path): void
     {
         if (is_dir($path)) {
             $this->processDirectory($path);
-        } elseif (is_file($path) && 0 === strcasecmp(pathinfo($path, \PATHINFO_EXTENSION), SvgTag::Svg->value)) {
+        } elseif (is_file($path) && 0 === strcasecmp(pathinfo($path, \PATHINFO_EXTENSION), Element::Svg->value)) {
             $this->optimizeSvg($path);
         } else {
             throw new \InvalidArgumentException(\sprintf('"%s" is not a valid SVG file or directory.', $path));
@@ -60,14 +59,13 @@ final readonly class SvgFileProcessor
      * @throws \RuntimeException
      * @throws \JsonException
      * @throws \LogicException
-     * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     private function processDirectory(string $directory): void
     {
         $paths = (new Finder(\DIRECTORY_SEPARATOR))
             ->in($directory)
             ->files()
-            ->withExtension(SvgTag::Svg->value)
+            ->withExtension(Element::Svg->value)
             ->find();
 
         foreach ($paths as $path) {
@@ -79,46 +77,59 @@ final readonly class SvgFileProcessor
      * @throws \RuntimeException
      * @throws \JsonException
      * @throws \LogicException
-     * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     private function optimizeSvg(string $filePath): void
     {
-        $svgOptimizerFacade = SvgOptimizerFacade::fromFile($filePath)
-            ->allowRisky($this->commandOption->allowRisky())
-            ->withAllRules($this->commandOption->withAllRules())
-            ->withRules(...$this->ruleFlags())
+        $optimizationResult = (new SvgOptimizer())
+            ->withRiskyRulesAllowed($this->commandOption->allowRisky())
+            ->withRules(...$this->allRules(), ...$this->configRules())
             ->withRuleSets(...$this->commandOption->getRuleSets(), ...$this->configRuleSets())
-            ->optimize();
+            ->optimizeFile($filePath);
 
-        $metrics = $svgOptimizerFacade->getMetaData();
+        $metrics = $optimizationResult->getMetrics();
 
         if (!$this->commandOption->isDryRun()) {
-            $svgOptimizerFacade->saveToFile($filePath);
+            $optimizationResult->saveToFile($filePath);
         }
 
         $this->metaDataAggregator->addFileData(
-            $metrics->getOriginalSize(),
-            $metrics->getOptimizedSize(),
-            $metrics->getOptimizationTime(),
+            $metrics->getOriginalSizeInBytes(),
+            $metrics->getOptimizedSizeInBytes(),
+            $metrics->getDurationInSeconds(),
         );
 
         $this->outputManager->printOptimizationResult($filePath, $metrics->getSavedPercentage());
     }
 
     /**
-     * @return list<bool>
+     * @return list<Rule> every rule if all rules are enabled, without the risky rules unless they are allowed
+     */
+    private function allRules(): array
+    {
+        if (!$this->commandOption->withAllRules()) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            Rule::cases(),
+            fn (Rule $rule): bool => $this->commandOption->allowRisky() || !$rule->isRisky(),
+        ));
+    }
+
+    /**
+     * @return list<Rule> the rules the configuration enables
      *
      * @throws \JsonException
-     * @throws \LogicException
+     * @throws \InvalidArgumentException
      */
-    private function ruleFlags(): array
+    private function configRules(): array
     {
         $config = $this->getConfig();
 
-        return array_map(
-            static fn (string $ruleName): bool => $config[$ruleName] ?? false,
-            $this->ruleNames(),
-        );
+        return array_values(array_filter(
+            Rule::cases(),
+            static fn (Rule $rule): bool => $config[$rule->value] ?? false,
+        ));
     }
 
     /**
@@ -146,14 +157,11 @@ final readonly class SvgFileProcessor
     }
 
     /**
-     * @return list<string> The rule names accepted in the configuration, in the parameter order of `withRules()`
+     * @return list<string> the rule names accepted in the configuration
      */
     private function ruleNames(): array
     {
-        return array_map(
-            static fn (\ReflectionParameter $reflectionParameter): string => $reflectionParameter->getName(),
-            (new \ReflectionMethod(SvgOptimizerFacade::class, 'withRules'))->getParameters(),
-        );
+        return array_column(Rule::cases(), 'value');
     }
 
     /**

@@ -1,11 +1,11 @@
-name: Build Terminal Demo GIF
+name: Record terminal demo
 
 on:
   push:
     branches:
       - develop
     paths:
-      - 'dev/scripts/demo.sh'
+      - 'dev/scripts/record-demo.sh'
     tags:
       - '*'
 
@@ -39,11 +39,11 @@ jobs:
 
       - name: Make the script executable
         run: |
-          chmod +x ./dev/scripts/demo.sh
+          chmod +x ./dev/scripts/record-demo.sh
 
       - name: Record the script execution
         run: |
-          asciinema rec --command="./dev/scripts/demo.sh" --quiet --overwrite demo.cast
+          asciinema rec --command="./dev/scripts/record-demo.sh" --quiet --overwrite demo.cast
 
       - name: Download the prebuilt `agg` binary for Ubuntu (x86_64)
         run: |

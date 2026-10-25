@@ -15,9 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\MetaDataAggregator;
 use MathiasReker\PhpSvgOptimizer\Console\Processor\SvgFileProcessor;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
-use MathiasReker\PhpSvgOptimizer\Contract\Console\Command\CommandInterface;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
-use MathiasReker\PhpSvgOptimizer\Exception\SvgValidationException;
 
 /**
  * @internal
@@ -98,7 +96,6 @@ final readonly class Command implements CommandInterface
      * @return bool True if the path was processed, false if an error was printed
      *
      * @throws \LogicException
-     * @throws RiskyRulesNotAllowedException If risky optimization rules are used but have not been explicitly allowed
      */
     private function processPath(string $path): bool
     {
@@ -106,7 +103,7 @@ final readonly class Command implements CommandInterface
             $this->svgFileProcessor->processPath($path);
 
             return true;
-        } catch (\RuntimeException|SvgValidationException $exception) {
+        } catch (\RuntimeException $exception) {
             $this->outputManager->printError(\sprintf('Failed processing "%s": %s', $path, $exception->getMessage()));
         } catch (\InvalidArgumentException|\JsonException $exception) {
             $this->outputManager->printError($exception->getMessage());

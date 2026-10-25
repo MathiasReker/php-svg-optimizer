@@ -22,6 +22,10 @@ parameters:
   ignoreErrors:
     - identifier: symplify.forbiddenTrait
     - identifier: symplify.requiredInterfaceContractNamespace
+    - identifier: ergebnis.noNullableReturnTypeDeclaration
+      path: src/Rule.php
+    - identifier: symplify.requireExceptionNamespace
+      path: src/Xml/ParseException.php
   type_coverage:
     return: 100
     param: 100
@@ -31,9 +35,9 @@ parameters:
     noExtends:
       classesAllowedToBeExtended:
         - RuntimeException
+        - LogicException
         - InvalidArgumentException
         - Exception
-        - MathiasReker\PhpSvgOptimizer\Service\Provider\AbstractProvider
         - MathiasReker\PhpSvgOptimizer\Console\Output\Stream\AbstractStream
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon

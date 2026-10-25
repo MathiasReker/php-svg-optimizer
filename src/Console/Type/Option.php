@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console\Type;
 
-use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
+use MathiasReker\PhpSvgOptimizer\RuleSet;
 
 /**
  * @internal

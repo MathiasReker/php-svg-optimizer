@@ -11,7 +11,7 @@ on:
   pull_request:
 
 jobs:
-  run:
+  test:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
@@ -21,28 +21,28 @@ jobs:
         include:
           - operating-system: 'windows-latest'
             php-versions: '8.5'
-    name: PHP ${{ matrix.php-versions }} Test on ${{ matrix.operating-system }}
+    name: PHP ${{ matrix.php-versions }} on ${{ matrix.operating-system }}
     defaults:
       run:
         shell: bash
     steps:
-      - name: Checkout Code
+      - name: Check out the code
         uses: actions/checkout@v7
 
-      - name: Set Up PHP Environment
+      - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
           extensions: mbstring
           coverage: ${{ (matrix.php-versions == '8.3' && matrix.operating-system == 'ubuntu-latest') && 'xdebug' || 'none' }}
 
-      - name: Display PHP Version
+      - name: Show the PHP version
         run: php -v
 
-      - name: Update Composer to Latest Version
+      - name: Update Composer
         run: composer self-update
 
-      - name: Install Composer Dependencies
+      - name: Install dependencies
         run: |
           if [[ "${{ matrix.php-versions }}" == "8.6" ]]; then
             composer install --optimize-autoloader --ignore-platform-req=php+
@@ -50,36 +50,36 @@ jobs:
             composer install --optimize-autoloader
           fi
 
-      - name: Validate Composer Configuration
-        run: composer analyze:validate
+      - name: Check composer.json is valid
+        run: composer check:composer-validate
 
-      - name: Check platform requirements for packages
+      - name: Check platform requirements
         if: matrix.php-versions != '8.6'
-        run: composer analyze:check
+        run: composer check:platform
 
       - name: Check PSR-4 autoloading
-        run: composer analyze:autoload
+        run: composer check:autoload
 
-      - name: Run Tests and Generate Coverage Report
+      - name: Run tests with coverage
         if: matrix.php-versions == '8.3' && matrix.operating-system == 'ubuntu-latest'
         run: composer test -- --coverage-clover=coverage.xml
 
-      - name: Run Tests
+      - name: Run tests
         if: matrix.php-versions != '8.3' || matrix.operating-system != 'ubuntu-latest'
         run: composer test
 
-      - name: Check Code Style with PHP CS Fixer
+      - name: Check code style
         if: matrix.php-versions == '8.3' && matrix.operating-system == 'ubuntu-latest'
-        run: composer analyze:php-cs-fixer
+        run: composer check:php-cs-fixer
 
-      - name: Analyze Code with PHPStan
-        run: composer analyze:phpstan
+      - name: Check PHPStan
+        run: composer check:phpstan
 
-      - name: Analyze Code with Rector
-        run: composer analyze:rector
+      - name: Check Rector
+        run: composer check:rector
 
-      - name: Perform Composer Security Audit
-        run: composer analyze:audit
+      - name: Audit dependencies
+        run: composer check:audit
 
-      - name: Normalize Composer Configuration
-        run: composer analyze:normalize
+      - name: Check composer.json is normalized
+        run: composer check:composer-normalize

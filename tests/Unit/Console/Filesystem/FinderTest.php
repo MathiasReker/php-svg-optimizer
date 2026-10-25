@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Filesystem;
 
 use MathiasReker\PhpSvgOptimizer\Console\Filesystem\Finder;
-use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\TemporaryDirectoryTrait;
-use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\UnreadableDirectoryStreamWrapper;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\TemporaryDirectoryTrait;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\UnreadableDirectoryStreamWrapper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

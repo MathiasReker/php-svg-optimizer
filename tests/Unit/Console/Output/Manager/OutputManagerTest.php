@@ -31,15 +31,15 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(OutputManager::class)]
 #[CoversClass(AbstractStream::class)]
-#[CoversClass(MemoryStream::class)]
-#[CoversClass(SilentStream::class)]
-#[CoversClass(ByteFormatter::class)]
 #[CoversClass(ArgumentData::class)]
-#[CoversClass(Command::class)]
-#[CoversClass(Option::class)]
+#[CoversClass(ByteFormatter::class)]
 #[CoversClass(CliOption::class)]
-#[CoversClass(ExampleCommand::class)]
+#[CoversClass(Command::class)]
 #[CoversClass(CommandHelp::class)]
+#[CoversClass(ExampleCommand::class)]
+#[CoversClass(MemoryStream::class)]
+#[CoversClass(Option::class)]
+#[CoversClass(SilentStream::class)]
 final class OutputManagerTest extends TestCase
 {
     private MemoryStream $memoryStream;

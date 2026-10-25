@@ -11,54 +11,54 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Pass;
 
+use MathiasReker\PhpSvgOptimizer\Pass\ConvertCssClassesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\ConvertInlineStylesToAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\ConvertOneStopGradientsToColors;
+use MathiasReker\PhpSvgOptimizer\Pass\ConvertShapesToPaths;
 use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
+use MathiasReker\PhpSvgOptimizer\Pass\FixAttributeNames;
+use MathiasReker\PhpSvgOptimizer\Pass\FlattenGroups;
+use MathiasReker\PhpSvgOptimizer\Pass\MergeDuplicateGradients;
+use MathiasReker\PhpSvgOptimizer\Pass\MergeStyleSheets;
+use MathiasReker\PhpSvgOptimizer\Pass\MigrateDeprecatedAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\MinifyColors;
+use MathiasReker\PhpSvgOptimizer\Pass\MinifyNumberLists;
+use MathiasReker\PhpSvgOptimizer\Pass\MinifyNumericValues;
+use MathiasReker\PhpSvgOptimizer\Pass\MinifyPathData;
+use MathiasReker\PhpSvgOptimizer\Pass\MinifyStyleSheets;
+use MathiasReker\PhpSvgOptimizer\Pass\MinifyTransforms;
+use MathiasReker\PhpSvgOptimizer\Pass\MoveCommonAttributesToGroups;
+use MathiasReker\PhpSvgOptimizer\Pass\MoveGroupTransformsToChildren;
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\PrefixIdsAndClasses;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveComments;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveDefaultAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveDescriptions;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveDuplicateElements;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveEmptyAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveEmptyContainers;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveEmptyTextElements;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveForeignContent;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveHiddenElements;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveIneffectiveDefinitions;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveIneffectiveStrokeAndFill;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveIneffectiveTextAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveNonStandardAttributes;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveNonStandardElements;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveScripts;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveTitles;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnsafeMarkup;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnsafeStyles;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnsafeUrls;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnusedDefinitions;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnusedIds;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnusedNamespaces;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveUseBombs;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveZeroSizeShapes;
 use MathiasReker\PhpSvgOptimizer\Pass\RevertIfLargerPassInterface;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertColorsToHex;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertCssClassesToAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertInlineStylesToAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertOneStopGradients;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ConvertShapesToPath;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\FixAttributeNames;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\FlattenGroups;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MergeDuplicateGradients;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MergeStyles;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyListValues;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyNumericValues;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyPathData;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyStyles;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MinifyTransformations;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MoveCommonAttributesToGroup;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\MoveGroupAttributesToElements;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveComments;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDefaultAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDeprecatedAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDescriptions;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveDuplicateElements;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyContainers;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveEmptyTextElements;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveForeignContent;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveHiddenElements;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveNonStandardTags;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveScripts;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveTitles;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeMarkup;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnsafeUrls;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedDefinitions;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedIds;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedNamespaces;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUnusedTextAttributes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUseBombs;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessDefs;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveUselessStrokeAndFill;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\RemoveZeroSizeShapes;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\SanitizeStyleSheets;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\ScopeSvgStyles;
-use MathiasReker\PhpSvgOptimizer\Service\Rule\SortAttributes;
-use MathiasReker\PhpSvgOptimizer\Type\Rule;
-use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
+use MathiasReker\PhpSvgOptimizer\Pass\SortAttributes;
+use MathiasReker\PhpSvgOptimizer\Rule;
+use MathiasReker\PhpSvgOptimizer\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -85,10 +85,10 @@ final class ExecutionOrderTest extends TestCase
     #[Test]
     public function securityPassesRunFirstAndSortingLast(): void
     {
-        $securityPasses = array_merge(...array_map(static fn (Rule $rule): array => $rule->passes(), RuleSet::Security->rules()));
+        $securityPasses = array_merge(...array_map(static fn (Rule $rule): array => $rule->getPassClasses(), RuleSet::Security->getRules()));
 
         self::assertSame(
-            [RemoveUnsafeMarkup::class, RemoveScripts::class, RemoveForeignContent::class, RemoveUnsafeUrls::class, SanitizeStyleSheets::class, RemoveUseBombs::class],
+            [RemoveUnsafeMarkup::class, RemoveScripts::class, RemoveForeignContent::class, RemoveUnsafeUrls::class, RemoveUnsafeStyles::class, RemoveUseBombs::class],
             \array_slice(ExecutionOrder::passes(), 0, \count($securityPasses)),
         );
         self::assertSame(SortAttributes::class, ExecutionOrder::passes()[\count(ExecutionOrder::passes()) - 1]);
@@ -114,49 +114,49 @@ final class ExecutionOrderTest extends TestCase
 
         yield 'unsafe links are unwrapped before unsafe URLs are removed' => [RemoveForeignContent::class, RemoveUnsafeUrls::class];
 
-        yield 'use bombs are counted after all other unsafe content is removed' => [SanitizeStyleSheets::class, RemoveUseBombs::class];
+        yield 'use bombs are counted after all other unsafe content is removed' => [RemoveUnsafeStyles::class, RemoveUseBombs::class];
 
         yield 'attribute names are fixed before unknown attributes are removed' => [FixAttributeNames::class, RemoveNonStandardAttributes::class];
 
-        yield 'xlink:title becomes a title before titles are removed' => [RemoveDeprecatedAttributes::class, RemoveTitles::class];
+        yield 'xlink:title becomes a title before titles are removed' => [MigrateDeprecatedAttributes::class, RemoveTitles::class];
 
         yield 'titles and descriptions are removed one after the other' => [RemoveTitles::class, RemoveDescriptions::class];
 
-        yield 'attribute names are fixed before ids and classes are prefixed' => [FixAttributeNames::class, ScopeSvgStyles::class];
+        yield 'attribute names are fixed before ids and classes are prefixed' => [FixAttributeNames::class, PrefixIdsAndClasses::class];
 
-        yield 'ids and classes are prefixed before unused ids are removed, so a rule that prefixing drops cannot keep ids for one run only' => [ScopeSvgStyles::class, RemoveUnusedIds::class];
+        yield 'ids and classes are prefixed before unused ids are removed, so a rule that prefixing drops cannot keep ids for one run only' => [PrefixIdsAndClasses::class, RemoveUnusedIds::class];
 
-        yield 'ids and classes are prefixed before style elements are merged, which may wrap rules in at-rules that cannot be prefixed' => [ScopeSvgStyles::class, MergeStyles::class];
+        yield 'ids and classes are prefixed before style elements are merged, which may wrap rules in at-rules that cannot be prefixed' => [PrefixIdsAndClasses::class, MergeStyleSheets::class];
 
-        yield 'ids and classes are prefixed before class rules are converted, so a rule that prefixing drops cannot block a conversion for one run only' => [ScopeSvgStyles::class, ConvertCssClassesToAttributes::class];
+        yield 'ids and classes are prefixed before class rules are converted, so a rule that prefixing drops cannot block a conversion for one run only' => [PrefixIdsAndClasses::class, ConvertCssClassesToAttributes::class];
 
-        yield 'ids and classes are prefixed before deprecated attributes are removed, so a rule that prefixing drops cannot keep them for one run only' => [ScopeSvgStyles::class, RemoveDeprecatedAttributes::class];
+        yield 'ids and classes are prefixed before deprecated attributes are removed, so a rule that prefixing drops cannot keep them for one run only' => [PrefixIdsAndClasses::class, MigrateDeprecatedAttributes::class];
 
-        yield 'class styles become attributes before colors are minified' => [ConvertCssClassesToAttributes::class, ConvertColorsToHex::class];
+        yield 'class styles become attributes before colors are minified' => [ConvertCssClassesToAttributes::class, MinifyColors::class];
 
         yield 'inline styles become attributes before defaults are removed' => [ConvertInlineStylesToAttributes::class, RemoveDefaultAttributes::class];
 
         yield 'numbers are minified before defaults are compared' => [MinifyNumericValues::class, RemoveDefaultAttributes::class];
 
-        yield 'stop colors are minified before gradients are inlined' => [ConvertColorsToHex::class, ConvertOneStopGradients::class];
+        yield 'stop colors are minified before gradients are inlined' => [MinifyColors::class, ConvertOneStopGradientsToColors::class];
 
-        yield 'unused stop ids are removed before gradients are inlined' => [RemoveUnusedIds::class, ConvertOneStopGradients::class];
+        yield 'unused stop ids are removed before gradients are inlined' => [RemoveUnusedIds::class, ConvertOneStopGradientsToColors::class];
 
-        yield 'empty attributes are removed before gradients are inlined' => [RemoveEmptyAttributes::class, ConvertOneStopGradients::class];
+        yield 'empty attributes are removed before gradients are inlined' => [RemoveEmptyAttributes::class, ConvertOneStopGradientsToColors::class];
 
         yield 'groups are flattened before defaults are removed, as attributes moved off a group may become defaults' => [FlattenGroups::class, RemoveDefaultAttributes::class];
 
-        yield 'style elements are merged before class rules are converted' => [MergeStyles::class, ConvertCssClassesToAttributes::class];
+        yield 'style elements are merged before class rules are converted' => [MergeStyleSheets::class, ConvertCssClassesToAttributes::class];
 
-        yield 'style comments are removed before class rules are converted' => [MinifyStyles::class, ConvertCssClassesToAttributes::class];
+        yield 'style comments are removed before class rules are converted' => [MinifyStyleSheets::class, ConvertCssClassesToAttributes::class];
 
-        yield 'gradients are inlined before unused definitions are removed' => [ConvertOneStopGradients::class, RemoveUnusedDefinitions::class];
+        yield 'gradients are inlined before unused definitions are removed' => [ConvertOneStopGradientsToColors::class, RemoveUnusedDefinitions::class];
 
-        yield 'gradients are inlined before useless definitions are removed' => [ConvertOneStopGradients::class, RemoveUselessDefs::class];
+        yield 'gradients are inlined before useless definitions are removed' => [ConvertOneStopGradientsToColors::class, RemoveIneffectiveDefinitions::class];
 
         yield 'empty containers are removed before unused definitions, so the definitions they referenced are unused' => [RemoveEmptyContainers::class, RemoveUnusedDefinitions::class];
 
-        yield 'useless definitions are removed before empty containers are removed' => [RemoveUselessDefs::class, RemoveEmptyContainers::class];
+        yield 'useless definitions are removed before empty containers are removed' => [RemoveIneffectiveDefinitions::class, RemoveEmptyContainers::class];
 
         yield 'hidden elements are removed before empty containers are removed' => [RemoveHiddenElements::class, RemoveEmptyContainers::class];
 
@@ -166,27 +166,27 @@ final class ExecutionOrderTest extends TestCase
 
         yield 'empty text elements are removed before empty containers are removed' => [RemoveEmptyTextElements::class, RemoveEmptyContainers::class];
 
-        yield 'empty text elements are removed before unused text attributes are removed' => [RemoveEmptyTextElements::class, RemoveUnusedTextAttributes::class];
+        yield 'empty text elements are removed before unused text attributes are removed' => [RemoveEmptyTextElements::class, RemoveIneffectiveTextAttributes::class];
 
-        yield 'empty groups are removed before attributes are moved to groups' => [RemoveEmptyContainers::class, MoveCommonAttributesToGroup::class];
+        yield 'empty groups are removed before attributes are moved to groups' => [RemoveEmptyContainers::class, MoveCommonAttributesToGroups::class];
 
-        yield 'groups are flattened before common attributes are moved to groups' => [FlattenGroups::class, MoveCommonAttributesToGroup::class];
+        yield 'groups are flattened before common attributes are moved to groups' => [FlattenGroups::class, MoveCommonAttributesToGroups::class];
 
-        yield 'group transforms are moved after groups are flattened' => [FlattenGroups::class, MoveGroupAttributesToElements::class];
+        yield 'group transforms are moved after groups are flattened' => [FlattenGroups::class, MoveGroupTransformsToChildren::class];
 
-        yield 'attributes are moved to groups before useless strokes and fills are removed' => [MoveCommonAttributesToGroup::class, RemoveUselessStrokeAndFill::class];
+        yield 'attributes are moved to groups before useless strokes and fills are removed' => [MoveCommonAttributesToGroups::class, RemoveIneffectiveStrokeAndFill::class];
 
         yield 'foreign attributes are removed before groups are flattened' => [RemoveNonStandardAttributes::class, FlattenGroups::class];
 
-        yield 'groups are flattened before transforms are minified' => [FlattenGroups::class, MinifyTransformations::class];
+        yield 'groups are flattened before transforms are minified' => [FlattenGroups::class, MinifyTransforms::class];
 
-        yield 'zero-size shapes are removed before shapes become paths' => [RemoveZeroSizeShapes::class, ConvertShapesToPath::class];
+        yield 'zero-size shapes are removed before shapes become paths' => [RemoveZeroSizeShapes::class, ConvertShapesToPaths::class];
 
-        yield 'list values are minified before shapes become paths' => [MinifyListValues::class, ConvertShapesToPath::class];
+        yield 'list values are minified before shapes become paths' => [MinifyNumberLists::class, ConvertShapesToPaths::class];
 
-        yield 'shapes become paths before path data is minified' => [ConvertShapesToPath::class, MinifyPathData::class];
+        yield 'shapes become paths before path data is minified' => [ConvertShapesToPaths::class, MinifyPathData::class];
 
-        yield 'elements are removed before unused namespaces are removed' => [RemoveNonStandardTags::class, RemoveUnusedNamespaces::class];
+        yield 'elements are removed before unused namespaces are removed' => [RemoveNonStandardElements::class, RemoveUnusedNamespaces::class];
 
         yield 'comments are removed before attributes are sorted' => [RemoveComments::class, SortAttributes::class];
     }
@@ -200,7 +200,7 @@ final class ExecutionOrderTest extends TestCase
         ));
 
         self::assertSame(
-            [MergeDuplicateGradients::class, ConvertOneStopGradients::class, FlattenGroups::class, MoveGroupAttributesToElements::class, ConvertShapesToPath::class],
+            [MergeDuplicateGradients::class, ConvertOneStopGradientsToColors::class, FlattenGroups::class, MoveGroupTransformsToChildren::class, ConvertShapesToPaths::class],
             $revertedPasses,
         );
     }
@@ -208,7 +208,7 @@ final class ExecutionOrderTest extends TestCase
     #[Test]
     public function everyPassOfEveryRuleHasAPosition(): void
     {
-        $rulePasses = array_merge(...array_map(static fn (Rule $rule): array => $rule->passes(), Rule::cases()));
+        $rulePasses = array_merge(...array_map(static fn (Rule $rule): array => $rule->getPassClasses(), Rule::cases()));
         sort($rulePasses);
         $passes = ExecutionOrder::passes();
         sort($passes);

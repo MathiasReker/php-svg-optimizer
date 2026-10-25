@@ -56,7 +56,7 @@ final class StdoutStreamTest extends TestCase
      * @throws \RuntimeException
      */
     #[Test]
-    public function multipleWrites(): void
+    public function keepsTheOrderOfSeveralWrites(): void
     {
         $memoryStream = new MemoryStream();
 

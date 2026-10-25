@@ -17,9 +17,9 @@ use MathiasReker\PhpSvgOptimizer\Console\Output\Manager\OutputManager;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\SilentStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StderrStream;
 use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StdoutStream;
+use MathiasReker\PhpSvgOptimizer\Console\Output\Stream\StreamInterface;
 use MathiasReker\PhpSvgOptimizer\Console\Type\Application;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandOption;
-use MathiasReker\PhpSvgOptimizer\Contract\Console\Output\Stream\StreamInterface;
 
 /**
  * @internal

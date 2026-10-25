@@ -6,6 +6,6 @@
 
 - [ ] The pull request targets `develop`.
 - [ ] Tests cover the change, and `composer test` passes.
-- [ ] `composer analyze:all` passes and `composer lint:all` leaves no changes.
+- [ ] `composer check` passes and `composer fix` leaves no changes.
 - [ ] Coverage and the mutation score stay at 100 %.
 - [ ] `README.md` documents any change in behavior.

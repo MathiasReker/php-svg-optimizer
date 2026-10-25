@@ -13,8 +13,8 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\ConfigLoader;
 use MathiasReker\PhpSvgOptimizer\Console\Input\RuleSetParser;
-use MathiasReker\PhpSvgOptimizer\Tests\Unit\Support\UnreadableFileStreamWrapper;
-use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
+use MathiasReker\PhpSvgOptimizer\RuleSet;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\UnreadableFileStreamWrapper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;

@@ -12,22 +12,25 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Exception;
 
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
+use MathiasReker\PhpSvgOptimizer\Rule;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
 #[CoversClass(RiskyRulesNotAllowedException::class)]
+#[UsesClass(Rule::class)]
 final class RiskyRulesNotAllowedExceptionTest extends TestCase
 {
     #[Test]
-    public function canBeInstantiated(): void
+    public function listsTheRules(): void
     {
-        $riskyRulesNotAllowedException = new RiskyRulesNotAllowedException('Risky rules are not allowed', 403);
+        $riskyRulesNotAllowedException = new RiskyRulesNotAllowedException([Rule::RemoveUnusedIds, Rule::FixAttributeNames]);
 
-        self::assertSame('Risky rules are not allowed', $riskyRulesNotAllowedException->getMessage());
-        self::assertSame(403, $riskyRulesNotAllowedException->getCode());
+        self::assertSame([Rule::RemoveUnusedIds, Rule::FixAttributeNames], $riskyRulesNotAllowedException->getRules());
+        self::assertSame('Risky rules are not allowed: removeUnusedIds, fixAttributeNames. Allow risky rules to use them.', $riskyRulesNotAllowedException->getMessage());
     }
 }

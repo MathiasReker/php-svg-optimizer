@@ -20,7 +20,7 @@ use MathiasReker\PhpSvgOptimizer\Console\Type\Option;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CliOption;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\CommandHelp;
 use MathiasReker\PhpSvgOptimizer\Console\ValueObject\ExampleCommand;
-use MathiasReker\PhpSvgOptimizer\Type\RuleSet;
+use MathiasReker\PhpSvgOptimizer\RuleSet;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -30,13 +30,13 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(OptionIntent::class)]
-#[CoversClass(ArgumentParser::class)]
 #[CoversClass(ArgumentData::class)]
-#[CoversClass(Command::class)]
-#[CoversClass(Option::class)]
+#[CoversClass(ArgumentParser::class)]
 #[CoversClass(CliOption::class)]
-#[CoversClass(ExampleCommand::class)]
+#[CoversClass(Command::class)]
 #[CoversClass(CommandHelp::class)]
+#[CoversClass(ExampleCommand::class)]
+#[CoversClass(Option::class)]
 #[CoversClass(RuleSetParser::class)]
 final class OptionIntentTest extends TestCase
 {
