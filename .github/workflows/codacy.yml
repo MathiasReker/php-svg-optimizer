@@ -42,17 +42,23 @@ jobs:
         run: |
           python3 - <<'PYTHON'
           import json
+          import os
 
-          with open("results.sarif") as file:
-              sarif = json.load(file)
+          try:
+              with open("results.sarif", encoding="utf-8") as file:
+                  sarif = json.load(file)
 
-          for index, run in enumerate(sarif.get("runs", [])):
-              name = run.get("tool", {}).get("driver", {}).get("name", "tool")
-              run["automationDetails"] = {"id": f"codacy/{name}-{index}/"}
+              for index, run in enumerate(sarif.get("runs", [])):
+                  name = run.get("tool", {}).get("driver", {}).get("name", "tool")
+                  run["automationDetails"] = {"id": f"codacy/{name}-{index}/"}
 
-          with open("results.sarif", "w") as file:
-              json.dump(sarif, file)
+              with open("results.categorized.sarif", "w", encoding="utf-8") as file:
+                  json.dump(sarif, file)
+          except Exception as error:
+              print(f"::error::{type(error).__name__}: {error}; owner={os.stat('results.sarif').st_uid}, user={os.getuid()}")
+              raise
           PYTHON
+          mv -f results.categorized.sarif results.sarif
 
       - name: Upload SARIF results file
         uses: github/codeql-action/upload-sarif@v4
