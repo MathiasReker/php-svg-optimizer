@@ -26,7 +26,7 @@ body:
     attributes:
       label: Rules
       description: The code, configuration file or command line you used.
-      render: php
+      render: text
     validations:
       required: true
   - type: textarea

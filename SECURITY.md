@@ -37,11 +37,12 @@ In scope:
 
 - An optimized document that can run script or load an external resource in a browser while every rule of the
   `security` set is enabled (`removeUnsafeMarkup`, `removeScripts`, `removeForeignContent`, `removeUnsafeUrls`,
-  `sanitizeStyleSheets`, `removeUseBombs`).
+  `removeUnsafeStyles`, `removeUseBombs`).
 - Loading a document that reads local files, makes network requests, or exhausts memory or CPU in a way that is out of
   proportion to its size.
 
 Out of scope:
 
-- Documents optimized without the `security` set. Only those rules remove active content.
+- Documents optimized without the `security` set. Only those rules remove active content, and the default rules
+  (`withDefaultRules()`, or no selection on the command line) do not include them.
 - A rendering difference in the output of a rule. Please report that as a regular bug.
