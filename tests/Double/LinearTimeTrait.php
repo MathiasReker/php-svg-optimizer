@@ -18,7 +18,7 @@ trait LinearTimeTrait
 {
     private const int LINEAR_TIME_GROWTH = 8;
 
-    private const int LINEAR_TIME_ALLOWED_RATIO = 10;
+    private const int LINEAR_TIME_ALLOWED_RATIO = 24;
 
     private const float LINEAR_TIME_FLOOR_IN_SECONDS = 0.05;
 
