@@ -880,7 +880,9 @@ presentation attributes. This makes attribute-level optimizations more effective
 important, repeated, overridden by a related property, or for a property that the element already sets as an attribute
 with another value stay in the `style` attribute, and documents with a style sheet (a `<style>` element, an
 `xml-stylesheet` instruction or a linked style sheet) are left untouched. An element is only changed when its markup
-does not grow; the declarations that stay are written without spaces. The result renders the same as a standalone SVG.
+does not grow, unless converting the styles of every element makes the optimized document smaller: the optimizer then
+runs the rules that follow on both versions and keeps the smaller one. The declarations that stay are written without
+spaces. The result renders the same as a standalone SVG.
 When the SVG is inlined in an HTML page, presentation attributes have a lower priority than any CSS rule of the page,
 while an inline style wins over page rules that are not `!important`.
 

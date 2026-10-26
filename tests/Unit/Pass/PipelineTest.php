@@ -18,6 +18,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Pass\Pipeline;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Pass\RevertIfLargerPassInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\SizeGuardedPassInterface;
 use MathiasReker\PhpSvgOptimizer\Pass\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\StyleSheetTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AttributeNodeTrait;
@@ -423,6 +424,166 @@ final class PipelineTest extends TestCase
         $svg = '<svg xmlns="http://www.w3.org/2000/svg">' . str_repeat('<g>', 250) . '<rect/>' . str_repeat('</g>', 250) . '</svg>';
 
         self::assertSame($svg, (new Pipeline([]))->run($svg));
+    }
+
+    /**
+     * @throws InvalidSvgException
+     */
+    #[Test]
+    public function keepsTheUnguardedVariantWhenTheLaterPassesMakeItSmaller(): void
+    {
+        $pipeline = new Pipeline([$this->sizeGuardedPass('data-unguarded'), $this->rectRemover()]);
+
+        self::assertSame(
+            '<svg xmlns="http://www.w3.org/2000/svg" data-unguarded="x"/>',
+            $pipeline->run('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>'),
+        );
+    }
+
+    /**
+     * @throws InvalidSvgException
+     */
+    #[Test]
+    public function keepsTheGuardedVariantWhenTheUnguardedVariantEndsLarger(): void
+    {
+        $pipeline = new Pipeline([$this->sizeGuardedPass('data-unguarded'), $this->rectRemover()]);
+
+        self::assertSame(
+            '<svg xmlns="http://www.w3.org/2000/svg" a="x"><rect/></svg>',
+            $pipeline->run('<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>'),
+        );
+    }
+
+    /**
+     * @throws InvalidSvgException
+     */
+    #[Test]
+    public function keepsTheGuardedVariantWhenBothVariantsEndTheSameSize(): void
+    {
+        $pipeline = new Pipeline([$this->sizeGuardedPass('b'), $this->rectRemover()]);
+
+        self::assertSame(
+            '<svg xmlns="http://www.w3.org/2000/svg" a="x"><rect/></svg>',
+            $pipeline->run('<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>'),
+        );
+    }
+
+    /**
+     * @throws InvalidSvgException
+     */
+    #[Test]
+    public function runsTheLaterPassesOnceWhenBothVariantsAgree(): void
+    {
+        $arrayObject = new \ArrayObject();
+        $pipeline = new Pipeline([$this->sizeGuardedPass('a'), $this->recorder($arrayObject)]);
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg" a="x"/>', $pipeline->run('<svg xmlns="http://www.w3.org/2000/svg"/>'));
+        self::assertSame(['<svg xmlns="http://www.w3.org/2000/svg" a="x"/>'], $arrayObject->getArrayCopy());
+    }
+
+    /**
+     * @throws InvalidSvgException
+     */
+    #[Test]
+    public function runsTheLaterPassesOnEachVariant(): void
+    {
+        $arrayObject = new \ArrayObject();
+        $pipeline = new Pipeline([$this->sizeGuardedPass('b'), $this->recorder($arrayObject)]);
+
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg" a="x"/>', $pipeline->run('<svg xmlns="http://www.w3.org/2000/svg"/>'));
+        self::assertSame(
+            ['<svg xmlns="http://www.w3.org/2000/svg" a="x"/>', '<svg xmlns="http://www.w3.org/2000/svg" b="x"/>'],
+            $arrayObject->getArrayCopy(),
+        );
+    }
+
+    /**
+     * @throws InvalidSvgException
+     */
+    #[Test]
+    public function revertsACheckedPassAfterASizeGuardedPassInTheKeptVariant(): void
+    {
+        $growingRule = new class implements RevertIfLargerPassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
+            {
+                $domDocument->documentElement?->setAttribute('data-padding', 'makes-the-serialized-content-longer');
+            }
+        };
+
+        $pipeline = new Pipeline([$this->sizeGuardedPass('data-unguarded'), $growingRule, $this->rectRemover()]);
+
+        self::assertSame(
+            '<svg xmlns="http://www.w3.org/2000/svg" data-unguarded="x"/>',
+            $pipeline->run('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>'),
+        );
+    }
+
+    /**
+     * @param string $unguardedAttribute the attribute that the variant without the size guard sets on the root, where
+     *                                   the guarded variant sets `a`
+     */
+    private function sizeGuardedPass(string $unguardedAttribute): SizeGuardedPassInterface
+    {
+        return new /**
+         * @no-named-arguments
+         */
+        readonly class($unguardedAttribute) implements SizeGuardedPassInterface {
+            public function __construct(
+                private string $unguardedAttribute,
+            ) {}
+
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
+            {
+                $domDocument->documentElement?->setAttribute('a', 'x');
+            }
+
+            #[\Override]
+            public function applyWithoutSizeGuard(\DOMDocument $domDocument): void
+            {
+                $domDocument->documentElement?->setAttribute($this->unguardedAttribute, 'x');
+            }
+        };
+    }
+
+    private function rectRemover(): PassInterface
+    {
+        return new class implements PassInterface {
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
+            {
+                $rect = $domDocument->getElementsByTagName('rect')->item(0);
+
+                if ($rect instanceof \DOMElement && true === $domDocument->documentElement?->hasAttribute('data-unguarded')) {
+                    $rect->remove();
+                }
+            }
+        };
+    }
+
+    /**
+     * @param \ArrayObject<int, string> $arrayObject the list that receives the document each time the pass runs
+     */
+    private function recorder(\ArrayObject $arrayObject): PassInterface
+    {
+        return new /**
+         * @no-named-arguments
+         */
+        readonly class($arrayObject) implements PassInterface {
+            /**
+             * @param \ArrayObject<int, string> $arrayObject
+             */
+            public function __construct(
+                private \ArrayObject $arrayObject,
+            ) {}
+
+            #[\Override]
+            public function apply(\DOMDocument $domDocument): void
+            {
+                $this->arrayObject->append((new Serializer())->serialize($domDocument));
+            }
+        };
     }
 
     /**

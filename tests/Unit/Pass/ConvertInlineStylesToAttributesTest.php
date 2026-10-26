@@ -15,12 +15,19 @@ use MathiasReker\PhpSvgOptimizer\Exception\InvalidSvgException;
 use MathiasReker\PhpSvgOptimizer\Pass\ConvertInlineStylesToAttributes;
 use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Pass\Pipeline;
+use MathiasReker\PhpSvgOptimizer\Pass\RemoveIneffectiveStrokeAndFill;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\DeclarationTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\SelectorTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\StyleSheetTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AnimationTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Presentation\IneffectiveAttributeTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Presentation\InheritanceTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Presentation\InheritedValueTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\ConvertibleProperty;
+use MathiasReker\PhpSvgOptimizer\Xml\ParseException;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
 use MathiasReker\PhpSvgOptimizer\Xml\SvgValidator;
@@ -29,6 +36,7 @@ use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -44,8 +52,14 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(ExecutionOrder::class)]
 #[UsesClass(Parser::class)]
 #[UsesClass(Pipeline::class)]
+#[UsesClass(RemoveIneffectiveStrokeAndFill::class)]
 #[UsesClass(Serializer::class)]
 #[UsesClass(SvgValidator::class)]
+#[UsesTrait(AnimationTrait::class)]
+#[UsesTrait(IdTrait::class)]
+#[UsesTrait(IneffectiveAttributeTrait::class)]
+#[UsesTrait(InheritanceTrait::class)]
+#[UsesTrait(InheritedValueTrait::class)]
 final class ConvertInlineStylesToAttributesTest extends TestCase
 {
     /**
@@ -495,6 +509,76 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
         yield 'Keeps a longhand that the last declaration overrides as a shorthand' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><path style="marker-end:url(#a);marker:url(#b)"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><path style="marker-end:url(#a);marker:url(#b)"/></svg>',
+        ];
+    }
+
+    /**
+     * @throws ParseException
+     */
+    #[DataProvider('provideConvertsWithoutTheSizeGuardCases')]
+    #[Test]
+    public function convertsWithoutTheSizeGuard(string $input, string $expected): void
+    {
+        $domDocument = (new Parser())->parse($input);
+        (new ConvertInlineStylesToAttributes())->applyWithoutSizeGuard($domDocument);
+
+        self::assertSame($expected, (new Serializer())->serialize($domDocument));
+    }
+
+    /**
+     * @return iterable<array{string, string}>
+     */
+    public static function provideConvertsWithoutTheSizeGuardCases(): iterable
+    {
+        yield 'Converts a style whose conversion would be longer' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;foo:1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="foo:1" fill="red"/></svg>',
+        ];
+
+        yield 'Converts every declaration of a style whose conversion would be longer' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;stroke:none;stroke-width:2;stroke-opacity:1;stroke-linecap:round"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red" stroke="none" stroke-width="2" stroke-opacity="1" stroke-linecap="round"/></svg>',
+        ];
+
+        yield 'Keeps important declarations' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:green!important;stroke:red;stroke-width:2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:green!important" stroke="red" stroke-width="2"/></svg>',
+        ];
+
+        yield 'Keeps inline styles when a style element exists' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:blue}</style><rect style="fill:red;foo:1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:blue}</style><rect style="fill:red;foo:1"/></svg>',
+        ];
+
+        yield 'Keeps a declaration for a property that the element sets as an attribute with another value' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="blue" style="fill:red;stroke:none;foo:1"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="blue" style="fill:red;foo:1" stroke="none"/></svg>',
+        ];
+    }
+
+    /**
+     * @throws InvalidSvgException
+     */
+    #[DataProvider('provideKeepsTheSmallerResultOfTheLaterPassesCases')]
+    #[Test]
+    public function keepsTheSmallerResultOfTheLaterPasses(string $input, string $expected): void
+    {
+        self::assertSame($expected, (new Pipeline([new ConvertInlineStylesToAttributes(), new RemoveIneffectiveStrokeAndFill()]))->run($input));
+    }
+
+    /**
+     * @return iterable<array{string, string}>
+     */
+    public static function provideKeepsTheSmallerResultOfTheLaterPassesCases(): iterable
+    {
+        yield 'Converts a longer style when a later pass then removes the attributes that have no effect' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;stroke:none;stroke-width:2;stroke-opacity:1;stroke-linecap:round"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red" stroke="none"/></svg>',
+        ];
+
+        yield 'Keeps a longer style when the later passes cannot shrink the attributes' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;stroke:blue;stroke-width:2;stroke-opacity:1;stroke-linecap:round"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red;stroke:blue;stroke-width:2;stroke-opacity:1;stroke-linecap:round"/></svg>',
         ];
     }
 }

@@ -21,7 +21,7 @@ use MathiasReker\PhpSvgOptimizer\Svg\ConvertibleProperty;
 /**
  * @internal
  */
-final readonly class ConvertInlineStylesToAttributes implements PassInterface
+final readonly class ConvertInlineStylesToAttributes implements SizeGuardedPassInterface
 {
     use AsciiCaseTrait;
     use DeclarationTrait;
@@ -36,6 +36,24 @@ final readonly class ConvertInlineStylesToAttributes implements PassInterface
     #[\Override]
     public function apply(\DOMDocument $domDocument): void
     {
+        $this->convert($domDocument, false);
+    }
+
+    /**
+     * @param \DOMDocument $domDocument the DOM document to optimize
+     */
+    #[\Override]
+    public function applyWithoutSizeGuard(\DOMDocument $domDocument): void
+    {
+        $this->convert($domDocument, true);
+    }
+
+    /**
+     * @param \DOMDocument $domDocument   the DOM document to optimize
+     * @param bool         $growthAllowed whether an element is also converted when its markup grows
+     */
+    private function convert(\DOMDocument $domDocument, bool $growthAllowed): void
+    {
         if ($this->hasStyleSheet($domDocument)) {
             return;
         }
@@ -47,15 +65,16 @@ final readonly class ConvertInlineStylesToAttributes implements PassInterface
 
         foreach ($domNodeList as $domElement) {
             if ($this->isSvgElement($domElement)) {
-                $this->convertStyles($domElement);
+                $this->convertStyles($domElement, $growthAllowed);
             }
         }
     }
 
     /**
-     * @param \DOMElement $domElement the element to process
+     * @param \DOMElement $domElement    the element to process
+     * @param bool        $growthAllowed whether the element is also converted when its markup grows
      */
-    private function convertStyles(\DOMElement $domElement): void
+    private function convertStyles(\DOMElement $domElement, bool $growthAllowed): void
     {
         $style = $domElement->getAttribute(Attribute::Style->value);
 
@@ -69,7 +88,7 @@ final readonly class ConvertInlineStylesToAttributes implements PassInterface
 
         [$attributes, $remaining] = $this->processDeclarations($domElement, $style);
 
-        if ($this->convertedLength($domElement, $attributes, $remaining) <= $this->attributeLength(Attribute::Style->value, $style)) {
+        if ($growthAllowed || $this->convertedLength($domElement, $attributes, $remaining) <= $this->attributeLength(Attribute::Style->value, $style)) {
             $this->convertDeclarations($domElement, $attributes, $remaining);
         }
     }

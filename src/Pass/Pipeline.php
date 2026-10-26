@@ -62,7 +62,7 @@ final readonly class Pipeline
                 throw new InvalidSvgException(self::INVALID_SVG);
             }
 
-            return $this->serializer->serialize($this->applyPasses($domDocument));
+            return $this->serializer->serialize($this->applyPasses($domDocument, 0));
         } catch (ParseException $parseException) {
             throw new InvalidSvgException(self::INVALID_SVG, 0, $parseException);
         }
@@ -70,29 +70,82 @@ final readonly class Pipeline
 
     /**
      * @param \DOMDocument $domDocument the document to optimize
+     * @param int          $firstPass   the position of the first pass to apply
      *
      * @return \DOMDocument the optimized document, which is a snapshot taken before a pass whose result was reverted
      *
      * @throws ParseException If a snapshot cannot be taken
      */
-    private function applyPasses(\DOMDocument $domDocument): \DOMDocument
+    private function applyPasses(\DOMDocument $domDocument, int $firstPass): \DOMDocument
     {
-        foreach ($this->passes as $pass) {
-            if (!$pass instanceof RevertIfLargerPassInterface) {
-                $pass->apply($domDocument);
-
-                continue;
+        foreach (\array_slice($this->passes, $firstPass) as $offset => $pass) {
+            if ($pass instanceof SizeGuardedPassInterface) {
+                return $this->applySmallerVariant($domDocument, $pass, $firstPass + $offset + 1);
             }
 
-            $snapshot = $this->parser->copy($domDocument);
-            $sizeBeforePass = mb_strlen($this->serializer->serialize($domDocument), '8bit');
-            $pass->apply($domDocument);
-
-            if (mb_strlen($this->serializer->serialize($domDocument), '8bit') > $sizeBeforePass) {
-                $domDocument = $snapshot;
-            }
+            $domDocument = $this->applyPass($domDocument, $pass);
         }
 
         return $domDocument;
+    }
+
+    /**
+     * @param \DOMDocument  $domDocument the document to transform
+     * @param PassInterface $pass        the pass to apply
+     *
+     * @return \DOMDocument the transformed document, or a snapshot taken before the pass if the pass is checked and
+     *                      made the document larger
+     *
+     * @throws ParseException If a snapshot cannot be taken
+     */
+    private function applyPass(\DOMDocument $domDocument, PassInterface $pass): \DOMDocument
+    {
+        if (!$pass instanceof RevertIfLargerPassInterface) {
+            $pass->apply($domDocument);
+
+            return $domDocument;
+        }
+
+        $snapshot = $this->parser->copy($domDocument);
+        $sizeBeforePass = $this->size($domDocument);
+        $pass->apply($domDocument);
+
+        return $this->size($domDocument) > $sizeBeforePass ? $snapshot : $domDocument;
+    }
+
+    /**
+     * @param \DOMDocument             $domDocument     the document to transform
+     * @param SizeGuardedPassInterface $sizeGuardedPass the pass to apply with and without its size guard
+     * @param int                      $nextPass        the position of the first pass after it
+     *
+     * @return \DOMDocument the document after the remaining passes, from the variant of the pass that ends smaller;
+     *                      the guarded variant when both end the same size
+     *
+     * @throws ParseException If a snapshot cannot be taken
+     */
+    private function applySmallerVariant(\DOMDocument $domDocument, SizeGuardedPassInterface $sizeGuardedPass, int $nextPass): \DOMDocument
+    {
+        $unguarded = $this->parser->copy($domDocument);
+        $sizeGuardedPass->apply($domDocument);
+        $sizeGuardedPass->applyWithoutSizeGuard($unguarded);
+
+        if ($this->serializer->serialize($unguarded) === $this->serializer->serialize($domDocument)) {
+            return $this->applyPasses($domDocument, $nextPass);
+        }
+
+        $guarded = $this->applyPasses($domDocument, $nextPass);
+        $unguarded = $this->applyPasses($unguarded, $nextPass);
+
+        return $this->size($unguarded) < $this->size($guarded) ? $unguarded : $guarded;
+    }
+
+    /**
+     * @param \DOMDocument $domDocument the document to measure
+     *
+     * @return int the size of the serialized document in bytes
+     */
+    private function size(\DOMDocument $domDocument): int
+    {
+        return mb_strlen($this->serializer->serialize($domDocument), '8bit');
     }
 }
