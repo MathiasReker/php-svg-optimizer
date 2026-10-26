@@ -69,6 +69,18 @@ package_size_badge() {
     badge package-size.svg size "${size_kib}%20KiB" brightgreen
 }
 
+compact_number() {
+    awk -v number="$1" 'BEGIN {
+        if (number < 1000) {
+            print number
+        } else {
+            value = sprintf("%.1f", number / 1000)
+            sub(/\.0$/, "", value)
+            print value "k"
+        }
+    }'
+}
+
 test_badges() {
     local clover junit results coverage tests assertions
 
@@ -92,8 +104,8 @@ test_badges() {
     read -r coverage tests assertions <<< "$results"
 
     percent_badge coverage.svg code_coverage "$coverage"
-    badge tests.svg tests "$tests" blue
-    badge assertions.svg assertions "$assertions" purple
+    badge tests.svg tests "$(compact_number "$tests")" blue
+    badge assertions.svg assertions "$(compact_number "$assertions")" purple
 }
 
 type_coverage_badge() {
