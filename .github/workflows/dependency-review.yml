@@ -17,4 +17,4 @@ jobs:
           persist-credentials: false
 
       - name: Review the dependencies
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
