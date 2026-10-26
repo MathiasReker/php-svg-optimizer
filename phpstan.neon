@@ -1,3 +1,7 @@
+includes:
+  - phar://phpstan.phar/conf/bleedingEdge.neon
+  - vendor/odan/phpstan-rules/rules.neon
+
 parameters:
   level: max
   checkMissingOverrideMethodAttribute: true
@@ -67,6 +71,3 @@ rules:
   - MathiasReker\PhpSvgOptimizer\Tests\Architecture\Rule\NoStaticPropertyRule
   - MathiasReker\PhpSvgOptimizer\Tests\Architecture\Rule\TraitSuffixRule
   - MathiasReker\PhpSvgOptimizer\Tests\Architecture\Rule\VisibilityTagRule
-includes:
-    - phar://phpstan.phar/conf/bleedingEdge.neon
-    - vendor/odan/phpstan-rules/rules.neon

@@ -12,9 +12,14 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   terminal-demo:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -23,17 +28,14 @@ jobs:
       - name: Set Up PHP Environment
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.5
+          php-version: '8.5'
           extensions: mbstring
 
-      - name: Install Pipe Viewer (pv)
+      - name: Install Pipe Viewer (pv) and Asciinema
         run: |
-          sudo apt install -y pv
+          sudo apt-get update
+          sudo apt-get install -y pv asciinema
           pv --version
-
-      - name: Install Asciinema
-        run: |
-          sudo apt install -y asciinema
           asciinema --version
 
       - name: Record the script execution
@@ -51,8 +53,6 @@ jobs:
           agg --theme dracula --font-size 20 demo.cast demo.gif
 
       - name: Move demo.gif to dev/artifacts folder and commit
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -77,5 +77,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "build and update demo.gif"
+          git commit -m "build: update demo.gif"
           git push origin develop

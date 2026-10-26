@@ -1,6 +1,10 @@
 /.idea/
 /.php-cs-fixer.cache
+/.php-cs-fixer.php
 /.phpunit.cache/
+/.vscode/
+/coverage.xml
 /phpunit.xml
 /vendor/
 .DS_Store
+Thumbs.db

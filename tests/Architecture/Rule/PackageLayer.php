@@ -13,6 +13,8 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Architecture\Rule;
 
 /**
  * @internal
+ *
+ * @see PackageLayerTest
  */
 final class PackageLayer
 {

@@ -28,7 +28,7 @@ type_line() {
 type_line "# Install php-svg-optimizer with Composer"
 sleep 1
 type_line "composer require mathiasreker/php-svg-optimizer"
-composer require mathiasreker/php-svg-optimizer --ansi
+composer require mathiasreker/php-svg-optimizer --ansi --no-interaction
 
 echo ">"
 type_line "# Optimize every SVG in a directory with one command"
@@ -36,5 +36,5 @@ type_line "vendor/bin/svg-optimizer svg"
 vendor/bin/svg-optimizer --ansi svg
 
 echo ">"
-type_line "# Done! Smaller, cleaner, safer SVGs."
+type_line "# Done! Smaller, cleaner SVGs."
 sleep 2

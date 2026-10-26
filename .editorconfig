@@ -8,5 +8,8 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 
-[*.yml]
+[*.{yml,yaml,neon}]
 indent_size = 2
+
+[dev/artifacts/*.svg]
+insert_final_newline = false

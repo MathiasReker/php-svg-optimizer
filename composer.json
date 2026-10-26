@@ -27,6 +27,12 @@
         "source": "https://github.com/MathiasReker/php-svg-optimizer",
         "security": "https://github.com/MathiasReker/php-svg-optimizer/security/policy"
     },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/MathiasReker"
+        }
+    ],
     "require": {
         "php": "^8.3",
         "ext-dom": "*",
@@ -104,16 +110,16 @@
         "check:autoload": "composer dump-autoload --optimize --strict-psr --strict-ambiguous",
         "check:composer-normalize": "composer normalize --dry-run --no-check-lock",
         "check:composer-validate": "composer validate --strict",
-        "check:php-cs-fixer": "bash -c 'unset PHP_BINARY; $(command -v php8.3 || command -v php) vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php --dry-run --diff'",
+        "check:php-cs-fixer": "bash -c \"unset PHP_BINARY; $(command -v php8.3 || command -v php) vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php --dry-run --diff\"",
         "check:phpstan": "@php vendor/bin/phpstan analyse -c phpstan.neon",
         "check:platform": "composer check-platform-reqs",
         "check:rector": "@php vendor/bin/rector process --dry-run",
         "fix": [
             "@fix:composer-normalize",
-            "bash -c 'composer fix:rector; composer fix:php-cs-fixer'"
+            "bash -c \"composer fix:rector; composer fix:php-cs-fixer\""
         ],
         "fix:composer-normalize": "composer normalize",
-        "fix:php-cs-fixer": "bash -c 'unset PHP_BINARY; $(command -v php8.3 || command -v php) vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php'",
+        "fix:php-cs-fixer": "bash -c \"unset PHP_BINARY; $(command -v php8.3 || command -v php) vendor/bin/php-cs-fixer fix . --config=.php-cs-fixer.dist.php\"",
         "fix:rector": "@php vendor/bin/rector process",
         "test": "@php vendor/bin/phpunit",
         "test:coverage": "@php vendor/bin/phpunit --coverage-text",

@@ -19,7 +19,9 @@ jobs:
       contents: read
       security-events: write
     name: Codacy Security Scan
+    if: github.event.pull_request.head.repo.fork != true && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
