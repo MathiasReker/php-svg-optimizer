@@ -79,9 +79,9 @@ trait EntityReferenceTrait
             : [];
 
         if ([] === $nodes) {
-            $text = $known && !str_contains($markup, '<') && !$this->hasParsedContent($domEntityReference)
-                ? html_entity_decode($markup, \ENT_QUOTES | \ENT_XML1, self::XML_ENCODING)
-                : $domEntityReference->textContent;
+            $decoded = html_entity_decode($markup, \ENT_QUOTES | \ENT_XML1, self::XML_ENCODING);
+            $unparsed = $known && !str_contains($markup, '<') && !$this->hasParsedContent($domEntityReference);
+            $text = $unparsed ? $decoded : $domEntityReference->textContent;
             $domNode->replaceChild(new \DOMText($text), $domEntityReference);
 
             return;
