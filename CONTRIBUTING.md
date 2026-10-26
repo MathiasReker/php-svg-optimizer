@@ -4,14 +4,14 @@ Thank you for considering a contribution to PHP SVG Optimizer. Bug reports, idea
 
 By participating in this project, you agree to abide by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## Reporting Bugs and Requesting Features
+## Reporting bugs and requesting features
 
 - Search the [existing issues](https://github.com/MathiasReker/php-svg-optimizer/issues) first.
 - [Open an issue](https://github.com/MathiasReker/php-svg-optimizer/issues/new/choose) using one of the templates. For
   a bug, include the smallest SVG that shows it, the rules you enabled, and the expected and actual output.
 - Report security vulnerabilities privately as described in the [Security Policy](SECURITY.md), never in a public issue.
 
-## Development Setup
+## Development setup
 
 Requirements: PHP 8.3 or newer with the `dom`, `libxml` and `mbstring` extensions, and Composer 2.
 
@@ -39,6 +39,12 @@ docker compose run --rm php composer install
 docker compose run --rm php composer test
 ```
 
+Xdebug is installed but switched off. Turn on coverage mode for the commands that need it:
+
+```bash
+docker compose run --rm -e XDEBUG_MODE=coverage php composer test:coverage
+```
+
 Use another PHP version by setting `PHP_VERSION`:
 
 ```bash
@@ -48,7 +54,7 @@ PHP_VERSION=8.5 docker compose run --rm --build php composer test
 The container runs as user and group 1000. If your IDs differ, export them first so files created in the container
 belong to you: `export UID; export GID=$(id -g)`.
 
-## Making Changes
+## Making changes
 
 1. Fork the repository and create a branch from `develop`.
 2. Make your change with tests. Keep each commit to one logical change and write commit messages in the
@@ -57,11 +63,12 @@ belong to you: `export UID; export GID=$(id -g)`.
 3. Run the checks below and make sure they pass.
 4. Open a pull request against `develop` and describe what changed and why.
 
-### Quality Requirements
+### Quality requirements
 
 Every pull request must keep the project at its current standard:
 
-- 100 % line coverage and a 100 % mutation score.
+- 100 % line coverage, and every test declares the code it covers and uses.
+- No drop in the mutation score (`composer test:mutation`).
 - No PHPStan errors at the maximum level, and 100 % type coverage.
 - Code style fixed with Rector and PHP CS Fixer.
 - No comments other than PHPDoc tags: code explains itself through names.
@@ -87,7 +94,7 @@ Pass options to a script after `--`, for example `composer benchmark -- --iterat
 `check:audit`. `check:autoload` and `check:platform` run separately, and `build:badges-without-mutation` skips the
 mutation run of `build:badges`.
 
-### Architecture Rules
+### Architecture rules
 
 The code base enforces its structure with tests in `tests/Architecture`. Two kinds of rules run inside
 `composer check:phpstan`, so a violation is a PHPStan error:
@@ -104,7 +111,7 @@ The `architecture` test suite (`vendor/bin/phpunit --testsuite=architecture`) te
 the fixtures in `tests/Architecture/Rule/Fixture`. The phpat rules have no PHPUnit suite, so run
 `composer check:phpstan` after you add a class, a dependency between namespaces or a trait.
 
-### Rule Principles
+### Rule principles
 
 - A rule that is not risky must be lossless: the optimized document renders exactly like the original in current
   browsers, keeps every id, link and animation that can be referenced from inside or outside the document, keeps sprite
@@ -113,14 +120,14 @@ the fixtures in `tests/Architecture/Rule/Fixture`. The phpat rules have no PHPUn
 - Every rule is idempotent: running it twice gives the same result as running it once.
 - Every rule produces well-formed XML and behaves the same on every supported PHP and libxml version.
 
-### Rules and Passes
+### Rules and passes
 
 A **rule** is what a user selects: a case of the `Rule` enum, which is also the name in configuration files. A **pass**
 is one transformation of a DOM document, a class in `src/Pass`. A rule runs one or more passes, for example
 `removeEmptyElements` runs `RemoveEmptyContainers` and `RemoveEmptyTextElements`. The `ExecutionOrder` class lists every
 pass in the order they run, whatever order the rules were selected in.
 
-### Adding a Rule
+### Adding a rule
 
 1. Create a final readonly pass class in `src/Pass` that implements
    `MathiasReker\PhpSvgOptimizer\Pass\PassInterface` and its `apply(\DOMDocument $domDocument): void` method. Implement
@@ -136,15 +143,15 @@ pass in the order they run, whatever order the rules were selected in.
    fails while the committed schema is out of date.
 5. Write tests in `tests/Unit/Pass/<Pass>Test.php`, covering the edge cases and the documents the pass must leave
    untouched. Declare the coverage metadata the test needs: `#[CoversClass]` for the pass and the classes it executes,
-   and `#[UsesClass]` for the classes it only uses. A test without it is reported as risky, which fails the run. Tests for a trait are in
-   `tests/Unit/Pass/Trait/<Topic>`.
+   and `#[UsesClass]` for the classes it only uses. A test without it is reported as risky, which fails the run. Tests
+   for a trait are in `tests/Unit/Pass/Trait/<Topic>`.
 6. Run `composer test`. `tests/Integration/RuleInvariantsTest.php`, `SpriteTest.php` and `SampleFilesTest.php` run every
    rule over many documents and check that the output is valid, idempotent, keeps the ids of a rule that is not risky,
    and keeps sprite sheets working. `tests/Unit/RuleTest.php` and `tests/Unit/Pass/ExecutionOrderTest.php` check that
    every pass belongs to a rule and has a position.
 7. Document the rule in `README.md`: add a section under `## Rules` in alphabetical order, with the set, the enum case,
-   what it does, **Why it is risky** for a risky rule, and an input and output example that you ran. List it in the table
-   under `## Rule sets`, and in the table under `### Risky rules` if it is risky.
+   what it does, **Why it is risky** for a risky rule, and an input and output example that you ran. List it in the
+   table under `## Rule sets`, and in the table under `### Risky rules` if it is risky.
 
 ## License
 

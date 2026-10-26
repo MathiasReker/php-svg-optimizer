@@ -5,26 +5,26 @@
 [![CI status](https://github.com/MathiasReker/php-svg-optimizer/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/MathiasReker/php-svg-optimizer/actions/workflows/ci.yml)
 [![Codacy Security Scan](https://github.com/MathiasReker/php-svg-optimizer/actions/workflows/codacy.yml/badge.svg)](https://github.com/MathiasReker/php-svg-optimizer/actions/workflows/codacy.yml)
 [![Aikido Security Score](https://img.shields.io/badge/Aikido_Security-100%25-brightgreen)](https://intel.aikido.dev/packages/packagist/mathiasreker/php-svg-optimizer)
-[![PHPStan Level](https://img.shields.io/badge/PHPStan-Level%20max-blue)](#)
-[![Type Coverage](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/type-coverage.svg)](#)
-[![Code Coverage](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/coverage.svg)](#)
-[![Mutation Score](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/mutation-score.svg)](#)
-[![Mutation Coverage](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/mutation-coverage.svg)](#)
-[![Tests](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/tests.svg)](#)
-[![Assertions](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/assertions.svg)](#)
-[![Package size](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/package-size.svg)](#)
+![PHPStan Level](https://img.shields.io/badge/PHPStan-Level%20max-blue)
+![Type Coverage](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/type-coverage.svg)
+![Code Coverage](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/coverage.svg)
+![Mutation Score](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/mutation-score.svg)
+![Mutation Coverage](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/mutation-coverage.svg)
+![Tests](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/tests.svg)
+![Assertions](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/assertions.svg)
+![Package size](https://raw.githubusercontent.com/MathiasReker/php-svg-optimizer/develop/dev/artifacts/package-size.svg)
 [![Contributors](https://img.shields.io/github/contributors/MathiasReker/php-svg-optimizer.svg)](https://github.com/MathiasReker/php-svg-optimizer/graphs/contributors)
 [![Forks](https://img.shields.io/github/forks/MathiasReker/php-svg-optimizer.svg?style=flat)](https://github.com/MathiasReker/php-svg-optimizer/network/members)
 [![Stargazers](https://img.shields.io/github/stars/MathiasReker/php-svg-optimizer.svg?style=flat)](https://github.com/MathiasReker/php-svg-optimizer/stargazers)
 [![Issues](https://img.shields.io/github/issues/MathiasReker/php-svg-optimizer.svg)](https://github.com/MathiasReker/php-svg-optimizer/issues)
 [![MIT License](https://img.shields.io/github/license/MathiasReker/php-svg-optimizer.svg)](https://github.com/MathiasReker/php-svg-optimizer/blob/develop/LICENSE)
-[![PHP](https://img.shields.io/badge/PHP-777BB4?style=flat&logo=php&logoColor=white)](#)
+![PHP](https://img.shields.io/badge/PHP-777BB4?style=flat&logo=php&logoColor=white)
 
 `php-svg-optimizer` is a PHP library and command line tool that **optimizes, minifies and sanitizes** SVG files.
 It applies small, independent rules to an SVG. The result renders the same as the original, but it is smaller, cleaner
 and, with the `security` rule set, free of known active content.
 
-- 48 rules in six [rule sets](#rule-sets), plus four rules that you enable one by one.
+- 48 rules: 44 in six [rule sets](#rule-sets), and four that you enable one by one.
 - Rules that are not [risky](#risky-rules) are lossless: no number is rounded, and no id, link or animation that can be
   reached from inside or outside the document is removed.
 - Every rule is idempotent: optimizing an optimized SVG changes nothing.
@@ -293,16 +293,16 @@ A rule is risky if it relies on how the SVG is used, which the optimizer cannot 
 another document refers to an id, a class, a `data-*` attribute or the size of the image. Each risky rule says in its
 section under **Why it is risky** what it can break.
 
-| Rule                              | What it can break                                                                  |
-|-----------------------------------|------------------------------------------------------------------------------------|
-| `convertOneStopGradientsToColors` | The gradient and its id are removed. CSS, JavaScript or a `file.svg#id` reference that uses the gradient breaks. |
-| `fixAttributeNames` | A misspelled attribute is ignored by browsers. Renaming it makes it take effect and changes the rendering. |
-| `mergeDuplicateGradients` | The duplicate gradients and their ids are removed. CSS, JavaScript or a `file.svg#id` reference to one of them breaks. |
-| `scopeIdsAndClasses` | Ids and class names change. Page CSS, JavaScript, tests and references from other SVGs no longer match. |
-| `removeDataAttributes` | Scripts, page CSS, analytics and test tools may read `data-*` attributes. |
-| `removeUnusedDefinitions` | References from outside the document cannot be seen. A definition that only CSS or another document uses is removed. |
-| `removeUnusedIds` | CSS, JavaScript, tests and `file.svg#id` links may use an id that nothing inside the SVG references. |
-| `removeWidthHeightAttributes` | The SVG loses its intrinsic size and only keeps its aspect ratio. Layouts that rely on the fixed size change. |
+| Rule                              | What it can break                                                                                                      |
+|-----------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| `convertOneStopGradientsToColors` | The gradient and its id are removed. CSS, JavaScript or a `file.svg#id` reference that uses the gradient breaks.       |
+| `fixAttributeNames`               | A misspelled attribute is ignored by browsers. Renaming it makes it take effect and changes the rendering.             |
+| `mergeDuplicateGradients`         | The duplicate gradients and their ids are removed. CSS, JavaScript or a `file.svg#id` reference to one of them breaks. |
+| `removeDataAttributes`            | Scripts, page CSS, analytics and test tools may read `data-*` attributes.                                              |
+| `removeUnusedDefinitions`         | References from outside the document cannot be seen. A definition that only CSS or another document uses is removed.   |
+| `removeUnusedIds`                 | CSS, JavaScript, tests and `file.svg#id` links may use an id that nothing inside the SVG references.                   |
+| `removeWidthHeightAttributes`     | The SVG loses its intrinsic size and only keeps its aspect ratio. Layouts that rely on the fixed size change.          |
+| `scopeIdsAndClasses`              | Ids and class names change. Page CSS, JavaScript, tests and references from other SVGs no longer match.                |
 
 Risky rules only run after `withRiskyRulesAllowed()`. Their treatment depends on how they were selected:
 
@@ -594,19 +594,18 @@ Summary:
 ```yaml
 name: Check SVGs
 
-on: [ push, pull_request ]
+on: [push, pull_request]
 
 jobs:
-    svg:
-        runs-on: ubuntu-latest
-
-        steps:
-            -   uses: actions/checkout@v7
-            -   uses: shivammathur/setup-php@v2
-                with:
-                    php-version: '8.5'
-            -   run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
-            -   run: vendor/bin/svg-optimizer --check --quiet icons
+  svg:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+      - run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+      - run: vendor/bin/svg-optimizer --check --quiet icons
 ```
 
 ### Listing the rules
@@ -660,8 +659,9 @@ $ vendor/bin/svg-optimizer --sets=security icons
 $ vendor/bin/svg-optimizer --sets=security --without-rules=removeScripts icons
 ```
 
-The first command and the third leave `<script>` in the files. The second runs `removeScripts`, because `--sets=security`
-selects it on the command line. `--rules=removeScripts` turns it on in the same way, and `--without-rules` always wins.
+The first command and the third leave `<script>` in the files. The second runs `removeScripts`, because
+`--sets=security` selects it on the command line. `--rules=removeScripts` turns it on in the same way, and
+`--without-rules` always wins.
 
 A configuration with `rules` or `sets` and no `default` runs only what it names. A configuration with only
 `allowRisky`, or only `false` rules, runs the default rules. Unknown keys, unknown rules and unknown sets are errors
@@ -717,6 +717,31 @@ The default rules are all sets except `security`. The rules `removeTitles`, `rem
 
 Sets can be used with `withRuleSets()`, with `--sets` and with the `sets` key of the configuration file.
 
+### Reading rules and sets in code
+
+`Rule` and `RuleSet` are enums, so `Rule::cases()` and `RuleSet::cases()` list them all.
+
+| Method                              | Returns                                                                                   |
+| ----------------------------------- | ----------------------------------------------------------------------------------------- |
+| `Rule::isRisky()`                   | `true` if the rule is [risky](#risky-rules).                                              |
+| `Rule::getRuleSet()`                | The `RuleSet` of the rule, or `null` for a rule that is in no set.                        |
+| `Rule::getDescription()`            | One sentence that says what the rule does.                                                |
+| `RuleSet::getRules()`               | The rules of the set, in the order in which they run.                                     |
+| `RuleSet::contains(Rule $rule)`     | `true` if the rule is in the set.                                                         |
+| `RuleSet::defaults()`               | The sets that `withDefaultRules()` selects: every set except `security`.                  |
+
+```php
+$rule = Rule::RemoveUnusedIds;
+
+echo $rule->value, ' (risky: ', var_export($rule->isRisky(), true), ', set: ', $rule->getRuleSet()?->value, ')', \PHP_EOL;
+echo $rule->getDescription(), \PHP_EOL;
+```
+
+```text
+removeUnusedIds (risky: true, set: cleanup)
+Remove ids that are not referenced.
+```
+
 ## Sanitizing untrusted SVGs
 
 An SVG can contain scripts, event handlers and references to other resources, so an SVG that comes from a user can run
@@ -727,7 +752,7 @@ do not include it, so select it explicitly.
 |-----------------------|-----------------------------------------------------------------------------------------------------|
 | `removeScripts`       | Scripts, event handlers, and animations that rewrite links or event handlers.                       |
 | `removeUnsafeUrls`    | Attributes with URLs that run script or load external content.                                      |
-| `removeForeignContent`| HTML, embedded documents, and names that an HTML parser reads differently from an XML parser.       |
+| `removeForeignContent` | HTML, embedded documents, and names that an HTML parser reads differently from an XML parser.       |
 | `removeUnsafeStyles`  | Unsafe statements and declarations in style sheets and `style` attributes.                          |
 | `removeUseBombs`      | `<use>` cycles and `<use>` elements that render too many instances.                                 |
 | `removeUnsafeMarkup`  | Processing instructions, and comments that turn into markup when the SVG is inlined in HTML.        |
@@ -771,8 +796,8 @@ After:
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24"><rect width="10" height="10" fill="red"/><style> .a { fill: blue }</style><circle class="a" cx="18" cy="18" r="4"/></svg>
 ```
 
-The `security` set removes the kinds of content its rules describe. It is not a proof that an SVG is safe. Combine it with
-the other measures your application needs, and see [SECURITY.md](SECURITY.md) to report a bypass.
+The `security` set removes the kinds of content its rules describe. It is not a proof that an SVG is safe. Combine it
+with the other measures your application needs, and see [SECURITY.md](SECURITY.md) to report a bypass.
 
 ## Rules
 
@@ -885,7 +910,8 @@ cannot be inverted paints nothing), and documents with a style sheet, a script o
 untouched. A gradient in object bounding box units is only replaced on rects, circles and ellipses, as it is not
 rendered on, for example, a straight line.
 
-**Why it is risky:** the gradient and its `id` are removed. CSS, JavaScript or a `file.svg#id` reference in the page that embeds the SVG that uses the gradient breaks.
+**Why it is risky:** the gradient and its `id` are removed. CSS, JavaScript or a `file.svg#id` reference in the page
+that embeds the SVG that uses the gradient breaks.
 
 Input:
 
@@ -943,7 +969,9 @@ This rule changes rendering on purpose: browsers ignore a misspelled attribute, 
 For example, `viewbox` becomes `viewBox` and `Fill` becomes `fill`, so an image that ignored those attributes until now
 will be scaled or painted by them.
 
-**Why it is risky:** browsers ignore a misspelled attribute, so renaming it changes rendering: `viewbox` becomes `viewBox` and the image is scaled, `Fill` becomes `fill` and the shape is painted. An image that looked right only because those attributes were ignored changes.
+**Why it is risky:** browsers ignore a misspelled attribute, so renaming it changes rendering: `viewbox` becomes
+`viewBox` and the image is scaled, `Fill` becomes `fill` and the shape is painted. An image that looked right only
+because those attributes were ignored changes.
 
 Input:
 
@@ -995,7 +1023,8 @@ animated, referenced in a way that cannot be rewritten, or that other documents 
 `removeUnusedDefinitions`), such as the gradients of a resource library, are kept, and documents with a style sheet, a
 script or an event attribute are left untouched.
 
-**Why it is risky:** the duplicate gradients and their ids are removed. CSS, JavaScript or a `file.svg#id` reference in the page that embeds the SVG that uses a removed gradient breaks.
+**Why it is risky:** the duplicate gradients and their ids are removed. CSS, JavaScript or a `file.svg#id` reference in
+the page that embeds the SVG that uses a removed gradient breaks.
 
 Input:
 
@@ -1289,45 +1318,6 @@ Output:
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g><rect width="10" height="10" transform="translate(5 5) scale(2)"/></g></svg>
 ```
 
-### `scopeIdsAndClasses` (**risky**)
-
-Set: none, so select it explicitly. Enum case: `Rule::ScopeIdsAndClasses`. Risky: yes.
-
-Adds a suffix to every id and class name, for example `r` becomes `r-5415dd3099`, and rewrites the style rules and
-references that use them. Each SVG gets its own names, so several SVGs can share one page without style collisions.
-Selectors without a class or id selector outside a functional pseudo-class (such as `rect`, `g rect`, `svg *`, `[fill]`
-or `rect:not(.a)`) cannot be renamed and would style the whole page, so they are removed; a style sheet left without
-rules is removed too. Names that already have a suffix are left unchanged, so optimizing an SVG again does not change
-it. The suffix is derived from the drawing, not from its formatting, so a pretty-printed and a minified copy of the same
-SVG get the same suffix. Documents whose style sheets nest rules in at-rule blocks (such as `@media` or `@supports`),
-use `@import` or CSS escapes, select ids or class names with an attribute selector (such as `[id="a"]` or
-`[class~="b"]`), or that have a style element of another type than `text/css` or with content other than text, are left
-untouched, as those rules cannot be rewritten. Sprite targets (see `removeUnusedDefinitions`) keep their id, and the
-selectors and references that name them are left unchanged, so `<use href="#icon">` from the page and `sprite.svg#icon`
-keep working; when a style sheet uses `:target`, no id is renamed. Class names are still renamed.
-
-**Why it is risky:** the renamed ids and class names no longer match anything outside the SVG that uses the original
-names: page-level CSS such as `.icon path { fill: currentColor }` or `#logo:hover`, JavaScript (`getElementById`,
-`querySelector`, toggling a class), analytics and test selectors, `url(#id)` references from other inline SVGs on the
-page, and `file.svg#id` references to ids that are not sprite targets. Removing rules whose selectors may match
-elements of the page (no class or id selector) also changes how the SVG itself renders when it relied on them.
-
-Input:
-
-```xml
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <style>.a{fill:red}</style>
-  <rect id="r" class="a" width="10" height="10"/>
-  <use href="#r" y="12"/>
-</svg>
-```
-
-Output:
-
-```xml
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><style>.a-5415dd3099{fill:red}</style><rect id="r-5415dd3099" class="a-5415dd3099" width="10" height="10"/><use href="#r-5415dd3099" y="12"/></svg>
-```
-
 ### `removeAriaAttributes`
 
 Set: none, so select it explicitly. Enum case: `Rule::RemoveAriaAttributes`. Risky: no.
@@ -1382,7 +1372,8 @@ Removes `data-*` attributes from elements. These attributes are often used for a
 scripting hooks, and removing them can significantly reduce file size. Attributes that a style sheet of the document
 names, for example in an attribute selector such as `[data-state="open"]` or in `attr()`, are kept.
 
-**Why it is risky:** scripts, CSS in the page that embeds the SVG, analytics, testing tools (`data-testid`) and design-tool round trips may read `data-*` attributes. Those break when the attributes are gone.
+**Why it is risky:** scripts, CSS in the page that embeds the SVG, analytics, testing tools (`data-testid`) and
+design-tool round trips may read `data-*` attributes. Those break when the attributes are gone.
 
 Input:
 
@@ -2081,6 +2072,45 @@ Output:
 
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="10" height="10"/></svg>
+```
+
+### `scopeIdsAndClasses` (**risky**)
+
+Set: none, so select it explicitly. Enum case: `Rule::ScopeIdsAndClasses`. Risky: yes.
+
+Adds a suffix to every id and class name, for example `r` becomes `r-5415dd3099`, and rewrites the style rules and
+references that use them. Each SVG gets its own names, so several SVGs can share one page without style collisions.
+Selectors without a class or id selector outside a functional pseudo-class (such as `rect`, `g rect`, `svg *`, `[fill]`
+or `rect:not(.a)`) cannot be renamed and would style the whole page, so they are removed; a style sheet left without
+rules is removed too. Names that already have a suffix are left unchanged, so optimizing an SVG again does not change
+it. The suffix is derived from the drawing, not from its formatting, so a pretty-printed and a minified copy of the same
+SVG get the same suffix. Documents whose style sheets nest rules in at-rule blocks (such as `@media` or `@supports`),
+use `@import` or CSS escapes, select ids or class names with an attribute selector (such as `[id="a"]` or
+`[class~="b"]`), or that have a style element of another type than `text/css` or with content other than text, are left
+untouched, as those rules cannot be rewritten. Sprite targets (see `removeUnusedDefinitions`) keep their id, and the
+selectors and references that name them are left unchanged, so `<use href="#icon">` from the page and `sprite.svg#icon`
+keep working; when a style sheet uses `:target`, no id is renamed. Class names are still renamed.
+
+**Why it is risky:** the renamed ids and class names no longer match anything outside the SVG that uses the original
+names: page-level CSS such as `.icon path { fill: currentColor }` or `#logo:hover`, JavaScript (`getElementById`,
+`querySelector`, toggling a class), analytics and test selectors, `url(#id)` references from other inline SVGs on the
+page, and `file.svg#id` references to ids that are not sprite targets. Removing rules whose selectors may match
+elements of the page (no class or id selector) also changes how the SVG itself renders when it relied on them.
+
+Input:
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <style>.a{fill:red}</style>
+  <rect id="r" class="a" width="10" height="10"/>
+  <use href="#r" y="12"/>
+</svg>
+```
+
+Output:
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><style>.a-5415dd3099{fill:red}</style><rect id="r-5415dd3099" class="a-5415dd3099" width="10" height="10"/><use href="#r-5415dd3099" y="12"/></svg>
 ```
 
 ### `sortAttributes`

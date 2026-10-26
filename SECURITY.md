@@ -1,6 +1,6 @@
 # Security Policy
 
-## Supported Versions
+## Supported versions
 
 Security fixes are released for the latest major version only.
 
@@ -9,7 +9,7 @@ Security fixes are released for the latest major version only.
 | 10.x    | Yes       |
 | < 10.0  | No        |
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
 Please do not report security vulnerabilities through public GitHub issues, discussions or pull requests.
 

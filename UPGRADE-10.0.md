@@ -228,9 +228,9 @@ invalid SVG must catch `InvalidSvgException` instead.
 
 ### Namespaces
 
-Only the root namespace `MathiasReker\PhpSvgOptimizer` is public. The namespaces `Service`, `Contract`, `Type`, `ValueObject` and
-`Support` of 9.x are gone, and everything below the root namespace except `Exception` is internal and can change in any
-release. Code that used a class from one of them must use the public API above.
+Only the root namespace `MathiasReker\PhpSvgOptimizer` is public. The namespaces `Service`, `Contract`, `Type`,
+`ValueObject` and `Support` of 9.x are gone, and everything below the root namespace except `Exception` is internal and
+can change in any release. Code that used a class from one of them must use the public API above.
 
 ## Command line
 
@@ -326,8 +326,8 @@ The same configuration in 10.0:
   could change what a script or an event handler finds leave such documents alone.
 - **Ids are kept.** A rule that is not risky never removes or renames an id. Rules that did are now risky:
   `convertOneStopGradientsToColors` and `removeUnusedDefinitions`, which includes the old `removeUnusedMasks`.
-- **Memory.** The command line tool no longer sets `memory_limit` to `-1`. Raise the limit with `php -d memory_limit=...`
-  if you optimize very large files.
+- **Memory.** The command line tool no longer sets `memory_limit` to `-1`. Raise the limit with
+  `php -d memory_limit=...` if you optimize very large files.
 - **Directories.** While searching a directory, the command line tool skips `.git`, `.hg`, `.svn`, `node_modules` and
   `vendor`, and symbolic links to files or directories. A path that you name is always used.
 - **Writing.** Files are replaced atomically. A file that would get larger is not written and is reported as
