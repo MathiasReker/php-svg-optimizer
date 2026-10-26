@@ -45,10 +45,10 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversTrait(IdReferenceTrait::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ElementTrait::class)]
+#[CoversTrait(IdReferenceTrait::class)]
 #[CoversTrait(IdTrait::class)]
 #[CoversTrait(ScriptingTrait::class)]
 #[UsesClass(Attribute::class)]

@@ -199,7 +199,7 @@ final class ConfigFileTest extends TestCase
 
         yield 'an unknown rule' => ['{"rules": {"banana": true}}', 'Invalid inline configuration: Unknown rule "banana".'];
 
-        yield 'a rule of 9.x' => ['{"rules": {"scopeSvgStyles": true}}', 'Rule "scopeSvgStyles" was renamed to "prefixIdsAndClasses".'];
+        yield 'a rule of 9.x' => ['{"rules": {"scopeSvgStyles": true}}', 'Rule "scopeSvgStyles" was renamed to "scopeIdsAndClasses".'];
 
         yield 'a numeric rule name' => ['{"rules": {"0": true}}', 'Unknown rule "0".'];
 

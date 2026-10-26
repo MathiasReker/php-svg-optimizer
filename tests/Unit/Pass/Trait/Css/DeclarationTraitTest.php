@@ -35,8 +35,8 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversTrait(DeclarationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
+#[CoversTrait(DeclarationTrait::class)]
 #[CoversTrait(SelectorTrait::class)]
 #[UsesClass(ConvertCssClassesToAttributes::class)]
 #[UsesClass(ConvertInlineStylesToAttributes::class)]

@@ -14,7 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Pass;
 use MathiasReker\PhpSvgOptimizer\Exception\InvalidSvgException;
 use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Pass\Pipeline;
-use MathiasReker\PhpSvgOptimizer\Pass\PrefixIdsAndClasses;
+use MathiasReker\PhpSvgOptimizer\Pass\ScopeIdsAndClasses;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\ClassSelectorTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\DeclarationTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\SelectorTrait;
@@ -39,7 +39,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(PrefixIdsAndClasses::class)]
+#[CoversClass(ScopeIdsAndClasses::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ClassSelectorTrait::class)]
 #[CoversTrait(DeclarationTrait::class)]
@@ -54,7 +54,7 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
 #[UsesClass(SvgValidator::class)]
-final class PrefixIdsAndClassesTest extends TestCase
+final class ScopeIdsAndClassesTest extends TestCase
 {
     use LinearTimeTrait;
     use RegexFailureTrait;
@@ -62,11 +62,11 @@ final class PrefixIdsAndClassesTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('providePrefixesIdsAndClassesCases')]
+    #[DataProvider('provideScopesIdsAndClassesCases')]
     #[Test]
-    public function prefixesIdsAndClasses(string $input, callable $assertion): void
+    public function scopesIdsAndClasses(string $input, callable $assertion): void
     {
-        $pipeline = new Pipeline([new PrefixIdsAndClasses()]);
+        $pipeline = new Pipeline([new ScopeIdsAndClasses()]);
 
         $actual = $pipeline->run($input);
 
@@ -77,7 +77,7 @@ final class PrefixIdsAndClassesTest extends TestCase
     /**
      * @return iterable<array{string, callable}>
      */
-    public static function providePrefixesIdsAndClassesCases(): iterable
+    public static function provideScopesIdsAndClassesCases(): iterable
     {
         $unscopable = [
             'rules nested in a media block' => '<svg><style>.a{stroke:blue}@media screen{.a{fill:red}}</style><rect class="a" id="r"/></svg>',
@@ -721,8 +721,8 @@ final class PrefixIdsAndClassesTest extends TestCase
 
         $hash = mb_substr(sha1((string) $domDocument->saveXML($documentElement)), 0, 10);
 
-        $prefixIdsAndClasses = new PrefixIdsAndClasses();
-        $prefixIdsAndClasses->apply($domDocument);
+        $scopeIdsAndClasses = new ScopeIdsAndClasses();
+        $scopeIdsAndClasses->apply($domDocument);
 
         $rect = $domDocument->getElementsByTagName('rect')->item(0);
         self::assertInstanceOf(\DOMElement::class, $rect);
@@ -929,8 +929,8 @@ final class PrefixIdsAndClassesTest extends TestCase
 
         $before = $domDocument->saveXML();
 
-        $prefixIdsAndClasses = new PrefixIdsAndClasses();
-        $prefixIdsAndClasses->apply($domDocument);
+        $scopeIdsAndClasses = new ScopeIdsAndClasses();
+        $scopeIdsAndClasses->apply($domDocument);
 
         self::assertSame($before, $domDocument->saveXML());
     }
@@ -940,7 +940,7 @@ final class PrefixIdsAndClassesTest extends TestCase
      */
     private function scope(string $content): string
     {
-        $pipeline = new Pipeline([new PrefixIdsAndClasses()]);
+        $pipeline = new Pipeline([new ScopeIdsAndClasses()]);
 
         return $pipeline->run($content);
     }
@@ -998,7 +998,7 @@ final class PrefixIdsAndClassesTest extends TestCase
         $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" ' . implode(' ', array_map(static fn (int $i): string => 'xmlns:n' . $i . '="urn:' . $i . '"', range(1, $count))) . '><style>.a{fill:red}</style><rect class="a" id="r" fill="url(#g)"/><use href="#r"/><svg><rect id="q"/></svg></svg>');
 
         $start = hrtime(true);
-        (new PrefixIdsAndClasses())->apply($domDocument);
+        (new ScopeIdsAndClasses())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
     }
@@ -1014,7 +1014,7 @@ final class PrefixIdsAndClassesTest extends TestCase
                 return $domDocument;
             },
             static function (\DOMDocument $domDocument): void {
-                (new PrefixIdsAndClasses())->apply($domDocument);
+                (new ScopeIdsAndClasses())->apply($domDocument);
             },
             5_000,
         );
@@ -1031,7 +1031,7 @@ final class PrefixIdsAndClassesTest extends TestCase
                 return $domDocument;
             },
             static function (\DOMDocument $domDocument): void {
-                self::withoutJit(static fn () => (new PrefixIdsAndClasses())->apply($domDocument));
+                self::withoutJit(static fn () => (new ScopeIdsAndClasses())->apply($domDocument));
             },
             500,
         );
@@ -1048,7 +1048,7 @@ final class PrefixIdsAndClassesTest extends TestCase
                 return $domDocument;
             },
             static function (\DOMDocument $domDocument): void {
-                self::withoutJit(static fn () => (new PrefixIdsAndClasses())->apply($domDocument));
+                self::withoutJit(static fn () => (new ScopeIdsAndClasses())->apply($domDocument));
             },
             1_500,
         );

@@ -38,7 +38,6 @@ use MathiasReker\PhpSvgOptimizer\Pass\MoveCommonAttributesToGroups;
 use MathiasReker\PhpSvgOptimizer\Pass\MoveGroupTransformsToChildren;
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Pass\Pipeline;
-use MathiasReker\PhpSvgOptimizer\Pass\PrefixIdsAndClasses;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveAriaAttributes;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveDataAttributes;
@@ -73,6 +72,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnusedNamespaces;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveUseBombs;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveWidthHeightAttributes;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveZeroSizeShapes;
+use MathiasReker\PhpSvgOptimizer\Pass\ScopeIdsAndClasses;
 use MathiasReker\PhpSvgOptimizer\Pass\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Pass\SortDefinitions;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\ClassSelectorTrait;
@@ -169,7 +169,6 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(MoveGroupTransformsToChildren::class)]
 #[UsesClass(NamespaceUri::class)]
 #[UsesClass(OptimizationResult::class)]
-#[UsesClass(PrefixIdsAndClasses::class)]
 #[UsesClass(RemoveAriaAttributes::class)]
 #[UsesClass(RemoveComments::class)]
 #[UsesClass(RemoveDataAttributes::class)]
@@ -199,6 +198,7 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(RemoveWidthHeightAttributes::class)]
 #[UsesClass(RemoveZeroSizeShapes::class)]
 #[UsesClass(Rule::class)]
+#[UsesClass(ScopeIdsAndClasses::class)]
 #[UsesClass(Serializer::class)]
 #[UsesClass(SortAttributes::class)]
 #[UsesClass(SortDefinitions::class)]

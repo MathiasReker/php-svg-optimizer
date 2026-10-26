@@ -32,7 +32,7 @@ final class RuleSetTest extends TestCase
         Rule::RemoveTitles,
         Rule::RemoveDescriptions,
         Rule::RemoveAriaAttributes,
-        Rule::PrefixIdsAndClasses,
+        Rule::ScopeIdsAndClasses,
     ];
 
     /**

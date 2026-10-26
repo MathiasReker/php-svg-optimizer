@@ -68,19 +68,41 @@ Every pull request must keep the project at its current standard:
 - Logic shared by several passes lives in a trait.
 
 ```bash
-composer fix            # Fix the code style with Rector and PHP CS Fixer
-composer check          # Validate and normalize composer.json, PHPStan, Rector and PHP CS Fixer (dry runs), audit
-composer test           # Test suite
-composer test:coverage  # Test suite with a coverage report (requires Xdebug or PCOV)
-composer test:mutation  # Mutation testing
-composer benchmark      # Benchmark; --save=<file> and --compare=<file> check that the output is unchanged
-composer build:schema   # Regenerate resources/svg-optimizer.schema.json from the Rule enum
+composer fix                   # Normalize composer.json, then fix the code style with Rector and PHP CS Fixer
+composer check                 # Validate and normalize composer.json, PHPStan, Rector and PHP CS Fixer (dry runs), audit
+composer test                  # Test suite
+composer test:coverage         # Test suite with a coverage report (requires Xdebug or PCOV)
+composer test:mutation         # Mutation testing
+composer benchmark             # Benchmark; --save=<file> and --compare=<file> check that the output is unchanged
+composer build:schema          # Regenerate resources/svg-optimizer.schema.json from the Rule enum
+composer build:badges          # Regenerate the SVG badges for size, coverage, tests, types and mutation score
+composer check:autoload        # Verify the optimized autoloader: PSR-4 compliance and no ambiguous classes
+composer check:platform        # Verify that the installed platform meets the requirements of the dependencies
 ```
 
 Pass options to a script after `--`, for example `composer benchmark -- --iterations=1`.
 
-`composer check` runs `check:composer-validate`, `check:composer-normalize`, `check:phpstan`, `check:rector`,
-`check:php-cs-fixer` and `check:audit`. `check:autoload` and `check:platform` run separately.
+`composer fix` runs `fix:composer-normalize`, `fix:rector` and `fix:php-cs-fixer`. `composer check` runs
+`check:composer-validate`, `check:composer-normalize`, `check:phpstan`, `check:rector`, `check:php-cs-fixer` and
+`check:audit`. `check:autoload` and `check:platform` run separately, and `build:badges-without-mutation` skips the
+mutation run of `build:badges`.
+
+### Architecture Rules
+
+The code base enforces its structure with tests in `tests/Architecture`. Two kinds of rules run inside
+`composer check:phpstan`, so a violation is a PHPStan error:
+
+- Layer rules (phpat, `LayerTest`): the root namespace depends only on `Pass`, `Xml`, `Svg` and `File`; `Pass` only on
+  `Svg`, `Xml` and exceptions; `Xml` only on `Svg` and exceptions; `Svg` only on exceptions; `File` only on exceptions;
+  `Console` only on the root API and `File`; and nothing outside `Console` depends on it.
+- Declaration rules (phpat, `DeclarationTest`): exceptions implement `ExceptionInterface` and end in `Exception`,
+  interfaces end in `Interface`, every pass implements `PassInterface`, and classes are final.
+- Custom PHPStan rules (`tests/Architecture/Rule`): no `DOM*` class in the signature of a public API method, no static
+  properties, traits end in `Trait`, and every class carries `@api` (root namespace) or `@internal` (everything else).
+
+The `architecture` test suite (`vendor/bin/phpunit --testsuite=architecture`) tests the custom PHPStan rules against
+the fixtures in `tests/Architecture/Rule/Fixture`. The phpat rules have no PHPUnit suite, so run
+`composer check:phpstan` after you add a class, a dependency between namespaces or a trait.
 
 ### Rule Principles
 

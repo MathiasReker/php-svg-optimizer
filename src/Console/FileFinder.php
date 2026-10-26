@@ -31,7 +31,7 @@ final readonly class FileFinder
      *
      * @return list<string> the SVG files in the order of the paths, each path as the user wrote it followed by what
      *                      leads to the file; directories are searched in name order, without .git, .hg, .svn,
-     *                      node_modules and vendor, and without following symbolic links to directories
+     *                      node_modules and vendor, and without symbolic links to files or directories
      *
      * @throws \InvalidArgumentException If a path does not exist or is a file without the .svg extension
      * @throws \UnexpectedValueException If a directory cannot be read
@@ -109,7 +109,7 @@ final readonly class FileFinder
                 : $this->scan($entry->getPathname(), $prefix . $name . self::SEPARATOR);
         }
 
-        return $entry->isFile() && $this->hasSvgExtension($name) ? [$prefix . $name] : [];
+        return $entry->isFile() && !$entry->isLink() && $this->hasSvgExtension($name) ? [$prefix . $name] : [];
     }
 
     /**

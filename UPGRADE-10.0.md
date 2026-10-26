@@ -118,7 +118,7 @@ Every rule of 9.0.0, and what it is in 10.0.
 | `removeWidthHeightAttributes` | unchanged | `removeWidthHeightAttributes` |  |
 | `removeXmlSpaceDefault` | merged into | `removeDefaultAttributes` |  |
 | `removeZeroSizeShapes` | merged into | `removeHiddenElements` | A shape with a zero size renders nothing. |
-| `scopeSvgStyles` | renamed | `prefixIdsAndClasses` | It renames ids and class names. |
+| `scopeSvgStyles` | renamed | `scopeIdsAndClasses` | It renames ids and class names. |
 | `sortAttributes` | unchanged | `sortAttributes` | It puts `id`, `width` and `height` first, after the namespace declarations. |
 
 Rules that were added to `develop` after 9.0.0 and renamed before the release:
@@ -299,8 +299,13 @@ The same configuration in 10.0:
 
 - Rule names move below `"rules"` and follow the [rule table](#rules). `removeUnsafeElements` becomes the `security`
   set, or the six rules it was split into.
-- `false` still means that the rule does not run. It now also overrides a set: a rule that is `false` is left out even
-  if a set selects it. A `rules` object with only `false` values and no `sets` runs the default rules without them.
+- `false` still means that the rule does not run. It now also overrides a set of the file: a rule that is `false` is
+  left out even if a set in the file selects it. A `rules` object with only `false` values and no `sets` runs the
+  default rules without them.
+- The command line overrides the file for the same item. A rule that `--rules` names, or that a set of `--sets`
+  contains, runs even if the file has `false` for it. `--without-rules` always wins. With
+  `{"rules": {"removeScripts": false}}` in `svg-optimizer.json`, `svg-optimizer --sets=security icons` still runs
+  `removeScripts`, and `svg-optimizer icons` does not.
 - `"sets"` takes `default`, `security`, `standards`, `cleanup`, `conversion`, `structure` and `minification`.
 - `"allowRisky": true` replaces `--allow-risky` in the file.
 - The schema is `resources/svg-optimizer.schema.json`. It is generated from the `Rule` enum, so the rule names in it
@@ -310,7 +315,7 @@ The same configuration in 10.0:
 
 - **Default rules.** `withDefaultRules()` selects the sets `standards`, `cleanup`, `conversion`, `structure` and
   `minification`. It does not select `security`, and it does not select `removeTitles`, `removeDescriptions`,
-  `removeAriaAttributes` or `prefixIdsAndClasses`, which are in no set.
+  `removeAriaAttributes` or `scopeIdsAndClasses`, which are in no set.
 - **Selection.** The selected rules are the default rules (if asked for), plus the sets, plus the rules of
   `withRules()`, minus the rules of `withoutRules()`. `withoutRules()` always wins. 9.x could only add rules.
 - **Risky rules.** A risky rule from a set or from the default rules is skipped without an error. A risky rule that
@@ -324,7 +329,7 @@ The same configuration in 10.0:
 - **Memory.** The command line tool no longer sets `memory_limit` to `-1`. Raise the limit with `php -d memory_limit=...`
   if you optimize very large files.
 - **Directories.** While searching a directory, the command line tool skips `.git`, `.hg`, `.svn`, `node_modules` and
-  `vendor`, and symbolic links to directories. A path that you name is always used.
+  `vendor`, and symbolic links to files or directories. A path that you name is always used.
 - **Writing.** Files are replaced atomically. A file that would get larger is not written and is reported as
   `skipped, no gain`. 9.x wrote it.
 - **Saving.** `OptimizationResult::saveToFile()` creates missing directories, like 9.x.

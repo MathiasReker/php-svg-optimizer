@@ -30,7 +30,6 @@ use MathiasReker\PhpSvgOptimizer\Pass\MinifyTransforms;
 use MathiasReker\PhpSvgOptimizer\Pass\MoveCommonAttributesToGroups;
 use MathiasReker\PhpSvgOptimizer\Pass\MoveGroupTransformsToChildren;
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
-use MathiasReker\PhpSvgOptimizer\Pass\PrefixIdsAndClasses;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveDefaultAttributes;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveDescriptions;
@@ -56,6 +55,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnusedNamespaces;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveUseBombs;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveZeroSizeShapes;
 use MathiasReker\PhpSvgOptimizer\Pass\RevertIfLargerPassInterface;
+use MathiasReker\PhpSvgOptimizer\Pass\ScopeIdsAndClasses;
 use MathiasReker\PhpSvgOptimizer\Pass\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Rule;
 use MathiasReker\PhpSvgOptimizer\RuleSet;
@@ -122,15 +122,15 @@ final class ExecutionOrderTest extends TestCase
 
         yield 'titles and descriptions are removed one after the other' => [RemoveTitles::class, RemoveDescriptions::class];
 
-        yield 'attribute names are fixed before ids and classes are prefixed' => [FixAttributeNames::class, PrefixIdsAndClasses::class];
+        yield 'attribute names are fixed before ids and classes are scoped' => [FixAttributeNames::class, ScopeIdsAndClasses::class];
 
-        yield 'ids and classes are prefixed before unused ids are removed, so a rule that prefixing drops cannot keep ids for one run only' => [PrefixIdsAndClasses::class, RemoveUnusedIds::class];
+        yield 'ids and classes are scoped before unused ids are removed, so a rule that scoping drops cannot keep ids for one run only' => [ScopeIdsAndClasses::class, RemoveUnusedIds::class];
 
-        yield 'ids and classes are prefixed before style elements are merged, which may wrap rules in at-rules that cannot be prefixed' => [PrefixIdsAndClasses::class, MergeStyleSheets::class];
+        yield 'ids and classes are scoped before style elements are merged, which may wrap rules in at-rules that cannot be scoped' => [ScopeIdsAndClasses::class, MergeStyleSheets::class];
 
-        yield 'ids and classes are prefixed before class rules are converted, so a rule that prefixing drops cannot block a conversion for one run only' => [PrefixIdsAndClasses::class, ConvertCssClassesToAttributes::class];
+        yield 'ids and classes are scoped before class rules are converted, so a rule that scoping drops cannot block a conversion for one run only' => [ScopeIdsAndClasses::class, ConvertCssClassesToAttributes::class];
 
-        yield 'ids and classes are prefixed before deprecated attributes are removed, so a rule that prefixing drops cannot keep them for one run only' => [PrefixIdsAndClasses::class, MigrateDeprecatedAttributes::class];
+        yield 'ids and classes are scoped before deprecated attributes are removed, so a rule that scoping drops cannot keep them for one run only' => [ScopeIdsAndClasses::class, MigrateDeprecatedAttributes::class];
 
         yield 'class styles become attributes before colors are minified' => [ConvertCssClassesToAttributes::class, MinifyColors::class];
 

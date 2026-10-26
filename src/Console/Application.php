@@ -22,6 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\InvalidSvgException;
 use MathiasReker\PhpSvgOptimizer\Exception\IOException;
 use MathiasReker\PhpSvgOptimizer\Exception\RiskyRulesNotAllowedException;
 use MathiasReker\PhpSvgOptimizer\Rule;
+use MathiasReker\PhpSvgOptimizer\RuleSet;
 use MathiasReker\PhpSvgOptimizer\SvgOptimizer;
 
 /**
@@ -224,8 +225,9 @@ final readonly class Application
         $configFile = $this->loadConfig($commandLine->getConfig());
         $rules = [...$configFile->getRules(), ...$commandLine->getRules()];
         $ruleSets = [...$configFile->getRuleSets(), ...$commandLine->getRuleSets()];
+        $selectedOnCommandLine = $this->selectedOnCommandLine($commandLine);
         $excludedRules = [
-            ...array_filter($configFile->getExcludedRules(), static fn (Rule $rule): bool => !\in_array($rule, $commandLine->getRules(), true)),
+            ...array_filter($configFile->getExcludedRules(), static fn (Rule $rule): bool => !\in_array($rule, $selectedOnCommandLine, true)),
             ...$commandLine->getExcludedRules(),
         ];
 
@@ -238,6 +240,19 @@ final readonly class Application
         return $configFile->isDefaultSelected() || $commandLine->isDefaultSelected() || ([] === $rules && [] === $ruleSets)
             ? $svgOptimizer->withDefaultRules()
             : $svgOptimizer;
+    }
+
+    /**
+     * @return list<Rule> the rules that --rules, --sets and --default select, in the order of the command line
+     */
+    private function selectedOnCommandLine(CommandLine $commandLine): array
+    {
+        $ruleSets = $commandLine->isDefaultSelected() ? [...RuleSet::defaults(), ...$commandLine->getRuleSets()] : $commandLine->getRuleSets();
+
+        return [
+            ...$commandLine->getRules(),
+            ...array_merge(...array_map(static fn (RuleSet $ruleSet): array => $ruleSet->getRules(), $ruleSets)),
+        ];
     }
 
     /**

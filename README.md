@@ -259,7 +259,7 @@ leaves out:
 - the `security` set. The default rules do not sanitize an SVG.
   See [Sanitizing untrusted SVGs](#sanitizing-untrusted-svgs).
 - the rules that are in no set: `removeTitles`, `removeDescriptions`, `removeAriaAttributes` and
-  `prefixIdsAndClasses`. The first three remove accessibility information, and the last one renames ids and class
+  `scopeIdsAndClasses`. The first three remove accessibility information, and the last one renames ids and class
   names.
 - the [risky rules](#risky-rules), unless they are allowed.
 
@@ -298,7 +298,7 @@ section under **Why it is risky** what it can break.
 | `convertOneStopGradientsToColors` | The gradient and its id are removed. CSS, JavaScript or a `file.svg#id` reference that uses the gradient breaks. |
 | `fixAttributeNames` | A misspelled attribute is ignored by browsers. Renaming it makes it take effect and changes the rendering. |
 | `mergeDuplicateGradients` | The duplicate gradients and their ids are removed. CSS, JavaScript or a `file.svg#id` reference to one of them breaks. |
-| `prefixIdsAndClasses` | Ids and class names change. Page CSS, JavaScript, tests and references from other SVGs no longer match. |
+| `scopeIdsAndClasses` | Ids and class names change. Page CSS, JavaScript, tests and references from other SVGs no longer match. |
 | `removeDataAttributes` | Scripts, page CSS, analytics and test tools may read `data-*` attributes. |
 | `removeUnusedDefinitions` | References from outside the document cannot be seen. A definition that only CSS or another document uses is removed. |
 | `removeUnusedIds` | CSS, JavaScript, tests and `file.svg#id` links may use an id that nothing inside the SVG references. |
@@ -421,9 +421,9 @@ vendor/bin/svg-optimizer [options] [--] <path>...
 
 A path is an SVG file or a directory. Directories are searched recursively for files with the extension `.svg`, in name
 order. While a directory is searched, `.git`, `.hg`, `.svn`, `node_modules` and `vendor` directories and symbolic links
-to directories are skipped. A path that you name is always used, so `node_modules/icons/a.svg` is optimized when you
-name it. The paths are printed as you wrote them, followed by what leads to each file. Options can be placed anywhere
-before `--`, and `--config=value` and `--config value` are the same.
+to files or directories are skipped. A path that you name is always used, even a symbolic link to a file, so
+`node_modules/icons/a.svg` is optimized when you name it. The paths are printed as you wrote them, followed by what
+leads to each file. Options can be placed anywhere before `--`, and `--config=value` and `--config value` are the same.
 
 | Option                      | Short | Purpose                                                                                          |
 |-----------------------------|-------|--------------------------------------------------------------------------------------------------|
@@ -449,7 +449,11 @@ The command line follows the same [selection rules](#selecting-rules) as the lib
 - Without any selected set or rule, the `default` set is used. `--sets=default` selects it explicitly and can be
   combined with other sets.
 - `--sets`, `--rules` and the configuration file add up. `--without-rules` and the rules that the configuration turns
-  off are subtracted. A rule that `--rules` names is selected even if the configuration turns it off.
+  off are subtracted.
+- The command line overrides the configuration file for the same item. A rule that the file turns off with `false`
+  stays off for everything that the file selects with its own `sets` and `rules`, but a rule that `--rules` names, or
+  that a set of `--sets` contains, runs regardless of the `false` in the file. `--without-rules` always wins over
+  everything.
 - Risky rules from sets are skipped without an error. A risky rule that `--rules` or the configuration names makes the
   command fail with exit code 2 unless `--allow-risky` or `"allowRisky": true` is given.
 
@@ -641,12 +645,23 @@ The command line reads `svg-optimizer.json` from the working directory, or the f
 |--------------|----------------------------------------------------------------------------------------------------------------|
 | `$schema`    | The JSON schema of the file. Editors use it for completion and validation.                                     |
 | `sets`       | A list of rule set names. `default` selects the default rules.                                                 |
-| `rules`      | An object of rule names. `true` selects a rule, `false` leaves it out even if a set selects it.               |
+| `rules`      | An object of rule names. `true` selects a rule, `false` leaves it out even if a set of the file selects it.   |
 | `allowRisky` | `true` allows the risky rules that are selected. The default is `false`.                                       |
 
 The schema is generated from the `Rule` enum and ships with the package. Use the URL above, or the path
 `vendor/mathiasreker/php-svg-optimizer/resources/svg-optimizer.schema.json` in your project. In the configuration above,
 the default rules are selected, `removeTitles` is added, `sortAttributes` is left out, and risky rules stay off.
+
+The command line overrides the file. With `{"rules": {"removeScripts": false}}` in `svg-optimizer.json`:
+
+```text
+$ vendor/bin/svg-optimizer icons
+$ vendor/bin/svg-optimizer --sets=security icons
+$ vendor/bin/svg-optimizer --sets=security --without-rules=removeScripts icons
+```
+
+The first command and the third leave `<script>` in the files. The second runs `removeScripts`, because `--sets=security`
+selects it on the command line. `--rules=removeScripts` turns it on in the same way, and `--without-rules` always wins.
 
 A configuration with `rules` or `sets` and no `default` runs only what it names. A configuration with only
 `allowRisky`, or only `false` rules, runs the default rules. Unknown keys, unknown rules and unknown sets are errors
@@ -698,7 +713,7 @@ A rule set is a group of rules with the same purpose. Each rule is in at most on
 | `minification` | `RuleSet::Minification` | Write numbers, paths, styles and whitespace in their shortest form and order the markup. | `minifyStyleSheets`, `minifyNumericValues`, `minifyTransforms`, `minifyPathData`, `minifyAttributeWhitespace`, `sortDefinitions`, `sortAttributes` |
 
 The default rules are all sets except `security`. The rules `removeTitles`, `removeDescriptions`,
-`removeAriaAttributes` and `prefixIdsAndClasses` are in no set. They have to be selected one by one.
+`removeAriaAttributes` and `scopeIdsAndClasses` are in no set. They have to be selected one by one.
 
 Sets can be used with `withRuleSets()`, with `--sets` and with the `sets` key of the configuration file.
 
@@ -1274,9 +1289,9 @@ Output:
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g><rect width="10" height="10" transform="translate(5 5) scale(2)"/></g></svg>
 ```
 
-### `prefixIdsAndClasses` (**risky**)
+### `scopeIdsAndClasses` (**risky**)
 
-Set: none, so select it explicitly. Enum case: `Rule::PrefixIdsAndClasses`. Risky: yes.
+Set: none, so select it explicitly. Enum case: `Rule::ScopeIdsAndClasses`. Risky: yes.
 
 Adds a suffix to every id and class name, for example `r` becomes `r-5415dd3099`, and rewrites the style rules and
 references that use them. Each SVG gets its own names, so several SVGs can share one page without style collisions.

@@ -21,7 +21,7 @@ use MathiasReker\PhpSvgOptimizer\Svg\Element;
 /**
  * @internal
  */
-final readonly class PrefixIdsAndClasses implements PassInterface
+final readonly class ScopeIdsAndClasses implements PassInterface
 {
     use FragmentTargetTrait;
     use IdRenameTrait;

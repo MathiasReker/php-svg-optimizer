@@ -138,8 +138,8 @@ final class FileFinderTest extends TestCase
     public function doesNotFollowSymbolicLinksToDirectories(): void
     {
         $directory = $this->createTree(['real/a.svg', 'top.svg']);
-        self::assertTrue(symlink($directory . '/real', $directory . '/link'));
-        self::assertTrue(symlink($directory, $directory . '/real/loop'));
+        $this->createSymbolicLink($directory . '/real', $directory . '/link');
+        $this->createSymbolicLink($directory, $directory . '/real/loop');
 
         self::assertSame(
             [$directory . '/real/a.svg', $directory . '/top.svg'],
@@ -152,17 +152,27 @@ final class FileFinderTest extends TestCase
      * @throws \UnexpectedValueException
      */
     #[Test]
-    public function findsSymbolicLinksToFilesAndSkipsDanglingOnes(): void
+    public function skipsSymbolicLinksToFilesAndDanglingOnesWhileSearchingADirectory(): void
     {
         $directory = $this->createTree(['target.svg', 'vanishing.svg']);
-        self::assertTrue(symlink($directory . '/target.svg', $directory . '/link.svg'));
-        self::assertTrue(symlink($directory . '/vanishing.svg', $directory . '/dangling.svg'));
+        $this->createSymbolicLink($directory . '/target.svg', $directory . '/link.svg');
+        $this->createSymbolicLink($directory . '/vanishing.svg', $directory . '/dangling.svg');
         unlink($directory . '/vanishing.svg');
 
-        self::assertSame(
-            [$directory . '/link.svg', $directory . '/target.svg'],
-            (new FileFinder())->find([$directory]),
-        );
+        self::assertSame([$directory . '/target.svg'], (new FileFinder())->find([$directory]));
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     * @throws \UnexpectedValueException
+     */
+    #[Test]
+    public function usesASymbolicLinkToAFileThatIsGivenAsAPath(): void
+    {
+        $directory = $this->createTree(['target.svg']);
+        $this->createSymbolicLink($directory . '/target.svg', $directory . '/link.svg');
+
+        self::assertSame([$directory . '/link.svg'], (new FileFinder())->find([$directory . '/link.svg']));
     }
 
     /**
@@ -271,5 +281,20 @@ final class FileFinderTest extends TestCase
         }
 
         return $directory;
+    }
+
+    private function createSymbolicLink(string $target, string $link): void
+    {
+        set_error_handler(static fn (): bool => true);
+
+        try {
+            $created = symlink($target, $link);
+        } finally {
+            restore_error_handler();
+        }
+
+        if (!$created) {
+            self::markTestSkipped('Symbolic links cannot be created here.');
+        }
     }
 }

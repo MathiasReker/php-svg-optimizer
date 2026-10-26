@@ -29,7 +29,7 @@ final class ExecutionOrder
         RemoveMetadata::class,
         RemoveEditorMarkup::class,
         FixAttributeNames::class,
-        PrefixIdsAndClasses::class,
+        ScopeIdsAndClasses::class,
         RemoveUnusedIds::class,
         MigrateToSvg2::class,
         RemoveNonStandardElements::class,

@@ -261,6 +261,10 @@ final class CommandLineTest extends TestCase
 
     private const string WITH_COLOR_MINIFIED = '<svg xmlns="http://www.w3.org/2000/svg"><!-- comment --><path d="M 0 0 L 10 10" fill="red"/></svg>';
 
+    private const string SCRIPTED = '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><rect width="1" height="1"/></svg>';
+
+    private const string WITHOUT_SCRIPT = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>';
+
     private const string WITH_UNUSED_ID = '<svg xmlns="http://www.w3.org/2000/svg"><path id="unused" d="M 0 0 L 10 10"/></svg>';
 
     private string $directory = '';
@@ -484,6 +488,60 @@ final class CommandLineTest extends TestCase
         $this->execute(['a.svg']);
 
         self::assertSame(self::WITHOUT_COMMENT, $this->read('a.svg'));
+    }
+
+    #[Test]
+    public function aSetOnTheCommandLineRunsARuleThatTheConfigurationFileDisables(): void
+    {
+        $this->write('a.svg', self::SCRIPTED);
+        $this->write('svg-optimizer.json', '{"rules": {"removeScripts": false}}');
+
+        $this->execute(['--sets=security', 'a.svg']);
+
+        self::assertSame(self::WITHOUT_SCRIPT, $this->read('a.svg'));
+    }
+
+    #[Test]
+    public function aRuleThatTheConfigurationFileDisablesStaysOffForTheSetsOfTheFile(): void
+    {
+        $this->write('a.svg', self::SCRIPTED);
+        $this->write('svg-optimizer.json', '{"sets": ["security"], "rules": {"removeScripts": false}}');
+
+        $this->execute(['a.svg']);
+
+        self::assertStringContainsString('<script>', $this->read('a.svg'));
+    }
+
+    #[Test]
+    public function withoutRulesOnTheCommandLineBeatsASetOnTheCommandLine(): void
+    {
+        $this->write('a.svg', self::SCRIPTED);
+
+        $this->execute(['--sets=security', '--without-rules=removeScripts', 'a.svg']);
+
+        self::assertStringContainsString('<script>', $this->read('a.svg'));
+    }
+
+    #[Test]
+    public function aRuleOnTheCommandLineRunsAgainWhenTheConfigurationFileDisablesIt(): void
+    {
+        $this->write('a.svg', self::SCRIPTED);
+        $this->write('svg-optimizer.json', '{"sets": ["security"], "rules": {"removeScripts": false}}');
+
+        $this->execute(['--rules=removeScripts', 'a.svg']);
+
+        self::assertSame(self::WITHOUT_SCRIPT, $this->read('a.svg'));
+    }
+
+    #[Test]
+    public function theDefaultSetOnTheCommandLineRunsARuleThatTheConfigurationFileDisables(): void
+    {
+        $this->write('a.svg', self::COMMENTED);
+        $this->write('svg-optimizer.json', '{"rules": {"removeComments": false}}');
+
+        $this->execute(['--sets=default', 'a.svg']);
+
+        self::assertStringNotContainsString('<!--', $this->read('a.svg'));
     }
 
     #[Test]

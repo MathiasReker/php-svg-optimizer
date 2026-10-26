@@ -28,8 +28,8 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversTrait(StyleSheetTrait::class)]
 #[CoversTrait(ElementTrait::class)]
+#[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ConvertInlineStylesToAttributes::class)]
 #[UsesClass(Element::class)]
 #[UsesTrait(AsciiCaseTrait::class)]

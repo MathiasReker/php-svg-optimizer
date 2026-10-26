@@ -120,9 +120,9 @@
                     "description": "Move the transform of a group onto its children.",
                     "x-risky": false
                 },
-                "prefixIdsAndClasses": {
+                "scopeIdsAndClasses": {
                     "type": "boolean",
-                    "description": "Prefix ids and class names so they do not conflict with other SVG documents on the same page. Risky: only runs when allowRisky is true.",
+                    "description": "Append a unique suffix to ids and class names so several inlined SVGs do not collide. Risky: only runs when allowRisky is true.",
                     "x-risky": true
                 },
                 "removeAriaAttributes": {

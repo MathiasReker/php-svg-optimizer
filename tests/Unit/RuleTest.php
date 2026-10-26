@@ -53,7 +53,7 @@ final class RuleTest extends TestCase
         Rule::RemoveUnusedDefinitions,
         Rule::RemoveUnusedIds,
         Rule::RemoveWidthHeightAttributes,
-        Rule::PrefixIdsAndClasses,
+        Rule::ScopeIdsAndClasses,
     ];
 
     #[Test]
@@ -76,7 +76,7 @@ final class RuleTest extends TestCase
     #[Test]
     public function getRuleSetIsNullForTheRulesInNoSet(): void
     {
-        foreach ([Rule::PrefixIdsAndClasses, Rule::RemoveAriaAttributes, Rule::RemoveTitles, Rule::RemoveDescriptions] as $rule) {
+        foreach ([Rule::ScopeIdsAndClasses, Rule::RemoveAriaAttributes, Rule::RemoveTitles, Rule::RemoveDescriptions] as $rule) {
             self::assertNull($rule->getRuleSet(), $rule->name);
         }
     }

@@ -32,7 +32,6 @@ use MathiasReker\PhpSvgOptimizer\Pass\MinifyTransforms;
 use MathiasReker\PhpSvgOptimizer\Pass\MoveCommonAttributesToGroups;
 use MathiasReker\PhpSvgOptimizer\Pass\MoveGroupTransformsToChildren;
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
-use MathiasReker\PhpSvgOptimizer\Pass\PrefixIdsAndClasses;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveAriaAttributes;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveDataAttributes;
@@ -67,6 +66,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnusedNamespaces;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveUseBombs;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveWidthHeightAttributes;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveZeroSizeShapes;
+use MathiasReker\PhpSvgOptimizer\Pass\ScopeIdsAndClasses;
 use MathiasReker\PhpSvgOptimizer\Pass\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Pass\SortDefinitions;
 
@@ -113,7 +113,7 @@ enum Rule: string
 
     case MoveGroupTransformsToChildren = 'moveGroupTransformsToChildren';
 
-    case PrefixIdsAndClasses = 'prefixIdsAndClasses';
+    case ScopeIdsAndClasses = 'scopeIdsAndClasses';
 
     case RemoveAriaAttributes = 'removeAriaAttributes';
 
@@ -183,7 +183,7 @@ enum Rule: string
             self::ConvertOneStopGradientsToColors,
             self::FixAttributeNames,
             self::MergeDuplicateGradients,
-            self::PrefixIdsAndClasses,
+            self::ScopeIdsAndClasses,
             self::RemoveDataAttributes,
             self::RemoveUnusedDefinitions,
             self::RemoveUnusedIds,
@@ -281,7 +281,7 @@ enum Rule: string
             self::MinifyTransforms,
             self::SortAttributes,
             self::SortDefinitions => RuleSet::Minification,
-            self::PrefixIdsAndClasses,
+            self::ScopeIdsAndClasses,
             self::RemoveAriaAttributes,
             self::RemoveDescriptions,
             self::RemoveTitles => null,
@@ -312,7 +312,7 @@ enum Rule: string
             self::MinifyTransforms => 'Minify transform lists.',
             self::MoveCommonAttributesToGroups => 'Move attributes shared by all children of a group onto the group.',
             self::MoveGroupTransformsToChildren => 'Move the transform of a group onto its children.',
-            self::PrefixIdsAndClasses => 'Prefix ids and class names so they do not conflict with other SVG documents on the same page.',
+            self::ScopeIdsAndClasses => 'Append a unique suffix to ids and class names so several inlined SVGs do not collide.',
             self::RemoveAriaAttributes => 'Remove role and aria-* attributes.',
             self::RemoveComments => 'Remove comments.',
             self::RemoveDataAttributes => 'Remove data-* attributes.',
@@ -375,7 +375,7 @@ enum Rule: string
             self::MinifyTransforms => [MinifyTransforms::class],
             self::MoveCommonAttributesToGroups => [MoveCommonAttributesToGroups::class],
             self::MoveGroupTransformsToChildren => [MoveGroupTransformsToChildren::class],
-            self::PrefixIdsAndClasses => [PrefixIdsAndClasses::class],
+            self::ScopeIdsAndClasses => [ScopeIdsAndClasses::class],
             self::RemoveAriaAttributes => [RemoveAriaAttributes::class],
             self::RemoveComments => [RemoveComments::class],
             self::RemoveDataAttributes => [RemoveDataAttributes::class],

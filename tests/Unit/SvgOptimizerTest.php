@@ -41,7 +41,6 @@ use MathiasReker\PhpSvgOptimizer\Pass\MoveCommonAttributesToGroups;
 use MathiasReker\PhpSvgOptimizer\Pass\MoveGroupTransformsToChildren;
 use MathiasReker\PhpSvgOptimizer\Pass\PassInterface;
 use MathiasReker\PhpSvgOptimizer\Pass\Pipeline;
-use MathiasReker\PhpSvgOptimizer\Pass\PrefixIdsAndClasses;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveAriaAttributes;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveComments;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveDataAttributes;
@@ -76,6 +75,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnusedNamespaces;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveUseBombs;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveWidthHeightAttributes;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveZeroSizeShapes;
+use MathiasReker\PhpSvgOptimizer\Pass\ScopeIdsAndClasses;
 use MathiasReker\PhpSvgOptimizer\Pass\SortAttributes;
 use MathiasReker\PhpSvgOptimizer\Pass\SortDefinitions;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Color\NamedColorTrait;
@@ -169,7 +169,6 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(OptimizationResult::class)]
 #[UsesClass(Parser::class)]
 #[UsesClass(Pipeline::class)]
-#[UsesClass(PrefixIdsAndClasses::class)]
 #[UsesClass(RemoveAriaAttributes::class)]
 #[UsesClass(RemoveComments::class)]
 #[UsesClass(RemoveDataAttributes::class)]
@@ -207,6 +206,7 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(RiskyRulesNotAllowedException::class)]
 #[UsesClass(Rule::class)]
 #[UsesClass(RuleSet::class)]
+#[UsesClass(ScopeIdsAndClasses::class)]
 #[UsesClass(Serializer::class)]
 #[UsesClass(SortAttributes::class)]
 #[UsesClass(SortDefinitions::class)]
@@ -342,7 +342,7 @@ final class SvgOptimizerTest extends TestCase
 
         yield 'removeWidthHeightAttributes' => [Rule::RemoveWidthHeightAttributes, '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><rect width="1" height="1"/></svg>'];
 
-        yield 'prefixIdsAndClasses' => [Rule::PrefixIdsAndClasses, '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}</style><rect class="a" width="1" height="1"/></svg>'];
+        yield 'scopeIdsAndClasses' => [Rule::ScopeIdsAndClasses, '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red}</style><rect class="a" width="1" height="1"/></svg>'];
 
         yield 'sortAttributes' => [Rule::SortAttributes, '<svg xmlns="http://www.w3.org/2000/svg"><rect b="1" a="2"/></svg>'];
 

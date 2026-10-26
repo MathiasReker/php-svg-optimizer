@@ -59,7 +59,7 @@ trait RuleNameTrait
         'removeXmlSpaceDefault' => 'was merged into "removeDefaultAttributes"',
         'removeZeroSizeShapes' => 'was merged into "removeHiddenElements"',
         'sanitizeStyleSheets' => 'was renamed to "removeUnsafeStyles"',
-        'scopeSvgStyles' => 'was renamed to "prefixIdsAndClasses"',
+        'scopeSvgStyles' => 'was renamed to "scopeIdsAndClasses"',
         'sortDefsChildren' => 'was renamed to "sortDefinitions"',
     ];
 
