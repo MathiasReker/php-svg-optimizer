@@ -13,17 +13,17 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console\Input;
 
 use MathiasReker\PhpSvgOptimizer\Console\Input\OptionScanner;
 use MathiasReker\PhpSvgOptimizer\Console\Input\SuggestionTrait;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[CoversClass(OptionScanner::class)]
 #[CoversTrait(SuggestionTrait::class)]
+#[UsesClass(OptionScanner::class)]
 final class SuggestionTraitTest extends TestCase
 {
     use SuggestionTrait;

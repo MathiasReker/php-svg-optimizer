@@ -37,10 +37,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(MigrateDeprecatedAttributes::class)]
-#[CoversClass(NamespaceUri::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(AttributeMigrationTrait::class)]
 #[CoversTrait(DeclarationTrait::class)]
@@ -49,15 +45,19 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(StyleSheetTrait::class)]
 #[CoversTrait(XlinkMigrationTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(NamespaceUri::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class MigrateDeprecatedAttributesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMigratesDeprecatedAttributesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function migratesDeprecatedAttributes(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new MigrateDeprecatedAttributes()]);
 
@@ -68,7 +68,7 @@ final class MigrateDeprecatedAttributesTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideMigratesDeprecatedAttributesCases(): iterable
     {
         yield 'Converts xlink:show new to target only on links' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:show="new" href="#a"/><a xlink:show="new" href="#b"/></svg>',

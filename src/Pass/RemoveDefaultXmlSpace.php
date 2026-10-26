@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Pass;
 
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\StyleSheetTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
 
 /**
@@ -20,19 +21,19 @@ use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
  */
 final readonly class RemoveDefaultXmlSpace implements PassInterface
 {
+    use StyleSheetTrait;
+
     private const string SPACE_ATTRIBUTE = 'space';
 
     private const string DEFAULT_VALUE = 'default';
 
     private const string WHITE_SPACE_PROPERTY = 'white-space';
 
-    private const string IMPORT_RULE = '@import';
+    private const string CSS_ESCAPE = '\\';
 
     private const string XPATH_XML_SPACE_ELEMENTS = '//*[@xml:space]';
 
     private const string XPATH_NEAREST_XML_SPACE_ANCESTOR = 'ancestor::*[@xml:space][1]';
-
-    private const string XPATH_STYLE_ELEMENTS = '//*[local-name()="style"]';
 
     private const string XPATH_STYLESHEET_INSTRUCTIONS = '//processing-instruction("xml-stylesheet")';
 
@@ -46,7 +47,7 @@ final readonly class RemoveDefaultXmlSpace implements PassInterface
     {
         $domXPath = new \DOMXPath($domDocument);
 
-        if ($this->hasDocumentWideStyling($domXPath)) {
+        if ($this->hasDocumentWideStyling($domDocument, $domXPath)) {
             return;
         }
 
@@ -61,31 +62,23 @@ final readonly class RemoveDefaultXmlSpace implements PassInterface
     }
 
     /**
-     * @param \DOMXPath $domXPath the XPath object for querying the document
+     * @param \DOMDocument $domDocument the DOM document to check
+     * @param \DOMXPath    $domXPath    the XPath object for querying the document
      *
      * @return bool true if a style sheet may set white-space on any element
      */
-    private function hasDocumentWideStyling(\DOMXPath $domXPath): bool
+    private function hasDocumentWideStyling(\DOMDocument $domDocument, \DOMXPath $domXPath): bool
     {
         /** @var \DOMNodeList<\DOMNode> $instructions */
         $instructions = $domXPath->query(self::XPATH_STYLESHEET_INSTRUCTIONS, null, false);
 
-        if ($instructions->length > 0) {
+        if ($instructions->length > 0 || $this->hasExternalStyleSheet($domDocument)) {
             return true;
         }
 
-        /** @var \DOMNodeList<\DOMElement> $styleElements */
-        $styleElements = $domXPath->query(self::XPATH_STYLE_ELEMENTS, null, false);
+        $css = mb_strtolower($this->styleSheetText($domDocument));
 
-        foreach ($styleElements as $styleElement) {
-            $css = mb_strtolower($styleElement->textContent);
-
-            if (str_contains($css, self::WHITE_SPACE_PROPERTY) || str_contains($css, self::IMPORT_RULE)) {
-                return true;
-            }
-        }
-
-        return false;
+        return str_contains($css, self::WHITE_SPACE_PROPERTY) || str_contains($css, self::CSS_ESCAPE);
     }
 
     /**

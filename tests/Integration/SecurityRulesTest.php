@@ -3184,39 +3184,39 @@ final class SecurityRulesTest extends TestCase
     }
 
     /**
-     * @return iterable<array{string}>
+     * @return iterable<string, array{string}>
      */
     public static function provideLeavesNothingDangerousWhenTheOutputIsParsedAsHtmlCases(): iterable
     {
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><STYLE>@import url(https://evil.example/x.css);</STYLE><rect/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><Style>rect{fill:red}</Style><rect/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><A href="#x"><text>x</text></A><rect/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><USE href="#r"/><IMAGE href="a.png"/><rect id="r"/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><FOREIGNOBJECT/><foreignobject/><rect/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect><SET attributeName="fill" to="red"/><ANIMATE attributeName="x" to="1"/><ANIMATETRANSFORM attributeName="transform"/><animatetransform attributeName="transform"/></rect></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><lineargradient id="g"/><clippath id="c"/><fegaussianblur/></defs><rect/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:s="http://www.w3.org/2000/svg"><s:SCRIPT>alert(1)</s:SCRIPT><s:Rect/><rect/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect><set attributename="onclick" to="alert(1)"/></rect></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><set ATTRIBUTENAME="HREF" to="javascript:alert(1)"/><text>x</text></a></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><animate attributename="href" values="javascript:alert(1)"/><text>x</text></a></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect><set attributename="fill" TO="red" Begin="1s"/></rect></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use HREF="#r"/><use Href="#r"/><rect id="r"/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a XLINK:HREF="javascript:alert(1)" xmlns:XLINK="urn:x"><text>x</text></a></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg"><g xmlns:xlink="urn:x"><use xlink:href="#r"/></g><rect id="r"/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><use XLink:href="#r"/><rect id="r"/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect STYLE="fill:red" SRC="a.png" ONLOAD="x"/><animate VALUES="0;1" TO="1" FROM="0" BY="1" attributeName="x"/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0 0 1 1"><rect pathlength="1"/><path pathLength="1" d="M0 0"/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect Data-X="1" myAttr="2"/><myWidget/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><use XLink:HREF="#r"/><rect id="r"/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><a XLink:href="javascript:alert(1)"><text>x</text></a></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg"><use xlink:href="#r"/><use XLINK:href="#r"/><rect id="r"/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a HREF="javascript:alert(1)"><text>x</text></a></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect ONCLICK="alert(1)" OnMouseOver="alert(2)"/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image SRC="javascript:alert(1)"/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><SCRIPT>alert(1)</SCRIPT><Script>alert(2)</Script></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><ANIMATE attributeName="href" values="javascript:alert(1)"/><text>x</text></a></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect STYLE="background:url(https://evil.example/t)"/></svg>'];
-        yield ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><set attributeName="ONCLICK" to="alert(1)"/><set attributename="xlink:HREF" to="javascript:alert(1)"/><text>x</text></a></svg>'];
+        yield 'uppercase style element importing a style sheet' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><STYLE>@import url(https://evil.example/x.css);</STYLE><rect/></svg>'];
+        yield 'capitalized style element' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><Style>rect{fill:red}</Style><rect/></svg>'];
+        yield 'uppercase anchor element' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><A href="#x"><text>x</text></A><rect/></svg>'];
+        yield 'uppercase use and image elements' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><USE href="#r"/><IMAGE href="a.png"/><rect id="r"/></svg>'];
+        yield 'foreignObject in upper and lower case' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><FOREIGNOBJECT/><foreignobject/><rect/></svg>'];
+        yield 'animation elements in upper and lower case' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect><SET attributeName="fill" to="red"/><ANIMATE attributeName="x" to="1"/><ANIMATETRANSFORM attributeName="transform"/><animatetransform attributeName="transform"/></rect></svg>'];
+        yield 'lowercase definition elements' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><lineargradient id="g"/><clippath id="c"/><fegaussianblur/></defs><rect/></svg>'];
+        yield 'prefixed uppercase script element' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:s="http://www.w3.org/2000/svg"><s:SCRIPT>alert(1)</s:SCRIPT><s:Rect/><rect/></svg>'];
+        yield 'lowercase attributeName that animates an event handler' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect><set attributename="onclick" to="alert(1)"/></rect></svg>'];
+        yield 'uppercase attributeName that animates href to a javascript URL' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><set ATTRIBUTENAME="HREF" to="javascript:alert(1)"/><text>x</text></a></svg>'];
+        yield 'lowercase attributeName that animates href through values' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><animate attributename="href" values="javascript:alert(1)"/><text>x</text></a></svg>'];
+        yield 'animation attributes in mixed case' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect><set attributename="fill" TO="red" Begin="1s"/></rect></svg>'];
+        yield 'href in upper and capitalized case' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use HREF="#r"/><use Href="#r"/><rect id="r"/></svg>'];
+        yield 'uppercase xlink:href in a fake namespace' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a XLINK:HREF="javascript:alert(1)" xmlns:XLINK="urn:x"><text>x</text></a></svg>'];
+        yield 'xlink prefix bound to a fake namespace' => ['<svg xmlns="http://www.w3.org/2000/svg"><g xmlns:xlink="urn:x"><use xlink:href="#r"/></g><rect id="r"/></svg>'];
+        yield 'capitalized XLink prefix' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><use XLink:href="#r"/><rect id="r"/></svg>'];
+        yield 'attributes in upper case' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect STYLE="fill:red" SRC="a.png" ONLOAD="x"/><animate VALUES="0;1" TO="1" FROM="0" BY="1" attributeName="x"/></svg>'];
+        yield 'SVG attributes in lower case' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0 0 1 1"><rect pathlength="1"/><path pathLength="1" d="M0 0"/></svg>'];
+        yield 'data attribute and unknown element in mixed case' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect Data-X="1" myAttr="2"/><myWidget/></svg>'];
+        yield 'capitalized XLink prefix with an uppercase local name' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><use XLink:HREF="#r"/><rect id="r"/></svg>'];
+        yield 'javascript URL behind a capitalized XLink prefix' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:XLink="http://www.w3.org/1999/xlink"><a XLink:href="javascript:alert(1)"><text>x</text></a></svg>'];
+        yield 'xlink prefix in upper case' => ['<svg xmlns="http://www.w3.org/2000/svg"><use xlink:href="#r"/><use XLINK:href="#r"/><rect id="r"/></svg>'];
+        yield 'uppercase href with a javascript URL' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a HREF="javascript:alert(1)"><text>x</text></a></svg>'];
+        yield 'event handlers in upper and mixed case' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect ONCLICK="alert(1)" OnMouseOver="alert(2)"/></svg>'];
+        yield 'uppercase src with a javascript URL' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image SRC="javascript:alert(1)"/></svg>'];
+        yield 'script elements in upper and capitalized case' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><SCRIPT>alert(1)</SCRIPT><Script>alert(2)</Script></svg>'];
+        yield 'uppercase animate element that animates href' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><ANIMATE attributeName="href" values="javascript:alert(1)"/><text>x</text></a></svg>'];
+        yield 'uppercase style attribute with a remote URL' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect STYLE="background:url(https://evil.example/t)"/></svg>'];
+        yield 'animated event handler and xlink:href in mixed case' => ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a><set attributeName="ONCLICK" to="alert(1)"/><set attributename="xlink:HREF" to="javascript:alert(1)"/><text>x</text></a></svg>'];
     }
 
     private function isDangerousForHtml(string $tagName, string $attributeName, string $value): bool

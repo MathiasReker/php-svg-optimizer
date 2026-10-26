@@ -22,6 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AttributeNodeTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementRenameTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Number\NumberLiteralTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
@@ -38,28 +39,29 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(ConvertEllipsesToCircles::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(AttributeNodeTrait::class)]
 #[CoversTrait(ElementRenameTrait::class)]
 #[CoversTrait(ElementTrait::class)]
+#[CoversTrait(IdTrait::class)]
 #[CoversTrait(NumberLiteralTrait::class)]
 #[CoversTrait(ScriptingTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class ConvertEllipsesToCirclesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideConvertsEllipsesToCirclesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function convertsEllipsesToCircles(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new ConvertEllipsesToCircles()]);
 
@@ -70,7 +72,7 @@ final class ConvertEllipsesToCirclesTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideConvertsEllipsesToCirclesCases(): iterable
     {
         yield 'Leaves the document untouched with an event handler' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><ellipse rx="5" ry="5" onclick="f()"/></svg>',
@@ -176,9 +178,9 @@ final class ConvertEllipsesToCirclesTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyIsIdempotentCases')]
+    #[DataProvider('provideConvertsEllipsesToCirclesIdempotentlyCases')]
     #[Test]
-    public function applyIsIdempotent(string $optimized): void
+    public function convertsEllipsesToCirclesIdempotently(string $optimized): void
     {
         $pipeline = new Pipeline([new ConvertEllipsesToCircles()]);
 
@@ -188,9 +190,9 @@ final class ConvertEllipsesToCirclesTest extends TestCase
     /**
      * @return iterable<string, array{string}>
      */
-    public static function provideApplyIsIdempotentCases(): iterable
+    public static function provideConvertsEllipsesToCirclesIdempotentlyCases(): iterable
     {
-        foreach (self::provideApplyCases() as $name => [, $expected]) {
+        foreach (self::provideConvertsEllipsesToCirclesCases() as $name => [, $expected]) {
             yield $name => [$expected];
         }
     }

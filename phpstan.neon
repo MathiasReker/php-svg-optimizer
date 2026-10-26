@@ -1,11 +1,13 @@
 parameters:
   level: max
+  checkMissingOverrideMethodAttribute: true
   paths:
     - bin/svg-optimizer
     - src
     - tests
   excludePaths:
     - vendor
+    - tests/Architecture/Rule/Fixture
   parallel:
     maximumNumberOfProcesses: 4
     processTimeout: 900.0
@@ -30,6 +32,8 @@ parameters:
       path: src/Exception/IOException.php
     - identifier: symplify.explicitAbstractPrefixName
       path: tests/Unit/Console/Output/AbstractStreamTest.php
+    - message: '#^No @covers or \#\[CoversClass\] found in test\.$#'
+      path: tests/Unit/*TraitTest.php
     - identifier: ergebnis.noExtends
       path: src/Exception/FileNotFoundException.php
     - identifier: symplify.forbiddenExtendOfNonAbstractClass
@@ -47,6 +51,22 @@ parameters:
         - InvalidArgumentException
         - Exception
         - MathiasReker\PhpSvgOptimizer\Console\Output\AbstractStream
+        - PHPStan\Testing\RuleTestCase
+  phpat:
+    ignore_built_in_classes: true
+    show_rule_names: true
+services:
+  - class: MathiasReker\PhpSvgOptimizer\Tests\Architecture\LayerTest
+    tags:
+      - phpat.test
+  - class: MathiasReker\PhpSvgOptimizer\Tests\Architecture\DeclarationTest
+    tags:
+      - phpat.test
+rules:
+  - MathiasReker\PhpSvgOptimizer\Tests\Architecture\Rule\NoDomInPublicApiRule
+  - MathiasReker\PhpSvgOptimizer\Tests\Architecture\Rule\NoStaticPropertyRule
+  - MathiasReker\PhpSvgOptimizer\Tests\Architecture\Rule\TraitSuffixRule
+  - MathiasReker\PhpSvgOptimizer\Tests\Architecture\Rule\VisibilityTagRule
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
     - vendor/odan/phpstan-rules/rules.neon

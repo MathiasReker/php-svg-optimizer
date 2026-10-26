@@ -702,6 +702,10 @@ final class ElementAttributeMap
      */
     public static function allowedAttributes(string $element): array
     {
+        if (!self::isKnownElement($element)) {
+            return [];
+        }
+
         /** @var array<string, array<string, true>> $cache */
         static $cache = [];
 
@@ -717,16 +721,12 @@ final class ElementAttributeMap
     }
 
     /**
-     * @param string $element the element name as written in markup
+     * @param string $element the name of a known element
      *
      * @return array<string, true> the allowed attribute lookup
      */
     private static function build(string $element): array
     {
-        if (!self::isKnownElement($element)) {
-            return [];
-        }
-
         $definition = self::ELEMENTS[$element];
         $names = $definition['attributes'];
 

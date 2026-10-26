@@ -18,10 +18,12 @@ use MathiasReker\PhpSvgOptimizer\Pass\Pipeline;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\StyleSheetTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AnimationTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Number\NumberLiteralTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Path\PathDataParserTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Path\PathDataSerializerTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Path\PathDataTokenTrait;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\LinearTimeTrait;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
 use MathiasReker\PhpSvgOptimizer\Xml\SvgValidator;
@@ -36,26 +38,29 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(MinifyPathData::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(ElementTrait::class)]
+#[CoversTrait(IdTrait::class)]
 #[CoversTrait(NumberLiteralTrait::class)]
 #[CoversTrait(PathDataParserTrait::class)]
 #[CoversTrait(PathDataSerializerTrait::class)]
 #[CoversTrait(PathDataTokenTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class MinifyPathDataTest extends TestCase
 {
+    use LinearTimeTrait;
+
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMinifiesPathDataCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function minifiesPathData(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new MinifyPathData()]);
 
@@ -66,7 +71,7 @@ final class MinifyPathDataTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideMinifiesPathDataCases(): iterable
     {
         yield 'Leaves the document untouched when a style sheet selects attribute values' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>[d="M 0 0 L 1 0"]{fill:red}</style><path d="M 0 0 L 1 0"/></svg>',
@@ -347,9 +352,9 @@ final class MinifyPathDataTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyIsIdempotentCases')]
+    #[DataProvider('provideMinifiesPathDataIdempotentlyCases')]
     #[Test]
-    public function applyIsIdempotent(string $optimized): void
+    public function minifiesPathDataIdempotently(string $optimized): void
     {
         $pipeline = new Pipeline([new MinifyPathData()]);
 
@@ -359,10 +364,27 @@ final class MinifyPathDataTest extends TestCase
     /**
      * @return iterable<string, array{string}>
      */
-    public static function provideApplyIsIdempotentCases(): iterable
+    public static function provideMinifiesPathDataIdempotentlyCases(): iterable
     {
-        foreach (self::provideApplyCases() as $name => [, $expected]) {
+        foreach (self::provideMinifiesPathDataCases() as $name => [, $expected]) {
             yield $name => [$expected];
         }
+    }
+
+    #[Test]
+    public function leavesPathDataWithALongRunOfWhitespaceInLinearTime(): void
+    {
+        self::assertLinearTime(
+            static function (int $size): \DOMDocument {
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0' . str_repeat(' ', $size) . '0#"/></svg>');
+
+                return $domDocument;
+            },
+            static function (\DOMDocument $domDocument): void {
+                (new MinifyPathData())->apply($domDocument);
+            },
+            5_000,
+        );
     }
 }

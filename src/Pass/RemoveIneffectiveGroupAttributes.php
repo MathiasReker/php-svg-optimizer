@@ -80,7 +80,7 @@ final readonly class RemoveIneffectiveGroupAttributes implements PassInterface
     {
         $elements = [];
 
-        foreach (array_reverse(iterator_to_array($domDocument->getElementsByTagName('*'), false)) as $domElement) {
+        foreach (array_reverse($this->elementsByQualifiedName($domDocument, '*')) as $domElement) {
             $parent = $domElement->parentNode;
 
             if ($parent instanceof \DOMElement

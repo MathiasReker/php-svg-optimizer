@@ -23,6 +23,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Security\DangerousUrlTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Security\UnsafeAttributeTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Attribute;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\LinearTimeTrait;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
 use MathiasReker\PhpSvgOptimizer\Xml\SvgValidator;
@@ -39,27 +40,29 @@ use PHPUnit\Framework\TestCase;
  * @no-named-arguments
  */
 #[CoversClass(RemoveUnsafeStyles::class)]
-#[CoversClass(Attribute::class)]
-#[CoversClass(Element::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(DangerousUrlTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(StyleElementTrait::class)]
 #[CoversTrait(TokenizerTrait::class)]
 #[CoversTrait(UnsafeAttributeTrait::class)]
+#[UsesClass(Attribute::class)]
+#[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveUnsafeStylesTest extends TestCase
 {
+    use LinearTimeTrait;
+
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesUnsafeStylesCases')]
     #[Test]
-    public function apply(string $input, string $expectedSvg): void
+    public function removesUnsafeStyles(string $input, string $expectedSvg): void
     {
         $pipeline = new Pipeline([new RemoveUnsafeStyles()]);
 
@@ -69,7 +72,7 @@ final class RemoveUnsafeStylesTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesUnsafeStylesCases(): iterable
     {
         yield 'Removes an @import statement and keeps the other rules' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(a.css);rect{fill:red}</style><rect/></svg>',
@@ -135,5 +138,22 @@ final class RemoveUnsafeStylesTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><?pi x?><script>alert(1)</script><a href="javascript:x"><rect onclick="x()" fill="url(javascript:x)"/></a><foreignObject/><!-- <b> --></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><?pi x?><script>alert(1)</script><a href="javascript:x"><rect onclick="x()" fill="url(javascript:x)"/></a><foreignObject/><!-- <b> --></svg>',
         ];
+    }
+
+    #[Test]
+    public function sanitizesAStyleSheetWithManyUnclosedCommentsInLinearTime(): void
+    {
+        self::assertLinearTime(
+            static function (int $size): \DOMDocument {
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><style>a{background:url(javascript:alert(1))}' . str_repeat('/* ', $size) . '</style></svg>');
+
+                return $domDocument;
+            },
+            static function (\DOMDocument $domDocument): void {
+                (new RemoveUnsafeStyles())->apply($domDocument);
+            },
+            2_500,
+        );
     }
 }

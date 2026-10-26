@@ -14,6 +14,7 @@ namespace MathiasReker\PhpSvgOptimizer\Pass;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementNameTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementRemovalTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Security\CanonicalNameTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Security\DangerousUrlTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Security\UnsafeAttributeTrait;
@@ -32,9 +33,8 @@ final readonly class RemoveScripts implements PassInterface
     use DangerousUrlTrait;
     use ElementNameTrait;
     use ElementRemovalTrait;
+    use ScriptingTrait;
     use UnsafeAttributeTrait;
-
-    private const string EVENT_HANDLER_PREFIX = 'on';
 
     private const string CLOBBERING_ATTRIBUTE = 'name';
 
@@ -60,6 +60,7 @@ final readonly class RemoveScripts implements PassInterface
      *
      * @return bool true if the attribute is an event handler or a name that can clobber the DOM of the host page
      */
+    #[\Override]
     private function isUnsafeAttribute(\DOMAttr $domAttr): bool
     {
         return $this->isDangerousAttributeName($this->asciiLowercase($domAttr->name));
@@ -98,6 +99,6 @@ final readonly class RemoveScripts implements PassInterface
      */
     private function isDangerousAttributeName(string $name): bool
     {
-        return self::CLOBBERING_ATTRIBUTE === $name || str_starts_with($name, self::EVENT_HANDLER_PREFIX);
+        return self::CLOBBERING_ATTRIBUTE === $name || $this->isEventHandlerName($name);
     }
 }

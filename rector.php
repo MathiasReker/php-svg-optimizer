@@ -43,6 +43,7 @@ return RectorConfig::configure()
     ->withoutParallel()
     ->withSkip(
         [
+            __DIR__ . '/tests/Architecture/Rule/Fixture',
             PreferPHPUnitThisCallRector::class,
             RenameForeachValueVariableToMatchMethodCallReturnTypeRector::class => [__DIR__ . '/src/Pass'],
         ]

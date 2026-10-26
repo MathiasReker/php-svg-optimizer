@@ -28,11 +28,11 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveDefaultTypeAttributes::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveDefaultTypeAttributesTest extends TestCase
 {
     private const array SCRIPT_TYPES = [
@@ -57,9 +57,9 @@ final class RemoveDefaultTypeAttributesTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesDefaultTypeAttributesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesDefaultTypeAttributes(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveDefaultTypeAttributes()]);
 
@@ -70,7 +70,7 @@ final class RemoveDefaultTypeAttributesTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesDefaultTypeAttributesCases(): iterable
     {
         yield 'Keeps the type of a script with a language attribute' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><script type="text/javascript" language="vbscript">f()</script></svg>',

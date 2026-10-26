@@ -54,7 +54,7 @@ final readonly class RemoveZeroSizeShapes implements PassInterface
             return;
         }
 
-        foreach (iterator_to_array($domDocument->getElementsByTagName('*'), false) as $domElement) {
+        foreach ($this->elementsByQualifiedName($domDocument, '*') as $domElement) {
             $parent = $domElement->parentNode;
 
             if ($parent instanceof \DOMElement && $this->isRemovable($domElement, $parent) && $this->isZeroSize($domElement)) {

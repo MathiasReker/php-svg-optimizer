@@ -87,7 +87,7 @@ final readonly class RemoveEmptyContainers implements PassInterface
             return;
         }
 
-        $elements = array_reverse(iterator_to_array($domDocument->getElementsByTagName('*'), false));
+        $elements = array_reverse($this->elementsByQualifiedName($domDocument, '*'));
 
         foreach ($elements as $element) {
             $parent = $element->parentNode;

@@ -46,7 +46,9 @@ trait DangerousUrlTrait
 
     private const string WHITESPACE_REGEX = '/\s+/u';
 
-    private const string C_STYLE_COMMENT_REGEX = '/\/\*.*?\*\//s';
+    private const string C_STYLE_COMMENT_REGEX = '/\/\*(?:.*?\*\/|(*COMMIT)(*FAIL))/s';
+
+    private const string UNDECODABLE_URL = 'javascript:';
 
     /**
      * @param list<string> $urls the raw URLs to check
@@ -56,7 +58,7 @@ trait DangerousUrlTrait
     private function containsDangerousUrl(array $urls): bool
     {
         foreach ($urls as $url) {
-            if (1 === preg_match(self::DANGEROUS_URL_REGEX, $url) || 1 === preg_match(self::DANGEROUS_URL_REGEX, $this->decodeUrlForCheck($url))) {
+            if (0 !== preg_match(self::DANGEROUS_URL_REGEX, $url) || 0 !== preg_match(self::DANGEROUS_URL_REGEX, $this->decodeUrlForCheck($url))) {
                 return true;
             }
         }
@@ -71,15 +73,13 @@ trait DangerousUrlTrait
      */
     private function containsDangerousUrlFunction(string $value): bool
     {
-        preg_match_all(self::URL_FUNCTION_REGEX, $value, $matches);
-
-        return $this->containsDangerousUrl($matches[2]);
+        return false === preg_match_all(self::URL_FUNCTION_REGEX, $value, $matches) || $this->containsDangerousUrl($matches[2]);
     }
 
     /**
      * @param string $value the input string
      *
-     * @return string the normalized string
+     * @return string the normalized string, or a dangerous URL if the string cannot be normalized
      */
     private function decodeUrlForCheck(string $value): string
     {
@@ -87,33 +87,30 @@ trait DangerousUrlTrait
             $value = html_entity_decode($value, \ENT_QUOTES | \ENT_XML1, self::DANGEROUS_URL_ENCODING);
         }
 
-        $value = preg_replace(self::C_STYLE_COMMENT_REGEX, '', $value) ?? $value;
+        $value = preg_replace(self::C_STYLE_COMMENT_REGEX, '', $value);
+        $value = null === $value ? null : preg_replace_callback(self::CSS_ESCAPE_REGEX, $this->decodeCssEscape(...), $value);
+        $value = null === $value ? null : preg_replace([self::CONTROL_CHARS_REGEX, self::INVISIBLE_CHARS_REGEX], '', $value);
+        $value = null === $value ? null : preg_replace(self::WHITESPACE_REGEX, '', $this->transliterateHomoglyphs($value));
 
-        $value = preg_replace_callback(
-            self::CSS_ESCAPE_REGEX,
-            static function (array $match): string {
-                if ('' === $match[1]) {
-                    return $match[2];
-                }
+        return null === $value ? self::UNDECODABLE_URL : mb_strtolower($value, self::DANGEROUS_URL_ENCODING);
+    }
 
-                $code = \intval($match[1], 16);
+    /**
+     * @param array<int|string, string> $match a CSS escape, with its hexadecimal code point or its escaped character
+     *
+     * @return string the character the escape stands for, or nothing for an invalid code point
+     */
+    private function decodeCssEscape(array $match): string
+    {
+        if ('' === $match[1]) {
+            return $match[2];
+        }
 
-                return $code > 0x10_FF_FF || ($code >= 0xD8_00 && $code <= 0xDF_FF)
-                    ? ''
-                    : mb_chr($code, self::DANGEROUS_URL_ENCODING);
-            },
-            $value
-        ) ?? $value;
+        $code = \intval($match[1], 16);
 
-        $value = preg_replace(self::CONTROL_CHARS_REGEX, '', $value) ?? $value;
-
-        $value = preg_replace(self::INVISIBLE_CHARS_REGEX, '', $value) ?? $value;
-
-        $value = $this->transliterateHomoglyphs($value);
-
-        $value = preg_replace(self::WHITESPACE_REGEX, '', $value) ?? $value;
-
-        return mb_strtolower($value, self::DANGEROUS_URL_ENCODING);
+        return $code > 0x10_FF_FF || ($code >= 0xD8_00 && $code <= 0xDF_FF)
+            ? ''
+            : mb_chr($code, self::DANGEROUS_URL_ENCODING);
     }
 
     /**
@@ -123,7 +120,7 @@ trait DangerousUrlTrait
      */
     private function transliterateHomoglyphs(string $value): string
     {
-        return 1 === preg_match(self::NON_ASCII_REGEX, $value) ? strtr($value, self::HOMOGLYPHS) : $value;
+        return 0 !== preg_match(self::NON_ASCII_REGEX, $value) ? strtr($value, self::HOMOGLYPHS) : $value;
     }
 
     /**
@@ -134,7 +131,7 @@ trait DangerousUrlTrait
      */
     private function isDangerousUrl(string $url): bool
     {
-        return 1 === preg_match(self::DANGEROUS_URL_REGEX, $this->decodeUrlForCheck($url))
-            || 1 === preg_match(self::DANGEROUS_URL_REGEX, preg_replace(self::URL_IGNORED_CHARS_REGEX, '', $url) ?? $url);
+        return 0 !== preg_match(self::DANGEROUS_URL_REGEX, $this->decodeUrlForCheck($url))
+            || 0 !== preg_match(self::DANGEROUS_URL_REGEX, preg_replace(self::URL_IGNORED_CHARS_REGEX, '', $url) ?? self::UNDECODABLE_URL);
     }
 }

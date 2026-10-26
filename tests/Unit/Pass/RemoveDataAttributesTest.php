@@ -31,21 +31,21 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveDataAttributes::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveDataAttributesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesDataAttributesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesDataAttributes(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveDataAttributes()]);
 
@@ -56,7 +56,7 @@ final class RemoveDataAttributesTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesDataAttributesCases(): iterable
     {
         yield 'Removes single data attribute' => [
             '<svg data-test="value" width="100"><rect width="100" height="100"/></svg>',

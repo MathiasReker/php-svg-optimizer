@@ -34,16 +34,6 @@ trait DeclarationTrait
     private const array CSS_SHORTHAND_PROPERTIES = ['font', 'marker', 'mask', 'overflow'];
 
     /**
-     * @param string $block A declaration block without braces, such as the value of a style attribute
-     *
-     * @return bool True if every string and parenthesis in the block is closed, so the block can be split safely
-     */
-    private function isSplittableDeclarationBlock(string $block): bool
-    {
-        return 1 === preg_match('/^(?:' . self::CSS_PROTECTED_TOKEN . '|[^"\'()\\\])*$/s', $block);
-    }
-
-    /**
      * @param string $css the CSS content of a `<style>` element
      *
      * @return bool true if the CSS consists of plain rules only, without comments, at-rules or nesting, and with
@@ -55,11 +45,11 @@ trait DeclarationTrait
 
         return !str_contains($css, self::CSS_COMMENT_START)
             && '' === trim((string) preg_replace(self::CSS_PLAIN_RULE_REGEX, '', $css))
-            && [] === array_filter($matches[2], fn (string $declarations): bool => !$this->isSplittableDeclarationBlock($declarations));
+            && [] === array_filter($matches[2], fn (string $declarations): bool => !$this->isSplittable($declarations));
     }
 
     /**
-     * @param string $block A declaration block that passes isSplittableDeclarationBlock()
+     * @param string $block A declaration block that passes isSplittable()
      *
      * @return list<string> The declarations, without the separating semicolons; empty declarations are left out
      */
@@ -142,7 +132,7 @@ trait DeclarationTrait
     }
 
     /**
-     * @param string $block      a declaration block that passes isSplittableDeclarationBlock()
+     * @param string $block      a declaration block that passes isSplittable()
      * @param string $otherCss   the CSS that stays CSS
      * @param string $relatedCss the CSS whose shorthands, longhands and `all` may override a converted declaration
      *
@@ -157,7 +147,7 @@ trait DeclarationTrait
     }
 
     /**
-     * @param string $block a declaration block that passes isSplittableDeclarationBlock()
+     * @param string $block a declaration block that passes isSplittable()
      *
      * @return array<string, true> the lowercase properties of the block that are declared more than once or important
      */
@@ -197,7 +187,7 @@ trait DeclarationTrait
     }
 
     /**
-     * @param string $block a declaration block that passes isSplittableDeclarationBlock()
+     * @param string $block a declaration block that passes isSplittable()
      *
      * @return list<string> the lowercase property name of each declaration with a colon
      */
@@ -210,7 +200,7 @@ trait DeclarationTrait
     }
 
     /**
-     * @param string $block A declaration block that passes isSplittableDeclarationBlock()
+     * @param string $block A declaration block that passes isSplittable()
      *
      * @return list<array{string, string}> the property name and value of each declaration, both trimmed; declarations
      *                                     without a colon are left out
@@ -230,7 +220,7 @@ trait DeclarationTrait
     }
 
     /**
-     * @param string            $block    a declaration block that passes isSplittableDeclarationBlock()
+     * @param string            $block    a declaration block that passes isSplittable()
      * @param list<\DOMElement> $elements the elements that the declarations would become attributes of
      *
      * @return array<string, true> the lowercase properties that an element already sets as an attribute with another

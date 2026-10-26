@@ -40,9 +40,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(MigrateToSvg2::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(AttributeMigrationTrait::class)]
 #[CoversTrait(DeclarationTrait::class)]
@@ -55,15 +52,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(XlinkMigrationTrait::class)]
 #[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class MigrateToSvg2Test extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMigratesToSvg2Cases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function migratesToSvg2(string $input, string $expected): void
     {
         self::assertSame($expected, $this->optimizeContent($input));
     }
@@ -71,9 +71,9 @@ final class MigrateToSvg2Test extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMigratesToSvg2Cases')]
     #[Test]
-    public function applyIsIdempotent(string $input, string $expected): void
+    public function migratesToSvg2Idempotently(string $input, string $expected): void
     {
         self::assertSame($expected, $this->optimizeContent($expected));
     }
@@ -81,7 +81,7 @@ final class MigrateToSvg2Test extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideMigratesToSvg2Cases(): iterable
     {
         yield 'Replaces a reference to an obsolete element whose id has a colon in an inline style' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><defs><solidColor id="s:t" solid-color="red"/></defs><rect style="fill:url(#s:t) blue"/></svg>',

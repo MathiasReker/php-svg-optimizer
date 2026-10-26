@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Pass;
 
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementNameTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Attribute;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
 use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
@@ -24,6 +25,7 @@ use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
 final readonly class RemoveUseBombs implements PassInterface
 {
     use ElementNameTrait;
+    use IdTrait;
 
     private const int MAX_USE_INSTANCES = 1_000;
 
@@ -69,10 +71,8 @@ final readonly class RemoveUseBombs implements PassInterface
         $ids = [];
 
         foreach ($domDocument->getElementsByTagName('*') as $element) {
-            foreach ([$element->getAttribute(Attribute::Id->value), $element->getAttributeNS(NamespaceUri::Xml->value, Attribute::Id->value)] as $id) {
-                if ('' !== $id) {
-                    $ids[$id] ??= $element;
-                }
+            foreach ($this->elementIds($element) as $id) {
+                $ids[$id] ??= $element;
             }
         }
 

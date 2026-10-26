@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\StyleSheetTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AttributeNodeTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Attribute;
 
 /**
@@ -27,6 +28,7 @@ final readonly class MinifyAttributeWhitespace implements PassInterface
     use AsciiCaseTrait;
     use AttributeNodeTrait;
     use ElementTrait;
+    use ScriptingTrait;
     use StyleSheetTrait;
 
     private const string WHITESPACE_REGEX = '/\s+/';
@@ -38,8 +40,6 @@ final readonly class MinifyAttributeWhitespace implements PassInterface
     private const string DATA_ATTRIBUTE_PREFIX = 'data-';
 
     private const string UNICODE_ATTRIBUTE = 'unicode';
-
-    private const string EVENT_HANDLER_PREFIX = 'on';
 
     private const string CSS_ESCAPE = '\\';
 
@@ -67,7 +67,7 @@ final readonly class MinifyAttributeWhitespace implements PassInterface
             return;
         }
 
-        foreach ($domDocument->getElementsByTagName('*') as $element) {
+        foreach ($this->elementsByQualifiedName($domDocument, '*') as $element) {
             if (!$this->isForeignContent($element)) {
                 $this->minifyAttributes($element);
             }
@@ -104,7 +104,7 @@ final readonly class MinifyAttributeWhitespace implements PassInterface
     {
         return \in_array($domAttr->localName, self::VERBATIM_ATTRIBUTES, true)
             || str_starts_with($domAttr->nodeName, self::DATA_ATTRIBUTE_PREFIX)
-            || str_starts_with($this->asciiLowercase((string) $domAttr->localName), self::EVENT_HANDLER_PREFIX)
+            || $this->isEventHandlerName((string) $domAttr->localName)
             || (Attribute::Style->value === $domAttr->nodeName && str_contains($domAttr->value, self::CSS_ESCAPE));
     }
 

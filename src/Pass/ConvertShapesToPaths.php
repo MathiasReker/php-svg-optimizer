@@ -21,7 +21,6 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Number\NumberLiteralTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Path\PathDataSerializerTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Attribute;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
-use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
 
 /**
  * @internal
@@ -62,7 +61,7 @@ final readonly class ConvertShapesToPaths implements RevertIfLargerPassInterface
 
         foreach (self::GEOMETRY_ATTRIBUTES as $tag => $attributes) {
             foreach ($this->elementsByLocalName($domDocument, $tag) as $domElement) {
-                if (!$this->isReferenced($domElement, $referencedIds)) {
+                if (!$this->isReferencedElement($domElement, $referencedIds)) {
                     $this->convert($domDocument, $domElement, $tag, $attributes);
                 }
             }
@@ -85,47 +84,6 @@ final readonly class ConvertShapesToPaths implements RevertIfLargerPassInterface
         }
 
         return $ids;
-    }
-
-    /**
-     * @param \DOMElement $domElement the referencing element
-     *
-     * @return array<string, true> the ids its `href` and `xlink:href` point to
-     */
-    private function hrefTargetIds(\DOMElement $domElement): array
-    {
-        $ids = [];
-
-        foreach ([
-            $domElement->getAttribute(Attribute::Href->value),
-            $domElement->getAttributeNS(NamespaceUri::Xlink->value, Attribute::Href->value),
-        ] as $href) {
-            $href = trim($href);
-
-            if (str_starts_with($href, '#')) {
-                $ids[mb_substr($href, 1)] = true;
-            }
-        }
-
-        return $ids;
-    }
-
-    /**
-     * @param \DOMElement         $domElement    the shape element
-     * @param array<string, true> $referencedIds the ids that must keep their element
-     */
-    private function isReferenced(\DOMElement $domElement, array $referencedIds): bool
-    {
-        foreach ([
-            $domElement->getAttribute(Attribute::Id->value),
-            $domElement->getAttributeNS(NamespaceUri::Xml->value, Attribute::Id->value),
-        ] as $id) {
-            if ('' !== $id && ($referencedIds[$id] ?? false)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

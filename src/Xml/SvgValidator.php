@@ -21,29 +21,6 @@ use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
  */
 final readonly class SvgValidator
 {
-    private Parser $parser;
-
-    public function __construct()
-    {
-        $this->parser = new Parser();
-    }
-
-    /**
-     * @param string $content The SVG content to be validated
-     *
-     * @return bool True if the content is a well-formed XML document with an SVG root element, false otherwise
-     */
-    public function isValid(string $content): bool
-    {
-        try {
-            $domDocument = $this->parser->parse($content);
-        } catch (ParseException) {
-            return false;
-        }
-
-        return $this->isValidDocument($domDocument);
-    }
-
     /**
      * @param \DOMDocument $domDocument The loaded document to be validated
      *

@@ -42,9 +42,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveUnusedDefinitions::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ClassSelectorTrait::class)]
@@ -59,15 +56,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveUnusedDefinitionsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesUnusedDefinitionsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesUnusedDefinitions(string $input, string $expected): void
     {
         self::assertSame($expected, $this->optimizeContent($input));
     }
@@ -75,9 +75,9 @@ final class RemoveUnusedDefinitionsTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesUnusedDefinitionsCases')]
     #[Test]
-    public function applyIsIdempotent(string $input, string $expected): void
+    public function removesUnusedDefinitionsIdempotently(string $input, string $expected): void
     {
         self::assertSame($expected, $this->optimizeContent($this->optimizeContent($input)));
     }
@@ -85,7 +85,7 @@ final class RemoveUnusedDefinitionsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesUnusedDefinitionsCases(): iterable
     {
         yield 'Removes an unused gradient and the empty defs' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="a"><stop offset="0"/></linearGradient></defs><rect width="1" height="1"/></svg>',

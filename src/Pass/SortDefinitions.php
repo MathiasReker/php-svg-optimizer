@@ -15,9 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\StyleSheetTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\DefinitionElementTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
-use MathiasReker\PhpSvgOptimizer\Svg\Attribute;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
-use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
 
 /**
  * @internal
@@ -60,14 +58,7 @@ final readonly class SortDefinitions implements PassInterface
         $ids = [];
 
         foreach ($domDocument->getElementsByTagName('*') as $element) {
-            foreach ([
-                $element->getAttribute(Attribute::Id->value),
-                $element->getAttributeNS(NamespaceUri::Xml->value, Attribute::Id->value),
-            ] as $id) {
-                if ('' !== $id) {
-                    $ids[] = $id;
-                }
-            }
+            array_push($ids, ...$this->elementIds($element));
         }
 
         return \count($ids) !== \count(array_unique($ids));
@@ -114,11 +105,7 @@ final readonly class SortDefinitions implements PassInterface
      */
     private function sortByElementNameFrequency(\DOMElement $domElement): void
     {
-        $elements = [];
-
-        for ($child = $domElement->firstElementChild; $child instanceof \DOMElement; $child = $child->nextElementSibling) {
-            $elements[] = $child;
-        }
+        $elements = $this->childElements($domElement);
 
         $counts = array_count_values(array_map(static fn (\DOMElement $domElement): string => $domElement->localName ?? '', $elements));
 

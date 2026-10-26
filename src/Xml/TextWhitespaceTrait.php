@@ -38,7 +38,7 @@ trait TextWhitespaceTrait
     private const string RENDERED_TEXT_QUERY
         = '//*[local-name() = "text" and (namespace-uri() = "http://www.w3.org/2000/svg" or namespace-uri() = "")]//text()';
 
-    private const string COLLAPSIBLE_WHITESPACE_REGEX = '/[\n\r]*[\t ][\t\n\r ]*/';
+    private const string COLLAPSIBLE_WHITESPACE_REGEX = '/(?<![\n\r])[\n\r]*[\t ][\t\n\r ]*/';
 
     private const array WHITE_SPACE_SOURCES = ['white-space', '@import', '\\'];
 

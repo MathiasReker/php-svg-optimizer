@@ -47,14 +47,6 @@ final readonly class Pipeline
     }
 
     /**
-     * @return list<PassInterface> the passes in execution order
-     */
-    public function getPasses(): array
-    {
-        return $this->passes;
-    }
-
-    /**
      * @param string $svg the SVG to optimize
      *
      * @return string the optimized SVG

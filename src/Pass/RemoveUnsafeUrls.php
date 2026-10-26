@@ -65,6 +65,7 @@ final readonly class RemoveUnsafeUrls implements PassInterface
      *
      * @return bool true if the attribute holds a URL that can run script or load a document from elsewhere
      */
+    #[\Override]
     private function isUnsafeAttribute(\DOMAttr $domAttr): bool
     {
         $name = mb_strtolower($domAttr->name);
@@ -88,7 +89,7 @@ final readonly class RemoveUnsafeUrls implements PassInterface
 
             foreach (iterator_to_array($domElement->attributes, false) as $domAttr) {
                 if (\in_array($this->asciiLowercase($domAttr->name), Attribute::linkNames(), true)
-                    && 1 === preg_match(self::DATA_URI_REGEX, $this->decodeUrlForCheck($domAttr->value))
+                    && 0 !== preg_match(self::DATA_URI_REGEX, $this->decodeUrlForCheck($domAttr->value))
                 ) {
                     $domElement->removeAttributeNode($domAttr);
                 }
@@ -131,7 +132,7 @@ final readonly class RemoveUnsafeUrls implements PassInterface
         $value = preg_replace(self::SMIL_VALUES_SAFE_DATA_URI_REGEX, '', $value) ?? $value;
 
         foreach (explode(';', $value) as $part) {
-            if (1 === preg_match(self::DANGEROUS_URL_REGEX, $part)) {
+            if (0 !== preg_match(self::DANGEROUS_URL_REGEX, $part)) {
                 return true;
             }
         }
@@ -146,7 +147,7 @@ final readonly class RemoveUnsafeUrls implements PassInterface
      */
     private function isUrlAttributeValueDangerous(string $value): bool
     {
-        return 1 === preg_match(self::DANGEROUS_URL_REGEX, $value) || $this->containsDangerousUrlFunction($value);
+        return 0 !== preg_match(self::DANGEROUS_URL_REGEX, $value) || $this->containsDangerousUrlFunction($value);
     }
 
     /**
@@ -157,7 +158,7 @@ final readonly class RemoveUnsafeUrls implements PassInterface
     private function isSrcsetDangerous(string $value): bool
     {
         foreach (explode(',', $value) as $candidate) {
-            if (1 === preg_match(self::DANGEROUS_URL_REGEX, $this->decodeUrlForCheck($candidate))) {
+            if (0 !== preg_match(self::DANGEROUS_URL_REGEX, $this->decodeUrlForCheck($candidate))) {
                 return true;
             }
         }

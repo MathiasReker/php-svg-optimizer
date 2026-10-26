@@ -22,7 +22,7 @@ final readonly class RemoveUnusedNamespaces implements PassInterface
 {
     private const string NAMESPACE_QUERY = '/*/namespace::*[name() != "" and name() != "xml"]';
 
-    private const string TEXT_QUERY = '//text() | //@*';
+    private const array VALUE_QUERIES = ['//text()', '//@*'];
 
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
@@ -78,11 +78,13 @@ final readonly class RemoveUnusedNamespaces implements PassInterface
     {
         $values = '';
 
-        /** @var \DOMNodeList<\DOMNode> $domNodeList */
-        $domNodeList = $domXPath->query(self::TEXT_QUERY);
+        foreach (self::VALUE_QUERIES as $query) {
+            /** @var \DOMNodeList<\DOMNode> $domNodeList */
+            $domNodeList = $domXPath->query($query);
 
-        foreach ($domNodeList as $domNode) {
-            $values .= ($domNode->nodeValue ?? '') . "\n";
+            foreach ($domNodeList as $domNode) {
+                $values .= ($domNode->nodeValue ?? '') . "\n";
+            }
         }
 
         return $values;

@@ -35,9 +35,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveEnableBackground::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(AttributeMigrationTrait::class)]
 #[CoversTrait(DeclarationTrait::class)]
@@ -45,15 +42,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(SelectorTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveEnableBackgroundTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesEnableBackgroundCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesEnableBackground(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveEnableBackground()]);
 
@@ -64,7 +64,7 @@ final class RemoveEnableBackgroundTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesEnableBackgroundCases(): iterable
     {
         yield 'Removes enable-background for svg with matching dimensions' => [
             <<<'XML'

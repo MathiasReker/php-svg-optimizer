@@ -35,9 +35,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveMetadata::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(DefinitionElementTrait::class)]
 #[CoversTrait(ElementRemovalTrait::class)]
 #[CoversTrait(ElementTrait::class)]
@@ -45,15 +42,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveMetadataTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesMetadataCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesMetadata(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveMetadata()]);
 
@@ -64,7 +64,7 @@ final class RemoveMetadataTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesMetadataCases(): iterable
     {
         yield 'Keeps metadata that a switch may render' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><switch><metadata/><rect width="5" height="5"/></switch></svg>',

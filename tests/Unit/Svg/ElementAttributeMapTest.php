@@ -137,4 +137,16 @@ final class ElementAttributeMapTest extends TestCase
         self::assertFalse(ElementAttributeMap::isKnownElement('unknown-element'));
         self::assertSame([], ElementAttributeMap::allowedAttributes('unknown-element'));
     }
+
+    #[Test]
+    public function unknownElementNamesDoNotGrowTheLookupCache(): void
+    {
+        ElementAttributeMap::allowedAttributes('circle');
+        $reflectionMethod = new \ReflectionMethod(ElementAttributeMap::class, 'allowedAttributes');
+        $before = $reflectionMethod->getStaticVariables();
+
+        ElementAttributeMap::allowedAttributes('element-name-that-is-not-cached');
+
+        self::assertSame($before, $reflectionMethod->getStaticVariables());
+    }
 }

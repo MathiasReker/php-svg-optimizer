@@ -11,11 +11,13 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Xml;
 
+use MathiasReker\PhpSvgOptimizer\Exception\ExceptionInterface;
+
 /**
  * @internal
  *
  * @no-named-arguments
  */
-final class ParseException extends \RuntimeException
+final class ParseException extends \RuntimeException implements ExceptionInterface
 {
 }

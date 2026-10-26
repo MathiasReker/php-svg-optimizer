@@ -33,7 +33,7 @@ trait PathDataParserTrait
 
     private const string PATH_COMMAND_REGEX = '/([MmLlHhVvCcSsQqTtAaZz])([^MmLlHhVvCcSsQqTtAaZz]*)/';
 
-    private const string PATH_WHITESPACE = '[\x20\x09\x0A\x0C\x0D]*';
+    private const string PATH_SEPARATOR = '[\x20\x09\x0A\x0C\x0D]*+(?:,[\x20\x09\x0A\x0C\x0D]*+)?';
 
     private const string PATH_NUMBER_CAPTURE = '((?>' . self::NUMBER_PATTERN . '))';
 
@@ -90,9 +90,8 @@ trait PathDataParserTrait
         }
 
         $group = $this->pathArgumentGroupPattern($types);
-        $separator = self::PATH_WHITESPACE . ',?' . self::PATH_WHITESPACE;
 
-        if (1 !== preg_match('/^' . $group . '(?:' . $separator . $group . ')*$/', $arguments)) {
+        if (1 !== preg_match('/^' . $group . '(?:' . self::PATH_SEPARATOR . $group . ')*$/', $arguments)) {
             return [];
         }
 
@@ -118,7 +117,7 @@ trait PathDataParserTrait
             mb_str_split($types),
         );
 
-        return implode(self::PATH_WHITESPACE . ',?' . self::PATH_WHITESPACE, $captures);
+        return implode(self::PATH_SEPARATOR, $captures);
     }
 
     /**

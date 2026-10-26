@@ -35,25 +35,25 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(ConvertInlineStylesToAttributes::class)]
-#[CoversClass(ConvertibleProperty::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(DeclarationTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(SelectorTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
+#[UsesClass(ConvertibleProperty::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class ConvertInlineStylesToAttributesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideConvertsInlineStylesToAttributesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function convertsInlineStylesToAttributes(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new ConvertInlineStylesToAttributes()]);
 
@@ -64,7 +64,7 @@ final class ConvertInlineStylesToAttributesTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideConvertsInlineStylesToAttributesCases(): iterable
     {
         yield 'Keeps a style whose conversion would be one byte longer' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:red; foo:1"/></svg>',

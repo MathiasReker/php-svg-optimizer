@@ -38,9 +38,9 @@ final class RuleSetTest extends TestCase
     /**
      * @param list<Rule> $rules The exact rules of the set, in execution order
      */
-    #[DataProvider('provideGetRulesCases')]
+    #[DataProvider('provideEachSetHasItsValueAndItsRulesCases')]
     #[Test]
-    public function getRules(RuleSet $ruleSet, string $value, array $rules): void
+    public function eachSetHasItsValueAndItsRules(RuleSet $ruleSet, string $value, array $rules): void
     {
         self::assertSame($value, $ruleSet->value);
         self::assertSame($rules, $ruleSet->getRules());
@@ -49,7 +49,7 @@ final class RuleSetTest extends TestCase
     /**
      * @return iterable<string, array{RuleSet, string, list<Rule>}>
      */
-    public static function provideGetRulesCases(): iterable
+    public static function provideEachSetHasItsValueAndItsRulesCases(): iterable
     {
         yield 'security' => [RuleSet::Security, 'security', [
             Rule::RemoveUnsafeMarkup,
@@ -118,7 +118,7 @@ final class RuleSetTest extends TestCase
     public function everySetIsTested(): void
     {
         self::assertSame(
-            array_map(static fn (array $case): RuleSet => $case[0], iterator_to_array(self::provideGetRulesCases(), false)),
+            array_map(static fn (array $case): RuleSet => $case[0], iterator_to_array(self::provideEachSetHasItsValueAndItsRulesCases(), false)),
             RuleSet::cases(),
         );
     }

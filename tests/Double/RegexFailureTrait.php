@@ -21,6 +21,8 @@ trait RegexFailureTrait
      *
      * @param \Closure(): T $callback runs while every regular expression that needs to backtrack fails
      *
+     * @param-immediately-invoked-callable $callback
+     *
      * @return T
      */
     private function withFailingRegularExpressions(\Closure $callback): mixed
@@ -35,6 +37,27 @@ trait RegexFailureTrait
         } finally {
             ini_set('pcre.jit', $jit);
             ini_set('pcre.backtrack_limit', $backtrackLimit);
+        }
+    }
+
+    /**
+     * @template T
+     *
+     * @param \Closure(): T $callback runs while the regular expressions are interpreted, without the JIT compiler
+     *
+     * @param-immediately-invoked-callable $callback
+     *
+     * @return T
+     */
+    private static function withoutJit(\Closure $callback): mixed
+    {
+        $jit = (string) \ini_get('pcre.jit');
+        ini_set('pcre.jit', '0');
+
+        try {
+            return $callback();
+        } finally {
+            ini_set('pcre.jit', $jit);
         }
     }
 }

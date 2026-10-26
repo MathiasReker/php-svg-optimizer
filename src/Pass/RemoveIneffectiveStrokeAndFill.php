@@ -55,7 +55,7 @@ final readonly class RemoveIneffectiveStrokeAndFill implements PassInterface
 
     private const string HIT_TESTING_OR_MARKER_REGEX = '/marker|pointer-events/i';
 
-    private const string ZERO_REGEX = '/^[+-]?(?:0+\.?0*|\.0+)(?:e[+-]?\d+)?$/i';
+    private const string ZERO_REGEX = '/^[+-]?+(?:0++(?:\.0*+)?+|\.0++)(?:e[+-]?+\d++)?+$/i';
 
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize

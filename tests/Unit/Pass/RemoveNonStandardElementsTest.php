@@ -34,24 +34,24 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveNonStandardElements::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(DefinitionElementTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(IdTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveNonStandardElementsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesNonStandardElementsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesNonStandardElements(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveNonStandardElements()]);
 
@@ -62,7 +62,7 @@ final class RemoveNonStandardElementsTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesNonStandardElementsCases(): iterable
     {
         yield 'Keeps the XHTML content of a foreignObject' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject width="10" height="10"><div xmlns="http://www.w3.org/1999/xhtml"><p>a</p><input type="checkbox" checked="checked"/></div></foreignObject></svg>',

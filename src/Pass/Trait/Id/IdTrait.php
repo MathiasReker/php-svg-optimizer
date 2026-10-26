@@ -101,4 +101,28 @@ trait IdTrait
     {
         return $domElement->getAttributeNS(NamespaceUri::Xml->value, Attribute::Id->value);
     }
+
+    /**
+     * @param \DOMElement $domElement the element to read
+     *
+     * @return list<non-empty-string> the non-empty `id` and `xml:id` of the element, in that order
+     */
+    private function elementIds(\DOMElement $domElement): array
+    {
+        return array_values(array_filter(
+            [$domElement->getAttribute(Attribute::Id->value), $this->xmlId($domElement)],
+            static fn (string $id): bool => '' !== $id,
+        ));
+    }
+
+    /**
+     * @param \DOMElement         $domElement    the element to check
+     * @param array<string, true> $referencedIds the referenced ids
+     *
+     * @return bool true if the `id` or `xml:id` of the element is referenced
+     */
+    private function isReferencedElement(\DOMElement $domElement, array $referencedIds): bool
+    {
+        return [] !== array_intersect_key(array_flip($this->elementIds($domElement)), $referencedIds);
+    }
 }

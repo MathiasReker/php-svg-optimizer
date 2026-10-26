@@ -27,6 +27,10 @@ final readonly class Printer
 
     private const int COLUMN_GAP = 2;
 
+    private const string CONTROL_CHARACTER_REGEX = '/[\x00-\x1F\x7F]|\xC2[\x80-\x9F]/';
+
+    private const string C1_LEAD_BYTE = "\xC2";
+
     /**
      * @param StreamInterface $output      where results and information are written
      * @param StreamInterface $error       where errors are written
@@ -45,7 +49,7 @@ final readonly class Printer
      */
     public function printError(string $message): void
     {
-        $this->error->writeLine(Style::Red->apply('Error: ' . $message, $this->errorColor));
+        $this->error->writeLine(Style::Red->apply('Error: ' . $this->printable($message), $this->errorColor));
     }
 
     /**
@@ -78,7 +82,7 @@ final readonly class Printer
      */
     public function printFileResult(string $path, float $savedPercentage): void
     {
-        $this->output->writeLine(\sprintf('%s (%s)', $path, $this->percentage($savedPercentage)));
+        $this->output->writeLine(\sprintf('%s (%s)', $this->printable($path), $this->percentage($savedPercentage)));
     }
 
     /**
@@ -86,7 +90,7 @@ final readonly class Printer
      */
     public function printSkippedFile(string $path): void
     {
-        $this->output->writeLine(\sprintf('%s (skipped, no gain)', $path));
+        $this->output->writeLine(\sprintf('%s (skipped, no gain)', $this->printable($path)));
     }
 
     public function printSummary(RunSummary $runSummary): void
@@ -130,5 +134,22 @@ final readonly class Printer
     private function percentage(float $percentage): string
     {
         return Style::Green->apply(\sprintf('%.2f%%', $percentage), $percentage > 0.0 && $this->outputColor);
+    }
+
+    /**
+     * @param string $text text that may come from a file name or a file
+     *
+     * @return string the text with each C0 and C1 control character written as an escape, so it cannot drive the
+     *                terminal
+     */
+    private function printable(string $text): string
+    {
+        return preg_replace_callback(
+            self::CONTROL_CHARACTER_REGEX,
+            static fn (array $match): string => self::C1_LEAD_BYTE === $match[0][0]
+                ? \sprintf('\u{%X}', \ord($match[0][1]))
+                : \sprintf('\x%02X', \ord($match[0])),
+            $text,
+        ) ?? $text;
     }
 }

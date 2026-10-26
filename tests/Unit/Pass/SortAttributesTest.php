@@ -30,20 +30,20 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(SortAttributes::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AttributeNodeTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class SortAttributesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideSortsAttributesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function sortsAttributes(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new SortAttributes()]);
 
@@ -57,7 +57,7 @@ final class SortAttributesTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideSortsAttributesCases(): iterable
     {
         yield 'leaves an empty document alone' => [
             '<svg xmlns="http://www.w3.org/2000/svg"/>',

@@ -40,8 +40,6 @@ final readonly class ConvertCssClassesToAttributes implements PassInterface
     use StyleElementTrait;
     use StyleSheetTrait;
 
-    private const string XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
-
     private const array ALL_MEDIA = ['', 'all'];
 
     /**
@@ -118,7 +116,7 @@ final readonly class ConvertCssClassesToAttributes implements PassInterface
     {
         $media = $this->asciiLowercase(trim($domElement->getAttribute(Attribute::Media->value)));
 
-        return \in_array($domElement->namespaceURI, [null, NamespaceUri::Svg->value, self::XHTML_NAMESPACE], true)
+        return \in_array($domElement->namespaceURI, [null, NamespaceUri::Svg->value, NamespaceUri::Xhtml->value], true)
             && $this->isPlainCssStyleElement($domElement)
             && !$domElement->hasAttribute(Attribute::Title->value)
             && \in_array($media, self::ALL_MEDIA, true)

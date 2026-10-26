@@ -36,9 +36,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveEmptyContainers::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ElementNameTrait::class)]
@@ -47,15 +44,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(ScriptingTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveEmptyContainersTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesEmptyContainersCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesEmptyContainers(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveEmptyContainers()]);
 
@@ -69,7 +69,7 @@ final class RemoveEmptyContainersTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesEmptyContainersCases(): iterable
     {
         yield 'Keeps empty containers in a document with a script, which may fill or query them' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><g/></svg>',

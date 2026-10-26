@@ -31,21 +31,21 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveInvisibleCharacters::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveInvisibleCharactersTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesInvisibleCharactersCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesInvisibleCharacters(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveInvisibleCharacters()]);
 
@@ -59,7 +59,7 @@ final class RemoveInvisibleCharactersTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesInvisibleCharactersCases(): iterable
     {
         yield 'Keeps a text node that would become empty when a style sheet selects empty elements' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>rect:empty{fill:red}</style><rect>&#x200B;</rect><g>a&#x200B;</g></svg>',

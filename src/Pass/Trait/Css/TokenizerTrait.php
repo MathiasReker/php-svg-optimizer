@@ -27,7 +27,7 @@ trait TokenizerTrait
     private const string CSS_UNQUOTED_URL = '(?:[^ \t\n\r\f()"\'\\\\\x00-\x08\x0B\x0E-\x1F\x7F]|\\\[^\n\r\f])*';
 
     private const string CSS_TOKEN_REGEX = '~' . self::CSS_WHITESPACE . '+(*MARK:ws)'
-        . '|/\*.*?\*/(*MARK:comment)'
+        . '|/\*(?:.*?\*/|(*COMMIT)(*FAIL))(*MARK:comment)'
         . '|url\(' . self::CSS_WHITESPACE . '*(?:' . self::CSS_DOUBLE_QUOTED . '|' . self::CSS_SINGLE_QUOTED . '|' . self::CSS_UNQUOTED_URL . ')' . self::CSS_WHITESPACE . '*\)(*MARK:url)'
         . '|(?:' . self::CSS_DOUBLE_QUOTED . '|' . self::CSS_SINGLE_QUOTED . ')(*MARK:string)'
         . '|\\\(?:[0-9a-f]{1,6}(?:\r\n|' . self::CSS_WHITESPACE . ')?|[^\n\r\f0-9a-f])(*MARK:escape)'

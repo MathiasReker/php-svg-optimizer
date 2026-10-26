@@ -30,6 +30,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdRenameTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Paint\GradientLinkTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\LinearTimeTrait;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
 use MathiasReker\PhpSvgOptimizer\Xml\SvgValidator;
@@ -44,9 +45,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(MergeDuplicateGradients::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ClassSelectorTrait::class)]
@@ -63,15 +61,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class MergeDuplicateGradientsTest extends TestCase
 {
+    use LinearTimeTrait;
+
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMergesDuplicateGradientsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function mergesDuplicateGradients(string $input, string $expected): void
     {
         self::assertSame($expected, $this->optimizeContent($input));
     }
@@ -79,9 +82,9 @@ final class MergeDuplicateGradientsTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMergesDuplicateGradientsCases')]
     #[Test]
-    public function applyIsIdempotent(string $input, string $expected): void
+    public function mergesDuplicateGradientsIdempotently(string $input, string $expected): void
     {
         self::assertSame($expected, $this->optimizeContent($this->optimizeContent($input)));
     }
@@ -89,7 +92,7 @@ final class MergeDuplicateGradientsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideMergesDuplicateGradientsCases(): iterable
     {
         yield 'Merges identical gradients into the first one' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="a" x2="1"><stop offset="0" stop-color="red"/><stop offset="1"/></linearGradient><linearGradient id="b" x2="1"><stop offset="0" stop-color="red"/><stop offset="1"/></linearGradient></defs><rect fill="url(#a)"/><rect fill="url(#b)"/></svg>',
@@ -295,5 +298,22 @@ final class MergeDuplicateGradientsTest extends TestCase
         $pipeline = new Pipeline([new MergeDuplicateGradients()]);
 
         return $pipeline->run($content);
+    }
+
+    #[Test]
+    public function handlesManyElementsWithoutGradientsInLinearTime(): void
+    {
+        self::assertLinearTime(
+            static function (int $size): \DOMDocument {
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg">' . str_repeat('<rect width="1" fill="red"/>', $size) . '</svg>');
+
+                return $domDocument;
+            },
+            static function (\DOMDocument $domDocument): void {
+                (new MergeDuplicateGradients())->apply($domDocument);
+            },
+            4_000,
+        );
     }
 }

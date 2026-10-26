@@ -32,7 +32,7 @@ final readonly class RemoveUnsafeMarkup implements PassInterface
     {
         foreach ([$domDocument, ...$this->elementsByQualifiedName($domDocument, '*')] as $domNode) {
             foreach ([...$domNode->childNodes] as $child) {
-                if ($child instanceof \DOMProcessingInstruction || ($child instanceof \DOMComment && 1 === preg_match(self::UNSAFE_COMMENT_REGEX, $child->data))) {
+                if ($child instanceof \DOMProcessingInstruction || ($child instanceof \DOMComment && 0 !== preg_match(self::UNSAFE_COMMENT_REGEX, $child->data))) {
                     $domNode->removeChild($child);
                 }
             }

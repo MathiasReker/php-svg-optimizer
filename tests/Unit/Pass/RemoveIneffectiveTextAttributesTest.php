@@ -20,6 +20,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\StyleSheetTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AnimationTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Number\NumberLiteralTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Presentation\IneffectiveAttributeTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Presentation\InheritanceTrait;
@@ -37,27 +38,28 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveIneffectiveTextAttributes::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ElementTrait::class)]
+#[CoversTrait(IdTrait::class)]
 #[CoversTrait(IneffectiveAttributeTrait::class)]
 #[CoversTrait(InheritanceTrait::class)]
 #[CoversTrait(NamedColorTrait::class)]
 #[CoversTrait(NumberLiteralTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveIneffectiveTextAttributesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesIneffectiveTextAttributesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesIneffectiveTextAttributes(string $input, string $expected): void
     {
         self::assertSame($expected, $this->optimizeContent($input));
         self::assertSame($expected, $this->optimizeContent($expected));
@@ -66,7 +68,7 @@ final class RemoveIneffectiveTextAttributesTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesIneffectiveTextAttributesCases(): iterable
     {
         yield 'Keeps a text attribute that the inline style also sets' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g font-family="a" font-weight="bold" style="font-family:b"><rect/></g></svg>',

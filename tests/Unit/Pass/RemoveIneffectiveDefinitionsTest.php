@@ -34,24 +34,24 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveIneffectiveDefinitions::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(DefinitionElementTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(IdTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveIneffectiveDefinitionsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesIneffectiveDefinitionsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesIneffectiveDefinitions(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveIneffectiveDefinitions()]);
 
@@ -62,7 +62,7 @@ final class RemoveIneffectiveDefinitionsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesIneffectiveDefinitionsCases(): iterable
     {
         yield 'Keeps a definition containing a style sheet' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><defs><g><style>rect{fill:red}</style></g><g><path d="M0 0"/></g></defs><rect width="5" height="5"/></svg>',

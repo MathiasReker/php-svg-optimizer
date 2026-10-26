@@ -24,28 +24,29 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Number\NumberListTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Number\NumberLiteralTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Path\PathDataSerializerTrait;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[CoversClass(ConvertShapesToPaths::class)]
-#[CoversClass(MinifyNumberLists::class)]
-#[CoversClass(MinifyTransforms::class)]
-#[CoversTrait(AnimationTrait::class)]
-#[CoversTrait(AsciiCaseTrait::class)]
-#[CoversTrait(AttributeNodeTrait::class)]
-#[CoversTrait(ElementRenameTrait::class)]
-#[CoversTrait(ElementTrait::class)]
 #[CoversTrait(NumberListTrait::class)]
 #[CoversTrait(NumberLiteralTrait::class)]
-#[CoversTrait(PathDataSerializerTrait::class)]
-#[CoversTrait(ScriptingTrait::class)]
-#[CoversTrait(StyleSheetTrait::class)]
+#[UsesClass(ConvertShapesToPaths::class)]
+#[UsesClass(MinifyNumberLists::class)]
+#[UsesClass(MinifyTransforms::class)]
+#[UsesTrait(AnimationTrait::class)]
+#[UsesTrait(AsciiCaseTrait::class)]
+#[UsesTrait(AttributeNodeTrait::class)]
+#[UsesTrait(ElementRenameTrait::class)]
+#[UsesTrait(ElementTrait::class)]
+#[UsesTrait(PathDataSerializerTrait::class)]
+#[UsesTrait(ScriptingTrait::class)]
+#[UsesTrait(StyleSheetTrait::class)]
 final class NumberListTraitTest extends TestCase
 {
     use NumberListTrait;

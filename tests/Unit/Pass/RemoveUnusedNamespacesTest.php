@@ -15,6 +15,7 @@ use MathiasReker\PhpSvgOptimizer\Exception\InvalidSvgException;
 use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Pass\Pipeline;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveUnusedNamespaces;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\LinearTimeTrait;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
 use MathiasReker\PhpSvgOptimizer\Xml\SvgValidator;
@@ -28,19 +29,21 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveUnusedNamespaces::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveUnusedNamespacesTest extends TestCase
 {
+    use LinearTimeTrait;
+
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesUnusedNamespacesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesUnusedNamespaces(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveUnusedNamespaces()]);
 
@@ -51,7 +54,7 @@ final class RemoveUnusedNamespacesTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesUnusedNamespacesCases(): iterable
     {
         yield 'Removes a namespace whose prefix only spans two attribute values' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:ab="urn:x"><rect class="a" id="b:c"/></svg>',
@@ -285,5 +288,22 @@ final class RemoveUnusedNamespacesTest extends TestCase
         (new RemoveUnusedNamespaces())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
+    }
+
+    #[Test]
+    public function checksManyNodesInLinearTime(): void
+    {
+        self::assertLinearTime(
+            static function (int $size): \DOMDocument {
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="urn:x">' . str_repeat('<text y="1">a</text>', $size) . '</svg>');
+
+                return $domDocument;
+            },
+            static function (\DOMDocument $domDocument): void {
+                (new RemoveUnusedNamespaces())->apply($domDocument);
+            },
+            4_000,
+        );
     }
 }

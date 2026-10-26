@@ -16,6 +16,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Pass\Pipeline;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveUseBombs;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementNameTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Attribute;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
@@ -34,22 +35,23 @@ use PHPUnit\Framework\TestCase;
  * @no-named-arguments
  */
 #[CoversClass(RemoveUseBombs::class)]
-#[CoversClass(Attribute::class)]
-#[CoversClass(Element::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(ElementNameTrait::class)]
+#[CoversTrait(IdTrait::class)]
+#[UsesClass(Attribute::class)]
+#[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveUseBombsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesUseBombsCases')]
     #[Test]
-    public function apply(string $input, string $expectedSvg): void
+    public function removesUseBombs(string $input, string $expectedSvg): void
     {
         $pipeline = new Pipeline([new RemoveUseBombs()]);
 
@@ -59,7 +61,7 @@ final class RemoveUseBombsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesUseBombsCases(): iterable
     {
         yield 'Removes a use element that references its own ancestor' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g id="a"><use href="#a"/></g></svg>',

@@ -34,24 +34,24 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(MinifyColors::class)]
-#[CoversClass(Attribute::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(NamedColorTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
+#[UsesClass(Attribute::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class MinifyColorsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMinifiesColorsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function minifiesColors(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new MinifyColors()]);
 
@@ -62,7 +62,7 @@ final class MinifyColorsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideMinifiesColorsCases(): iterable
     {
         yield 'Leaves the document untouched when a style sheet selects attribute values' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>[fill="#FF0000"]{stroke:red}</style><rect fill="#FF0000"/></svg>',
@@ -744,9 +744,9 @@ final class MinifyColorsTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyIsIdempotentCases')]
+    #[DataProvider('provideMinifiesColorsIdempotentlyCases')]
     #[Test]
-    public function applyIsIdempotent(string $optimized): void
+    public function minifiesColorsIdempotently(string $optimized): void
     {
         $pipeline = new Pipeline([new MinifyColors()]);
 
@@ -756,9 +756,9 @@ final class MinifyColorsTest extends TestCase
     /**
      * @return iterable<string, array{string}>
      */
-    public static function provideApplyIsIdempotentCases(): iterable
+    public static function provideMinifiesColorsIdempotentlyCases(): iterable
     {
-        foreach (self::provideApplyCases() as $name => [, $expected]) {
+        foreach (self::provideMinifiesColorsCases() as $name => [, $expected]) {
             yield $name => [$expected];
         }
     }

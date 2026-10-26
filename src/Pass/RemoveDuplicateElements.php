@@ -34,8 +34,6 @@ final readonly class RemoveDuplicateElements implements PassInterface
 
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
-     *
-     * @throws \JsonException
      */
     #[\Override]
     public function apply(\DOMDocument $domDocument): void
@@ -44,7 +42,7 @@ final readonly class RemoveDuplicateElements implements PassInterface
             return;
         }
 
-        foreach (iterator_to_array($domDocument->getElementsByTagName('*'), false) as $domElement) {
+        foreach ($this->elementsByQualifiedName($domDocument, '*') as $domElement) {
             $parent = $domElement->parentNode;
 
             if ($parent instanceof \DOMElement && $this->isRedundant($domElement, $parent)) {
@@ -56,8 +54,6 @@ final readonly class RemoveDuplicateElements implements PassInterface
     /**
      * @param \DOMElement $domElement the element to check
      * @param \DOMElement $parent     the parent of the element
-     *
-     * @throws \JsonException
      */
     private function isRedundant(\DOMElement $domElement, \DOMElement $parent): bool
     {
@@ -84,9 +80,6 @@ final readonly class RemoveDuplicateElements implements PassInterface
             && !$this->hasAlwaysEffectiveElementInSubtree($domElement);
     }
 
-    /**
-     * @throws \JsonException
-     */
     private function buildSignature(\DOMElement $domElement): string
     {
         $attrs = [];
@@ -107,14 +100,6 @@ final readonly class RemoveDuplicateElements implements PassInterface
             }
         }
 
-        return json_encode(
-            [
-                'namespace' => $domElement->namespaceURI,
-                'tag' => $domElement->tagName,
-                'attrs' => $attrs,
-                'children' => $children,
-            ],
-            \JSON_THROW_ON_ERROR
-        );
+        return serialize([$domElement->namespaceURI, $domElement->tagName, $attrs, $children]);
     }
 }

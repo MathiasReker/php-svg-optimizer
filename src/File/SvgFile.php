@@ -60,27 +60,13 @@ final readonly class SvgFile
     }
 
     /**
-     * @param string $path    the file to write, whose missing directories are created
-     * @param string $content the content to write
-     *
-     * @throws IOException If the path is not usable or the file cannot be written
-     */
-    public static function write(string $path, string $content): void
-    {
-        self::prepareOutput($path);
-
-        if (false === self::withoutWarnings(static fn (): false|int => file_put_contents($path, $content))) {
-            throw new IOException(\sprintf('Failed to write optimized content to the output file: %s', $path));
-        }
-    }
-
-    /**
-     * @param string $path    the file to replace, or create, with a complete copy of the content or nothing at all
+     * @param string $path    the file to replace, or create, with a complete copy of the content or nothing at all;
+     *                        missing directories are created
      * @param string $content the content to write
      *
      * @throws IOException If the path is not usable or the file cannot be replaced
      */
-    public static function writeAtomically(string $path, string $content): void
+    public static function write(string $path, string $content): void
     {
         self::prepareOutput($path);
 

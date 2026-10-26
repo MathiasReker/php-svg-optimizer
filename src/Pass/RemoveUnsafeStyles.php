@@ -67,6 +67,7 @@ final readonly class RemoveUnsafeStyles implements PassInterface
      *
      * @return bool true if the attribute is a style attribute with an unsafe declaration
      */
+    #[\Override]
     private function isUnsafeAttribute(\DOMAttr $domAttr): bool
     {
         return Attribute::Style->value === $this->asciiLowercase($domAttr->name)
@@ -102,7 +103,7 @@ final readonly class RemoveUnsafeStyles implements PassInterface
      */
     private function isStyleNodeDangerous(string $text): bool
     {
-        if (1 === preg_match(self::DANGEROUS_STYLE_CONTENT_REGEX, $text)) {
+        if (0 !== preg_match(self::DANGEROUS_STYLE_CONTENT_REGEX, $text)) {
             return true;
         }
 
@@ -116,7 +117,7 @@ final readonly class RemoveUnsafeStyles implements PassInterface
      */
     private function isStyleAttributeDangerous(string $value): bool
     {
-        if (1 === preg_match(self::DANGEROUS_STYLE_REGEX, $value)) {
+        if (0 !== preg_match(self::DANGEROUS_STYLE_REGEX, $value)) {
             return true;
         }
 
@@ -124,10 +125,9 @@ final readonly class RemoveUnsafeStyles implements PassInterface
             return true;
         }
 
-        preg_match_all(self::CSS_IMAGE_SET_REGEX, $value, $imageSets);
-        preg_match_all(self::CSS_QUOTED_STRING_REGEX, implode(' ', $imageSets[0]), $imageSetUrls);
-
-        return $this->containsDangerousUrl($imageSetUrls[2]);
+        return false === preg_match_all(self::CSS_IMAGE_SET_REGEX, $value, $imageSets)
+            || false === preg_match_all(self::CSS_QUOTED_STRING_REGEX, implode(' ', $imageSets[0]), $imageSetUrls)
+            || $this->containsDangerousUrl($imageSetUrls[2]);
     }
 
     /**

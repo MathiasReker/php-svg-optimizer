@@ -31,21 +31,21 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveAriaAttributes::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveAriaAttributesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesAriaAttributesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesAriaAttributes(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveAriaAttributes()]);
 
@@ -56,7 +56,7 @@ final class RemoveAriaAttributesTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesAriaAttributesCases(): iterable
     {
         yield 'Removes single role attribute' => [
             '<svg role="img" width="100" height="100"><rect width="100" height="100" fill="blue"/></svg>',

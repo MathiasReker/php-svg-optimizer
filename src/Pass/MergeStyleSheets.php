@@ -116,26 +116,12 @@ final readonly class MergeStyleSheets implements PassInterface
     private function hasUnconditionalAncestors(\DOMElement $domElement): bool
     {
         for ($node = $domElement->parentNode; $node instanceof \DOMElement && $node->parentNode instanceof \DOMElement; $node = $node->parentNode) {
-            if (Element::Switch->value === $node->localName || $this->hasId($node) || $this->hasConditionalAttribute($node)) {
+            if (Element::Switch->value === $node->localName || $this->hasId($node) || $this->hasAnyAttribute($node, self::CONDITIONAL_ATTRIBUTES)) {
                 return false;
             }
         }
 
         return true;
-    }
-
-    /**
-     * @param \DOMElement $domElement the element to check
-     */
-    private function hasConditionalAttribute(\DOMElement $domElement): bool
-    {
-        foreach (self::CONDITIONAL_ATTRIBUTES as $attribute) {
-            if ($domElement->hasAttribute($attribute)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

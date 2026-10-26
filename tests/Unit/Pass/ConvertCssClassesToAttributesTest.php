@@ -40,10 +40,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(ConvertCssClassesToAttributes::class)]
-#[CoversClass(ConvertibleProperty::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ClassSelectorTrait::class)]
@@ -54,16 +50,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(SelectorTrait::class)]
 #[CoversTrait(StyleElementTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
+#[UsesClass(ConvertibleProperty::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class ConvertCssClassesToAttributesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideConvertsCssClassesToAttributesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function convertsCssClassesToAttributes(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new ConvertCssClassesToAttributes()]);
 
@@ -74,7 +74,7 @@ final class ConvertCssClassesToAttributesTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideConvertsCssClassesToAttributesCases(): iterable
     {
         yield 'Keeps a declaration when a later element with the class sets the attribute to another value' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:foo}</style><rect class="a"/><rect class="a" fill="blue"/></svg>',
@@ -841,9 +841,9 @@ final class ConvertCssClassesToAttributesTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideIsIdempotentCases')]
+    #[DataProvider('provideConvertsCssClassesToAttributesIdempotentlyCases')]
     #[Test]
-    public function isIdempotent(string $content): void
+    public function convertsCssClassesToAttributesIdempotently(string $content): void
     {
         $once = new Pipeline([new ConvertCssClassesToAttributes()]);
 
@@ -857,7 +857,7 @@ final class ConvertCssClassesToAttributesTest extends TestCase
     /**
      * @return iterable<string, array{string}>
      */
-    public static function provideIsIdempotentCases(): iterable
+    public static function provideConvertsCssClassesToAttributesIdempotentlyCases(): iterable
     {
         yield 'partly converted' => ['<svg xmlns="http://www.w3.org/2000/svg"><style>.a{fill:red;font-size:2px}</style><rect class="a"/></svg>'];
 

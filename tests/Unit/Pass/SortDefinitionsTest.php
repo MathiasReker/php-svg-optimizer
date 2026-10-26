@@ -23,6 +23,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\LinearTimeTrait;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
 use MathiasReker\PhpSvgOptimizer\Xml\SvgValidator;
@@ -37,9 +38,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(SortDefinitions::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(DefinitionElementTrait::class)]
@@ -49,15 +47,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class SortDefinitionsTest extends TestCase
 {
+    use LinearTimeTrait;
+
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideSortsDefinitionsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function sortsDefinitions(string $input, string $expected): void
     {
         self::assertSame($expected, $this->optimizeContent($input));
     }
@@ -65,9 +68,9 @@ final class SortDefinitionsTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideSortsDefinitionsCases')]
     #[Test]
-    public function applyIsIdempotent(string $input, string $expected): void
+    public function sortsDefinitionsIdempotently(string $input, string $expected): void
     {
         self::assertSame($expected, $this->optimizeContent($this->optimizeContent($input)));
     }
@@ -75,7 +78,7 @@ final class SortDefinitionsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideSortsDefinitionsCases(): iterable
     {
         yield 'Groups children by frequency, then by name, keeping the order within a group' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><defs><path id="p1"/><linearGradient id="g1"/><clipPath id="c1"/><linearGradient id="g2"/><path id="p2"/><linearGradient id="g3"/></defs></svg>',
@@ -196,5 +199,22 @@ final class SortDefinitionsTest extends TestCase
         $pipeline = new Pipeline([new SortDefinitions()]);
 
         return $pipeline->run($content);
+    }
+
+    #[Test]
+    public function checksManyIdsInLinearTime(): void
+    {
+        self::assertLinearTime(
+            static function (int $size): \DOMDocument {
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><defs><path id="p"/><rect id="r"/></defs>' . implode('', array_map(static fn (int $i): string => '<g id="g' . $i . '"/>', range(1, $size))) . '</svg>');
+
+                return $domDocument;
+            },
+            static function (\DOMDocument $domDocument): void {
+                (new SortDefinitions())->apply($domDocument);
+            },
+            8_000,
+        );
     }
 }

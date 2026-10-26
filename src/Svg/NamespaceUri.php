@@ -22,6 +22,7 @@ enum NamespaceUri: string
     case Inkscape = 'http://www.inkscape.org/namespaces/inkscape';
     case Xml = 'http://www.w3.org/XML/1998/namespace';
     case XmlEvents = 'http://www.w3.org/2001/xml-events';
+    case Xhtml = 'http://www.w3.org/1999/xhtml';
 
     public function prefix(): string
     {
@@ -32,6 +33,7 @@ enum NamespaceUri: string
             self::Inkscape->value => 'inkscape',
             self::Xml->value => 'xml',
             self::XmlEvents->value => 'ev',
+            self::Xhtml->value => 'html',
         };
     }
 }

@@ -72,9 +72,17 @@ final readonly class MergeDuplicateGradients implements RevertIfLargerPassInterf
         $replacements = $this->duplicateIds($gradients, $this->animationTargetIds($domDocument), $this->fragmentTargetIds($domDocument));
         $replacements = array_diff_key($replacements, $this->blockedIds($domDocument, $replacements));
 
-        foreach ($domDocument->getElementsByTagName('*') as $element) {
+        if ([] === $replacements) {
+            return false;
+        }
+
+        foreach ($this->elementsByQualifiedName($domDocument, '*') as $element) {
             foreach ($element->attributes as $attribute) {
-                $attribute->textContent = $this->rewrittenValue($attribute, $replacements);
+                $value = $this->rewrittenValue($attribute, $replacements);
+
+                if ($value !== $attribute->textContent) {
+                    $attribute->textContent = $value;
+                }
             }
         }
 
@@ -82,7 +90,7 @@ final readonly class MergeDuplicateGradients implements RevertIfLargerPassInterf
             $gradients[$id]->remove();
         }
 
-        return [] !== $replacements;
+        return true;
     }
 
     /**

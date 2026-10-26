@@ -63,7 +63,7 @@ final readonly class ConvertInlineStylesToAttributes implements PassInterface
             return;
         }
 
-        if (!$this->isSplittableDeclarationBlock($style)) {
+        if (!$this->isSplittable($style)) {
             return;
         }
 

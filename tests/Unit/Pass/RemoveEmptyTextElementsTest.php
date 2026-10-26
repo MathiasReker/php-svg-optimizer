@@ -35,10 +35,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveEmptyTextElements::class)]
-#[CoversClass(InvalidSvgException::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ElementTrait::class)]
@@ -46,15 +42,19 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(ScriptingTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(InvalidSvgException::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveEmptyTextElementsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesEmptyTextElementsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesEmptyTextElements(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveEmptyTextElements()]);
 
@@ -68,7 +68,7 @@ final class RemoveEmptyTextElementsTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesEmptyTextElementsCases(): iterable
     {
         yield 'Keeps empty text elements in a document with a script, which may fill or query them' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><text/></svg>',

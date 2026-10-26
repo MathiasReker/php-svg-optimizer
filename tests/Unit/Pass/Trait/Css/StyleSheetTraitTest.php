@@ -18,23 +18,23 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\StyleSheetTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[CoversClass(ConvertInlineStylesToAttributes::class)]
-#[CoversTrait(AsciiCaseTrait::class)]
-#[CoversTrait(DeclarationTrait::class)]
-#[CoversTrait(ElementTrait::class)]
-#[CoversTrait(SelectorTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
+#[CoversTrait(ElementTrait::class)]
+#[UsesClass(ConvertInlineStylesToAttributes::class)]
 #[UsesClass(Element::class)]
+#[UsesTrait(AsciiCaseTrait::class)]
+#[UsesTrait(DeclarationTrait::class)]
+#[UsesTrait(SelectorTrait::class)]
 final class StyleSheetTraitTest extends TestCase
 {
     use StyleSheetTrait;

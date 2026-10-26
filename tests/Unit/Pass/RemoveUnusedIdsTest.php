@@ -40,9 +40,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveUnusedIds::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ClassSelectorTrait::class)]
@@ -55,7 +52,10 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(ScriptingTrait::class)]
 #[CoversTrait(SelectorTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveUnusedIdsTest extends TestCase
 {
     private const string SVG = '<svg xmlns="http://www.w3.org/2000/svg">';
@@ -65,9 +65,9 @@ final class RemoveUnusedIdsTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesUnusedIdsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesUnusedIds(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveUnusedIds()]);
 
@@ -78,7 +78,7 @@ final class RemoveUnusedIdsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesUnusedIdsCases(): iterable
     {
         yield from self::provideRemovedCases();
         yield from self::provideAttributeReferenceCases();

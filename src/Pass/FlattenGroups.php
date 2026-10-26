@@ -268,7 +268,7 @@ final readonly class FlattenGroups implements RevertIfLargerPassInterface
     {
         $style = $domElement->getAttribute(Attribute::Style->value);
 
-        return $this->isSplittableDeclarationBlock($style) && \in_array(
+        return $this->isSplittable($style) && \in_array(
             [$domAttr->nodeName, trim($domAttr->value)],
             array_map(
                 fn (array $declaration): array => [$this->asciiLowercase($declaration[0]), $declaration[1]],

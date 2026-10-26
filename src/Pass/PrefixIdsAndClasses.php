@@ -28,13 +28,13 @@ final readonly class PrefixIdsAndClasses implements PassInterface
     use SelectorTrait;
     use StyleElementTrait;
 
-    private const string CSS_RULE_REGEX = '/(?<selector>[^{]+?){(?<body>[^}]+)}/';
+    private const string CSS_RULE_REGEX = '/(?<![^{}])(?<selector>[^{]+?){(?<body>[^}]+)}/';
 
     private const string FUNCTIONAL_ARGUMENT_REGEX = '/\([^()]*\)/';
 
-    private const string CLASS_SELECTOR_REGEX = '/\[[^\]]*\](*SKIP)(*FAIL)|\.((?:[\w\-]|[^\x00-\x7F])++)(?=[\s.#:\[>+~,()]|$)/';
+    private const string CLASS_SELECTOR_REGEX = '/\[[^\]\[]*+\](*SKIP)(*FAIL)|\.((?:[\w\-]|[^\x00-\x7F])++)(?=[\s.#:\[>+~,()]|$)/';
 
-    private const string ID_SELECTOR_REGEX = '/\[[^\]]*\](*SKIP)(*FAIL)|#\K(?:[\w\-]|[^\x00-\x7F])++(?=[\s.#:\[>+~,()]|$)/';
+    private const string ID_SELECTOR_REGEX = '/\[[^\]\[]*+\](*SKIP)(*FAIL)|#\K(?:[\w\-]|[^\x00-\x7F])++(?=[\s.#:\[>+~,()]|$)/';
 
     private const string URL_REFERENCE_REGEX = '/url\(\s*([\'"]?)#([^\s\'")]+)\1\s*\)/';
 
@@ -42,7 +42,7 @@ final readonly class PrefixIdsAndClasses implements PassInterface
 
     private const string BLANK_BETWEEN_TAGS_REGEX = '/>[\t\n\r ]+</';
 
-    private const string UNSCOPABLE_CSS_REGEX = '/\{[^}]*\{|@import|\\\|\[\s*(?:[^\]|=]*\|)?(?:id|class)\s*[\]~|^$*=]/i';
+    private const string UNSCOPABLE_CSS_REGEX = '/\{[^}]*\{|@import|\\\|\[\s*+(?:[^\]|=\[]*+\|)?(?:id|class)\s*[\]~|^$*=]/i';
 
     private const string ESCAPED_URL_REFERENCE_QUERY = '//@*[contains(., "url(") and contains(., "\")]';
 

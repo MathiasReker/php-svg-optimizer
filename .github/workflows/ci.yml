@@ -10,9 +10,14 @@ on:
 
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -28,6 +33,8 @@ jobs:
     steps:
       - name: Check out the code
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -41,6 +48,17 @@ jobs:
 
       - name: Update Composer
         run: composer self-update
+
+      - name: Find the Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ matrix.php-versions }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-${{ matrix.php-versions }}-
 
       - name: Install dependencies
         run: |

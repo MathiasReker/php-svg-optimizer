@@ -15,10 +15,13 @@ use MathiasReker\PhpSvgOptimizer\Exception\InvalidSvgException;
 use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Pass\Pipeline;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveDefaultXmlSpace;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\StyleSheetTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
 use MathiasReker\PhpSvgOptimizer\Xml\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -28,19 +31,21 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveDefaultXmlSpace::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
+#[CoversTrait(ElementTrait::class)]
+#[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveDefaultXmlSpaceTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesDefaultXmlSpaceCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesDefaultXmlSpace(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveDefaultXmlSpace()]);
 
@@ -51,7 +56,7 @@ final class RemoveDefaultXmlSpaceTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesDefaultXmlSpaceCases(): iterable
     {
         yield 'Removes xml:space="default" from the root' => [
             '<svg xmlns="http://www.w3.org/2000/svg" xml:space="default"><text>a</text></svg>',
@@ -156,6 +161,21 @@ final class RemoveDefaultXmlSpaceTest extends TestCase
         yield 'Keeps everything when an external style sheet is referenced' => [
             '<?xml-stylesheet href="a.css" type="text/css"?><svg xmlns="http://www.w3.org/2000/svg"><text xml:space="default">a</text></svg>',
             '<?xml-stylesheet href="a.css" type="text/css"?><svg xmlns="http://www.w3.org/2000/svg"><text xml:space="default">a</text></svg>',
+        ];
+
+        yield 'Keeps everything when a link element loads a style sheet' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/><text xml:space="default">a</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="a.css"/><text xml:space="default">a</text></svg>',
+        ];
+
+        yield 'Keeps everything when a style element imports a style sheet through an escaped at-rule' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@\69mport "a.css";</style><text xml:space="default">a</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>@\69mport "a.css";</style><text xml:space="default">a</text></svg>',
+        ];
+
+        yield 'Keeps everything when a style element sets white-space through an escaped property name' => [
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>svg{wh\69te-space:pre}</style><text xml:space="default">a</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><style>svg{wh\69te-space:pre}</style><text xml:space="default">a</text></svg>',
         ];
 
         yield 'Removes xml:space="default" when other processing instructions are present' => [

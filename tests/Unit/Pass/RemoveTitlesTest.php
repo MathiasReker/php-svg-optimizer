@@ -34,24 +34,24 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveTitles::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(DefinitionElementTrait::class)]
 #[CoversTrait(ElementRemovalTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(IdTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveTitlesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesTitlesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesTitles(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveTitles()]);
 
@@ -62,7 +62,7 @@ final class RemoveTitlesTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesTitlesCases(): iterable
     {
         yield 'Keeps a title that a switch may render' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><switch><title>t</title><rect width="5" height="5"/></switch></svg>',

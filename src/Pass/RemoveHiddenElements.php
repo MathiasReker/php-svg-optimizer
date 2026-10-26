@@ -96,7 +96,7 @@ final readonly class RemoveHiddenElements implements PassInterface
             return;
         }
 
-        $elements = iterator_to_array($domDocument->getElementsByTagName('*'), false);
+        $elements = $this->elementsByQualifiedName($domDocument, '*');
         $ancestry = $this->ancestryFlags($elements, $this->referencedIds($domDocument));
         $descendants = $this->descendantFlags($elements);
         $paint = $this->paintKeywords($elements);
@@ -274,41 +274,11 @@ final readonly class RemoveHiddenElements implements PassInterface
     }
 
     /**
-     * @param \DOMElement                 $domElement the element whose children to check
-     * @param \Closure(\DOMElement): bool $matches    the test for a child element
-     */
-    private function hasChild(\DOMElement $domElement, \Closure $matches): bool
-    {
-        foreach ($domElement->childNodes as $child) {
-            if ($child instanceof \DOMElement && $matches($child)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * @param \DOMElement $domElement the element to check
      */
     private function isAnimation(\DOMElement $domElement): bool
     {
         return \in_array($this->asciiLowercase((string) $domElement->localName), self::ANIMATION_ELEMENTS, true);
-    }
-
-    /**
-     * @param \DOMElement  $domElement the element to check
-     * @param list<string> $names      the names of attributes without a namespace
-     */
-    private function hasAnyAttribute(\DOMElement $domElement, array $names): bool
-    {
-        foreach ($names as $name) {
-            if ($domElement->hasAttribute($name)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

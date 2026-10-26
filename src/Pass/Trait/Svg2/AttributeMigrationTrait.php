@@ -126,7 +126,7 @@ trait AttributeMigrationTrait
     {
         $style = (string) preg_replace(self::SVG2_COMMENT_REGEX, '', $domElement->getAttribute(Attribute::Style->value));
 
-        if (str_contains($style, self::CSS_COMMENT_START) || !$this->isSplittableDeclarationBlock($style)) {
+        if (str_contains($style, self::CSS_COMMENT_START) || !$this->isSplittable($style)) {
             return;
         }
 

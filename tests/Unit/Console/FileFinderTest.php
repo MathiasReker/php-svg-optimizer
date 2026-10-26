@@ -12,21 +12,20 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Console;
 
 use MathiasReker\PhpSvgOptimizer\Console\FileFinder;
-use MathiasReker\PhpSvgOptimizer\Svg\Element;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\LinearTimeTrait;
 use MathiasReker\PhpSvgOptimizer\Tests\Double\TemporaryDirectoryTrait;
 use MathiasReker\PhpSvgOptimizer\Tests\Double\WorkingDirectoryTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
 #[CoversClass(FileFinder::class)]
-#[UsesClass(Element::class)]
 final class FileFinderTest extends TestCase
 {
+    use LinearTimeTrait;
     use TemporaryDirectoryTrait;
     use WorkingDirectoryTrait;
 
@@ -230,6 +229,26 @@ final class FileFinderTest extends TestCase
         $this->expectExceptionMessage(\sprintf('"%s/notes.txt" is not an SVG file.', $directory));
 
         (new FileFinder())->find([$directory . '/notes.txt']);
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     * @throws \UnexpectedValueException
+     */
+    #[Test]
+    public function findsTheFilesOfALargeDirectoryInLinearTime(): void
+    {
+        $directories = [];
+
+        foreach ([1_500, 12_000] as $size) {
+            $directories[$size] = $this->createTree(array_map(static fn (int $i): string => $i . '.svg', range(1, $size)));
+        }
+
+        self::assertLinearTime(
+            static fn (int $size): string => $directories[$size],
+            static fn (string $directory): array => (new FileFinder())->find([$directory]),
+            1_500,
+        );
     }
 
     /**

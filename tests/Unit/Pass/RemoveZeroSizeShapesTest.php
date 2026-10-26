@@ -36,9 +36,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveZeroSizeShapes::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ElementTrait::class)]
@@ -47,15 +44,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(ScriptingTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveZeroSizeShapesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesZeroSizeShapesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesZeroSizeShapes(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveZeroSizeShapes()]);
 
@@ -69,7 +69,7 @@ final class RemoveZeroSizeShapesTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesZeroSizeShapesCases(): iterable
     {
         yield 'Keeps zero size shapes in a document with a script, which may resize or query them' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><script>a()</script><rect width="0" height="5"/></svg>',

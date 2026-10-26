@@ -28,9 +28,20 @@ trait SelectorTrait
      */
     private function splitSelectorList(string $selectors): array
     {
-        $parts = preg_split('/(?:' . self::CSS_PROTECTED_TOKEN . ')(*SKIP)(*FAIL)|,/s', $selectors);
+        $parts = $this->isSplittable($selectors) ? preg_split('/(?:' . self::CSS_PROTECTED_TOKEN . ')(*SKIP)(*FAIL)|,/s', $selectors) : false;
 
         return array_map(trim(...), false === $parts ? [$selectors] : $parts);
+    }
+
+    /**
+     * @param string $css CSS without braces, such as a selector list or the value of a style attribute
+     *
+     * @return bool true if every string and parenthesis in the CSS is closed, so it can be split at its commas or
+     *              semicolons safely
+     */
+    private function isSplittable(string $css): bool
+    {
+        return 1 === preg_match('/^(?:' . self::CSS_PROTECTED_TOKEN . '|[^"\'()\\\])*$/s', $css);
     }
 
     /**

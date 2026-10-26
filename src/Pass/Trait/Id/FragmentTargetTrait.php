@@ -16,7 +16,6 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\DeclarationTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Attribute;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
-use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
 
 /**
  * @internal
@@ -28,6 +27,7 @@ trait FragmentTargetTrait
     use ClassSelectorTrait;
     use DeclarationTrait;
     use ElementTrait;
+    use IdTrait;
 
     private const string FRAGMENT_TARGET_ALWAYS_QUERY = '//*[local-name()="symbol" or local-name()="view"]';
 
@@ -217,24 +217,11 @@ trait FragmentTargetTrait
 
         foreach ($nodes as $node) {
             if ($node instanceof \DOMElement) {
-                $ids += $this->fragmentIdsOf($node);
+                $ids += array_fill_keys($this->elementIds($node), true);
             }
         }
 
         return $ids;
-    }
-
-    /**
-     * @param \DOMElement $domElement the element to read
-     *
-     * @return array<string, true> the non-empty `id` and `xml:id` values of the element
-     */
-    private function fragmentIdsOf(\DOMElement $domElement): array
-    {
-        return array_fill_keys(array_diff([
-            $domElement->getAttribute(Attribute::Id->value),
-            $domElement->getAttributeNS(NamespaceUri::Xml->value, Attribute::Id->value),
-        ], ['']), true);
     }
 
     /**
@@ -253,7 +240,7 @@ trait FragmentTargetTrait
             $localName = $child->localName ?? '';
 
             if ($this->isFragmentTargetCandidate($localName, $inArea, $resource)) {
-                $targets += $this->fragmentIdsOf($child);
+                $targets += array_fill_keys($this->elementIds($child), true);
             }
 
             $opensArea = Element::Defs->value === $localName || $this->mayHaveDisplayNone($child, $hidingClasses);

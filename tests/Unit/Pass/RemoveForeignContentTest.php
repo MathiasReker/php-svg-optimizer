@@ -44,11 +44,6 @@ use PHPUnit\Framework\TestCase;
  * @no-named-arguments
  */
 #[CoversClass(RemoveForeignContent::class)]
-#[CoversClass(Attribute::class)]
-#[CoversClass(Element::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(CanonicalNameTrait::class)]
 #[CoversTrait(DangerousUrlTrait::class)]
@@ -59,17 +54,22 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(IdTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[CoversTrait(UnsafeAttributeTrait::class)]
+#[UsesClass(Attribute::class)]
+#[UsesClass(Element::class)]
 #[UsesClass(ElementAttributeMap::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveForeignContentTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesForeignContentCases')]
     #[Test]
-    public function apply(string $input, string $expectedSvg): void
+    public function removesForeignContent(string $input, string $expectedSvg): void
     {
         $pipeline = new Pipeline([new RemoveForeignContent()]);
 
@@ -79,7 +79,7 @@ final class RemoveForeignContentTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesForeignContentCases(): iterable
     {
         yield 'Removes foreignObject, iframe, object, embed and link elements' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><p>x</p></foreignObject><iframe/><object/><embed/><link/><rect/></svg>',

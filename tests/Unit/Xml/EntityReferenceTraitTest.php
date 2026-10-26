@@ -23,7 +23,6 @@ use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
 use MathiasReker\PhpSvgOptimizer\Xml\SvgValidator;
 use MathiasReker\PhpSvgOptimizer\Xml\TextWhitespaceTrait;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -34,15 +33,15 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(EntityReferenceTrait::class)]
-#[CoversTrait(TextWhitespaceTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(RemoveInvisibleCharacters::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 #[UsesTrait(ElementTrait::class)]
+#[UsesTrait(TextWhitespaceTrait::class)]
 final class EntityReferenceTraitTest extends TestCase
 {
     use EntityReferenceTrait;

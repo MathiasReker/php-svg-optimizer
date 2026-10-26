@@ -20,6 +20,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\TokenContextTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\TokenizerTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\LinearTimeTrait;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
 use MathiasReker\PhpSvgOptimizer\Xml\SvgValidator;
@@ -34,24 +35,26 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(MinifyStyleSheets::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(StyleElementTrait::class)]
 #[CoversTrait(TokenContextTrait::class)]
 #[CoversTrait(TokenizerTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class MinifyStyleSheetsTest extends TestCase
 {
+    use LinearTimeTrait;
+
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMinifiesStyleSheetsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function minifiesStyleSheets(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new MinifyStyleSheets()]);
 
@@ -62,9 +65,9 @@ final class MinifyStyleSheetsTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMinifiesStyleSheetsCases')]
     #[Test]
-    public function applyIsIdempotent(string $input, string $expected): void
+    public function minifiesStyleSheetsIdempotently(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new MinifyStyleSheets()]);
 
@@ -74,7 +77,7 @@ final class MinifyStyleSheetsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideMinifiesStyleSheetsCases(): iterable
     {
         yield 'Collapses whitespace around selectors, combinators and declarations' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style> a  b , c &gt; d ~ e + f { fill : red ; stroke : blue ; } </style></svg>',
@@ -525,5 +528,22 @@ final class MinifyStyleSheetsTest extends TestCase
         self::assertStringContainsString('.c1{fill:red;stroke:blue}.c2{', $content);
 
         return (hrtime(true) - $start) / 1e9;
+    }
+
+    #[Test]
+    public function minifiesAStyleSheetWithManyUnclosedCommentsInLinearTime(): void
+    {
+        self::assertLinearTime(
+            static function (int $size): \DOMDocument {
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><style>a{fill:red}' . str_repeat('/* ', $size) . '</style></svg>');
+
+                return $domDocument;
+            },
+            static function (\DOMDocument $domDocument): void {
+                (new MinifyStyleSheets())->apply($domDocument);
+            },
+            2_500,
+        );
     }
 }

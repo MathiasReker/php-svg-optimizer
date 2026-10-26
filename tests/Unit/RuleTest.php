@@ -90,9 +90,9 @@ final class RuleTest extends TestCase
     /**
      * @param list<Rule> $rules the rules of the set
      */
-    #[DataProvider('provideGetRuleSetCases')]
+    #[DataProvider('provideEachRuleBelongsToItsSetCases')]
     #[Test]
-    public function getRuleSet(RuleSet $ruleSet, array $rules): void
+    public function eachRuleBelongsToItsSet(RuleSet $ruleSet, array $rules): void
     {
         foreach ($rules as $rule) {
             self::assertSame($ruleSet, $rule->getRuleSet(), $rule->name);
@@ -102,7 +102,7 @@ final class RuleTest extends TestCase
     /**
      * @return iterable<string, array{RuleSet, list<Rule>}>
      */
-    public static function provideGetRuleSetCases(): iterable
+    public static function provideEachRuleBelongsToItsSetCases(): iterable
     {
         yield 'security' => [RuleSet::Security, [Rule::RemoveUnsafeMarkup, Rule::RemoveScripts, Rule::RemoveForeignContent, Rule::RemoveUnsafeUrls, Rule::RemoveUnsafeStyles, Rule::RemoveUseBombs]];
 
@@ -139,9 +139,9 @@ final class RuleTest extends TestCase
     /**
      * @param list<class-string> $passes the passes the rule runs
      */
-    #[DataProvider('provideGetPassClassesCases')]
+    #[DataProvider('provideEachRuleRunsItsPassesCases')]
     #[Test]
-    public function getPassClasses(Rule $rule, array $passes): void
+    public function eachRuleRunsItsPasses(Rule $rule, array $passes): void
     {
         self::assertSame($passes, $rule->getPassClasses());
     }
@@ -149,7 +149,7 @@ final class RuleTest extends TestCase
     /**
      * @return iterable<string, array{Rule, list<class-string>}>
      */
-    public static function provideGetPassClassesCases(): iterable
+    public static function provideEachRuleRunsItsPassesCases(): iterable
     {
         yield 'migrateToSvg2' => [Rule::MigrateToSvg2, [MigrateToSvg2::class, MigrateDeprecatedAttributes::class, RemoveEnableBackground::class]];
 

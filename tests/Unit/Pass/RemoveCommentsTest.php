@@ -28,19 +28,19 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveComments::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveCommentsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesCommentsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesComments(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveComments()]);
 
@@ -51,7 +51,7 @@ final class RemoveCommentsTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesCommentsCases(): iterable
     {
         yield 'Removes Single Comment' => [
             <<<'XML'

@@ -146,13 +146,8 @@ trait InheritanceTrait
             return false;
         }
 
-        foreach (self::TRANSFORM_ORIGIN_ATTRIBUTES as $attributeName) {
-            if ($child->hasAttribute($attributeName)) {
-                return true;
-            }
-        }
-
-        return $this->inlineStyleDeclares($child, self::TRANSFORM_PROPERTIES);
+        return $this->hasAnyAttribute($child, self::TRANSFORM_ORIGIN_ATTRIBUTES)
+            || $this->inlineStyleDeclares($child, self::TRANSFORM_PROPERTIES);
     }
 
     /**

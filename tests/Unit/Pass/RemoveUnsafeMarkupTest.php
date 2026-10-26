@@ -34,22 +34,22 @@ use PHPUnit\Framework\TestCase;
  * @no-named-arguments
  */
 #[CoversClass(RemoveUnsafeMarkup::class)]
-#[CoversClass(Attribute::class)]
-#[CoversClass(Element::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(ElementTrait::class)]
+#[UsesClass(Attribute::class)]
+#[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveUnsafeMarkupTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesUnsafeMarkupCases')]
     #[Test]
-    public function apply(string $input, string $expectedSvg): void
+    public function removesUnsafeMarkup(string $input, string $expectedSvg): void
     {
         $pipeline = new Pipeline([new RemoveUnsafeMarkup()]);
 
@@ -59,7 +59,7 @@ final class RemoveUnsafeMarkupTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesUnsafeMarkupCases(): iterable
     {
         yield 'Removes processing instructions' => [
             '<?xml-stylesheet href="a.css"?><svg xmlns="http://www.w3.org/2000/svg"><?php echo 1; ?><g><?x y?></g><rect/></svg>',

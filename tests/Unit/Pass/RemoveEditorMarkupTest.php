@@ -29,23 +29,24 @@ use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
 #[CoversClass(RemoveEditorMarkup::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
-#[CoversTrait(AsciiCaseTrait::class)]
-#[CoversTrait(DeclarationTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(IdTrait::class)]
 #[CoversTrait(SelectorTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
+#[UsesTrait(AsciiCaseTrait::class)]
+#[UsesTrait(DeclarationTrait::class)]
 final class RemoveEditorMarkupTest extends TestCase
 {
     private const array EDITOR_NAMESPACE_URIS = [
@@ -69,9 +70,9 @@ final class RemoveEditorMarkupTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesEditorMarkupCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesEditorMarkup(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveEditorMarkup()]);
 
@@ -82,7 +83,7 @@ final class RemoveEditorMarkupTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesEditorMarkupCases(): iterable
     {
         yield 'Removes inkscape and sodipodi namespaces' => [
             <<<'XML'

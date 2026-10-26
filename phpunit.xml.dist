@@ -23,6 +23,9 @@
         <testsuite name="integration">
             <directory>tests/Integration</directory>
         </testsuite>
+        <testsuite name="architecture">
+            <directory>tests/Architecture/Rule</directory>
+        </testsuite>
     </testsuites>
 
     <source
@@ -32,6 +35,8 @@
     >
         <include>
             <directory>src</directory>
+            <directory suffix="Rule.php">tests/Architecture/Rule</directory>
+            <file>tests/Architecture/Rule/PackageLayer.php</file>
         </include>
     </source>
 </phpunit>

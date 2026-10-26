@@ -32,13 +32,13 @@ final class OptimizationResultTest extends TestCase
     use TemporaryDirectoryTrait;
 
     #[Test]
-    public function getContent(): void
+    public function givesTheOptimizedContent(): void
     {
         self::assertSame('<svg/>', (new OptimizationResult('<svg/>', new Metrics(10, 6, 0.0)))->getContent());
     }
 
     #[Test]
-    public function getMetrics(): void
+    public function givesTheMetrics(): void
     {
         $metrics = new Metrics(10, 6, 0.0);
 
@@ -56,6 +56,25 @@ final class OptimizationResultTest extends TestCase
         (new OptimizationResult('<svg/>', new Metrics(10, 6, 0.0)))->saveToFile($path);
 
         self::assertSame('<svg/>', file_get_contents($path));
+    }
+
+    /**
+     * @throws IOException
+     */
+    #[Test]
+    public function saveToFileReplacesAnExistingFileInsteadOfRewritingItInPlace(): void
+    {
+        $directory = $this->createTemporaryDirectory();
+        $path = $directory . '/output.svg';
+        file_put_contents($path, '<svg><rect/></svg>');
+        $inode = fileinode($path);
+
+        (new OptimizationResult('<svg/>', new Metrics(10, 6, 0.0)))->saveToFile($path);
+        clearstatcache();
+
+        self::assertSame('<svg/>', file_get_contents($path));
+        self::assertNotSame($inode, fileinode($path));
+        self::assertSame(['.', '..', 'output.svg'], scandir($directory));
     }
 
     /**

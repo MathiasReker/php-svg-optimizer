@@ -71,6 +71,7 @@ final readonly class RemoveForeignContent implements PassInterface
      * @return bool true if the attribute is an XML Events attribute, or an HTML parser would read it as a known
      *              attribute that it is not
      */
+    #[\Override]
     private function isUnsafeAttribute(\DOMAttr $domAttr): bool
     {
         return NamespaceUri::XmlEvents->value === $domAttr->namespaceURI || $this->isNonCanonicalAttribute($domAttr);

@@ -38,9 +38,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveDefaultAttributes::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ElementTrait::class)]
@@ -51,15 +48,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(NumberLiteralTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveDefaultAttributesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesDefaultAttributesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesDefaultAttributes(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveDefaultAttributes()]);
 
@@ -73,7 +73,7 @@ final class RemoveDefaultAttributesTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesDefaultAttributesCases(): iterable
     {
         yield 'Leaves documents with a style element untouched' => [
             '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><style>rect{stroke:red}</style><rect stroke="none" width="5" height="5"/></svg>',

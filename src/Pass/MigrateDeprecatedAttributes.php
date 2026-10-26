@@ -78,14 +78,14 @@ final readonly class MigrateDeprecatedAttributes implements PassInterface
     {
         $insertsTitles = !$this->hasStructureSensitiveStyleSheet($domDocument);
 
-        foreach (iterator_to_array($domDocument->getElementsByTagName('*'), false) as $domElement) {
+        foreach ($this->elementsByQualifiedName($domDocument, '*') as $domElement) {
             if ($this->isForeignContent($domElement)) {
                 continue;
             }
 
             if (Element::A->value !== $domElement->localName) {
                 $domElement->removeAttributeNS(NamespaceUri::Xlink->value, self::XLINK_TITLE);
-            } elseif ($insertsTitles && !$this->hasTitleChild($domElement)) {
+            } elseif ($insertsTitles && !$this->hasChild($domElement, static fn (\DOMElement $domElement): bool => Element::Title->value === $domElement->localName)) {
                 $this->convertXlinkTitle($domDocument, $domElement);
             }
         }
@@ -105,20 +105,6 @@ final readonly class MigrateDeprecatedAttributes implements PassInterface
             $titleElement->textContent = $title;
             $domElement->insertBefore($titleElement, $domElement->firstChild);
         }
-    }
-
-    /**
-     * @param \DOMElement $domElement the element to check
-     */
-    private function hasTitleChild(\DOMElement $domElement): bool
-    {
-        foreach ($domElement->childNodes as $child) {
-            if ($child instanceof \DOMElement && Element::Title->value === $child->localName) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

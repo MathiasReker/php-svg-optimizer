@@ -16,11 +16,13 @@ use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Pass\Pipeline;
 use MathiasReker\PhpSvgOptimizer\Pass\RemoveScripts;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\StyleSheetTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AnimationTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\DefinitionElementTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementNameTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementRemovalTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Security\CanonicalNameTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Security\DangerousUrlTrait;
@@ -43,11 +45,7 @@ use PHPUnit\Framework\TestCase;
  * @no-named-arguments
  */
 #[CoversClass(RemoveScripts::class)]
-#[CoversClass(Attribute::class)]
-#[CoversClass(Element::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
+#[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(CanonicalNameTrait::class)]
 #[CoversTrait(DangerousUrlTrait::class)]
@@ -56,18 +54,24 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(ElementRemovalTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(IdTrait::class)]
+#[CoversTrait(ScriptingTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[CoversTrait(UnsafeAttributeTrait::class)]
+#[UsesClass(Attribute::class)]
+#[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveScriptsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesScriptsCases')]
     #[Test]
-    public function apply(string $input, string $expectedSvg): void
+    public function removesScripts(string $input, string $expectedSvg): void
     {
         $pipeline = new Pipeline([new RemoveScripts()]);
 
@@ -77,7 +81,7 @@ final class RemoveScriptsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesScriptsCases(): iterable
     {
         yield 'Removes script elements' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><rect/></svg>',

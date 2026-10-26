@@ -23,6 +23,9 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\FragmentTargetTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdRenameTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\LinearTimeTrait;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\RegexFailureTrait;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
 use MathiasReker\PhpSvgOptimizer\Xml\SvgValidator;
@@ -37,27 +40,31 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(PrefixIdsAndClasses::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ClassSelectorTrait::class)]
 #[CoversTrait(DeclarationTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(FragmentTargetTrait::class)]
 #[CoversTrait(IdRenameTrait::class)]
+#[CoversTrait(IdTrait::class)]
 #[CoversTrait(SelectorTrait::class)]
 #[CoversTrait(StyleElementTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class PrefixIdsAndClassesTest extends TestCase
 {
+    use LinearTimeTrait;
+    use RegexFailureTrait;
+
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('providePrefixesIdsAndClassesCases')]
     #[Test]
-    public function apply(string $input, callable $assertion): void
+    public function prefixesIdsAndClasses(string $input, callable $assertion): void
     {
         $pipeline = new Pipeline([new PrefixIdsAndClasses()]);
 
@@ -70,7 +77,7 @@ final class PrefixIdsAndClassesTest extends TestCase
     /**
      * @return iterable<array{string, callable}>
      */
-    public static function provideApplyCases(): iterable
+    public static function providePrefixesIdsAndClassesCases(): iterable
     {
         $unscopable = [
             'rules nested in a media block' => '<svg><style>.a{stroke:blue}@media screen{.a{fill:red}}</style><rect class="a" id="r"/></svg>',
@@ -994,5 +1001,56 @@ final class PrefixIdsAndClassesTest extends TestCase
         (new PrefixIdsAndClasses())->apply($domDocument);
 
         return (hrtime(true) - $start) / 1e9;
+    }
+
+    #[Test]
+    public function checksAStyleSheetWithManyOpeningBracketsInLinearTime(): void
+    {
+        self::assertLinearTime(
+            static function (int $size): \DOMDocument {
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><style>' . str_repeat('[', $size) . '</style><rect class="a"/></svg>');
+
+                return $domDocument;
+            },
+            static function (\DOMDocument $domDocument): void {
+                (new PrefixIdsAndClasses())->apply($domDocument);
+            },
+            5_000,
+        );
+    }
+
+    #[Test]
+    public function checksASelectorWithManyUnclosedParenthesesInLinearTimeWithoutJit(): void
+    {
+        self::assertLinearTime(
+            static function (int $size): \DOMDocument {
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><style>' . str_repeat('(', $size) . '{fill:red}</style><rect class="a"/></svg>');
+
+                return $domDocument;
+            },
+            static function (\DOMDocument $domDocument): void {
+                self::withoutJit(static fn () => (new PrefixIdsAndClasses())->apply($domDocument));
+            },
+            500,
+        );
+    }
+
+    #[Test]
+    public function checksALongSelectorWithAnEmptyBlockInLinearTimeWithoutJit(): void
+    {
+        self::assertLinearTime(
+            static function (int $size): \DOMDocument {
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><style>' . str_repeat('a', $size) . '{}</style><rect class="a"/></svg>');
+
+                return $domDocument;
+            },
+            static function (\DOMDocument $domDocument): void {
+                self::withoutJit(static fn () => (new PrefixIdsAndClasses())->apply($domDocument));
+            },
+            1_500,
+        );
     }
 }

@@ -24,28 +24,29 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Tests\Double\RegexFailureTrait;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[CoversClass(ConvertCssClassesToAttributes::class)]
-#[CoversClass(ConvertInlineStylesToAttributes::class)]
-#[CoversTrait(AnimationTrait::class)]
-#[CoversTrait(AsciiCaseTrait::class)]
-#[CoversTrait(ClassSelectorTrait::class)]
 #[CoversTrait(DeclarationTrait::class)]
-#[CoversTrait(ElementTrait::class)]
-#[CoversTrait(IdTrait::class)]
-#[CoversTrait(ScriptingTrait::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(SelectorTrait::class)]
-#[CoversTrait(StyleElementTrait::class)]
-#[CoversTrait(StyleSheetTrait::class)]
+#[UsesClass(ConvertCssClassesToAttributes::class)]
+#[UsesClass(ConvertInlineStylesToAttributes::class)]
+#[UsesTrait(AnimationTrait::class)]
+#[UsesTrait(ClassSelectorTrait::class)]
+#[UsesTrait(ElementTrait::class)]
+#[UsesTrait(IdTrait::class)]
+#[UsesTrait(ScriptingTrait::class)]
+#[UsesTrait(StyleElementTrait::class)]
+#[UsesTrait(StyleSheetTrait::class)]
 final class DeclarationTraitTest extends TestCase
 {
     use DeclarationTrait;
@@ -58,7 +59,7 @@ final class DeclarationTraitTest extends TestCase
     #[Test]
     public function splitsOnSeparatingSemicolonsOnly(string $block, array $expected): void
     {
-        self::assertTrue($this->isSplittableDeclarationBlock($block));
+        self::assertTrue($this->isSplittable($block));
         self::assertSame($expected, $this->splitDeclarations($block));
     }
 
@@ -96,7 +97,7 @@ final class DeclarationTraitTest extends TestCase
     #[Test]
     public function rejectsAmbiguousBlocks(string $block): void
     {
-        self::assertFalse($this->isSplittableDeclarationBlock($block));
+        self::assertFalse($this->isSplittable($block));
     }
 
     /**

@@ -134,20 +134,21 @@ final class SvgFileTest extends TestCase
      * @throws IOException
      */
     #[Test]
-    public function writeCreatesEveryMissingParentDirectory(): void
+    public function writeCreatesTheFileAndEveryMissingParentDirectory(): void
     {
-        $path = $this->createTemporaryDirectory() . '/a/b/c/output.svg';
+        $path = $this->createTemporaryDirectory() . '/a/b/output.svg';
 
         SvgFile::write($path, '<svg/>');
 
         self::assertSame('<svg/>', file_get_contents($path));
+        self::assertSame(['output.svg'], $this->listDirectory(\dirname($path)));
     }
 
     /**
      * @throws IOException
      */
     #[Test]
-    public function writeReplacesAnExistingFile(): void
+    public function writeReplacesAnExistingFileWithoutLeavingTemporaryFiles(): void
     {
         $path = $this->createTemporaryDirectory() . '/output.svg';
         file_put_contents($path, '<svg><rect/></svg>');
@@ -155,6 +156,24 @@ final class SvgFileTest extends TestCase
         SvgFile::write($path, '<svg/>');
 
         self::assertSame('<svg/>', file_get_contents($path));
+        self::assertSame(['output.svg'], $this->listDirectory(\dirname($path)));
+    }
+
+    /**
+     * @throws IOException
+     */
+    #[Test]
+    public function writeKeepsASymbolicLinkAndReplacesItsTarget(): void
+    {
+        $directory = $this->createTemporaryDirectory();
+        file_put_contents($directory . '/real.svg', '<svg><rect/></svg>');
+        self::assertTrue(symlink($directory . '/real.svg', $directory . '/link.svg'));
+
+        SvgFile::write($directory . '/link.svg', '<svg/>');
+
+        self::assertTrue(is_link($directory . '/link.svg'));
+        self::assertSame('<svg/>', file_get_contents($directory . '/real.svg'));
+        self::assertSame(['link.svg', 'real.svg'], $this->listDirectory($directory));
     }
 
     /**
@@ -186,10 +205,10 @@ final class SvgFileTest extends TestCase
         $directory = $this->createTemporaryDirectory();
 
         try {
-            SvgFile::write($directory . '/', '<svg/>');
+            SvgFile::write($directory, '<svg/>');
             self::fail('Expected an IOException.');
         } catch (IOException $ioException) {
-            self::assertSame('Output path is a directory: ' . $directory . '/', $ioException->getMessage());
+            self::assertSame('Output path is a directory: ' . $directory, $ioException->getMessage());
             self::assertDirectoryExists($directory);
         }
     }
@@ -212,7 +231,7 @@ final class SvgFileTest extends TestCase
     }
 
     #[Test]
-    public function writeThrowsWithoutWarningsWhenTheFileCannotBeWritten(): void
+    public function writeKeepsAReadOnlyFileAsItIs(): void
     {
         $path = $this->createTemporaryDirectory() . '/readonly.svg';
         file_put_contents($path, '<svg></svg>');
@@ -221,113 +240,6 @@ final class SvgFileTest extends TestCase
 
         try {
             SvgFile::write($path, '<svg/>');
-            self::fail('Expected an IOException.');
-        } catch (IOException $ioException) {
-            self::assertSame('Failed to write optimized content to the output file: ' . $path, $ioException->getMessage());
-            self::assertNull(error_get_last());
-        } finally {
-            chmod($path, 0o666);
-        }
-    }
-
-    /**
-     * @throws IOException
-     */
-    #[Test]
-    public function writeAtomicallyCreatesTheFileAndEveryMissingParentDirectory(): void
-    {
-        $path = $this->createTemporaryDirectory() . '/a/b/output.svg';
-
-        SvgFile::writeAtomically($path, '<svg/>');
-
-        self::assertSame('<svg/>', file_get_contents($path));
-        self::assertSame(['output.svg'], $this->listDirectory(\dirname($path)));
-    }
-
-    /**
-     * @throws IOException
-     */
-    #[Test]
-    public function writeAtomicallyReplacesAnExistingFileWithoutLeavingTemporaryFiles(): void
-    {
-        $path = $this->createTemporaryDirectory() . '/output.svg';
-        file_put_contents($path, '<svg><rect/></svg>');
-
-        SvgFile::writeAtomically($path, '<svg/>');
-
-        self::assertSame('<svg/>', file_get_contents($path));
-        self::assertSame(['output.svg'], $this->listDirectory(\dirname($path)));
-    }
-
-    /**
-     * @throws IOException
-     */
-    #[Test]
-    public function writeAtomicallyKeepsASymbolicLinkAndReplacesItsTarget(): void
-    {
-        $directory = $this->createTemporaryDirectory();
-        file_put_contents($directory . '/real.svg', '<svg><rect/></svg>');
-        self::assertTrue(symlink($directory . '/real.svg', $directory . '/link.svg'));
-
-        SvgFile::writeAtomically($directory . '/link.svg', '<svg/>');
-
-        self::assertTrue(is_link($directory . '/link.svg'));
-        self::assertSame('<svg/>', file_get_contents($directory . '/real.svg'));
-        self::assertSame(['link.svg', 'real.svg'], $this->listDirectory($directory));
-    }
-
-    /**
-     * @throws IOException
-     */
-    #[DataProvider('provideWriteRejectsAnUnusablePathCases')]
-    #[Test]
-    public function writeAtomicallyRejectsAnUnusablePath(string $path, string $message): void
-    {
-        $this->expectException(IOException::class);
-        $this->expectExceptionMessage($message);
-
-        SvgFile::writeAtomically($path, '<svg/>');
-    }
-
-    #[Test]
-    public function writeAtomicallyRefusesToReplaceADirectory(): void
-    {
-        $directory = $this->createTemporaryDirectory();
-
-        try {
-            SvgFile::writeAtomically($directory, '<svg/>');
-            self::fail('Expected an IOException.');
-        } catch (IOException $ioException) {
-            self::assertSame('Output path is a directory: ' . $directory, $ioException->getMessage());
-            self::assertDirectoryExists($directory);
-        }
-    }
-
-    #[Test]
-    public function writeAtomicallyThrowsWhenTheDirectoryCannotBeCreated(): void
-    {
-        $blockingFile = $this->createTemporaryDirectory() . '/blocking';
-        file_put_contents($blockingFile, '');
-        $path = $blockingFile . '/output.svg';
-
-        try {
-            SvgFile::writeAtomically($path, '<svg/>');
-            self::fail('Expected an IOException.');
-        } catch (IOException $ioException) {
-            self::assertSame('Failed to create directory for output file: ' . $path, $ioException->getMessage());
-        }
-    }
-
-    #[Test]
-    public function writeAtomicallyKeepsAReadOnlyFileAsItIs(): void
-    {
-        $path = $this->createTemporaryDirectory() . '/readonly.svg';
-        file_put_contents($path, '<svg></svg>');
-        chmod($path, 0o444);
-        error_clear_last();
-
-        try {
-            SvgFile::writeAtomically($path, '<svg/>');
             self::fail('Expected an IOException.');
         } catch (IOException $ioException) {
             self::assertSame('Failed to write optimized content to the output file: ' . $path, $ioException->getMessage());

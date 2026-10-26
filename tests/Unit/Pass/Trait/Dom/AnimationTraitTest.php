@@ -21,25 +21,25 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Number\NumberLiteralTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[CoversClass(ConvertEllipsesToCircles::class)]
 #[CoversTrait(AnimationTrait::class)]
-#[CoversTrait(AsciiCaseTrait::class)]
-#[CoversTrait(AttributeNodeTrait::class)]
-#[CoversTrait(ElementRenameTrait::class)]
-#[CoversTrait(ElementTrait::class)]
-#[CoversTrait(NumberLiteralTrait::class)]
-#[CoversTrait(ScriptingTrait::class)]
-#[CoversTrait(StyleSheetTrait::class)]
+#[UsesClass(ConvertEllipsesToCircles::class)]
 #[UsesClass(Element::class)]
+#[UsesTrait(AsciiCaseTrait::class)]
+#[UsesTrait(AttributeNodeTrait::class)]
+#[UsesTrait(ElementRenameTrait::class)]
+#[UsesTrait(ElementTrait::class)]
+#[UsesTrait(NumberLiteralTrait::class)]
+#[UsesTrait(ScriptingTrait::class)]
+#[UsesTrait(StyleSheetTrait::class)]
 final class AnimationTraitTest extends TestCase
 {
     use AnimationTrait;

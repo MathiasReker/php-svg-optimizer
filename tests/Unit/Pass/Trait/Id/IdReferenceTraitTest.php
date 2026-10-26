@@ -34,39 +34,39 @@ use MathiasReker\PhpSvgOptimizer\Svg\Attribute;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
 use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
 use MathiasReker\PhpSvgOptimizer\Tests\Double\RegexFailureTrait;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[CoversClass(ConvertOneStopGradientsToColors::class)]
-#[CoversClass(FlattenGroups::class)]
-#[CoversClass(RemoveUnusedDefinitions::class)]
-#[CoversClass(RemoveUnusedIds::class)]
+#[CoversTrait(IdReferenceTrait::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
-#[CoversTrait(ClassSelectorTrait::class)]
-#[CoversTrait(DeclarationTrait::class)]
-#[CoversTrait(DefinitionElementTrait::class)]
 #[CoversTrait(ElementTrait::class)]
-#[CoversTrait(FragmentTargetTrait::class)]
-#[CoversTrait(GradientLinkTrait::class)]
-#[CoversTrait(IdReferenceTrait::class)]
 #[CoversTrait(IdTrait::class)]
-#[CoversTrait(NamedColorTrait::class)]
-#[CoversTrait(NumberLiteralTrait::class)]
 #[CoversTrait(ScriptingTrait::class)]
-#[CoversTrait(SelectorTrait::class)]
-#[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(Attribute::class)]
+#[UsesClass(ConvertOneStopGradientsToColors::class)]
 #[UsesClass(Element::class)]
+#[UsesClass(FlattenGroups::class)]
 #[UsesClass(NamespaceUri::class)]
+#[UsesClass(RemoveUnusedDefinitions::class)]
+#[UsesClass(RemoveUnusedIds::class)]
+#[UsesTrait(ClassSelectorTrait::class)]
+#[UsesTrait(DeclarationTrait::class)]
+#[UsesTrait(DefinitionElementTrait::class)]
+#[UsesTrait(FragmentTargetTrait::class)]
+#[UsesTrait(GradientLinkTrait::class)]
+#[UsesTrait(NamedColorTrait::class)]
+#[UsesTrait(NumberLiteralTrait::class)]
+#[UsesTrait(SelectorTrait::class)]
+#[UsesTrait(StyleSheetTrait::class)]
 final class IdReferenceTraitTest extends TestCase
 {
     use IdReferenceTrait;

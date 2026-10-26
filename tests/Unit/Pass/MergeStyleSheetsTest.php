@@ -33,23 +33,23 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(MergeStyleSheets::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(IdTrait::class)]
 #[CoversTrait(StyleElementTrait::class)]
 #[CoversTrait(TokenizerTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class MergeStyleSheetsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMergesStyleSheetsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function mergesStyleSheets(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new MergeStyleSheets()]);
 
@@ -60,9 +60,9 @@ final class MergeStyleSheetsTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMergesStyleSheetsCases')]
     #[Test]
-    public function applyIsIdempotent(string $input, string $expected): void
+    public function mergesStyleSheetsIdempotently(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new MergeStyleSheets()]);
 
@@ -72,7 +72,7 @@ final class MergeStyleSheetsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideMergesStyleSheetsCases(): iterable
     {
         yield 'Merges style elements in document order' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>a{fill:red}</style><g/><style>b{fill:blue}</style></svg>',

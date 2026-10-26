@@ -154,4 +154,34 @@ trait ElementTrait
 
         return $children;
     }
+
+    /**
+     * @param \DOMElement                 $domElement the element whose children to check
+     * @param \Closure(\DOMElement): bool $matches    the test for a child element
+     */
+    private function hasChild(\DOMElement $domElement, \Closure $matches): bool
+    {
+        foreach ($domElement->childNodes as $child) {
+            if ($child instanceof \DOMElement && $matches($child)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param \DOMElement  $domElement the element to check
+     * @param list<string> $names      the names of attributes without a namespace
+     */
+    private function hasAnyAttribute(\DOMElement $domElement, array $names): bool
+    {
+        foreach ($names as $name) {
+            if ($domElement->hasAttribute($name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

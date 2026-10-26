@@ -44,9 +44,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(ConvertOneStopGradientsToColors::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ClassSelectorTrait::class)]
@@ -63,7 +60,10 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(SelectorTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class ConvertOneStopGradientsToColorsTest extends TestCase
 {
     private const string SVG = '<svg xmlns="http://www.w3.org/2000/svg">';
@@ -73,9 +73,9 @@ final class ConvertOneStopGradientsToColorsTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideConvertsOneStopGradientsToColorsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function convertsOneStopGradientsToColors(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new ConvertOneStopGradientsToColors()]);
 
@@ -86,7 +86,7 @@ final class ConvertOneStopGradientsToColorsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideConvertsOneStopGradientsToColorsCases(): iterable
     {
         yield 'Keeps a gradient of a zero-sized resource library, which other documents may reference' => [
             '<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"><defs><linearGradient id="g"><stop stop-color="red"/></linearGradient></defs><rect width="5" height="5" fill="url(#g)"/></svg>',

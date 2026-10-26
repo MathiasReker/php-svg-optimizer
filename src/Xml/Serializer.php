@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Xml;
 
+use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
+
 /**
  * @internal
  *
@@ -22,7 +24,7 @@ final readonly class Serializer
 
     private const string XML_ENCODING = 'UTF-8';
 
-    private const string CHILDLESS_XHTML_ELEMENT_QUERY = '//*[namespace-uri() = "http://www.w3.org/1999/xhtml"][not(node())]';
+    private const string CHILDLESS_XHTML_ELEMENT_QUERY = '//*[namespace-uri() = "' . NamespaceUri::Xhtml->value . '"][not(node())]';
 
     private const string HTML_VOID_ELEMENT_REGEX = '/^(?:area|base|br|col|embed|hr|img|input|link|meta|source|track|wbr)$/i';
 

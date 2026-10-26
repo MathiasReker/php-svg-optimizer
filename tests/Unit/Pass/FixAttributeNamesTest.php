@@ -15,7 +15,11 @@ use MathiasReker\PhpSvgOptimizer\Exception\InvalidSvgException;
 use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Pass\FixAttributeNames;
 use MathiasReker\PhpSvgOptimizer\Pass\Pipeline;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AnimationTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Attribute;
 use MathiasReker\PhpSvgOptimizer\Svg\ElementAttributeMap;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
@@ -32,22 +36,26 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(FixAttributeNames::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
+#[CoversTrait(AnimationTrait::class)]
+#[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ElementTrait::class)]
+#[CoversTrait(IdTrait::class)]
+#[CoversTrait(ScriptingTrait::class)]
 #[UsesClass(Attribute::class)]
 #[UsesClass(ElementAttributeMap::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class FixAttributeNamesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideFixesAttributeNamesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function fixesAttributeNames(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new FixAttributeNames()]);
 
@@ -59,7 +67,7 @@ final class FixAttributeNamesTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideFixesAttributeNamesCases(): iterable
     {
         yield 'Keeps event handler attributes in another case, which are not event handlers' => [
             '<svg xmlns="http://www.w3.org/2000/svg" onLoad="f()"><rect ONCLICK="f()" Fill="red"/></svg>',

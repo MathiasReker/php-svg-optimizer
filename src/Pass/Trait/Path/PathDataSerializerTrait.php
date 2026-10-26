@@ -50,7 +50,7 @@ trait PathDataSerializerTrait
             }
 
             foreach ($arguments as $index => $argument) {
-                $output .= ($this->followsArcFlag($command, $index) ? '' : $this->pathSeparatorBefore($previousArgument, $argument)) . $argument;
+                $output .= ($this->followsArcFlag($command, $index) ? '' : $this->numberSeparatorBefore($previousArgument, $argument)) . $argument;
                 $previousArgument = $argument;
             }
 
@@ -101,20 +101,5 @@ trait PathDataSerializerTrait
     private function followsArcFlag(string $command, int $index): bool
     {
         return \in_array($command, self::PATH_ARC_COMMANDS, true) && \in_array($index, self::PATH_ARGUMENTS_AFTER_ARC_FLAGS, true);
-    }
-
-    /**
-     * @param string $previousArgument the argument written before, or an empty string after a command letter
-     * @param string $argument         the argument about to be written
-     */
-    private function pathSeparatorBefore(string $previousArgument, string $argument): string
-    {
-        if ('' === $previousArgument || str_starts_with($argument, '-')) {
-            return '';
-        }
-
-        $previousHasDecimalPart = str_contains($previousArgument, '.') || str_contains($previousArgument, 'e');
-
-        return str_starts_with($argument, '.') && $previousHasDecimalPart ? '' : ' ';
     }
 }

@@ -94,4 +94,19 @@ trait NumberLiteralTrait
 
         return 'e' . ('-' === $sign ? '-' : '') . $digits;
     }
+
+    /**
+     * @param string $previous the number written before, or an empty string at the start
+     * @param string $number   the number about to be written
+     */
+    private function numberSeparatorBefore(string $previous, string $number): string
+    {
+        if ('' === $previous || str_starts_with($number, '-')) {
+            return '';
+        }
+
+        $previousHasDecimalPart = str_contains($previous, '.') || str_contains($previous, 'e');
+
+        return str_starts_with($number, '.') && $previousHasDecimalPart ? '' : ' ';
+    }
 }

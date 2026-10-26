@@ -20,7 +20,7 @@ trait EntityReferenceTrait
 {
     private const string XML_ENCODING = 'UTF-8';
 
-    private const string INTERNAL_ENTITY_REGEX = '/<!ENTITY\s+([^\s%"\'>]+)\s+(["\'])(.*?)\2\s*>/s';
+    private const string INTERNAL_ENTITY_REGEX = '/<!--.*?-->(*SKIP)(*FAIL)|<\?.*?\?>(*SKIP)(*FAIL)|<!ENTITY\s+([^\s%"\'>]+)\s+(["\'])(.*?)\2\s*>/s';
 
     private const string ENTITY_REFERENCE_REGEX = '/&([^\s&;#]+);/';
 
@@ -70,7 +70,8 @@ trait EntityReferenceTrait
      */
     private function replaceEntityReference(\DOMNode $domNode, \DOMEntityReference $domEntityReference, array $entities): void
     {
-        $markup = \array_key_exists($domEntityReference->nodeName, $entities)
+        $known = \array_key_exists($domEntityReference->nodeName, $entities);
+        $markup = $known
             ? $this->resolveEntityText($this->decodeCharacterReferences($entities[$domEntityReference->nodeName]), $entities, 0)
             : '';
         $nodes = $domNode instanceof \DOMElement && $domNode->ownerDocument instanceof \DOMDocument && str_contains($markup, '<')
@@ -78,7 +79,10 @@ trait EntityReferenceTrait
             : [];
 
         if ([] === $nodes) {
-            $domNode->replaceChild(new \DOMText($domEntityReference->textContent), $domEntityReference);
+            $text = $known && !str_contains($markup, '<') && !$this->hasParsedContent($domEntityReference)
+                ? html_entity_decode($markup, \ENT_QUOTES | \ENT_XML1, self::XML_ENCODING)
+                : $domEntityReference->textContent;
+            $domNode->replaceChild(new \DOMText($text), $domEntityReference);
 
             return;
         }
@@ -88,6 +92,19 @@ trait EntityReferenceTrait
         }
 
         $domNode->removeChild($domEntityReference);
+    }
+
+    /**
+     * @param \DOMEntityReference $domEntityReference the reference to check
+     *
+     * @return bool true if libxml parsed the content of the referenced entity, which it skips when the entity is first
+     *              used in a namespace declaration
+     */
+    private function hasParsedContent(\DOMEntityReference $domEntityReference): bool
+    {
+        $entity = $domEntityReference->firstChild;
+
+        return !$entity instanceof \DOMEntity || $entity->hasChildNodes();
     }
 
     /**
@@ -161,7 +178,8 @@ trait EntityReferenceTrait
     /**
      * @param \DOMDocument $domDocument the document to read
      *
-     * @return array<string, string> the replacement text of each internal general entity, by name
+     * @return array<string, string> the replacement text of each internal general entity, by name, from the
+     *                               declarations outside comments and processing instructions
      */
     private function internalGeneralEntities(\DOMDocument $domDocument): array
     {

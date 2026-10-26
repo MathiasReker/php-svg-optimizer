@@ -24,26 +24,26 @@ use PHPUnit\Framework\TestCase;
 final class MetricsTest extends TestCase
 {
     #[Test]
-    public function getOriginalSizeInBytes(): void
+    public function reportsTheOriginalSize(): void
     {
         self::assertSame(1_000, (new Metrics(1_000, 800, 0.001))->getOriginalSizeInBytes());
     }
 
     #[Test]
-    public function getOptimizedSizeInBytes(): void
+    public function reportsTheOptimizedSize(): void
     {
         self::assertSame(800, (new Metrics(1_000, 800, 0.001))->getOptimizedSizeInBytes());
     }
 
     #[Test]
-    public function getDurationInSeconds(): void
+    public function reportsTheDuration(): void
     {
         self::assertSame(0.001, (new Metrics(1_000, 800, 0.001))->getDurationInSeconds());
     }
 
-    #[DataProvider('provideGetSavedSizeInBytesCases')]
+    #[DataProvider('provideReportsTheSavedSizeCases')]
     #[Test]
-    public function getSavedSizeInBytes(int $original, int $optimized, int $saved): void
+    public function reportsTheSavedSize(int $original, int $optimized, int $saved): void
     {
         self::assertSame($saved, (new Metrics($original, $optimized, 0.0))->getSavedSizeInBytes());
     }
@@ -51,7 +51,7 @@ final class MetricsTest extends TestCase
     /**
      * @return iterable<string, array{int, int, int}>
      */
-    public static function provideGetSavedSizeInBytesCases(): iterable
+    public static function provideReportsTheSavedSizeCases(): iterable
     {
         yield 'smaller' => [1_000, 800, 200];
 
@@ -60,9 +60,9 @@ final class MetricsTest extends TestCase
         yield 'larger' => [47, 52, -5];
     }
 
-    #[DataProvider('provideGetSavedPercentageCases')]
+    #[DataProvider('provideReportsTheSavedSizeAsAPercentageOfTheOriginalSizeCases')]
     #[Test]
-    public function getSavedPercentage(int $original, int $optimized, float $percentage): void
+    public function reportsTheSavedSizeAsAPercentageOfTheOriginalSize(int $original, int $optimized, float $percentage): void
     {
         self::assertEqualsWithDelta($percentage, (new Metrics($original, $optimized, 0.0))->getSavedPercentage(), 0.000_001);
     }
@@ -70,7 +70,7 @@ final class MetricsTest extends TestCase
     /**
      * @return iterable<string, array{int, int, float}>
      */
-    public static function provideGetSavedPercentageCases(): iterable
+    public static function provideReportsTheSavedSizeAsAPercentageOfTheOriginalSizeCases(): iterable
     {
         yield 'a fifth saved' => [1_000, 800, 20.0];
 
@@ -83,9 +83,9 @@ final class MetricsTest extends TestCase
         yield 'empty original' => [0, 0, 0.0];
     }
 
-    #[DataProvider('provideHasSavingsCases')]
+    #[DataProvider('provideTellsWhetherTheOptimizedSvgIsSmallerCases')]
     #[Test]
-    public function hasSavings(int $original, int $optimized, bool $hasSavings): void
+    public function tellsWhetherTheOptimizedSvgIsSmaller(int $original, int $optimized, bool $hasSavings): void
     {
         self::assertSame($hasSavings, (new Metrics($original, $optimized, 0.0))->hasSavings());
     }
@@ -93,7 +93,7 @@ final class MetricsTest extends TestCase
     /**
      * @return iterable<string, array{int, int, bool}>
      */
-    public static function provideHasSavingsCases(): iterable
+    public static function provideTellsWhetherTheOptimizedSvgIsSmallerCases(): iterable
     {
         yield 'smaller' => [10, 9, true];
 

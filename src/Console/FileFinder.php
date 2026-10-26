@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Console;
 
-use MathiasReker\PhpSvgOptimizer\Svg\Element;
-
 /**
  * @internal
  *
@@ -25,6 +23,8 @@ final readonly class FileFinder
     private const string CURRENT_DIRECTORY = '.';
 
     private const string SEPARATOR = '/';
+
+    private const string EXTENSION = 'svg';
 
     /**
      * @param list<string> $paths the files and directories to search, as the user wrote them
@@ -41,7 +41,7 @@ final readonly class FileFinder
         $files = [];
 
         foreach ($paths as $path) {
-            $files = [...$files, ...$this->findIn($path)];
+            array_push($files, ...$this->findIn($path));
         }
 
         return $files;
@@ -85,7 +85,7 @@ final readonly class FileFinder
         $files = [];
 
         foreach ($this->entries($directory) as $entry) {
-            $files = [...$files, ...$this->scanEntry($entry, $prefix)];
+            array_push($files, ...$this->scanEntry($entry, $prefix));
         }
 
         return $files;
@@ -143,6 +143,6 @@ final readonly class FileFinder
 
     private function hasSvgExtension(string $path): bool
     {
-        return 0 === strcasecmp(pathinfo($path, \PATHINFO_EXTENSION), Element::Svg->value);
+        return 0 === strcasecmp(pathinfo($path, \PATHINFO_EXTENSION), self::EXTENSION);
     }
 }

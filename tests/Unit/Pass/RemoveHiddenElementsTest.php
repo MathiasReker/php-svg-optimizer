@@ -22,6 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdReferenceTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Number\NumberLiteralTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Presentation\InheritanceTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Presentation\InheritedValueTrait;
@@ -39,13 +40,11 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveHiddenElements::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(IdReferenceTrait::class)]
+#[CoversTrait(IdTrait::class)]
 #[CoversTrait(InheritanceTrait::class)]
 #[CoversTrait(InheritedValueTrait::class)]
 #[CoversTrait(NamedColorTrait::class)]
@@ -53,15 +52,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(ScriptingTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveHiddenElementsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesHiddenElementsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesHiddenElements(string $input, string $expected): void
     {
         self::assertSame($expected, $this->optimizeContent($input));
     }
@@ -69,9 +71,9 @@ final class RemoveHiddenElementsTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesHiddenElementsCases')]
     #[Test]
-    public function applyIsIdempotent(string $input, string $expected): void
+    public function removesHiddenElementsIdempotently(string $input, string $expected): void
     {
         self::assertSame($expected, $this->optimizeContent($expected));
     }
@@ -79,7 +81,7 @@ final class RemoveHiddenElementsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesHiddenElementsCases(): iterable
     {
         yield 'Keeps an unpainted shape below an element with an xml:id' => [
             '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><g xml:id="g"><rect width="1" height="1" fill="none"/></g></svg>',

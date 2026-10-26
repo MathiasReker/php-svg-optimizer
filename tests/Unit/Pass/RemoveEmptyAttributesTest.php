@@ -21,6 +21,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\StyleSheetTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AnimationTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
@@ -30,32 +31,34 @@ use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
 #[CoversClass(RemoveEmptyAttributes::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
-#[CoversTrait(AsciiCaseTrait::class)]
-#[CoversTrait(DeclarationTrait::class)]
 #[CoversTrait(ElementTrait::class)]
+#[CoversTrait(IdTrait::class)]
 #[CoversTrait(SelectorTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
+#[UsesTrait(AsciiCaseTrait::class)]
+#[UsesTrait(DeclarationTrait::class)]
 final class RemoveEmptyAttributesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesEmptyAttributesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesEmptyAttributes(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveEmptyAttributes()]);
 
@@ -69,7 +72,7 @@ final class RemoveEmptyAttributesTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesEmptyAttributesCases(): iterable
     {
         yield 'Keeps empty crossorigin and autofocus' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><image crossorigin="" href="a.png"/><a autofocus="" class=""/></svg>',

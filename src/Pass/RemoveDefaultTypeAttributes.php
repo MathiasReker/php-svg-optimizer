@@ -24,8 +24,6 @@ final readonly class RemoveDefaultTypeAttributes implements PassInterface
 {
     private const string XPATH_TYPED_ELEMENTS = '//*[local-name()="%s" or local-name()="%s"][@%s]';
 
-    private const string XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
-
     private const string ASCII_WHITESPACE = " \t\n\f\r";
 
     private const string LANGUAGE_ATTRIBUTE = 'language';
@@ -94,7 +92,7 @@ final readonly class RemoveDefaultTypeAttributes implements PassInterface
      */
     private function isCandidate(\DOMElement $domElement): bool
     {
-        return \in_array($domElement->namespaceURI, [null, NamespaceUri::Svg->value, self::XHTML_NAMESPACE], true)
+        return \in_array($domElement->namespaceURI, [null, NamespaceUri::Svg->value, NamespaceUri::Xhtml->value], true)
             && !$domElement->hasAttribute(self::LANGUAGE_ATTRIBUTE);
     }
 

@@ -26,19 +26,20 @@ use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
 #[CoversClass(Serializer::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
-#[CoversTrait(EntityReferenceTrait::class)]
 #[CoversTrait(TextWhitespaceTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(RemoveUnsafeMarkup::class)]
+#[UsesClass(SvgValidator::class)]
+#[UsesTrait(EntityReferenceTrait::class)]
 final class SerializerTest extends TestCase
 {
     private Parser $parser;
@@ -274,7 +275,7 @@ final class SerializerTest extends TestCase
     }
 
     #[Test]
-    public function serializeValid(): void
+    public function serializesTheDocumentElement(): void
     {
         $domDocument = new \DOMDocument();
         $domDocument->loadXML('<root><child>Test</child></root>');

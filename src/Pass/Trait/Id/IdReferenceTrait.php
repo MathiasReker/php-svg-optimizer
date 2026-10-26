@@ -15,7 +15,6 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Attribute;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
-use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
 
 /**
  * @internal
@@ -25,6 +24,7 @@ use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
 trait IdReferenceTrait
 {
     use ElementTrait;
+    use IdTrait;
     use ScriptingTrait;
 
     private const string FRAGMENT_REFERENCE_REGEX = '/#((?:\\\[0-9a-fA-F]{1,6}[ \t\n\r\f]?|\\\.|[^\s#,;\'"()\[\]{}<>\\\])+)/';
@@ -74,26 +74,6 @@ trait IdReferenceTrait
         }
 
         return $referencedIds;
-    }
-
-    /**
-     * @param \DOMElement         $domElement    the element to check
-     * @param array<string, true> $referencedIds the referenced ids
-     *
-     * @return bool true if the `id` or `xml:id` of the element is referenced
-     */
-    private function isReferencedElement(\DOMElement $domElement, array $referencedIds): bool
-    {
-        foreach ([
-            $domElement->getAttribute(Attribute::Id->value),
-            $domElement->getAttributeNS(NamespaceUri::Xml->value, Attribute::Id->value),
-        ] as $id) {
-            if ('' !== $id && \array_key_exists($id, $referencedIds)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

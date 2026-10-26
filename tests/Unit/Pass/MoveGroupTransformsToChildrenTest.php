@@ -46,11 +46,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(MoveGroupTransformsToChildren::class)]
-#[CoversClass(FlattenGroups::class)]
-#[CoversClass(MoveCommonAttributesToGroups::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ElementTrait::class)]
@@ -66,16 +61,21 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(Attribute::class)]
 #[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(FlattenGroups::class)]
+#[UsesClass(MoveCommonAttributesToGroups::class)]
 #[UsesClass(NamespaceUri::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class MoveGroupTransformsToChildrenTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMovesGroupTransformsToChildrenCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function movesGroupTransformsToChildren(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new MoveGroupTransformsToChildren()]);
 
@@ -86,7 +86,7 @@ final class MoveGroupTransformsToChildrenTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideMovesGroupTransformsToChildrenCases(): iterable
     {
         yield 'Leaves the document untouched with an event handler' => [
             '<svg xmlns="http://www.w3.org/2000/svg" onload="f()"><g transform="scale(2)"><rect width="5" height="5"/></g></svg>',
@@ -124,16 +124,16 @@ final class MoveGroupTransformsToChildrenTest extends TestCase
         ];
     }
 
-    #[DataProvider('provideApplyToTheDocumentCases')]
+    #[DataProvider('provideMovesGroupTransformsToChildrenInTheDocumentCases')]
     #[Test]
-    public function applyToTheDocument(string $input, string $expected): void
+    public function movesGroupTransformsToChildrenInTheDocument(string $input, string $expected): void
     {
         self::assertSame($expected, $this->applyPass($input));
     }
 
-    #[DataProvider('provideApplyToTheDocumentCases')]
+    #[DataProvider('provideMovesGroupTransformsToChildrenInTheDocumentCases')]
     #[Test]
-    public function applyToTheDocumentIsIdempotent(string $input, string $expected): void
+    public function movesGroupTransformsToChildrenInTheDocumentIdempotently(string $input, string $expected): void
     {
         self::assertSame($expected, $this->applyPass($this->applyPass($input)));
     }
@@ -141,7 +141,7 @@ final class MoveGroupTransformsToChildrenTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyToTheDocumentCases(): iterable
+    public static function provideMovesGroupTransformsToChildrenInTheDocumentCases(): iterable
     {
         yield 'Prepends the group transform to every child' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1 2)" fill="red"><path d="M0 0h1"/><rect transform="rotate(45)"/><circle transform=" scale(2) "/></g></svg>',

@@ -62,7 +62,7 @@ final readonly class FileOptimizer
         $changed = $optimizationResult->getContent() !== $original;
 
         if ($changed && $this->writing) {
-            SvgFile::writeAtomically($path, $optimizationResult->getContent());
+            SvgFile::write($path, $optimizationResult->getContent());
         }
 
         $this->runSummary->add($metrics);

@@ -59,25 +59,10 @@ trait NumberListTrait
         $previous = '';
 
         foreach ($numbers as $number) {
-            $output .= ($compact ? $this->separatorBefore($previous, $number) : ('' === $previous ? '' : ' ')) . $number;
+            $output .= ($compact ? $this->numberSeparatorBefore($previous, $number) : ('' === $previous ? '' : ' ')) . $number;
             $previous = $number;
         }
 
         return $output;
-    }
-
-    /**
-     * @param string $previous the number written before, or an empty string at the start
-     * @param string $number   the number about to be written
-     */
-    private function separatorBefore(string $previous, string $number): string
-    {
-        if ('' === $previous || str_starts_with($number, '-')) {
-            return '';
-        }
-
-        $previousHasDecimalPart = str_contains($previous, '.') || str_contains($previous, 'e');
-
-        return str_starts_with($number, '.') && $previousHasDecimalPart ? '' : ' ';
     }
 }

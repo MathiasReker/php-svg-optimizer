@@ -13,6 +13,7 @@ namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Svg;
 
 use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -22,39 +23,30 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(NamespaceUri::class)]
 final class NamespaceUriTest extends TestCase
 {
+    #[DataProvider('provideEachNamespaceHasItsConventionalPrefixCases')]
     #[Test]
-    public function prefixReturnsSvgForSvgNamespace(): void
+    public function eachNamespaceHasItsConventionalPrefix(NamespaceUri $namespaceUri, string $prefix): void
     {
-        self::assertSame('svg', NamespaceUri::Svg->prefix());
+        self::assertSame($prefix, $namespaceUri->prefix());
     }
 
-    #[Test]
-    public function prefixReturnsXlinkForXlinkNamespace(): void
+    /**
+     * @return iterable<string, array{NamespaceUri, string}>
+     */
+    public static function provideEachNamespaceHasItsConventionalPrefixCases(): iterable
     {
-        self::assertSame('xlink', NamespaceUri::Xlink->prefix());
-    }
+        yield 'SVG' => [NamespaceUri::Svg, 'svg'];
 
-    #[Test]
-    public function prefixReturnsSodipodiForSodipodiNamespace(): void
-    {
-        self::assertSame('sodipodi', NamespaceUri::Sodipodi->prefix());
-    }
+        yield 'XLink' => [NamespaceUri::Xlink, 'xlink'];
 
-    #[Test]
-    public function prefixReturnsInkscapeForInkscapeNamespace(): void
-    {
-        self::assertSame('inkscape', NamespaceUri::Inkscape->prefix());
-    }
+        yield 'Sodipodi' => [NamespaceUri::Sodipodi, 'sodipodi'];
 
-    #[Test]
-    public function prefixReturnsXmlForXmlNamespace(): void
-    {
-        self::assertSame('xml', NamespaceUri::Xml->prefix());
-    }
+        yield 'Inkscape' => [NamespaceUri::Inkscape, 'inkscape'];
 
-    #[Test]
-    public function prefixReturnsEvForXmlEventsNamespace(): void
-    {
-        self::assertSame('ev', NamespaceUri::XmlEvents->prefix());
+        yield 'XML' => [NamespaceUri::Xml, 'xml'];
+
+        yield 'XML Events' => [NamespaceUri::XmlEvents, 'ev'];
+
+        yield 'XHTML' => [NamespaceUri::Xhtml, 'html'];
     }
 }

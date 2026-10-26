@@ -73,6 +73,30 @@ final class PrinterTest extends TestCase
     }
 
     #[Test]
+    public function printErrorEscapesControlCharactersSoAFileNameCannotDriveTheTerminal(): void
+    {
+        $this->createPrinter(false, false)->printError("\"a\033]0;x\007\u{9B}b.svg\" is not a valid SVG file.");
+
+        self::assertSame('Error: "a\x1B]0;x\x07\u{9B}b.svg" is not a valid SVG file.' . \PHP_EOL, $this->error->getContent());
+    }
+
+    #[Test]
+    public function printFileResultEscapesControlCharactersInThePath(): void
+    {
+        $this->createPrinter(false, false)->printFileResult("a\033[2Jb.svg", 10.0);
+
+        self::assertSame('a\x1B[2Jb.svg (10.00%)' . \PHP_EOL, $this->output->getContent());
+    }
+
+    #[Test]
+    public function printSkippedFileEscapesControlCharactersInThePath(): void
+    {
+        $this->createPrinter(false, false)->printSkippedFile("a\rb.svg");
+
+        self::assertSame('a\x0Db.svg (skipped, no gain)' . \PHP_EOL, $this->output->getContent());
+    }
+
+    #[Test]
     public function printNoticeWritesToTheOutputStream(): void
     {
         $this->createPrinter(false, false)->printNotice('No SVG files found.');

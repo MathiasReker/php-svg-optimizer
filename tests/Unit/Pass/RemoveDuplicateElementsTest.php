@@ -34,24 +34,24 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveDuplicateElements::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(DefinitionElementTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(IdTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveDuplicateElementsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesDuplicateElementsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesDuplicateElements(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveDuplicateElements()]);
 
@@ -62,7 +62,7 @@ final class RemoveDuplicateElementsTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesDuplicateElementsCases(): iterable
     {
         yield 'Keeps duplicate stops that contain animations' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><linearGradient><stop offset="0"><animate href="#r" attributeName="x" by="1" additive="sum"/></stop><stop offset="0"><animate href="#r" attributeName="x" by="1" additive="sum"/></stop></linearGradient><rect id="r"/></svg>',

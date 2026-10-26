@@ -25,29 +25,30 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementRenameTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Number\NumberLiteralTrait;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\UsesTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  */
-#[CoversClass(ConvertEllipsesToCircles::class)]
-#[CoversClass(ConvertShapesToPaths::class)]
-#[CoversClass(MinifyNumberLists::class)]
-#[CoversClass(MinifyNumericValues::class)]
-#[CoversClass(MinifyPathData::class)]
-#[CoversClass(MinifyTransforms::class)]
-#[CoversTrait(AnimationTrait::class)]
-#[CoversTrait(AsciiCaseTrait::class)]
-#[CoversTrait(AttributeNodeTrait::class)]
-#[CoversTrait(ElementRenameTrait::class)]
-#[CoversTrait(ElementTrait::class)]
 #[CoversTrait(NumberLiteralTrait::class)]
-#[CoversTrait(ScriptingTrait::class)]
-#[CoversTrait(StyleSheetTrait::class)]
+#[UsesClass(ConvertEllipsesToCircles::class)]
+#[UsesClass(ConvertShapesToPaths::class)]
+#[UsesClass(MinifyNumberLists::class)]
+#[UsesClass(MinifyNumericValues::class)]
+#[UsesClass(MinifyPathData::class)]
+#[UsesClass(MinifyTransforms::class)]
+#[UsesTrait(AnimationTrait::class)]
+#[UsesTrait(AsciiCaseTrait::class)]
+#[UsesTrait(AttributeNodeTrait::class)]
+#[UsesTrait(ElementRenameTrait::class)]
+#[UsesTrait(ElementTrait::class)]
+#[UsesTrait(ScriptingTrait::class)]
+#[UsesTrait(StyleSheetTrait::class)]
 final class NumberLiteralTraitTest extends TestCase
 {
     use NumberLiteralTrait;

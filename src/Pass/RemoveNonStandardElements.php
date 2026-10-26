@@ -42,7 +42,7 @@ final readonly class RemoveNonStandardElements implements PassInterface
         $allowed = $this->allowedElementNames();
         $documentNamespace = $domDocument->documentElement?->namespaceURI;
 
-        foreach (iterator_to_array($domDocument->getElementsByTagName('*'), false) as $domElement) {
+        foreach ($this->elementsByQualifiedName($domDocument, '*') as $domElement) {
             $parent = $domElement->parentNode;
 
             if ($domElement->isConnected

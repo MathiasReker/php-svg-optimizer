@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Tests\Unit\Xml;
 
+use MathiasReker\PhpSvgOptimizer\Tests\Double\LinearTimeTrait;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\RegexFailureTrait;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\TemporaryDirectoryTrait;
 use MathiasReker\PhpSvgOptimizer\Xml\EntityReferenceTrait;
 use MathiasReker\PhpSvgOptimizer\Xml\ParseException;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
@@ -32,6 +35,10 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(Serializer::class)]
 final class ParserTest extends TestCase
 {
+    use LinearTimeTrait;
+    use RegexFailureTrait;
+    use TemporaryDirectoryTrait;
+
     private Parser $parser;
 
     private Serializer $serializer;
@@ -40,7 +47,7 @@ final class ParserTest extends TestCase
      * @throws ParseException
      */
     #[Test]
-    public function parseValid(): void
+    public function parsesAWellFormedDocument(): void
     {
         $content = '<root><child>Test</child></root>';
         $domDocument = $this->parser->parse($content);
@@ -71,7 +78,7 @@ final class ParserTest extends TestCase
      * @throws ParseException
      */
     #[Test]
-    public function parseInvalidThrowsException(): void
+    public function rejectsADocumentThatIsNotWellFormedWithTheReason(): void
     {
         $this->expectException(ParseException::class);
         $this->expectExceptionMessage('Failed to load DOMDocument: Opening and ending tag mismatch: unclosed line 1 and root on line 1, column 24.');
@@ -160,25 +167,20 @@ final class ParserTest extends TestCase
     #[Test]
     public function parseDoesNotLoadExternalDeclarations(): void
     {
-        $dtdPath = __DIR__ . '/external.dtd';
-        $textPath = __DIR__ . '/external.txt';
+        $directory = $this->createTemporaryDirectory();
+        $dtdPath = $directory . '/external.dtd';
+        $textPath = $directory . '/external.txt';
+        file_put_contents($dtdPath, '<!ENTITY x "dtd">');
+        file_put_contents($textPath, 'file');
+        $content = \sprintf(
+            '<!DOCTYPE svg SYSTEM "%s" [<!ENTITY ext SYSTEM "%s">]><svg xmlns="http://www.w3.org/2000/svg"><text>a&x;&ext;b</text></svg>',
+            str_replace('\\', '/', $dtdPath),
+            str_replace('\\', '/', $textPath),
+        );
 
-        try {
-            file_put_contents($dtdPath, '<!ENTITY x "dtd">');
-            file_put_contents($textPath, 'file');
-            $content = \sprintf(
-                '<!DOCTYPE svg SYSTEM "%s" [<!ENTITY ext SYSTEM "%s">]><svg xmlns="http://www.w3.org/2000/svg"><text>a&x;&ext;b</text></svg>',
-                str_replace('\\', '/', $dtdPath),
-                str_replace('\\', '/', $textPath),
-            );
+        $domDocument = $this->parser->parse($content);
 
-            $domDocument = $this->parser->parse($content);
-
-            self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><text>ab</text></svg>', $this->serializer->serialize($domDocument));
-        } finally {
-            unlink($dtdPath);
-            unlink($textPath);
-        }
+        self::assertSame('<svg xmlns="http://www.w3.org/2000/svg"><text>ab</text></svg>', $this->serializer->serialize($domDocument));
     }
 
     /**
@@ -334,6 +336,89 @@ final class ParserTest extends TestCase
     }
 
     /**
+     * @throws ParseException
+     */
+    #[Test]
+    public function parseExpandsAMarkupEntityIntoTheSvgNamespaceBesideANamespaceDeclarationEntity(): void
+    {
+        $domDocument = $this->parser->parse(
+            '<!DOCTYPE svg [<!ENTITY ns "http://www.w3.org/2000/svg"><!ENTITY m "<rect width=\'1\'/>">]><svg xmlns="&ns;"><g>&m;</g><text>&ns;</text></svg>',
+        );
+        $rect = $domDocument->getElementsByTagNameNS('http://www.w3.org/2000/svg', 'rect')->item(0);
+
+        self::assertSame('1', $rect?->getAttribute('width'));
+        self::assertSame('http://www.w3.org/2000/svg', $domDocument->documentElement?->textContent);
+    }
+
+    /**
+     * @param non-empty-string $content
+     *
+     * @throws ParseException
+     */
+    #[DataProvider('provideParseIgnoresEntityDeclarationsInsideCommentsAndProcessingInstructionsCases')]
+    #[Test]
+    public function parseIgnoresEntityDeclarationsInsideCommentsAndProcessingInstructions(string $content, string $expected): void
+    {
+        self::assertSame($expected, $this->serializer->serialize($this->parser->parse($content)));
+    }
+
+    /**
+     * @return iterable<string, array{non-empty-string, string}>
+     */
+    public static function provideParseIgnoresEntityDeclarationsInsideCommentsAndProcessingInstructionsCases(): iterable
+    {
+        yield 'declaration inside a comment after the real one' => [
+            '<!DOCTYPE svg [<!ENTITY a "<g id=\'real\'/>"><!-- <!ENTITY a "<g id=\'commented\'/>"> -->]><svg xmlns="http://www.w3.org/2000/svg">&a;</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g id="real"/></svg>',
+        ];
+
+        yield 'declaration inside a processing instruction after the real one' => [
+            '<!DOCTYPE svg [<!ENTITY a "<g id=\'real\'/>"><?pi <!ENTITY a "<g id=\'instruction\'/>"> ?>]><svg xmlns="http://www.w3.org/2000/svg">&a;</svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g id="real"/></svg>',
+        ];
+    }
+
+    /**
+     * @param non-empty-string $content
+     *
+     * @throws ParseException
+     */
+    #[DataProvider('provideParseKeepsTheTextOfEntitiesAlsoUsedAsNamespaceUrisCases')]
+    #[Test]
+    public function parseKeepsTheTextOfEntitiesAlsoUsedAsNamespaceUris(string $content, string $expected): void
+    {
+        self::assertSame($expected, $this->serializer->serialize($this->parser->parse($content)));
+    }
+
+    /**
+     * @return iterable<string, array{non-empty-string, string}>
+     */
+    public static function provideParseKeepsTheTextOfEntitiesAlsoUsedAsNamespaceUrisCases(): iterable
+    {
+        $doctype = '<!DOCTYPE svg [<!ENTITY ns "http://www.w3.org/2000/svg"><!ENTITY a "x &amp; y"><!ENTITY m "<rect width=\'1\'/>">]>';
+
+        yield 'entity in a namespace declaration and in text' => [
+            $doctype . '<svg xmlns="&ns;"><text>abc</text><text>&ns;</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>abc</text><text>http://www.w3.org/2000/svg</text></svg>',
+        ];
+
+        yield 'entity in a namespace declaration, in an attribute and in text' => [
+            $doctype . '<svg xmlns="&ns;"><rect id="&ns;"/><text>&ns;</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><rect id="http://www.w3.org/2000/svg"/><text>http://www.w3.org/2000/svg</text></svg>',
+        ];
+
+        yield 'entity in a namespace declaration and in text of nested elements' => [
+            $doctype . '<svg xmlns="&ns;"><g><g><text>x &ns; y</text></g></g></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><g><g><text>x http://www.w3.org/2000/svg y</text></g></g></svg>',
+        ];
+
+        yield 'entity with a predefined entity beside a namespace declaration entity' => [
+            $doctype . '<svg xmlns="&ns;"><text>&a;</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>x &amp; y</text></svg>',
+        ];
+    }
+
+    /**
      * @param non-empty-string $content
      *
      * @throws ParseException
@@ -465,6 +550,19 @@ final class ParserTest extends TestCase
             '<!DOCTYPE svg [<!ENTITY a "aa"><!ENTITY b "&a;&amp;&a;">]><svg xmlns="http://www.w3.org/2000/svg"><text>&b;&b;</text></svg>',
             10,
         ];
+    }
+
+    /**
+     * @throws ParseException
+     */
+    #[Test]
+    public function parsesTextWithALongRunOfLineBreaksInLinearTimeWithoutJit(): void
+    {
+        self::assertLinearTime(
+            static fn (int $size): string => '<svg xmlns="http://www.w3.org/2000/svg"><text>x' . str_repeat("\n", $size) . 'x</text></svg>',
+            static fn (string $content): mixed => self::withoutJit(static fn (): \DOMDocument => (new Parser())->parse($content)),
+            5_000,
+        );
     }
 
     #[\Override]

@@ -32,22 +32,22 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveWidthHeightAttributes::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(NumberListTrait::class)]
 #[CoversTrait(NumberLiteralTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveWidthHeightAttributesTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesWidthHeightAttributesCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesWidthHeightAttributes(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new RemoveWidthHeightAttributes()]);
 
@@ -59,7 +59,7 @@ final class RemoveWidthHeightAttributesTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesWidthHeightAttributesCases(): iterable
     {
         yield 'Removes the size of a root with a view box written without separators' => [
             '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 400.5.5e3"/>',

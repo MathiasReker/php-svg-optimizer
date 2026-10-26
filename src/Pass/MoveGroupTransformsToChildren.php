@@ -155,23 +155,7 @@ final readonly class MoveGroupTransformsToChildren implements RevertIfLargerPass
             && $this->isEmptyOrValidTransformList($child->getAttribute(Attribute::Transform->value))
             && !$this->isReferencedElement($child, $referencedIds)
             && !$this->dependsOnParentTransform($group, $child)
-            && !$this->hasAnimationChild($child);
-    }
-
-    /**
-     * @param \DOMElement $domElement the element to check
-     */
-    private function hasAnimationChild(\DOMElement $domElement): bool
-    {
-        foreach ($domElement->childNodes as $childNode) {
-            if ($childNode instanceof \DOMElement
-                && $this->isAnimationElement($childNode)
-            ) {
-                return true;
-            }
-        }
-
-        return false;
+            && !$this->hasChild($child, $this->isAnimationElement(...));
     }
 
     /**

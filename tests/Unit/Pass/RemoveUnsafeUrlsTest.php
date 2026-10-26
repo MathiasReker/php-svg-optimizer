@@ -22,12 +22,15 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Security\DangerousUrlTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Security\UnsafeAttributeTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Attribute;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\LinearTimeTrait;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\RegexFailureTrait;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
 use MathiasReker\PhpSvgOptimizer\Xml\SvgValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -38,26 +41,29 @@ use PHPUnit\Framework\TestCase;
  * @no-named-arguments
  */
 #[CoversClass(RemoveUnsafeUrls::class)]
-#[CoversClass(Attribute::class)]
-#[CoversClass(Element::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(DangerousUrlTrait::class)]
 #[CoversTrait(ElementNameTrait::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(UnsafeAttributeTrait::class)]
+#[UsesClass(Attribute::class)]
+#[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveUnsafeUrlsTest extends TestCase
 {
+    use LinearTimeTrait;
+    use RegexFailureTrait;
+
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesUnsafeUrlsCases')]
     #[Test]
-    public function apply(string $input, string $expectedSvg): void
+    public function removesUnsafeUrls(string $input, string $expectedSvg): void
     {
         $pipeline = new Pipeline([new RemoveUnsafeUrls()]);
 
@@ -67,7 +73,7 @@ final class RemoveUnsafeUrlsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesUnsafeUrlsCases(): iterable
     {
         yield 'Removes a javascript: link and keeps the element' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><a href="javascript:alert(1)"><text>x</text></a></svg>',
@@ -163,5 +169,52 @@ final class RemoveUnsafeUrlsTest extends TestCase
             '<svg xmlns="http://www.w3.org/2000/svg"><?pi x?><script>alert(1)</script><rect onclick="x()" style="behavior:url(a.htc)"/><foreignObject/><style>@import url(a.css);</style><!-- <b> --></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg"><?pi x?><script>alert(1)</script><rect onclick="x()" style="behavior:url(a.htc)"/><foreignObject/><style>@import url(a.css);</style><!-- <b> --></svg>',
         ];
+    }
+
+    /**
+     * @param non-empty-string $content
+     */
+    #[DataProvider('provideRemovesDangerousUrlsWhenRegularExpressionsFailCases')]
+    #[RunInSeparateProcess]
+    #[Test]
+    public function removesDangerousUrlsWhenRegularExpressionsFail(string $content, string $dangerousValue): void
+    {
+        $domDocument = new \DOMDocument();
+        $domDocument->loadXML($content);
+
+        $this->withFailingRegularExpressions(static fn () => (new RemoveUnsafeUrls())->apply($domDocument));
+
+        self::assertStringNotContainsString($dangerousValue, (string) $domDocument->saveXML());
+    }
+
+    /**
+     * @return iterable<string, array{non-empty-string, string}>
+     */
+    public static function provideRemovesDangerousUrlsWhenRegularExpressionsFailCases(): iterable
+    {
+        yield 'network-path reference in href' => ['<svg xmlns="http://www.w3.org/2000/svg"><a href="//evil.example/x"><text>x</text></a></svg>', '//evil.example'];
+
+        yield 'javascript URL in a paint' => ['<svg xmlns="http://www.w3.org/2000/svg"><rect fill="url(javascript:alert(1))"/></svg>', 'javascript'];
+
+        yield 'javascript URL behind a comment' => ['<svg xmlns="http://www.w3.org/2000/svg"><rect fill="url(/* x */javascript:alert(1))"/></svg>', 'javascript'];
+
+        yield 'javascript URL with an encoded tab' => ['<svg xmlns="http://www.w3.org/2000/svg"><rect filter="url(&quot;java&#9;script:alert(1)&quot;)"/></svg>', 'script:'];
+    }
+
+    #[Test]
+    public function checksAnAttributeWithManyUnclosedCommentsInLinearTimeWithoutJit(): void
+    {
+        self::assertLinearTime(
+            static function (int $size): \DOMDocument {
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><rect title="' . str_repeat('/* ', $size) . '"/></svg>');
+
+                return $domDocument;
+            },
+            static function (\DOMDocument $domDocument): void {
+                self::withoutJit(static fn () => (new RemoveUnsafeUrls())->apply($domDocument));
+            },
+            1_000,
+        );
     }
 }

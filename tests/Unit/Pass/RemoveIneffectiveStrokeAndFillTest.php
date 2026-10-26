@@ -25,6 +25,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Number\NumberLiteralTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Presentation\IneffectiveAttributeTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Presentation\InheritanceTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Presentation\InheritedValueTrait;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\LinearTimeTrait;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
 use MathiasReker\PhpSvgOptimizer\Xml\SvgValidator;
@@ -39,9 +40,6 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(RemoveIneffectiveStrokeAndFill::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(ElementTrait::class)]
@@ -53,15 +51,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(NumberLiteralTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class RemoveIneffectiveStrokeAndFillTest extends TestCase
 {
+    use LinearTimeTrait;
+
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideRemovesIneffectiveStrokeAndFillCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function removesIneffectiveStrokeAndFill(string $input, string $expected): void
     {
         self::assertSame($expected, $this->optimizeContent($input));
         self::assertSame($expected, $this->optimizeContent($expected));
@@ -70,7 +73,7 @@ final class RemoveIneffectiveStrokeAndFillTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideRemovesIneffectiveStrokeAndFillCases(): iterable
     {
         yield 'Leaves documents with a style element untouched' => [
             '<svg xmlns="http://www.w3.org/2000/svg" stroke="none"><style>path{stroke:red}</style><path d="M0 0h1" stroke-width="2"/></svg>',
@@ -405,5 +408,22 @@ final class RemoveIneffectiveStrokeAndFillTest extends TestCase
         $pipeline = new Pipeline([new RemoveIneffectiveStrokeAndFill()]);
 
         return $pipeline->run($content);
+    }
+
+    #[Test]
+    public function checksALongStrokeWidthInLinearTime(): void
+    {
+        self::assertLinearTime(
+            static function (int $size): \DOMDocument {
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1" stroke="red" stroke-width="' . str_repeat('0', $size) . '!"/></svg>');
+
+                return $domDocument;
+            },
+            static function (\DOMDocument $domDocument): void {
+                (new RemoveIneffectiveStrokeAndFill())->apply($domDocument);
+            },
+            10_000,
+        );
     }
 }

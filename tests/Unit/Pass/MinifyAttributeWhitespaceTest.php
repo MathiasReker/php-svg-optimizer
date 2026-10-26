@@ -16,9 +16,13 @@ use MathiasReker\PhpSvgOptimizer\Pass\ExecutionOrder;
 use MathiasReker\PhpSvgOptimizer\Pass\MinifyAttributeWhitespace;
 use MathiasReker\PhpSvgOptimizer\Pass\Pipeline;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Css\StyleSheetTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AnimationTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AsciiCaseTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AttributeNodeTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
+use MathiasReker\PhpSvgOptimizer\Tests\Double\LinearTimeTrait;
 use MathiasReker\PhpSvgOptimizer\Tests\Double\RegexFailureTrait;
 use MathiasReker\PhpSvgOptimizer\Xml\Parser;
 use MathiasReker\PhpSvgOptimizer\Xml\Serializer;
@@ -35,25 +39,29 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(MinifyAttributeWhitespace::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
+#[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(AttributeNodeTrait::class)]
 #[CoversTrait(ElementTrait::class)]
+#[CoversTrait(IdTrait::class)]
+#[CoversTrait(ScriptingTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class MinifyAttributeWhitespaceTest extends TestCase
 {
+    use LinearTimeTrait;
     use RegexFailureTrait;
 
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMinifiesAttributeWhitespaceCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function minifiesAttributeWhitespace(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new MinifyAttributeWhitespace()]);
 
@@ -67,7 +75,7 @@ final class MinifyAttributeWhitespaceTest extends TestCase
     /**
      * @return iterable<array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideMinifiesAttributeWhitespaceCases(): iterable
     {
         yield 'Trims attributes whose names hold characters outside the basic multilingual plane, keeping ampersands' => [
             "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:x\u{1F600}=\"urn:x\"><rect x\u{1F600}:a\u{1F600}=\" a &amp; b \" b\u{1F600}=\"  c  \"/></svg>",
@@ -596,5 +604,22 @@ final class MinifyAttributeWhitespaceTest extends TestCase
         $this->withFailingRegularExpressions(static fn () => (new MinifyAttributeWhitespace())->apply($domDocument));
 
         self::assertSame('fill : red ;  font-family: "a  b"', $domDocument->documentElement?->firstElementChild?->getAttribute('style'));
+    }
+
+    #[Test]
+    public function minifiesManyAttributesInLinearTime(): void
+    {
+        self::assertLinearTime(
+            static function (int $size): \DOMDocument {
+                $domDocument = new \DOMDocument();
+                $domDocument->loadXML('<svg xmlns="http://www.w3.org/2000/svg">' . str_repeat('<rect width=" 1 " height=" 1 "/>', $size) . '</svg>');
+
+                return $domDocument;
+            },
+            static function (\DOMDocument $domDocument): void {
+                (new MinifyAttributeWhitespace())->apply($domDocument);
+            },
+            2_000,
+        );
     }
 }

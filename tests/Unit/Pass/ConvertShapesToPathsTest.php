@@ -22,6 +22,7 @@ use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\AttributeNodeTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementRenameTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Number\NumberListTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Number\NumberLiteralTrait;
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Path\PathDataSerializerTrait;
@@ -40,14 +41,12 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(ConvertShapesToPaths::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(AnimationTrait::class)]
 #[CoversTrait(AsciiCaseTrait::class)]
 #[CoversTrait(AttributeNodeTrait::class)]
 #[CoversTrait(ElementRenameTrait::class)]
 #[CoversTrait(ElementTrait::class)]
+#[CoversTrait(IdTrait::class)]
 #[CoversTrait(NumberListTrait::class)]
 #[CoversTrait(NumberLiteralTrait::class)]
 #[CoversTrait(PathDataSerializerTrait::class)]
@@ -55,15 +54,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(Element::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class ConvertShapesToPathsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideConvertsShapesToPathsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function convertsShapesToPaths(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new ConvertShapesToPaths()]);
 
@@ -74,7 +76,7 @@ final class ConvertShapesToPathsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideConvertsShapesToPathsCases(): iterable
     {
         yield 'Keeps attributes whose names hold characters outside the basic multilingual plane' => [
             "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:x\u{1F600}=\"urn:x\"><rect width=\"5\" height=\"5\" x\u{1F600}:a\u{1F600}=\"1\" b\u{1F600}=\"2\"/></svg>",
@@ -334,9 +336,9 @@ final class ConvertShapesToPathsTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyIsIdempotentCases')]
+    #[DataProvider('provideConvertsShapesToPathsIdempotentlyCases')]
     #[Test]
-    public function applyIsIdempotent(string $optimized): void
+    public function convertsShapesToPathsIdempotently(string $optimized): void
     {
         $pipeline = new Pipeline([new ConvertShapesToPaths()]);
 
@@ -346,9 +348,9 @@ final class ConvertShapesToPathsTest extends TestCase
     /**
      * @return iterable<string, array{string}>
      */
-    public static function provideApplyIsIdempotentCases(): iterable
+    public static function provideConvertsShapesToPathsIdempotentlyCases(): iterable
     {
-        foreach (self::provideApplyCases() as $name => [, $expected]) {
+        foreach (self::provideConvertsShapesToPathsCases() as $name => [, $expected]) {
             yield $name => [$expected];
         }
     }

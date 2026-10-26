@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace MathiasReker\PhpSvgOptimizer\Pass;
 
 use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ElementTrait;
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom\ScriptingTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Attribute;
 use MathiasReker\PhpSvgOptimizer\Svg\ElementAttributeMap;
 use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
@@ -24,8 +25,7 @@ use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
 final readonly class FixAttributeNames implements PassInterface
 {
     use ElementTrait;
-
-    private const string EVENT_HANDLER_PREFIX = 'on';
+    use ScriptingTrait;
 
     /**
      * @param \DOMDocument $domDocument the DOM document to optimize
@@ -89,7 +89,7 @@ final readonly class FixAttributeNames implements PassInterface
         $canonicalName = $lookup[$this->normalizeName($domAttr->name)] ?? $domAttr->name;
 
         if ($canonicalName === $domAttr->name
-            || str_starts_with($canonicalName, self::EVENT_HANDLER_PREFIX)
+            || $this->isEventHandlerName($canonicalName)
             || !$this->mayRename($domElement, $domAttr)
         ) {
             return '';

@@ -33,23 +33,23 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(MinifyNumberLists::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(NumberListTrait::class)]
 #[CoversTrait(NumberLiteralTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class MinifyNumberListsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMinifiesNumberListsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function minifiesNumberLists(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new MinifyNumberLists()]);
 
@@ -60,7 +60,7 @@ final class MinifyNumberListsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideMinifiesNumberListsCases(): iterable
     {
         yield 'Leaves the document untouched when a style sheet selects attribute values' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>[points="0, 0"]{fill:red}</style><polygon points="0, 0"/></svg>',
@@ -266,9 +266,9 @@ final class MinifyNumberListsTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyIsIdempotentCases')]
+    #[DataProvider('provideMinifiesNumberListsIdempotentlyCases')]
     #[Test]
-    public function applyIsIdempotent(string $optimized): void
+    public function minifiesNumberListsIdempotently(string $optimized): void
     {
         $pipeline = new Pipeline([new MinifyNumberLists()]);
 
@@ -278,9 +278,9 @@ final class MinifyNumberListsTest extends TestCase
     /**
      * @return iterable<string, array{string}>
      */
-    public static function provideApplyIsIdempotentCases(): iterable
+    public static function provideMinifiesNumberListsIdempotentlyCases(): iterable
     {
-        foreach (self::provideApplyCases() as $name => [, $expected]) {
+        foreach (self::provideMinifiesNumberListsCases() as $name => [, $expected]) {
             yield $name => [$expected];
         }
     }

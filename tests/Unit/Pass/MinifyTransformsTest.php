@@ -34,24 +34,24 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(MinifyTransforms::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Pipeline::class)]
-#[CoversClass(SvgValidator::class)]
 #[CoversTrait(ElementTrait::class)]
 #[CoversTrait(NumberListTrait::class)]
 #[CoversTrait(NumberLiteralTrait::class)]
 #[CoversTrait(StyleSheetTrait::class)]
 #[CoversTrait(TransformListTrait::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
+#[UsesClass(Pipeline::class)]
 #[UsesClass(Serializer::class)]
+#[UsesClass(SvgValidator::class)]
 final class MinifyTransformsTest extends TestCase
 {
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyCases')]
+    #[DataProvider('provideMinifiesTransformsCases')]
     #[Test]
-    public function apply(string $input, string $expected): void
+    public function minifiesTransforms(string $input, string $expected): void
     {
         $pipeline = new Pipeline([new MinifyTransforms()]);
 
@@ -62,7 +62,7 @@ final class MinifyTransformsTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function provideApplyCases(): iterable
+    public static function provideMinifiesTransformsCases(): iterable
     {
         yield 'Leaves the document untouched when a style sheet selects attributes' => [
             '<svg xmlns="http://www.w3.org/2000/svg"><style>[transform]{fill:red}</style><rect transform="translate(0)"/></svg>',
@@ -790,9 +790,9 @@ final class MinifyTransformsTest extends TestCase
     /**
      * @throws InvalidSvgException
      */
-    #[DataProvider('provideApplyIsIdempotentCases')]
+    #[DataProvider('provideMinifiesTransformsIdempotentlyCases')]
     #[Test]
-    public function applyIsIdempotent(string $optimized): void
+    public function minifiesTransformsIdempotently(string $optimized): void
     {
         $pipeline = new Pipeline([new MinifyTransforms()]);
 
@@ -802,9 +802,9 @@ final class MinifyTransformsTest extends TestCase
     /**
      * @return iterable<string, array{string}>
      */
-    public static function provideApplyIsIdempotentCases(): iterable
+    public static function provideMinifiesTransformsIdempotentlyCases(): iterable
     {
-        foreach (self::provideApplyCases() as $name => [, $expected]) {
+        foreach (self::provideMinifiesTransformsCases() as $name => [, $expected]) {
             yield $name => [$expected];
         }
     }

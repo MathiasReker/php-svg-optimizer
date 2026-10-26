@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace MathiasReker\PhpSvgOptimizer\Pass\Trait\Dom;
 
+use MathiasReker\PhpSvgOptimizer\Pass\Trait\Id\IdTrait;
 use MathiasReker\PhpSvgOptimizer\Svg\Attribute;
 use MathiasReker\PhpSvgOptimizer\Svg\Element;
 use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
@@ -22,6 +23,8 @@ use MathiasReker\PhpSvgOptimizer\Svg\NamespaceUri;
  */
 trait AnimationTrait
 {
+    use IdTrait;
+
     private const string XPATH_ANIMATED_ATTRIBUTE_NAMES = '//@attributeName';
 
     /**
@@ -67,16 +70,7 @@ trait AnimationTrait
                 continue;
             }
 
-            foreach ([
-                $element->getAttribute(Attribute::Href->value),
-                $element->getAttributeNS(NamespaceUri::Xlink->value, Attribute::Href->value),
-            ] as $href) {
-                $href = trim($href);
-
-                if (str_starts_with($href, '#')) {
-                    $ids[mb_substr($href, 1)] = true;
-                }
-            }
+            $ids += $this->hrefTargetIds($element);
         }
 
         return $ids;
@@ -93,17 +87,34 @@ trait AnimationTrait
         $elements = [];
 
         foreach ($domDocument->getElementsByTagName('*') as $domElement) {
-            $ids = array_flip([
-                $domElement->getAttribute(Attribute::Id->value),
-                $domElement->getAttributeNS(NamespaceUri::Xml->value, Attribute::Id->value),
-            ]);
-            unset($ids['']);
-
-            if ([] !== array_intersect_key($ids, $targetIds)) {
+            if ($this->isReferencedElement($domElement, $targetIds)) {
                 $elements[] = $domElement;
             }
         }
 
         return $elements;
+    }
+
+    /**
+     * @param \DOMElement $domElement the referencing element
+     *
+     * @return array<string, true> the ids its `href` and `xlink:href` point to
+     */
+    private function hrefTargetIds(\DOMElement $domElement): array
+    {
+        $ids = [];
+
+        foreach ([
+            $domElement->getAttribute(Attribute::Href->value),
+            $domElement->getAttributeNS(NamespaceUri::Xlink->value, Attribute::Href->value),
+        ] as $href) {
+            $href = trim($href);
+
+            if (str_starts_with($href, '#')) {
+                $ids[mb_substr($href, 1)] = true;
+            }
+        }
+
+        return $ids;
     }
 }

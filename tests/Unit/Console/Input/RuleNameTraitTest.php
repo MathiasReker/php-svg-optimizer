@@ -16,7 +16,6 @@ use MathiasReker\PhpSvgOptimizer\Console\Input\RuleNameTrait;
 use MathiasReker\PhpSvgOptimizer\Console\Input\SuggestionTrait;
 use MathiasReker\PhpSvgOptimizer\Rule;
 use MathiasReker\PhpSvgOptimizer\RuleSet;
-use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -26,9 +25,9 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
-#[CoversClass(CommandLineParser::class)]
 #[CoversTrait(RuleNameTrait::class)]
 #[CoversTrait(SuggestionTrait::class)]
+#[UsesClass(CommandLineParser::class)]
 #[UsesClass(Rule::class)]
 #[UsesClass(RuleSet::class)]
 final class RuleNameTraitTest extends TestCase

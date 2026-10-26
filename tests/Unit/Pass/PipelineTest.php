@@ -37,33 +37,18 @@ use PHPUnit\Framework\TestCase;
  * @internal
  */
 #[CoversClass(Pipeline::class)]
-#[CoversClass(Parser::class)]
-#[CoversClass(Serializer::class)]
-#[CoversClass(SvgValidator::class)]
 #[UsesClass(ConvertInlineStylesToAttributes::class)]
 #[UsesClass(ExecutionOrder::class)]
+#[UsesClass(Parser::class)]
 #[UsesClass(RemoveComments::class)]
+#[UsesClass(Serializer::class)]
 #[UsesClass(SortAttributes::class)]
+#[UsesClass(SvgValidator::class)]
 #[UsesTrait(AttributeNodeTrait::class)]
 #[UsesTrait(ElementTrait::class)]
 #[UsesTrait(StyleSheetTrait::class)]
 final class PipelineTest extends TestCase
 {
-    #[Test]
-    public function getPassesListsThePassesInExecutionOrder(): void
-    {
-        $sortAttributes = new SortAttributes();
-        $removeComments = new RemoveComments();
-
-        self::assertSame([$removeComments, $sortAttributes], (new Pipeline([$sortAttributes, $removeComments]))->getPasses());
-    }
-
-    #[Test]
-    public function getPassesIsEmptyWithoutPasses(): void
-    {
-        self::assertSame([], (new Pipeline([]))->getPasses());
-    }
-
     /**
      * @throws InvalidSvgException
      */
@@ -131,6 +116,62 @@ final class PipelineTest extends TestCase
         yield 'svg in the wrong namespace' => ['<svg xmlns="urn:x"/>'];
 
         yield 'plain text' => ['not xml'];
+
+        yield 'unclosed element' => ['<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"></svg>'];
+
+        yield 'unclosed root after a comment' => ['<svg xmlns="http://www.w3.org/2000/svg"><!-- comment -->'];
+
+        yield 'comment before an unclosed root' => ['<!-- comment --><svg xmlns="http://www.w3.org/2000/svg">'];
+
+        yield 'non-svg root behind a doctype that declares svg markup' => ['<!DOCTYPE html [<!ENTITY z "<svg>">]><html xmlns="http://www.w3.org/1999/xhtml"/>'];
+
+        yield 'two root elements' => ['<svg xmlns="http://www.w3.org/2000/svg"/><svg xmlns="http://www.w3.org/2000/svg"/>'];
+
+        yield 'text before the root' => ['junk<svg xmlns="http://www.w3.org/2000/svg"/>'];
+
+        yield 'invalid UTF-8' => ["<svg xmlns=\"http://www.w3.org/2000/svg\"><text>\xFF</text></svg>"];
+
+        yield 'NUL byte' => ["\0"];
+
+        yield 'undeclared prefix on the root' => ['<svg:svg/>'];
+    }
+
+    /**
+     * @param non-empty-string $content
+     *
+     * @throws InvalidSvgException
+     */
+    #[DataProvider('provideRunAcceptsSvgDocumentsInEveryEncodingAndLayoutCases')]
+    #[Test]
+    public function runAcceptsSvgDocumentsInEveryEncodingAndLayout(string $content, string $expected): void
+    {
+        self::assertSame($expected, (new Pipeline([]))->run($content));
+    }
+
+    /**
+     * @return iterable<string, array{non-empty-string, string}>
+     */
+    public static function provideRunAcceptsSvgDocumentsInEveryEncodingAndLayoutCases(): iterable
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg"><text>é</text></svg>';
+
+        yield 'UTF-8 byte order mark' => ["\xEF\xBB\xBF" . $svg, $svg];
+
+        yield 'UTF-16LE byte order mark' => ["\xFF\xFE" . mb_convert_encoding($svg, 'UTF-16LE', 'UTF-8'), $svg];
+
+        yield 'UTF-16BE byte order mark' => ["\xFE\xFF" . mb_convert_encoding($svg, 'UTF-16BE', 'UTF-8'), $svg];
+
+        yield 'ISO-8859-1 declaration' => ['<?xml version="1.0" encoding="ISO-8859-1"?>' . mb_convert_encoding($svg, 'ISO-8859-1', 'UTF-8'), $svg];
+
+        yield 'CRLF line endings' => ["<?xml version=\"1.0\"?>\r\n<svg xmlns=\"http://www.w3.org/2000/svg\">\r\n  <g/>\r\n</svg>\r\n", '<svg xmlns="http://www.w3.org/2000/svg"><g/></svg>'];
+
+        yield 'leading and trailing whitespace' => ["\n\t " . $svg . "\n\n", $svg];
+
+        yield 'XML declaration' => ['<?xml version="1.0" encoding="UTF-8"?> ' . $svg, $svg];
+
+        yield 'DOCTYPE with an internal subset and entities' => ['<!DOCTYPE svg [<!ENTITY a "é"><!ATTLIST svg x CDATA #IMPLIED>]><svg xmlns="http://www.w3.org/2000/svg"><text>&a;</text></svg>', $svg];
+
+        yield 'deep nesting' => ['<svg xmlns="http://www.w3.org/2000/svg">' . str_repeat('<g>', 200) . str_repeat('</g>', 200) . '</svg>', '<svg xmlns="http://www.w3.org/2000/svg">' . str_repeat('<g>', 199) . '<g/>' . str_repeat('</g>', 199) . '</svg>'];
     }
 
     /**
