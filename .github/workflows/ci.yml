@@ -82,12 +82,9 @@ jobs:
         if: matrix.php-versions == '8.3' && matrix.operating-system == 'ubuntu-latest'
         run: composer test -- --coverage-clover=coverage.xml
 
-      - name: Check the line coverage is 100 percent
+      - name: Check every line is covered
         if: matrix.php-versions == '8.3' && matrix.operating-system == 'ubuntu-latest'
-        run: >-
-          php -r '$m = simplexml_load_file("coverage.xml")->project->metrics;
-          if ((int) $m["statements"] !== (int) $m["coveredstatements"])
-          { fwrite(STDERR, "Line coverage is below 100 percent." . PHP_EOL); exit(1); }'
+        run: php dev/scripts/check-coverage.php coverage.xml
 
       - name: Run tests
         if: matrix.php-versions != '8.3' || matrix.operating-system != 'ubuntu-latest'
