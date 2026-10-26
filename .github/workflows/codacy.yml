@@ -38,6 +38,22 @@ jobs:
           gh-code-scanning-compat: true
           max-allowed-issues: 2147483647
 
+      - name: Give every SARIF run its own category
+        run: |
+          python3 - <<'PYTHON'
+          import json
+
+          with open("results.sarif") as file:
+              sarif = json.load(file)
+
+          for index, run in enumerate(sarif.get("runs", [])):
+              name = run.get("tool", {}).get("driver", {}).get("name", "tool")
+              run["automationDetails"] = {"id": f"codacy/{name}-{index}/"}
+
+          with open("results.sarif", "w") as file:
+              json.dump(sarif, file)
+          PYTHON
+
       - name: Upload SARIF results file
         uses: github/codeql-action/upload-sarif@v4
         with:
