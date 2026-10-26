@@ -39,9 +39,9 @@ type_line "composer require mathiasreker/php-svg-optimizer"
 composer require mathiasreker/php-svg-optimizer --ansi --no-interaction
 
 echo ">"
-type_line "# Optimize every SVG in a directory with one command"
-type_line "vendor/bin/svg-optimizer svg"
-vendor/bin/svg-optimizer --ansi svg
+type_line "# Optimize every SVG in a directory with one command, risky rules included"
+type_line "vendor/bin/svg-optimizer --allow-risky svg"
+vendor/bin/svg-optimizer --allow-risky --ansi svg
 
 echo ">"
 type_line "# Done! Smaller, cleaner SVGs."
