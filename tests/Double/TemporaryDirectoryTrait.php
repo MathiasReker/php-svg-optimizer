@@ -50,6 +50,21 @@ trait TemporaryDirectoryTrait
         return $names;
     }
 
+    /**
+     * @param string $path the file to make read-only; the test is skipped where file permissions are not enforced, for
+     *                     example when it runs as root
+     */
+    protected function makeReadOnly(string $path): void
+    {
+        chmod($path, 0o444);
+        clearstatcache(true, $path);
+
+        if (is_writable($path)) {
+            chmod($path, 0o666);
+            self::markTestSkipped('File permissions are not enforced here.');
+        }
+    }
+
     #[After]
     protected function removeTemporaryDirectories(): void
     {

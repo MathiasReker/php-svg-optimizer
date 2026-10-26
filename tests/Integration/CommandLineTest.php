@@ -893,7 +893,7 @@ final class CommandLineTest extends TestCase
     {
         $this->write('a.svg', self::COMMENTED);
         $this->write('b.svg', self::COMMENTED);
-        chmod($this->directory . '/a.svg', 0o444);
+        $this->makeReadOnly($this->directory . '/a.svg');
 
         try {
             $result = $this->execute(['.']);

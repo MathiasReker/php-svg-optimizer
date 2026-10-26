@@ -264,7 +264,7 @@ final class FileOptimizerTest extends TestCase
     public function doesNotWriteAFileThatDoesNotChange(): void
     {
         $path = $this->createFile((new SvgOptimizer())->withDefaultRules()->optimizeString(self::SVG)->getContent());
-        chmod($path, 0o444);
+        $this->makeReadOnly($path);
 
         try {
             $this->createFileOptimizer(true)->optimizePath($path);
@@ -357,7 +357,7 @@ final class FileOptimizerTest extends TestCase
     public function throwsWhenTheFileCannotBeWritten(): void
     {
         $path = $this->createFile(self::SVG);
-        chmod($path, 0o444);
+        $this->makeReadOnly($path);
 
         try {
             $this->expectException(IOException::class);

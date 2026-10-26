@@ -90,6 +90,10 @@ final class SvgFileTest extends TestCase
         $chmodMakesUnreadable = !is_readable($probeFile);
         chmod($probeFile, 0o644);
 
+        if (!$chmodMakesUnreadable && '\\' !== \DIRECTORY_SEPARATOR) {
+            self::markTestSkipped('File permissions are not enforced here.');
+        }
+
         $userName = (string) getenv('USERNAME');
         $filePath = $this->createTemporaryDirectory() . '/unreadable.svg';
         file_put_contents($filePath, '<svg></svg>');
@@ -235,7 +239,7 @@ final class SvgFileTest extends TestCase
     {
         $path = $this->createTemporaryDirectory() . '/readonly.svg';
         file_put_contents($path, '<svg></svg>');
-        chmod($path, 0o444);
+        $this->makeReadOnly($path);
         error_clear_last();
 
         try {
