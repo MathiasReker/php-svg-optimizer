@@ -74,9 +74,7 @@ compact_number() {
         if (number < 1000) {
             print number
         } else {
-            value = sprintf("%.1f", number / 1000)
-            sub(/\.0$/, "", value)
-            print value "k"
+            print int(number / 1000 + 0.5) "k"
         }
     }'
 }
